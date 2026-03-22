@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Eye } from "lucide-react"
+import { Search, Eye, Download } from "lucide-react"
 
 interface Client {
   id: string
@@ -51,7 +51,15 @@ export default function AdminClientsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="font-body text-sm text-gray-500">{total} client(s) inscrit(s)</p>
+        <div className="flex items-center gap-3">
+          <p className="font-body text-sm text-gray-500">{total} client(s) inscrit(s)</p>
+          <button
+            onClick={() => window.open("/api/admin/export?type=clients", "_blank")}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </button>
+        </div>
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />

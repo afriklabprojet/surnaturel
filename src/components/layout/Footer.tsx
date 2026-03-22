@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import {
   Facebook,
@@ -7,6 +9,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react"
+import { useI18n } from "@/lib/i18n"
 
 const LIENS_RAPIDES = [
   { label: "Accueil", href: "/" },
@@ -27,6 +30,8 @@ const LIENS_SOINS = [
 ] as const
 
 export default function Footer() {
+  const { t } = useI18n()
+
   return (
     <footer className="bg-text-main">
       <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
@@ -42,8 +47,7 @@ export default function Footer() {
               </p>
             </Link>
             <p className="mt-6 font-body text-[13px] leading-relaxed text-white/55">
-              Institut de bien-être dédié à votre beauté, votre santé et votre
-              sérénité. Des soins sur mesure dans un cadre apaisant.
+              {t.footer.description}
             </p>
             <div className="mt-6 flex items-center gap-4">
               <a
@@ -73,7 +77,7 @@ export default function Footer() {
           {/* À propos / liens rapides */}
           <div>
             <h3 className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
-              À propos
+              {t.footer.navigation}
             </h3>
             <ul className="mt-5 space-y-3">
               {LIENS_RAPIDES.map((lien) => (
@@ -92,7 +96,7 @@ export default function Footer() {
           {/* Soins */}
           <div>
             <h3 className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
-              Nos soins
+              {t.footer.services}
             </h3>
             <ul className="mt-5 space-y-3">
               {LIENS_SOINS.map((lien) => (
@@ -111,7 +115,7 @@ export default function Footer() {
           {/* Contact */}
           <div>
             <h3 className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
-              Contact
+              {t.footer.contact}
             </h3>
             <ul className="mt-5 space-y-4">
               <li className="flex items-start gap-3">
@@ -140,7 +144,7 @@ export default function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="font-body text-[11px] text-white/40">
             &copy; {new Date().getFullYear()} Le Surnaturel de Dieu — Marie Jeanne.
-            Tous droits réservés.
+            {t.footer.droits}
           </p>
           <div className="flex gap-6">
             <Link

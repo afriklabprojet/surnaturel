@@ -4,8 +4,22 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Calendar, ShoppingBag, TrendingUp, Star, MessageCircle, UserX } from "lucide-react"
+import { ArrowLeft, Calendar, ShoppingBag, TrendingUp, Star, MessageCircle, UserX, Brain, AlertTriangle, Clock } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
+
+interface ResumeIA {
+  resume: string
+  stats: {
+    totalRDV: number; rdvTermines: number; rdvAnnules: number
+    tauxPresence: number; frequenceMensuelle: number
+    totalDepense: number; panierMoyen: number
+    noteMoyenne: number | null; joursSanVisite: number | null
+    moisDepuisInscription: number
+  }
+  soinsPreferes: { nom: string; count: number }[]
+  alertesSante: string[]
+  categoriesVisitees: { categorie: string; count: number }[]
+}
 
 const statutLabels: Record<string, string> = {
   EN_ATTENTE: "En attente",
@@ -56,7 +70,9 @@ export default function AdminClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [client, setClient] = useState<ClientDetail | null>(null)
+  const [resume, setResume] = useState<ResumeIA | null>(null)
   const [loading, setLoading] = useState(true)
+  const [resumeLoading, setResumeLoading] = useState(false)
 
   useEffect(() => {
     fetch(`/api/admin/clients/${id}`)
@@ -65,6 +81,15 @@ export default function AdminClientDetailPage() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [id])
+
+  function loadResume() {
+    setResumeLoading(true)
+    fetch(`/api/admin/clients/${id}/resume`)
+      .then((r) => r.json())
+      .then(setResume)
+      .catch(console.error)
+      .finally(() => setResumeLoading(false))
+  }
 
   const handleDeactivate = async () => {
     if (!confirm("Désactiver ce compte client ? Cette action est réversible.")) return
@@ -173,6 +198,70 @@ export default function AdminClientDetailPage() {
         ))}
       </div>
 
+      {/* Résumé IA */}
+      <div className="bg-white border border-border-brand p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Brain size={18} className="text-gold" />
+            <h3 className="font-display text-lg text-text-main">Résumé IA de la cliente</h3>
+          </div>
+          <button
+            onClick={loadResume}
+            disabled={resumeLoading}
+            className="flex items-center gap-1.5 px-4 py-2 bg-gold text-white font-body text-[11px] uppercase tracking-widest hover:bg-gold-dark disabled:opacity-50 transition-colors"
+          >
+            {resumeLoading ? (
+              <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Brain size={14} />
+            )}
+            {resume ? "Actualiser" : "Générer le résumé"}
+          </button>
+        </div>
+
+        {resume ? (
+          <div className="space-y-4">
+            <div className="bg-bg-page border border-border-brand p-4">
+              {resume.resume.split("\n\n").map((p, i) => (
+                <p key={i} className={`font-body text-[13px] text-text-main leading-relaxed ${i > 0 ? "mt-3" : ""}`}>{p}</p>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <MiniStat icon={TrendingUp} label="Présence" value={`${resume.stats.tauxPresence}%`} />
+              <MiniStat icon={Calendar} label="Fréquence" value={`${resume.stats.frequenceMensuelle}/mois`} />
+              <MiniStat icon={ShoppingBag} label="Panier moyen" value={`${resume.stats.panierMoyen.toLocaleString("fr-FR")} F`} />
+              <MiniStat icon={Clock} label="Dernière visite" value={resume.stats.joursSanVisite !== null ? `${resume.stats.joursSanVisite}j` : "—"} />
+            </div>
+            {resume.soinsPreferes.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {resume.soinsPreferes.map((s) => (
+                  <span key={s.nom} className="px-3 py-1 bg-primary-brand/10 text-primary-brand font-body text-[12px]">
+                    {s.nom} ({s.count}×)
+                  </span>
+                ))}
+              </div>
+            )}
+            {resume.alertesSante.length > 0 && (
+              <div className="border border-red-200 bg-red-50 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle size={14} className="text-red-600" />
+                  <span className="font-body text-[11px] uppercase tracking-widest text-red-600 font-medium">Alertes santé</span>
+                </div>
+                {resume.alertesSante.map((a, i) => (
+                  <p key={i} className="font-body text-[12px] text-red-700">{a}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          !resumeLoading && (
+            <p className="font-body text-[13px] text-gray-500 italic">
+              Cliquez sur « Générer le résumé » pour obtenir une analyse complète.
+            </p>
+          )
+        )}
+      </div>
+
       {/* Rendez-vous */}
       <div className="bg-white border border-border-brand p-6">
         <h3 className="font-display text-lg text-text-main mb-4">Rendez-vous ({client.rendezVous.length})</h3>
@@ -240,6 +329,18 @@ export default function AdminClientDetailPage() {
           <p className="text-gray-500 text-sm font-body">Aucune commande</p>
         )}
       </div>
+    </div>
+  )
+}
+
+function MiniStat({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+  return (
+    <div className="bg-bg-page border border-border-brand p-3">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon size={12} className="text-gold" />
+        <span className="font-body text-[10px] uppercase tracking-widest text-gray-500">{label}</span>
+      </div>
+      <p className="font-body text-[14px] font-medium text-text-main">{value}</p>
     </div>
   )
 }

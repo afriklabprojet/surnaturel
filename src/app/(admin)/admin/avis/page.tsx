@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight, Download } from "lucide-react"
 
 interface AvisItem {
   id: string
@@ -134,6 +134,12 @@ export default function PageAdminAvis() {
         </div>
 
         <span className="ml-auto font-body text-[12px] text-text-muted-brand">{total} avis</span>
+        <button
+          onClick={() => window.open("/api/admin/export?type=avis", "_blank")}
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+        >
+          <Download className="h-3.5 w-3.5" /> CSV
+        </button>
       </div>
 
       {/* Liste */}

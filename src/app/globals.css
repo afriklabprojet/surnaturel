@@ -131,6 +131,67 @@
   --sidebar-ring: #B8972A;
 }
 
+.dark {
+  --color-primary: #3DA82E;
+  --color-primary-dark: #2D7A1F;
+  --color-primary-light: #1A3316;
+  --color-primary-lighter: #0F200B;
+  --color-gold: #D4AD3A;
+  --color-gold-light: #2A2310;
+  --color-gold-dark: #E8C35A;
+  --color-bg: #121210;
+  --color-bg-subtle: #181816;
+  --color-bg-card: #1E1E1C;
+  --color-text: #E8E4DC;
+  --color-text-mid: #B0ACA4;
+  --color-text-muted: #6A6A6A;
+  --color-border: #2E2E2A;
+  --color-danger: #EF4444;
+  --color-danger-deep: #DC2626;
+  --color-success: #22C55E;
+
+  --background: #121210;
+  --foreground: #E8E4DC;
+  --card: #1E1E1C;
+  --card-foreground: #E8E4DC;
+  --popover: #1E1E1C;
+  --popover-foreground: #E8E4DC;
+  --primary: #3DA82E;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1A3316;
+  --secondary-foreground: #3DA82E;
+  --muted: #1E1E1C;
+  --muted-foreground: #6A6A6A;
+  --accent: #D4AD3A;
+  --accent-foreground: #121210;
+  --destructive: #EF4444;
+  --border: #2E2E2A;
+  --input: #2E2E2A;
+  --ring: #D4AD3A;
+  --chart-1: #3DA82E;
+  --chart-2: #D4AD3A;
+  --chart-3: #22C55E;
+  --chart-4: #2D7A1F;
+  --chart-5: #2A2310;
+  --sidebar: #121210;
+  --sidebar-foreground: #E8E4DC;
+  --sidebar-primary: #3DA82E;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1A3316;
+  --sidebar-accent-foreground: #3DA82E;
+  --sidebar-border: #2E2E2A;
+  --sidebar-ring: #D4AD3A;
+
+  /* Override brand colors for dark */
+  --color-primary-brand: #3DA82E;
+  --color-text-main: #E8E4DC;
+  --color-text-mid: #B0ACA4;
+  --color-text-muted-brand: #6A6A6A;
+  --color-bg-page: #121210;
+  --color-bg-card: #1E1E1C;
+  --color-border-brand: #2E2E2A;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -143,6 +204,17 @@
   html {
     @apply font-sans;
   }
+  /* Dark mode: override common hardcoded colors */
+  .dark .bg-white { background-color: var(--color-bg-card) !important; }
+  .dark .bg-gray-50 { background-color: var(--color-bg-subtle) !important; }
+  .dark .bg-gray-100 { background-color: #1A1A18 !important; }
+  .dark .text-gray-500 { color: var(--color-text-muted) !important; }
+  .dark .text-gray-600 { color: var(--color-text-mid) !important; }
+  .dark .text-gray-700 { color: var(--color-text-mid) !important; }
+  .dark .text-gray-900 { color: var(--color-text) !important; }
+  .dark .border-gray-200 { border-color: var(--color-border) !important; }
+  .dark .border-gray-100 { border-color: var(--color-border) !important; }
+  .dark .hover\:bg-gray-50:hover { background-color: var(--color-bg-subtle) !important; }
 }
 
 /* Navbar dropdown animation (replaces framer-motion) */

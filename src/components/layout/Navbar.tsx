@@ -21,8 +21,11 @@ import {
   User,
 } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
+import { useI18n } from "@/lib/i18n"
 
 const MiniCart = dynamic(() => import("@/components/boutique/MiniCart"), { ssr: false })
+const ThemeToggle = dynamic(() => import("@/components/layout/ThemeToggle"), { ssr: false })
+const LangSwitch = dynamic(() => import("@/components/layout/LangSwitch"), { ssr: false })
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   Flame, Sparkles, Zap, Smile, Baby, Wand2, Lock, ClipboardList, MessageCircle,
@@ -75,6 +78,7 @@ export default function Navbar() {
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null)
   const [miniCartOpen, setMiniCartOpen] = useState(false)
   const { totalArticles } = useCart()
+  const { t } = useI18n()
   const { data: session } = useSession()
   const user = session?.user as { nom?: string; prenom?: string; photoUrl?: string; role?: string } | undefined
 
@@ -169,6 +173,8 @@ export default function Navbar() {
 
         {/* Right actions (desktop) */}
         <div className="hidden items-center gap-3 lg:flex shrink-0 ml-2">
+          <LangSwitch />
+          <ThemeToggle />
           <button
             onClick={() => setMiniCartOpen(true)}
             className="relative flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-300 hover:bg-gray-50"
@@ -191,26 +197,28 @@ export default function Navbar() {
               ) : (
                 <User size={14} />
               )}
-              {user.prenom || "Mon espace"}
+              {user.prenom || t.nav.monEspace}
             </Link>
           ) : (
             <Link
               href="/connexion"
               className="inline-flex items-center justify-center border border-primary-brand bg-transparent px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
             >
-              Connexion
+              {t.nav.connexion}
             </Link>
           )}
           <Link
             href="/prise-rdv"
             className="inline-flex items-center justify-center bg-primary-brand px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-white transition-colors duration-300 hover:bg-primary-dark whitespace-nowrap"
           >
-            Prendre RDV
+            {t.nav.prendreRdv}
           </Link>
         </div>
 
-        {/* Mobile: cart + hamburger */}
+        {/* Mobile: cart + theme + hamburger */}
         <div className="flex items-center gap-2 lg:hidden">
+          <LangSwitch />
+          <ThemeToggle />
           <button
             onClick={() => setMiniCartOpen(true)}
             className="relative flex h-10 w-10 items-center justify-center"
@@ -305,7 +313,7 @@ export default function Navbar() {
                 ) : (
                   <User size={14} />
                 )}
-                {user.prenom || "Mon espace"}
+                {user.prenom || t.nav.monEspace}
               </Link>
             ) : (
               <Link
@@ -313,7 +321,7 @@ export default function Navbar() {
                 className="flex items-center justify-center border border-primary-brand bg-transparent px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors duration-300 hover:bg-primary-light"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Connexion
+                {t.nav.connexion}
               </Link>
             )}
             <Link
@@ -321,7 +329,7 @@ export default function Navbar() {
               className="flex items-center justify-center bg-primary-brand px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Prendre RDV
+              {t.nav.prendreRdv}
             </Link>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { subMonths, startOfMonth, endOfMonth, format } from "date-fns"
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const debut = searchParams.get("debut")
   const fin = searchParams.get("fin")
-  const format = searchParams.get("format") // json | csv
+  const fmt = searchParams.get("format") // json | csv
 
   const dateFilter: Record<string, unknown> = {}
   if (debut) dateFilter.gte = new Date(debut)
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
     moyenneAvis,
     totalParrainages,
     totalPointsFidelite,
+    soinsPopulaires,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "CLIENT" } }),
     prisma.user.count({ where: { role: "CLIENT", ...(hasDateFilter ? { createdAt: dateFilter } : {}) } }),
@@ -51,7 +53,48 @@ export async function GET(req: NextRequest) {
     }),
     prisma.parrainage.count({ where: hasDateFilter ? { createdAt: dateFilter } : {} }),
     prisma.pointsFidelite.aggregate({ _sum: { total: true } }),
+    prisma.rendezVous.groupBy({
+      by: ["soinId"],
+      _count: { id: true },
+      orderBy: { _count: { id: "desc" } },
+      take: 8,
+      ...(hasDateFilter ? { where: { dateHeure: dateFilter } } : {}),
+    }),
   ])
+
+  // Monthly revenue for the last 6 months
+  const now = new Date()
+  const revenuMensuel: { mois: string; ca: number; rdv: number }[] = []
+  for (let i = 5; i >= 0; i--) {
+    const mStart = startOfMonth(subMonths(now, i))
+    const mEnd = endOfMonth(subMonths(now, i))
+    const [ca, rdvCount] = await Promise.all([
+      prisma.commande.aggregate({
+        _sum: { total: true },
+        where: { createdAt: { gte: mStart, lte: mEnd }, statut: { not: "ANNULEE" } },
+      }),
+      prisma.rendezVous.count({ where: { dateHeure: { gte: mStart, lte: mEnd } } }),
+    ])
+    revenuMensuel.push({
+      mois: format(mStart, "MMM yyyy"),
+      ca: ca._sum.total || 0,
+      rdv: rdvCount,
+    })
+  }
+
+  // Soins noms
+  const soinIds = soinsPopulaires.map((s) => s.soinId)
+  const soins = soinIds.length > 0
+    ? await prisma.soin.findMany({ where: { id: { in: soinIds } }, select: { id: true, nom: true } })
+    : []
+  const soinNomMap = Object.fromEntries(soins.map((s) => [s.id, s.nom]))
+
+  // Taux de conversion RDV (confirmé+terminé / total)
+  const rdvTotal = rdvParStatut.reduce((s, r) => s + r._count, 0)
+  const rdvConvertis = rdvParStatut
+    .filter((r) => r.statut === "CONFIRME" || r.statut === "TERMINE")
+    .reduce((s, r) => s + r._count, 0)
+  const tauxConversion = rdvTotal > 0 ? Math.round((rdvConvertis / rdvTotal) * 100) : 0
 
   const rapport = {
     periode: { debut: debut || "tout", fin: fin || "tout" },
@@ -59,20 +102,27 @@ export async function GET(req: NextRequest) {
     rdv: {
       total: totalRdv,
       parStatut: Object.fromEntries(rdvParStatut.map((r) => [r.statut, r._count])),
+      tauxConversion,
     },
     commandes: { total: totalCommandes, ca: caCommandes._sum.total || 0 },
     avis: { total: totalAvis, moyenne: Number((moyenneAvis._avg.note || 0).toFixed(1)) },
     parrainages: { total: totalParrainages },
     fidelite: { totalPoints: totalPointsFidelite._sum.total || 0 },
+    revenuMensuel,
+    soinsPopulaires: soinsPopulaires.map((s) => ({
+      nom: soinNomMap[s.soinId] || "Inconnu",
+      count: s._count.id,
+    })),
   }
 
   // CSV export
-  if (format === "csv") {
+  if (fmt === "csv") {
     const lines = [
       "Métrique,Valeur",
       `Clients total,${rapport.clients.total}`,
       `Clients nouveaux (période),${rapport.clients.nouveaux}`,
       `RDV total,${rapport.rdv.total}`,
+      `Taux conversion RDV,${rapport.rdv.tauxConversion}%`,
       ...Object.entries(rapport.rdv.parStatut).map(([k, v]) => `RDV ${k},${v}`),
       `Commandes total,${rapport.commandes.total}`,
       `CA total,${rapport.commandes.ca}`,
@@ -80,6 +130,12 @@ export async function GET(req: NextRequest) {
       `Note moyenne,${rapport.avis.moyenne}`,
       `Parrainages total,${rapport.parrainages.total}`,
       `Points fidélité distribués,${rapport.fidelite.totalPoints}`,
+      "",
+      "Mois,CA,RDV",
+      ...rapport.revenuMensuel.map((m) => `${m.mois},${m.ca},${m.rdv}`),
+      "",
+      "Soin,Réservations",
+      ...rapport.soinsPopulaires.map((s) => `${s.nom},${s.count}`),
     ]
     return new NextResponse(lines.join("\n"), {
       headers: {

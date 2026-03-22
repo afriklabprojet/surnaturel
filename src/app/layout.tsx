@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CartProvider } from "@/lib/cart-context";
+import { I18nProvider } from "@/lib/i18n";
 import SessionWrapper from "@/components/providers/SessionWrapper";
 import "./globals.css";
 
@@ -61,6 +64,11 @@ export default function RootLayout({
       className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})()`,
+          }}
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2D7A1F" />
         <script
@@ -73,10 +81,13 @@ export default function RootLayout({
               description: "Institut de bien-être holistique à Abidjan — Hammam, gommage, soins du visage, post-accouchement, sage-femme et boutique de produits naturels.",
               url: APP_URL,
               telephone: "+22507XXXXXXXX",
+              email: "contact@surnatureldedieu.ci",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "Cocody, Riviera Palmeraie",
                 addressLocality: "Abidjan",
+                addressRegion: "Abidjan",
+                postalCode: "00225",
                 addressCountry: "CI",
               },
               geo: {
@@ -89,6 +100,24 @@ export default function RootLayout({
               ],
               priceRange: "$$",
               image: `${APP_URL}/images/hero.jpg`,
+              logo: `${APP_URL}/logos/logo.png`,
+              currenciesAccepted: "XOF",
+              paymentAccepted: "Cash, Mobile Money, Card",
+              areaServed: {
+                "@type": "City",
+                name: "Abidjan",
+              },
+              hasOfferCatalog: {
+                "@type": "OfferCatalog",
+                name: "Soins & Services",
+                itemListElement: [
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Hammam Royal", description: "Bain de vapeur purifiant inspiré des traditions orientales" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Gommage Corps Luxe", description: "Exfoliation douce aux huiles précieuses" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Soin du Visage Éclat", description: "Soin complet pour un teint lumineux" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Programme Post-accouchement", description: "Soins de récupération post-partum" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Sage-femme", description: "Consultations sage-femme personnalisées" } },
+                ],
+              },
               sameAs: [],
             }),
           }}
@@ -96,10 +125,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main">
         <SessionWrapper>
-          <CartProvider>
-            {children}
-          </CartProvider>
+          <I18nProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </I18nProvider>
         </SessionWrapper>
+        <Analytics />
+        <SpeedInsights />
         <script
           dangerouslySetInnerHTML={{
             __html: `if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js")})}`,

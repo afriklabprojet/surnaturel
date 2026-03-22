@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Download } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 
 interface Commande {
@@ -75,7 +76,15 @@ export default function AdminCommandesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="font-body text-sm text-gray-500">{total} commande(s)</p>
+        <div className="flex items-center gap-3">
+          <p className="font-body text-sm text-gray-500">{total} commande(s)</p>
+          <button
+            onClick={() => window.open("/api/admin/export?type=commandes", "_blank")}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </button>
+        </div>
         <select
           value={filtreStatut}
           onChange={(e) => { setFiltreStatut(e.target.value); setPage(1) }}

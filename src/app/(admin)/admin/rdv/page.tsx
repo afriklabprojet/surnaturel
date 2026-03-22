@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback, Fragment } from "react"
-import { Check, X, Clock, Search, Eye, ChevronUp, ChevronDown, Plus, Loader2 } from "lucide-react"
+import { Check, X, Clock, Search, Eye, ChevronUp, ChevronDown, Plus, Loader2, Download } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 
 interface RDV {
@@ -193,8 +193,15 @@ export default function AdminRDVPage() {
         </div>
 
         <button
+          onClick={() => window.open("/api/admin/export?type=rdv", "_blank")}
+          className="ml-auto flex items-center gap-1.5 px-3 py-2 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+        >
+          <Download className="h-3.5 w-3.5" /> CSV
+        </button>
+
+        <button
           onClick={openCreateModal}
-          className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark transition-colors"
         >
           <Plus size={14} /> Nouveau RDV
         </button>

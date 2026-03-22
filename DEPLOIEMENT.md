@@ -283,20 +283,20 @@ Après le déploiement, vérifiez que tout fonctionne :
 
 ### Fonctionnalités avancées (Phases 3-6)
 
-| Vérification | Comment tester | ✅ OK si... |
-| ------------ | -------------- | ----------- |
-| Monitoring | Visitez `/api/health` | Vous voyez `{"status":"ok","database":"connected"}` |
-| Chat IA | Cliquez le bouton doré ✨ en bas à droite | L'assistant pose 3 questions puis recommande un soin |
-| PWA (iPhone) | Safari > Partager > « Sur l'écran d'accueil » | L'icône apparaît et s'ouvre comme une app |
-| PWA (Android) | Chrome > menu ⋮ > « Installer l'application » | L'icône apparaît et s'ouvre comme une app |
-| Communauté publique | Visitez `/decouvrir-communaute` | Aperçu avec statistiques et posts récents |
-| Admin signalements | Allez sur `/admin/signalements` (compte admin) | Liste des signalements avec actions |
-| robots.txt | Visitez `/robots.txt` | Le fichier s'affiche avec les règles d'indexation |
-| SEO JSON-LD | Clic droit > Code source > cherchez « HealthAndBeautyBusiness » | Le bloc JSON-LD est présent dans le `<head>` |
-| QR Code RDV | Confirmez un RDV puis cliquez « Voir le billet QR » | Le QR code s'affiche avec les données réelles |
-| Graphiques santé | Suivi médical > Mesures > icône graphique | Les courbes d'évolution s'affichent |
-| Alertes santé | Ajoutez une mesure hors seuil (ex: tension > 14) | Une alerte rouge s'affiche avec un lien vers la prise de RDV |
-| Export PDF | Suivi médical > Dossier > « Exporter PDF » | La fenêtre d'impression s'ouvre |
+| Vérification        | Comment tester                                                  | ✅ OK si...                                                  |
+| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------------ |
+| Monitoring          | Visitez `/api/health`                                           | Vous voyez `{"status":"ok","database":"connected"}`          |
+| Chat IA             | Cliquez le bouton doré ✨ en bas à droite                       | L'assistant pose 3 questions puis recommande un soin         |
+| PWA (iPhone)        | Safari > Partager > « Sur l'écran d'accueil »                   | L'icône apparaît et s'ouvre comme une app                    |
+| PWA (Android)       | Chrome > menu ⋮ > « Installer l'application »                   | L'icône apparaît et s'ouvre comme une app                    |
+| Communauté publique | Visitez `/decouvrir-communaute`                                 | Aperçu avec statistiques et posts récents                    |
+| Admin signalements  | Allez sur `/admin/signalements` (compte admin)                  | Liste des signalements avec actions                          |
+| robots.txt          | Visitez `/robots.txt`                                           | Le fichier s'affiche avec les règles d'indexation            |
+| SEO JSON-LD         | Clic droit > Code source > cherchez « HealthAndBeautyBusiness » | Le bloc JSON-LD est présent dans le `<head>`                 |
+| QR Code RDV         | Confirmez un RDV puis cliquez « Voir le billet QR »             | Le QR code s'affiche avec les données réelles                |
+| Graphiques santé    | Suivi médical > Mesures > icône graphique                       | Les courbes d'évolution s'affichent                          |
+| Alertes santé       | Ajoutez une mesure hors seuil (ex: tension > 14)                | Une alerte rouge s'affiche avec un lien vers la prise de RDV |
+| Export PDF          | Suivi médical > Dossier > « Exporter PDF »                      | La fenêtre d'impression s'ouvre                              |
 
 ---
 

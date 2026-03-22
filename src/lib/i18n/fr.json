@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "soins": "Nos Soins",
+    "boutique": "Boutique",
+    "blog": "Blog",
+    "avis": "Avis",
+    "apropos": "À Propos",
+    "contact": "Contact",
+    "connexion": "Connexion",
+    "prendreRdv": "Prendre RDV",
+    "monEspace": "Mon espace",
+    "panier": "Panier"
+  },
+  "hero": {
+    "title": "Votre havre de bien-être à Abidjan",
+    "subtitle": "Depuis 2015, Marie Jeanne accueille les femmes dans un espace de sérénité dédié à la beauté naturelle et au bien-être holistique.",
+    "cta": "Découvrir nos soins",
+    "ctaRdv": "Prendre rendez-vous"
+  },
+  "footer": {
+    "description": "Institut de bien-être holistique à Abidjan. Hammam, gommage, soins du visage, post-accouchement et sage-femme.",
+    "navigation": "Navigation",
+    "services": "Services",
+    "contact": "Contact",
+    "horaires": "Horaires",
+    "horairesSemaine": "Lun – Sam : 08h – 19h",
+    "horaireDimanche": "Dimanche : Fermé",
+    "droits": "Tous droits réservés."
+  },
+  "common": {
+    "voirPlus": "Voir plus",
+    "voirTout": "Voir tout",
+    "fermer": "Fermer",
+    "envoyer": "Envoyer",
+    "chargement": "Chargement…",
+    "erreur": "Une erreur est survenue.",
+    "aucunResultat": "Aucun résultat.",
+    "fcfa": "FCFA",
+    "reserver": "Réserver",
+    "ajouterAuPanier": "Ajouter au panier",
+    "retour": "Retour"
+  },
+  "home": {
+    "soinsTitle": "Nos soins signatures",
+    "soinsSubtitle": "Des prestations sur-mesure, pensées pour sublimer votre bien-être.",
+    "avisTitle": "Ce que disent nos clientes",
+    "blogTitle": "Nos derniers articles",
+    "ctaTitle": "Prête à vous offrir un moment de bien-être ?",
+    "ctaButton": "Réserver maintenant"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "nom": "Nom",
+    "email": "Email",
+    "sujet": "Sujet",
+    "message": "Message",
+    "envoyer": "Envoyer le message",
+    "succes": "Message envoyé avec succès !",
+    "erreur": "Erreur lors de l'envoi."
+  },
+  "auth": {
+    "connexion": "Connexion",
+    "inscription": "Inscription",
+    "email": "Adresse email",
+    "motDePasse": "Mot de passe",
+    "seConnecter": "Se connecter",
+    "creerCompte": "Créer un compte",
+    "motDePasseOublie": "Mot de passe oublié ?",
+    "nom": "Nom",
+    "prenom": "Prénom",
+    "telephone": "Téléphone"
+  }
+}

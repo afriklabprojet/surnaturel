@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "soins": "Our Treatments",
+    "boutique": "Shop",
+    "blog": "Blog",
+    "avis": "Reviews",
+    "apropos": "About",
+    "contact": "Contact",
+    "connexion": "Sign In",
+    "prendreRdv": "Book Now",
+    "monEspace": "My Account",
+    "panier": "Cart"
+  },
+  "hero": {
+    "title": "Your wellness haven in Abidjan",
+    "subtitle": "Since 2015, Marie Jeanne welcomes women to a serene space dedicated to natural beauty and holistic well-being.",
+    "cta": "Discover our treatments",
+    "ctaRdv": "Book an appointment"
+  },
+  "footer": {
+    "description": "Holistic wellness institute in Abidjan. Hammam, body scrub, facials, post-partum care and midwifery.",
+    "navigation": "Navigation",
+    "services": "Services",
+    "contact": "Contact",
+    "horaires": "Hours",
+    "horairesSemaine": "Mon – Sat: 8 AM – 7 PM",
+    "horaireDimanche": "Sunday: Closed",
+    "droits": "All rights reserved."
+  },
+  "common": {
+    "voirPlus": "See more",
+    "voirTout": "See all",
+    "fermer": "Close",
+    "envoyer": "Send",
+    "chargement": "Loading…",
+    "erreur": "An error occurred.",
+    "aucunResultat": "No results.",
+    "fcfa": "FCFA",
+    "reserver": "Book",
+    "ajouterAuPanier": "Add to cart",
+    "retour": "Back"
+  },
+  "home": {
+    "soinsTitle": "Our signature treatments",
+    "soinsSubtitle": "Bespoke services designed to enhance your well-being.",
+    "avisTitle": "What our clients say",
+    "blogTitle": "Latest articles",
+    "ctaTitle": "Ready to treat yourself to a moment of well-being?",
+    "ctaButton": "Book now"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "nom": "Name",
+    "email": "Email",
+    "sujet": "Subject",
+    "message": "Message",
+    "envoyer": "Send message",
+    "succes": "Message sent successfully!",
+    "erreur": "Error sending message."
+  },
+  "auth": {
+    "connexion": "Sign In",
+    "inscription": "Sign Up",
+    "email": "Email address",
+    "motDePasse": "Password",
+    "seConnecter": "Sign in",
+    "creerCompte": "Create account",
+    "motDePasseOublie": "Forgot password?",
+    "nom": "Last name",
+    "prenom": "First name",
+    "telephone": "Phone"
+  }
+}
