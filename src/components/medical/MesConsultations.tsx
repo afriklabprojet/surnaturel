@@ -104,7 +104,7 @@ export default function MesConsultations() {
 
         <Link
           href="/prise-rdv"
-          className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+          className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
         >
           <Stethoscope size={14} />
           Nouveau RDV
@@ -119,7 +119,7 @@ export default function MesConsultations() {
           </p>
           <Link
             href="/prise-rdv"
-            className="mt-5 inline-flex items-center gap-2 bg-primary-brand px-6 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+            className="mt-5 inline-flex items-center gap-2 bg-primary-brand px-6 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
           >
             Prendre un RDV
             <ArrowRight size={14} />
@@ -142,7 +142,7 @@ export default function MesConsultations() {
                   <span className="font-display text-[16px] font-light text-primary-brand">
                     {date.toLocaleDateString("fr-FR", { day: "2-digit" })}
                   </span>
-                  <span className="font-body text-[9px] uppercase tracking-[0.1em] text-primary-brand">
+                  <span className="font-body text-[9px] uppercase tracking-widest text-primary-brand">
                     {date.toLocaleDateString("fr-FR", { month: "short" })}
                   </span>
                 </div>

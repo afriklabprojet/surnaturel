@@ -143,7 +143,7 @@ function PriseRDVContent() {
                   )}
                 </div>
                 <span
-                  className={`mt-2 hidden font-body text-[10px] font-medium uppercase tracking-[0.1em] sm:block ${
+                  className={`mt-2 hidden font-body text-[10px] font-medium uppercase tracking-widest sm:block ${
                     etape >= e.numero ? "text-gold" : "text-text-muted-brand"
                   }`}
                 >
@@ -251,7 +251,7 @@ function PriseRDVContent() {
           <div className="mt-8 flex items-center justify-between">
             <button
               onClick={() => setEtape(1)}
-              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-text-mid transition-colors duration-300 hover:bg-bg-page"
+              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-widest text-text-mid transition-colors duration-300 hover:bg-bg-page"
             >
               <ArrowLeft size={14} />
               Retour
@@ -362,7 +362,7 @@ function PriseRDVContent() {
           <div className="mt-8 flex items-center justify-between">
             <button
               onClick={() => setEtape(2)}
-              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-text-mid transition-colors duration-300 hover:bg-bg-page"
+              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-widest text-text-mid transition-colors duration-300 hover:bg-bg-page"
             >
               <ArrowLeft size={14} />
               Retour

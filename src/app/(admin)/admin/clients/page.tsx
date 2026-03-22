@@ -84,13 +84,13 @@ export default function AdminClientsPage() {
             <table className="w-full text-sm font-body">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Client</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Email</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Téléphone</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">RDV</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Commandes</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Inscrit le</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Action</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Client</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Email</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Téléphone</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">RDV</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Commandes</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Inscrit le</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>

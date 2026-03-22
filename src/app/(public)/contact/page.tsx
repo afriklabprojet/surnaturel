@@ -129,21 +129,21 @@ export default function PageContact() {
                 <div className="flex items-start gap-3">
                   <MapPin size={16} className="mt-0.5 shrink-0 text-primary-brand" />
                   <div>
-                    <p className="font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">Adresse</p>
+                    <p className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Adresse</p>
                     <p className="font-body text-[14px] text-text-main">Cocody Angré, Abidjan, Côte d&apos;Ivoire</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Phone size={16} className="mt-0.5 shrink-0 text-primary-brand" />
                   <div>
-                    <p className="font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">Téléphone</p>
+                    <p className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Téléphone</p>
                     <p className="font-body text-[14px] text-text-main">+225 07 09 00 00 00</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Mail size={16} className="mt-0.5 shrink-0 text-primary-brand" />
                   <div>
-                    <p className="font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">Email</p>
+                    <p className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Email</p>
                     <p className="font-body text-[14px] text-text-main">contact@surnatureldedieu.com</p>
                   </div>
                 </div>
@@ -204,25 +204,25 @@ export default function PageContact() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="nom" className="mb-1.5 block font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">
+                  <label htmlFor="nom" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
                     Nom complet <span className="text-danger">*</span>
                   </label>
                   <input id="nom" type="text" value={form.nom} onChange={(e) => handleChange("nom", e.target.value)} maxLength={100} className={inputCls(!!errors.nom)} placeholder="Votre nom" />
                   {errors.nom && <p className="mt-1 font-body text-[11px] text-danger">{errors.nom}</p>}
                 </div>
                 <div>
-                  <label htmlFor="email" className="mb-1.5 block font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">
+                  <label htmlFor="email" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
                     Email <span className="text-danger">*</span>
                   </label>
                   <input id="email" type="email" value={form.email} onChange={(e) => handleChange("email", e.target.value)} maxLength={200} className={inputCls(!!errors.email)} placeholder="votre@email.com" />
                   {errors.email && <p className="mt-1 font-body text-[11px] text-danger">{errors.email}</p>}
                 </div>
                 <div>
-                  <label htmlFor="telephone" className="mb-1.5 block font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">Téléphone</label>
+                  <label htmlFor="telephone" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Téléphone</label>
                   <input id="telephone" type="tel" value={form.telephone} onChange={(e) => handleChange("telephone", e.target.value)} maxLength={20} className={inputCls(false)} placeholder="+225 XX XX XX XX XX" />
                 </div>
                 <div>
-                  <label htmlFor="sujet" className="mb-1.5 block font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">
+                  <label htmlFor="sujet" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
                     Sujet <span className="text-danger">*</span>
                   </label>
                   <input id="sujet" type="text" value={form.sujet} onChange={(e) => handleChange("sujet", e.target.value)} maxLength={200} className={inputCls(!!errors.sujet)} placeholder="Objet de votre message" />
@@ -231,7 +231,7 @@ export default function PageContact() {
               </div>
 
               <div className="mt-4">
-                <label htmlFor="message" className="mb-1.5 block font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <label htmlFor="message" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
                   Message <span className="text-danger">*</span>
                 </label>
                 <textarea id="message" value={form.message} onChange={(e) => handleChange("message", e.target.value)} rows={5} maxLength={3000}

@@ -69,7 +69,7 @@ export default function ForfaitCard({ forfait }: ForfaitCardProps) {
         </div>
         <Link
           href={`/prise-rdv?forfait=${forfait.slug}`}
-          className="mt-4 flex w-full items-center justify-center bg-primary-brand py-3 font-body text-[11px] uppercase tracking-[0.1em] text-white transition-colors duration-300 hover:bg-primary-dark"
+          className="mt-4 flex w-full items-center justify-center bg-primary-brand py-3 font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-300 hover:bg-primary-dark"
         >
           Réserver ce forfait
         </Link>

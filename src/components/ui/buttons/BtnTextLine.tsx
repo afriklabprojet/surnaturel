@@ -13,7 +13,7 @@ export function BtnTextLine({ children, onClick, href, className }: Props) {
     inline-flex items-center gap-2
     bg-transparent border-none text-primary-brand
     p-0 font-body text-[12px] 
-    tracking-[0.1em] cursor-pointer
+    tracking-widest cursor-pointer
     group
   `
 

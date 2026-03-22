@@ -60,7 +60,7 @@ export default async function PageBlog({
             <Link
               key={cat}
               href={cat === "Tous" ? "/blog" : `/blog?categorie=${encodeURIComponent(cat)}`}
-              className={`px-4 py-2 font-body text-[11px] uppercase tracking-[0.1em] transition-colors ${
+              className={`px-4 py-2 font-body text-[11px] uppercase tracking-widest transition-colors ${
                 activeCategorie === cat
                   ? "bg-primary-brand text-white"
                   : "border border-border-brand text-text-mid hover:border-primary-brand hover:text-primary-brand"
@@ -110,7 +110,7 @@ export default async function PageBlog({
 
                   {/* Catégorie */}
                   {(article as { categorie?: string }).categorie && (
-                    <span className="mb-2 inline-block border border-border-brand px-2 py-0.5 font-body text-[10px] uppercase tracking-[0.1em] text-primary-brand">
+                    <span className="mb-2 inline-block border border-border-brand px-2 py-0.5 font-body text-[10px] uppercase tracking-widest text-primary-brand">
                       {(article as { categorie?: string }).categorie}
                     </span>
                   )}

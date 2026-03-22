@@ -119,7 +119,7 @@ export default function PageDetailCommande() {
             </p>
           </div>
           <span
-            className={`px-3 py-1.5 font-body text-[11px] uppercase tracking-[0.1em] ${badge?.className ?? ""}`}
+            className={`px-3 py-1.5 font-body text-[11px] uppercase tracking-widest ${badge?.className ?? ""}`}
           >
             {badge?.label ?? commande.statut}
           </span>
@@ -137,16 +137,16 @@ export default function PageDetailCommande() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border-brand">
-                <th className="text-left p-3 font-body text-[10px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <th className="text-left p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
                   Produit
                 </th>
-                <th className="text-center p-3 font-body text-[10px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <th className="text-center p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
                   Qté
                 </th>
-                <th className="text-right p-3 font-body text-[10px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <th className="text-right p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
                   Prix unit.
                 </th>
-                <th className="text-right p-3 font-body text-[10px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <th className="text-right p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
                   Sous-total
                 </th>
               </tr>
@@ -178,7 +178,7 @@ export default function PageDetailCommande() {
             </tbody>
             <tfoot>
               <tr className="bg-gold-light/30">
-                <td colSpan={3} className="p-3 text-right font-body text-[12px] uppercase tracking-[0.1em] text-text-mid">
+                <td colSpan={3} className="p-3 text-right font-body text-[12px] uppercase tracking-widest text-text-mid">
                   Total
                 </td>
                 <td className="p-3 text-right font-display text-[18px] text-gold">

@@ -43,7 +43,7 @@ export default async function PageArticle({
         {/* Navigation retour */}
         <Link
           href="/blog"
-          className="mb-8 inline-flex items-center gap-1 font-body text-[11px] uppercase tracking-[0.1em] text-primary-brand hover:text-primary-dark"
+          className="mb-8 inline-flex items-center gap-1 font-body text-[11px] uppercase tracking-widest text-primary-brand hover:text-primary-dark"
         >
           <ArrowLeft size={12} />
           Retour au blog
@@ -72,7 +72,7 @@ export default async function PageArticle({
             </span>
           )}
           {(article as { categorie?: string }).categorie && (
-            <span className="border border-border-brand px-2 py-0.5 font-body text-[10px] uppercase tracking-[0.1em] text-primary-brand">
+            <span className="border border-border-brand px-2 py-0.5 font-body text-[10px] uppercase tracking-widest text-primary-brand">
               {(article as { categorie?: string }).categorie}
             </span>
           )}

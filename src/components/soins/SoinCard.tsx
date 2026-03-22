@@ -51,14 +51,14 @@ export default function SoinCard({ soin }: SoinCardProps) {
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border-brand pt-4">
           <Link
             href={`/soins/${soin.slug}`}
-            className="group/btn inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-[0.1em] text-text-main transition-colors duration-300 hover:text-primary-brand"
+            className="group/btn inline-flex items-center gap-2 font-body text-[11px] uppercase tracking-widest text-text-main transition-colors duration-300 hover:text-primary-brand"
           >
             En savoir plus
             <span className="inline-block transition-transform duration-300 group-hover/btn:translate-x-1">→</span>
           </Link>
           <Link
             href={`/prise-rdv?soin=${soin.slug}`}
-            className="inline-flex items-center gap-2 bg-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-[0.1em] text-white transition-colors duration-300 hover:bg-primary-dark"
+            className="inline-flex items-center gap-2 bg-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-300 hover:bg-primary-dark"
           >
             Réserver
           </Link>

@@ -210,7 +210,7 @@ export default function PageAPropos() {
                 <h3 className="mt-4 font-display text-[18px] text-text-main">
                   {membre.nom}
                 </h3>
-                <p className="mt-1 font-body text-[11px] uppercase tracking-[0.1em] text-gold">
+                <p className="mt-1 font-body text-[11px] uppercase tracking-widest text-gold">
                   {membre.role}
                 </p>
                 <p className="mt-3 font-body text-[13px] leading-relaxed text-text-mid">

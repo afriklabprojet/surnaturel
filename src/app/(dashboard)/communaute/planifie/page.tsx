@@ -143,7 +143,7 @@ export default function PagePublicationsPlanifiees() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.1em] bg-primary-brand text-white hover:bg-primary-dark transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-widest bg-primary-brand text-white hover:bg-primary-dark transition-colors"
         >
           <Clock size={13} />Planifier
         </button>
@@ -190,7 +190,7 @@ export default function PagePublicationsPlanifiees() {
             <button type="button" onClick={() => setShowForm(false)} className="px-3 py-1.5 font-body text-[11px] text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">
               Annuler
             </button>
-            <button type="submit" disabled={!contenu.trim() || !scheduledAt || submitting} className="px-4 py-1.5 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark disabled:opacity-50 transition-colors uppercase tracking-[0.1em] flex items-center gap-1.5">
+            <button type="submit" disabled={!contenu.trim() || !scheduledAt || submitting} className="px-4 py-1.5 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark disabled:opacity-50 transition-colors uppercase tracking-widest flex items-center gap-1.5">
               {submitting ? <Loader2 size={12} className="animate-spin" /> : <Calendar size={12} />}
               Planifier
             </button>

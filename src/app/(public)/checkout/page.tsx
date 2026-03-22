@@ -49,7 +49,7 @@ export default function PageCheckout() {
         </p>
         <Link
           href="/boutique"
-          className="mt-8 flex items-center gap-2 px-6 py-3 bg-primary-brand font-body text-[11px] uppercase tracking-[0.1em] text-white transition-colors duration-200 hover:bg-primary-dark"
+          className="mt-8 flex items-center gap-2 px-6 py-3 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
         >
           <ArrowLeft size={14} />
           Voir la boutique
@@ -188,7 +188,7 @@ export default function PageCheckout() {
             <button
               onClick={handlePayer}
               disabled={!methode || loading}
-              className="mt-8 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-[11px] uppercase tracking-[0.1em] text-white transition-colors duration-200 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-8 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -266,7 +266,7 @@ export default function PageCheckout() {
             {/* Total */}
             <div className="mt-4 pt-4 border-t border-border-brand">
               <div className="flex items-center justify-between">
-                <span className="font-body text-[12px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <span className="font-body text-[12px] uppercase tracking-widest text-text-muted-brand">
                   Total
                 </span>
                 <span className="font-display text-[24px] font-normal text-primary-brand">

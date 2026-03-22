@@ -222,14 +222,14 @@ export default function AdminRDVPage() {
                     <th
                       key={key}
                       onClick={() => handleSort(key)}
-                      className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand font-medium cursor-pointer select-none hover:text-text-main"
+                      className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium cursor-pointer select-none hover:text-text-main"
                     >
                       <span className="inline-flex items-center gap-1">
                         {label} <SortIcon col={key} />
                       </span>
                     </th>
                   ))}
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>

@@ -103,7 +103,7 @@ function SuiviMedicalContent() {
       <div className="bg-white border border-border-brand border-t-2 border-t-gold p-6">
         <div className="flex items-center gap-2 mb-4">
           <Lock size={14} className="text-gold" />
-          <span className="font-body text-[10px] uppercase tracking-[0.1em] text-text-muted-brand">
+          <span className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
             Confidentiel
           </span>
         </div>

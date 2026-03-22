@@ -148,7 +148,7 @@ export default function ListeConversations({
         {/* Nouvelle conversation */}
         <button
           onClick={() => setShowNewModal(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 border border-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-[0.1em] text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
+          className="mt-3 flex w-full items-center justify-center gap-2 border border-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
         >
           <Plus size={14} />
           Nouvelle conversation

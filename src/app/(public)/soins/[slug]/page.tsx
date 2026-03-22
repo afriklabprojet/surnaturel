@@ -191,7 +191,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
                 {/* CTA Offrir - plus visible */}
                 <Link
                   href={`/prise-rdv?soin=${soin.slug}&cadeau=true`}
-                  className="flex w-full items-center justify-center gap-2 border-2 border-gold bg-gold/5 py-3 font-body text-[11px] uppercase tracking-[0.1em] text-gold transition-colors duration-300 hover:bg-gold hover:text-white"
+                  className="flex w-full items-center justify-center gap-2 border-2 border-gold bg-gold/5 py-3 font-body text-[11px] uppercase tracking-widest text-gold transition-colors duration-300 hover:bg-gold hover:text-white"
                 >
                   <Gift size={14} />
                   Offrir ce soin en cadeau

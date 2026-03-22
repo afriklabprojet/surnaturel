@@ -163,7 +163,7 @@ export default function DocumentsMedicaux() {
 
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-primary-brand px-4 py-2 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+          className="flex items-center gap-2 bg-primary-brand px-4 py-2 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
         >
           {showForm ? <X size={14} /> : <Plus size={14} />}
           {showForm ? "Fermer" : "Ajouter un document"}
@@ -242,7 +242,7 @@ export default function DocumentsMedicaux() {
             <button
               onClick={handleAdd}
               disabled={uploading || !form.nom.trim() || !form.file}
-              className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
             >
               {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
               {uploading ? "Envoi en cours…" : "Envoyer"}
@@ -261,7 +261,7 @@ export default function DocumentsMedicaux() {
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+              className="mt-4 inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
             >
               <Plus size={14} />
               Ajouter mon premier document

@@ -107,11 +107,11 @@ export default function AdminCommandesPage() {
             <table className="w-full text-sm font-body">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Client</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Total</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Date</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Statut</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Client</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Total</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Date</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Statut</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +152,7 @@ export default function AdminCommandesPage() {
                     {expanded === cmd.id && (
                       <tr key={`${cmd.id}-detail`} className="bg-bg-page">
                         <td colSpan={5} className="px-4 py-3">
-                          <div className="text-[11px] uppercase tracking-[0.1em] text-gray-500 mb-2 font-medium">Détail de la commande</div>
+                          <div className="text-[11px] uppercase tracking-widest text-gray-500 mb-2 font-medium">Détail de la commande</div>
                           <ul className="space-y-1">
                             {cmd.lignes.map((l, i) => (
                               <li key={i} className="text-sm text-text-main">

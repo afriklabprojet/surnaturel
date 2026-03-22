@@ -118,7 +118,7 @@ export default function AdminBlogEditorPage() {
 
       {/* Title */}
       <div className="bg-white border border-border-brand p-6">
-        <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-2">Titre de l&apos;article</label>
+        <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Titre de l&apos;article</label>
         <input
           value={titre}
           onChange={(e) => setTitre(e.target.value)}
@@ -129,7 +129,7 @@ export default function AdminBlogEditorPage() {
 
       {/* Image */}
       <div className="bg-white border border-border-brand p-6">
-        <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-2">Image de couverture</label>
+        <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Image de couverture</label>
         <div className="flex items-center gap-3">
           <input
             value={imageUrl}
@@ -154,7 +154,7 @@ export default function AdminBlogEditorPage() {
 
       {/* Markdown editor */}
       <div className="bg-white border border-border-brand p-6" data-color-mode="light">
-        <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-2">Contenu (Markdown)</label>
+        <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Contenu (Markdown)</label>
         <MDEditor
           value={contenu}
           onChange={(val) => setContenu(val || "")}

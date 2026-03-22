@@ -113,12 +113,12 @@ export default function AdminBoutiquePage() {
             <table className="w-full text-sm font-body">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Produit</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Catégorie</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Prix</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Stock</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Statut</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Produit</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Catégorie</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Prix</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Stock</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Statut</th>
+                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,29 +172,29 @@ export default function AdminBoutiquePage() {
             {error && <p className="text-sm text-red-600 mb-3 font-body">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Nom</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
                 <input required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Description</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
                 <textarea required rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Prix (FCFA)</label>
+                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Prix (FCFA)</label>
                   <input required type="number" min="0" value={form.prix} onChange={(e) => setForm({ ...form, prix: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Stock</label>
+                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Stock</label>
                   <input required type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Catégorie</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
                 <input required value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="Huiles, Crèmes, etc." />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Image</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Image</label>
                 <div className="flex items-center gap-2">
                   <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="flex-1 border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="URL Cloudinary…" />
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />

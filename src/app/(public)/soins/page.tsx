@@ -62,7 +62,7 @@ export default function PageSoins() {
               <button
                 key={cat.value}
                 onClick={() => setCategorieActive(cat.value)}
-                className={`px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.1em] transition-colors duration-300 ${
+                className={`px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-widest transition-colors duration-300 ${
                   categorieActive === cat.value
                     ? "bg-primary-brand text-white"
                     : "border border-border-brand bg-white text-text-mid hover:border-primary-brand hover:text-primary-brand"

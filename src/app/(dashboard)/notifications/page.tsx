@@ -195,7 +195,7 @@ export default function PageNotifications() {
               <button
                 onClick={marquerToutesLues}
                 disabled={markingAll}
-                className="flex items-center gap-1.5 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-primary-brand hover:text-primary-dark transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 font-body text-[11px] font-medium uppercase tracking-widest text-primary-brand hover:text-primary-dark transition-colors disabled:opacity-50"
               >
                 {markingAll ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                 Tout marquer lu

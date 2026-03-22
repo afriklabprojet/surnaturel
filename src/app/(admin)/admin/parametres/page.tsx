@@ -171,25 +171,25 @@ export default function AdminParametresPage() {
           {centreMessage && <p className="text-sm text-primary-brand mb-3 font-body">{centreMessage}</p>}
           <form onSubmit={handleSaveCentre} className="space-y-4">
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Nom du centre</label>
+              <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Nom du centre</label>
               <input value={centreForm.nomCentre} onChange={(e) => setCentreForm({ ...centreForm, nomCentre: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
             </div>
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Adresse</label>
+              <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Adresse</label>
               <input value={centreForm.adresse} onChange={(e) => setCentreForm({ ...centreForm, adresse: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="Adresse complète" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Téléphone</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Téléphone</label>
                 <input value={centreForm.telephone} onChange={(e) => setCentreForm({ ...centreForm, telephone: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Email</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Email</label>
                 <input type="email" value={centreForm.email} onChange={(e) => setCentreForm({ ...centreForm, email: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Horaires d&apos;ouverture</label>
+              <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Horaires d&apos;ouverture</label>
               <textarea rows={3} value={centreForm.horaires} onChange={(e) => setCentreForm({ ...centreForm, horaires: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="Lun-Ven : 8h-18h&#10;Sam : 9h-14h" />
             </div>
             <button type="submit" disabled={centreSaving} className="flex items-center gap-2 px-4 py-2 bg-primary-brand text-white text-sm font-body hover:bg-primary-dark transition-colors disabled:opacity-50">
@@ -217,10 +217,10 @@ export default function AdminParametresPage() {
               <table className="w-full text-sm font-body">
                 <thead className="bg-bg-page">
                   <tr>
-                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Nom</th>
-                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Email</th>
-                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Rôle</th>
-                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Action</th>
+                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Nom</th>
+                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Email</th>
+                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Rôle</th>
+                    <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -254,24 +254,24 @@ export default function AdminParametresPage() {
             <form onSubmit={handleCreateStaff} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Prénom</label>
+                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Prénom</label>
                   <input required value={staffForm.prenom} onChange={(e) => setStaffForm({ ...staffForm, prenom: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Nom</label>
+                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
                   <input required value={staffForm.nom} onChange={(e) => setStaffForm({ ...staffForm, nom: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Email</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Email</label>
                 <input required type="email" value={staffForm.email} onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Mot de passe</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Mot de passe</label>
                 <input required type="password" minLength={8} value={staffForm.password} onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.1em] text-gray-500 font-body mb-1">Rôle</label>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Rôle</label>
                 <select value={staffForm.role} onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand">
                   <option value="SAGE_FEMME">Sage-femme</option>
                   <option value="ACCOMPAGNATEUR_MEDICAL">Accompagnateur médical</option>
@@ -301,9 +301,9 @@ export default function AdminParametresPage() {
             <table className="w-full text-sm font-body">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Date</th>
-                  <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Utilisateur</th>
-                  <th className="text-left px-4 py-2 text-[11px] uppercase tracking-[0.1em] text-gray-500 font-medium">Action</th>
+                  <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Date</th>
+                  <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Utilisateur</th>
+                  <th className="text-left px-4 py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>

@@ -243,14 +243,14 @@ export default function DossierMedical() {
               <div className="flex items-center justify-between pt-2">
                 <button
                   onClick={() => { setEditing(true); setSuccess("") }}
-                  className="flex items-center gap-2 border border-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-primary-brand transition-colors hover:bg-primary-light"
+                  className="flex items-center gap-2 border border-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-primary-brand transition-colors hover:bg-primary-light"
                 >
                   <Edit3 size={14} />
                   Modifier
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-text-mid transition-colors hover:border-gold hover:text-gold"
+                  className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-text-mid transition-colors hover:border-gold hover:text-gold"
                 >
                   <Download size={14} />
                   Exporter PDF
@@ -265,7 +265,7 @@ export default function DossierMedical() {
               </p>
               <button
                 onClick={() => setEditing(true)}
-                className="mt-5 inline-flex items-center gap-2 bg-primary-brand px-6 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+                className="mt-5 inline-flex items-center gap-2 bg-primary-brand px-6 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
               >
                 Créer mon dossier
               </button>
@@ -372,7 +372,7 @@ export default function DossierMedical() {
             <button
               onClick={handleCancel}
               disabled={saving}
-              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-text-mid transition-colors hover:border-text-muted-brand"
+              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-text-mid transition-colors hover:border-text-muted-brand"
             >
               <X size={14} />
               Annuler
@@ -380,7 +380,7 @@ export default function DossierMedical() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               Enregistrer

@@ -50,7 +50,7 @@ export default function PagePanier() {
         </p>
         <Link
           href="/boutique"
-          className="mt-8 flex items-center gap-2 px-6 py-3 bg-primary-brand font-body text-[11px] uppercase tracking-[0.1em] text-white transition-colors duration-200 hover:bg-primary-dark"
+          className="mt-8 flex items-center gap-2 px-6 py-3 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
         >
           <ArrowLeft size={14} />
           Voir la boutique
@@ -211,7 +211,7 @@ export default function PagePanier() {
 
             {/* Code promo */}
             <div className="mt-6">
-              <label className="font-body text-[11px] uppercase tracking-[0.1em] text-text-muted-brand">
+              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
                 Code promo
               </label>
               <div className="mt-2 flex gap-2">
@@ -224,7 +224,7 @@ export default function PagePanier() {
                 />
                 <button
                   onClick={handleAppliquerPromo}
-                  className="px-4 py-2 border border-primary-brand font-body text-[10px] uppercase tracking-[0.1em] text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
+                  className="px-4 py-2 border border-primary-brand font-body text-[10px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
                 >
                   Appliquer
                 </button>
@@ -244,7 +244,7 @@ export default function PagePanier() {
 
             {/* Total */}
             <div className="flex items-center justify-between">
-              <span className="font-body text-[12px] uppercase tracking-[0.1em] text-text-muted-brand">
+              <span className="font-body text-[12px] uppercase tracking-widest text-text-muted-brand">
                 Total TTC
               </span>
               <span className="font-display text-[24px] font-normal text-primary-brand">
@@ -255,7 +255,7 @@ export default function PagePanier() {
             {/* Bouton commander */}
             <Link
               href="/checkout"
-              className="mt-6 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-[11px] uppercase tracking-[0.1em] text-white transition-colors duration-200 hover:bg-primary-dark"
+              className="mt-6 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
             >
               Commander
               <ArrowRight size={14} />

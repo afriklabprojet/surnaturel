@@ -182,7 +182,7 @@ export default function MesuresSante() {
                 </div>
                 <a
                   href="/prise-rdv"
-                  className="shrink-0 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-orange-700 underline hover:text-orange-900"
+                  className="shrink-0 font-body text-[11px] font-medium uppercase tracking-widest text-orange-700 underline hover:text-orange-900"
                 >
                   Prendre RDV
                 </a>
@@ -221,7 +221,7 @@ export default function MesuresSante() {
 
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-primary-brand px-4 py-2 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+          className="flex items-center gap-2 bg-primary-brand px-4 py-2 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
         >
           {showForm ? <X size={14} /> : <Plus size={14} />}
           {showForm ? "Fermer" : "Nouvelle mesure"}
@@ -321,7 +321,7 @@ export default function MesuresSante() {
             <button
               onClick={handleAdd}
               disabled={saving || !form.valeur.trim()}
-              className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
               Enregistrer
@@ -340,7 +340,7 @@ export default function MesuresSante() {
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-white transition-colors hover:bg-primary-dark"
+              className="mt-4 inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
             >
               <Plus size={14} />
               Ajouter ma première mesure
@@ -366,7 +366,7 @@ export default function MesuresSante() {
                     {m.unite && (
                       <span className="font-body text-[12px] text-text-muted-brand">{m.unite}</span>
                     )}
-                    <span className="font-body text-[11px] font-medium uppercase tracking-[0.1em] text-text-mid">
+                    <span className="font-body text-[11px] font-medium uppercase tracking-widest text-text-mid">
                       {info.label}
                     </span>
                   </div>

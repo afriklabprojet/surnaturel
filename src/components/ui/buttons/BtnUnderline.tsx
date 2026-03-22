@@ -13,7 +13,7 @@ export function BtnUnderline({ children, onClick, href, className }: Props) {
     inline-flex items-center gap-2
     bg-transparent border-none text-[#1A1A1A]
     py-1 px-0
-    font-body text-[12px] tracking-[0.1em] uppercase
+    font-body text-[12px] tracking-widest uppercase
     relative cursor-pointer
     transition-colors duration-200
     hover:text-primary-brand

@@ -111,7 +111,7 @@ export default function CarteP({ produit, isFavori = false, onToggleFavori }: Ca
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-16 h-16 border border-border-brand flex items-center justify-center">
-                <span className="font-body text-[10px] uppercase tracking-[0.1em] text-text-muted-brand">
+                <span className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
                   Image
                 </span>
               </div>
@@ -121,22 +121,22 @@ export default function CarteP({ produit, isFavori = false, onToggleFavori }: Ca
 
         {/* Badge position absolue haut gauche */}
         {produit.nouveau && !enRupture && !enPromo && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-primary-brand font-body text-[9px] font-medium uppercase tracking-[0.1em] text-white">
+          <span className="absolute top-3 left-3 px-3 py-1 bg-primary-brand font-body text-[9px] font-medium uppercase tracking-widest text-white">
             Nouveau
           </span>
         )}
         {enPromo && !enRupture && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-gold font-body text-[9px] font-medium uppercase tracking-[0.1em] text-white">
+          <span className="absolute top-3 left-3 px-3 py-1 bg-gold font-body text-[9px] font-medium uppercase tracking-widest text-white">
             -{reduction}%
           </span>
         )}
         {stockFaible && !enRupture && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-red-50 border border-red-200 font-body text-[9px] font-medium uppercase tracking-[0.1em] text-danger">
+          <span className="absolute top-3 left-3 px-3 py-1 bg-red-50 border border-red-200 font-body text-[9px] font-medium uppercase tracking-widest text-danger">
             Stock faible
           </span>
         )}
         {enRupture && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-gray-100 font-body text-[9px] font-medium uppercase tracking-[0.1em] text-gray-500">
+          <span className="absolute top-3 left-3 px-3 py-1 bg-gray-100 font-body text-[9px] font-medium uppercase tracking-widest text-gray-500">
             Rupture
           </span>
         )}
@@ -214,14 +214,14 @@ export default function CarteP({ produit, isFavori = false, onToggleFavori }: Ca
           {enRupture ? (
             <button
               disabled
-              className="px-4 py-2 bg-gray-100 font-body text-[10px] uppercase tracking-[0.1em] text-gray-500 cursor-not-allowed"
+              className="px-4 py-2 bg-gray-100 font-body text-[10px] uppercase tracking-widest text-gray-500 cursor-not-allowed"
             >
               Indisponible
             </button>
           ) : ajouteAuPanier ? (
             <button
               disabled
-              className="flex items-center gap-1.5 px-4 py-2 bg-primary-brand font-body text-[10px] uppercase tracking-[0.1em] text-white"
+              className="flex items-center gap-1.5 px-4 py-2 bg-primary-brand font-body text-[10px] uppercase tracking-widest text-white"
             >
               <Check size={12} />
               Ajouté !
@@ -229,7 +229,7 @@ export default function CarteP({ produit, isFavori = false, onToggleFavori }: Ca
           ) : (
             <button
               onClick={handleAddToCart}
-              className={`flex items-center gap-1.5 px-4 py-2 font-body text-[10px] uppercase tracking-[0.1em] transition-colors duration-200 ${
+              className={`flex items-center gap-1.5 px-4 py-2 font-body text-[10px] uppercase tracking-widest transition-colors duration-200 ${
                 stockFaible
                   ? "border border-primary-brand text-primary-brand hover:bg-primary-brand hover:text-white"
                   : "bg-primary-brand text-white hover:bg-primary-dark"
