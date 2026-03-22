@@ -1,0 +1,40 @@
+import Link from "next/link"
+
+interface ButtonPrimaryProps {
+  children: React.ReactNode
+  href?: string
+  onClick?: () => void
+  type?: "button" | "submit"
+  disabled?: boolean
+  className?: string
+}
+
+export default function ButtonPrimary({
+  children,
+  href,
+  onClick,
+  type = "button",
+  disabled = false,
+  className = "",
+}: ButtonPrimaryProps) {
+  const baseClasses = `inline-flex items-center justify-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed ${className}`
+
+  if (href) {
+    return (
+      <Link href={href} className={baseClasses}>
+        {children}
+      </Link>
+    )
+  }
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={baseClasses}
+    >
+      {children}
+    </button>
+  )
+}

@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌿 Le Surnaturel de Dieu — Institut de Bien-Être
 
-## Getting Started
+> Site web de l'Institut de Bien-Être « Le Surnaturel de Dieu » à Abidjan, Côte
+> d'Ivoire.\
+> Fondé par Marie Jeanne — Depuis 2015.
 
-First, run the development server:
+## Présentation
+
+Site vitrine + e-commerce + portail de services pour un institut de bien-être
+proposant :
+
+- Soins du corps (hammam, gommage, amincissant, visage)
+- Soins post-accouchement
+- Consultation sage-femme
+- Boutique de produits naturels
+- Programme de fidélité et parrainage
+- Communauté de clientes
+
+## Stack technique
+
+| Technologie              | Usage                 |
+| ------------------------ | --------------------- |
+| Next.js 16 (App Router)  | Framework             |
+| TypeScript               | Langage               |
+| Tailwind CSS v4          | Styles                |
+| shadcn/ui                | Composants UI         |
+| Prisma + Neon PostgreSQL | Base de données       |
+| NextAuth.js v5           | Authentification      |
+| Pusher                   | Temps réel            |
+| Resend                   | Emails                |
+| Jeko Africa              | Paiement Mobile Money |
+| Cloudinary               | Images                |
+| Vercel                   | Hébergement           |
+
+## Démarrage rapide
 
 ```bash
+# 1. Installer les dépendances
+npm install
+
+# 2. Copier et remplir les variables d'environnement
+cp .env.example .env.local
+
+# 3. Générer le client Prisma
+npx prisma generate
+
+# 4. Lancer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Le site est accessible sur **http://localhost:3000**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Documentation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Document                                     | Description                           |
+| -------------------------------------------- | ------------------------------------- |
+| [DEPLOIEMENT.md](DEPLOIEMENT.md)             | Guide pas-à-pas pour mettre en ligne  |
+| [GUIDE-UTILISATION.md](GUIDE-UTILISATION.md) | Guide d'utilisation quotidienne       |
+| [MAINTENANCE.md](MAINTENANCE.md)             | Comment maintenir et modifier le site |
+| [ROADMAP-V2.md](ROADMAP-V2.md)               | Améliorations prévues pour la V2      |
+| [INSTRUCTIONS.md](../INSTRUCTIONS.md)        | Règles et conventions du projet       |
 
-## Learn More
+## Scripts disponibles
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev          # Lancer en développement
+npm run build        # Construire pour la production
+npm run start        # Lancer en production
+npm run lint         # Vérifier le code
+npx prisma studio    # Interface base de données
+npx prisma migrate dev  # Appliquer les migrations
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure du projet
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/
+│   ├── (public)/      # Pages publiques (accueil, soins, boutique...)
+│   ├── (auth)/        # Connexion, inscription
+│   ├── (dashboard)/   # Espace client connecté
+│   ├── (admin)/       # Panel d'administration
+│   └── api/           # Routes API
+├── components/        # Composants réutilisables
+├── lib/               # Utilitaires (auth, prisma, email, paiement...)
+└── types/             # Types TypeScript
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+_Institut de Bien-Être Le Surnaturel de Dieu — Marie Jeanne — Abidjan, Côte
+d'Ivoire_
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check out our
+[Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying)
+for more details.

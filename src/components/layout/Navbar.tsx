@@ -1,0 +1,334 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import dynamic from "next/dynamic"
+import { useSession } from "next-auth/react"
+import {
+  Flame,
+  Sparkles,
+  Zap,
+  Smile,
+  Baby,
+  Wand2,
+  Lock,
+  ClipboardList,
+  MessageCircle,
+  ChevronDown,
+  Menu,
+  X,
+  ShoppingCart,
+  User,
+} from "lucide-react"
+import { useCart } from "@/lib/cart-context"
+
+const MiniCart = dynamic(() => import("@/components/boutique/MiniCart"), { ssr: false })
+
+const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Flame, Sparkles, Zap, Smile, Baby, Wand2, Lock, ClipboardList, MessageCircle,
+}
+
+interface NavChild { label: string; href: string; icon?: string }
+interface NavItem { label: string; href: string; badge?: string; requiresAuth?: boolean; children?: NavChild[] }
+
+const NAVIGATION: NavItem[] = [
+  { label: "Accueil", href: "/" },
+  {
+    label: "Soins & Services",
+    href: "/soins",
+    children: [
+      { label: "Hammam", href: "/soins/hammam-royal", icon: "Flame" },
+      { label: "Gommage corps", href: "/soins/gommage-corps-luxe", icon: "Sparkles" },
+      { label: "Soin amincissant", href: "/soins/soin-amincissant-expert", icon: "Zap" },
+      { label: "Soin du visage", href: "/soins/soin-visage-eclat", icon: "Smile" },
+      { label: "Post-accouchement", href: "/soins/programme-post-accouchement", icon: "Baby" },
+      { label: "Conseil esthétique", href: "/soins/conseil-esthetique", icon: "Wand2" },
+    ],
+  },
+  {
+    label: "Boutique",
+    href: "/boutique",
+    children: [
+      { label: "Soins du corps", href: "/boutique?categorie=corps" },
+      { label: "Soins du visage", href: "/boutique?categorie=visage" },
+      { label: "Bien-être & santé", href: "/boutique?categorie=bien-etre" },
+    ],
+  },
+  { label: "Sage-femme", href: "/sage-femme", badge: "RDV" },
+  {
+    label: "Suivi médical",
+    href: "/suivi-medical",
+    requiresAuth: true,
+    children: [
+      { label: "Mon dossier", href: "/suivi-medical?tab=dossier", icon: "Lock" },
+      { label: "Consultations", href: "/suivi-medical?tab=consultations", icon: "ClipboardList" },
+      { label: "Messagerie médicale", href: "/suivi-medical?tab=messagerie", icon: "MessageCircle" },
+    ],
+  },
+  { label: "Communauté", href: "/communaute", requiresAuth: true },
+  { label: "Blog", href: "/blog" },
+]
+
+export default function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null)
+  const [miniCartOpen, setMiniCartOpen] = useState(false)
+  const { totalArticles } = useCart()
+  const { data: session } = useSession()
+  const user = session?.user as { nom?: string; prenom?: string; photoUrl?: string; role?: string } | undefined
+
+  function handleDropdownEnter(label: string) { setOpenDropdown(label) }
+  function handleDropdownLeave() { setOpenDropdown(null) }
+  function toggleMobileDropdown(label: string) {
+    setOpenMobileDropdown((prev) => (prev === label ? null : label))
+  }
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border-brand bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
+      <nav className="mx-auto flex h-18 max-w-360 items-center justify-between px-4 lg:px-6 xl:px-8">
+        {/* Logo */}
+        <Link href="/" className="mr-8 xl:mr-12 shrink-0 transition-opacity duration-300 hover:opacity-80">
+          <div className="hidden sm:block">
+            <p className="font-display text-lg lg:text-xl font-light leading-tight text-text-main whitespace-nowrap">
+              Le Surnaturel de Dieu
+            </p>
+            <p className="font-body text-[9px] font-medium uppercase tracking-[0.2em] text-gold">
+              Institut de bien-être
+            </p>
+          </div>
+          <p className="font-display text-lg font-light text-text-main sm:hidden">
+            Le Surnaturel
+          </p>
+        </Link>
+
+        {/* Navigation desktop */}
+        <ul className="hidden items-center gap-1 xl:gap-2 lg:flex">
+          {NAVIGATION.map((item) => (
+            <li
+              key={item.label}
+              className="relative"
+              onMouseEnter={() => item.children && handleDropdownEnter(item.label)}
+              onMouseLeave={handleDropdownLeave}
+            >
+              {item.children ? (
+                <>
+                  <button
+                    className="group flex items-center gap-1.5 px-3 xl:px-4 py-2 font-body text-[11px] xl:text-[12px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                    aria-expanded={openDropdown === item.label}
+                    aria-haspopup="true"
+                  >
+                    <span className="relative">
+                      {item.label}
+                      <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold transition-all duration-300 group-hover:w-full" />
+                    </span>
+                    <ChevronDown
+                      size={13}
+                      className={`shrink-0 transition-transform duration-300 ${openDropdown === item.label ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {openDropdown === item.label && (
+                    <div
+                      className="absolute left-0 top-full z-50 mt-0 w-60 animate-dropdown-in border border-border-brand bg-white p-3 shadow-sm"
+                    >
+                      {item.children.map((child) => {
+                        const Icon = child.icon ? iconMap[child.icon] : null
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="flex items-center gap-3 px-3 py-2.5 font-body text-[12px] text-text-mid transition-colors duration-300 hover:text-primary-brand"
+                          >
+                            {Icon && <Icon size={16} className="text-gold" />}
+                            {child.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href={item.href}
+                  className="group flex items-center gap-2 px-3 xl:px-4 py-2 font-body text-[11px] xl:text-[12px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                >
+                  <span className="relative">
+                    {item.label}
+                    <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold transition-all duration-300 group-hover:w-full" />
+                  </span>
+                  {item.badge && (
+                    <span className="rounded-sm bg-gold px-1.5 py-0.5 font-body text-[8px] font-semibold leading-none text-white">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/* Right actions (desktop) */}
+        <div className="hidden items-center gap-3 lg:flex shrink-0 ml-2">
+          <button
+            onClick={() => setMiniCartOpen(true)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-300 hover:bg-gray-50"
+            aria-label="Ouvrir le panier"
+          >
+            <ShoppingCart size={18} className="text-text-mid" />
+            {totalArticles > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary-brand font-body text-[9px] font-semibold text-white">
+                {totalArticles}
+              </span>
+            )}
+          </button>
+          {user ? (
+            <Link
+              href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+              className="inline-flex items-center gap-2 border border-primary-brand bg-transparent px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
+            >
+              {user.photoUrl ? (
+                <img src={user.photoUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+              ) : (
+                <User size={14} />
+              )}
+              {user.prenom || "Mon espace"}
+            </Link>
+          ) : (
+            <Link
+              href="/connexion"
+              className="inline-flex items-center justify-center border border-primary-brand bg-transparent px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
+            >
+              Connexion
+            </Link>
+          )}
+          <Link
+            href="/prise-rdv"
+            className="inline-flex items-center justify-center bg-primary-brand px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-white transition-colors duration-300 hover:bg-primary-dark whitespace-nowrap"
+          >
+            Prendre RDV
+          </Link>
+        </div>
+
+        {/* Mobile: cart + hamburger */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            onClick={() => setMiniCartOpen(true)}
+            className="relative flex h-10 w-10 items-center justify-center"
+            aria-label="Ouvrir le panier"
+          >
+            <ShoppingCart size={18} className="text-text-mid" />
+            {totalArticles > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center bg-primary-brand font-body text-[10px] font-medium text-white">
+                {totalArticles}
+              </span>
+            )}
+          </button>
+          <button
+            className="flex h-10 w-10 items-center justify-center"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          >
+            {mobileMenuOpen ? <X size={22} className="text-text-main" /> : <Menu size={22} className="text-text-main" />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile full-screen menu */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 top-18 z-40 animate-slide-in-right overflow-y-auto bg-white px-6 pb-10 pt-8 lg:hidden"
+          >
+          <ul className="space-y-0">
+            {NAVIGATION.map((item, i) => (
+              <li key={item.label} className={i > 0 ? "border-t border-border-brand" : ""}>
+                {item.children ? (
+                  <>
+                    <button
+                      className="flex w-full items-center justify-between py-4 font-body text-[13px] font-medium uppercase tracking-widest text-text-main"
+                      onClick={() => toggleMobileDropdown(item.label)}
+                      aria-expanded={openMobileDropdown === item.label}
+                    >
+                      {item.label}
+                      <ChevronDown
+                        size={16}
+                        className={`text-gold transition-transform duration-300 ${openMobileDropdown === item.label ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {openMobileDropdown === item.label && (
+                      <ul className="mb-4 ml-4 space-y-2 border-l border-gold/30 pl-4">
+                        {item.children.map((child) => {
+                          const Icon = child.icon ? iconMap[child.icon] : null
+                          return (
+                            <li key={child.href}>
+                              <Link
+                                href={child.href}
+                                className="flex items-center gap-3 py-2 font-body text-[12px] text-text-mid transition-colors duration-300 hover:text-primary-brand"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                {Icon && <Icon size={16} className="text-gold" />}
+                                {child.label}
+                              </Link>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-3 py-4 font-body text-[13px] font-medium uppercase tracking-widest text-text-main"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                    {item.badge && (
+                      <span className="bg-gold px-2 py-0.5 font-body text-[9px] font-medium text-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* Mobile buttons */}
+          <div className="mt-8 flex flex-col gap-3 border-t border-border-brand pt-8">
+            {user ? (
+              <Link
+                href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+                className="flex items-center justify-center gap-2 border border-primary-brand bg-transparent px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors duration-300 hover:bg-primary-light"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {user.photoUrl ? (
+                  <img src={user.photoUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+                ) : (
+                  <User size={14} />
+                )}
+                {user.prenom || "Mon espace"}
+              </Link>
+            ) : (
+              <Link
+                href="/connexion"
+                className="flex items-center justify-center border border-primary-brand bg-transparent px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors duration-300 hover:bg-primary-light"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Connexion
+              </Link>
+            )}
+            <Link
+              href="/prise-rdv"
+              className="flex items-center justify-center bg-primary-brand px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Prendre RDV
+            </Link>
+          </div>
+        </div>
+        )}
+
+      {/* Mini-cart drawer */}
+      <MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} />
+    </header>
+  )
+}
