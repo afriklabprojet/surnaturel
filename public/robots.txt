@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /profil
+Disallow: /mes-rdv
+Disallow: /suivi-medical
+Disallow: /commandes
+Disallow: /favoris
+Disallow: /fidelite
+Disallow: /notifications
+Disallow: /parrainage
+
+Sitemap: https://surnaturel-de-dieu.vercel.app/sitemap.xml

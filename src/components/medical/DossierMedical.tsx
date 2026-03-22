@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Loader2, Lock, Edit3, Save, X, Heart, Pill, AlertTriangle, Droplets, Phone, FileText } from "lucide-react"
+import { Loader2, Lock, Edit3, Save, X, Heart, Pill, AlertTriangle, Droplets, Phone, FileText, Download } from "lucide-react"
 
 interface DossierData {
   id: string
@@ -247,6 +247,13 @@ export default function DossierMedical() {
                 >
                   <Edit3 size={14} />
                   Modifier
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[12px] uppercase tracking-[0.1em] text-text-mid transition-colors hover:border-gold hover:text-gold"
+                >
+                  <Download size={14} />
+                  Exporter PDF
                 </button>
               </div>
             </div>

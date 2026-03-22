@@ -1,0 +1,32 @@
+{
+  "name": "Le Surnaturel de Dieu",
+  "short_name": "Surnaturel",
+  "description": "Institut de Bien-Être holistique à Abidjan — Hammam, gommage, soins, sage-femme et boutique",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF7",
+  "theme_color": "#2D7A1F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logos/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logos/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "beauty", "lifestyle"],
+  "lang": "fr",
+  "dir": "ltr"
+}

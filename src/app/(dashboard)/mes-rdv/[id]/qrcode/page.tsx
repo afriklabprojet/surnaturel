@@ -34,16 +34,26 @@ export default function PageQRCodeRDV() {
   useEffect(() => {
     if (status !== "authenticated" || !params.id) return
 
-    // En production, fetch depuis l'API
-    // Pour la démo, on utilise des données mockées
-    setRdv({
-      id: params.id,
-      soin: "Hammam traditionnel",
-      date: new Date("2024-03-25T14:30:00"),
-      duree: 60,
-      client: session?.user ? `${session.user.prenom || ''} ${session.user.nom || ''}`.trim() || 'Client' : 'Client',
-    })
-    setLoading(false)
+    async function fetchRDV() {
+      try {
+        const res = await fetch(`/api/rdv/${params.id}/qrdata`)
+        if (res.ok) {
+          const data = await res.json()
+          setRdv({
+            id: data.id,
+            soin: data.soin,
+            date: new Date(data.date),
+            duree: data.duree,
+            client: data.client || (session?.user ? `${session.user.prenom || ''} ${session.user.nom || ''}`.trim() || 'Client' : 'Client'),
+          })
+        }
+      } catch {
+        // fallback si API indisponible
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRDV()
   }, [status, params.id, session])
 
   async function handleDownload() {

@@ -118,7 +118,7 @@ export default function PageMesRDV() {
         >
           {filtered.map((rdv) => {
             const dateRDV = new Date(rdv.dateHeure)
-            const heure = String(dateRDV.getUTCHours()).padStart(2, "0") + ":00"
+            const heure = dateRDV.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Abidjan" })
             const peutAnnuler =
               rdv.statut === "EN_ATTENTE" &&
               dateRDV.getTime() > now.getTime() + 24 * 60 * 60 * 1000
@@ -162,13 +162,21 @@ export default function PageMesRDV() {
                 <div className="shrink-0 flex flex-col gap-2">
                   {peutAnnuler && <AnnulerButton rdvId={rdv.id} />}
                   {rdv.statut === "CONFIRME" && (
-                    <a
-                      href={`/api/rdv/${rdv.id}/ics`}
-                      download
-                      className="font-body text-[11px] text-primary-brand hover:text-primary-dark underline"
-                    >
-                      Ajouter au calendrier
-                    </a>
+                    <>
+                      <Link
+                        href={`/mes-rdv/${rdv.id}/qrcode`}
+                        className="font-body text-[11px] text-gold hover:text-gold-dark underline"
+                      >
+                        Voir le billet QR
+                      </Link>
+                      <a
+                        href={`/api/rdv/${rdv.id}/ics`}
+                        download
+                        className="font-body text-[11px] text-primary-brand hover:text-primary-dark underline"
+                      >
+                        Ajouter au calendrier
+                      </a>
+                    </>
                   )}
                 </div>
               </motion.div>

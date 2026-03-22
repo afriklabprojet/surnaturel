@@ -1,10 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import {
   Loader2, Plus, Trash2, Activity, Weight, Thermometer, Heart,
-  TrendingUp, X,
+  TrendingUp, X, BarChart3, AlertTriangle,
 } from "lucide-react"
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from "recharts"
 
 interface Mesure {
   id: string
@@ -16,23 +19,34 @@ interface Mesure {
 }
 
 const TYPES = [
-  { value: "POIDS", label: "Poids", icon: Weight, unite: "kg", color: "text-blue-600" },
-  { value: "TENSION_ARTERIELLE", label: "Tension artérielle", icon: Heart, unite: "mmHg", color: "text-red-600" },
-  { value: "TEMPERATURE", label: "Température", icon: Thermometer, unite: "°C", color: "text-orange-600" },
-  { value: "GLYCEMIE", label: "Glycémie", icon: Activity, unite: "g/L", color: "text-purple-600" },
-  { value: "TOUR_DE_TAILLE", label: "Tour de taille", icon: TrendingUp, unite: "cm", color: "text-green-700" },
-  { value: "FREQUENCE_CARDIAQUE", label: "Fréquence cardiaque", icon: Heart, unite: "bpm", color: "text-pink-600" },
-  { value: "AUTRE", label: "Autre", icon: Activity, unite: "", color: "text-text-mid" },
+  { value: "POIDS", label: "Poids", icon: Weight, unite: "kg", color: "text-blue-600", chartColor: "#2563eb", seuils: { min: 40, max: 150 } },
+  { value: "TENSION_ARTERIELLE", label: "Tension artérielle", icon: Heart, unite: "mmHg", color: "text-red-600", chartColor: "#dc2626", seuils: { min: 9, max: 14 } },
+  { value: "TEMPERATURE", label: "Température", icon: Thermometer, unite: "°C", color: "text-orange-600", chartColor: "#ea580c", seuils: { min: 35.5, max: 38 } },
+  { value: "GLYCEMIE", label: "Glycémie", icon: Activity, unite: "g/L", color: "text-purple-600", chartColor: "#9333ea", seuils: { min: 0.7, max: 1.26 } },
+  { value: "TOUR_DE_TAILLE", label: "Tour de taille", icon: TrendingUp, unite: "cm", color: "text-green-700", chartColor: "#15803d", seuils: null },
+  { value: "FREQUENCE_CARDIAQUE", label: "Fréquence cardiaque", icon: Heart, unite: "bpm", color: "text-pink-600", chartColor: "#db2777", seuils: { min: 50, max: 100 } },
+  { value: "AUTRE", label: "Autre", icon: Activity, unite: "", color: "text-text-mid", chartColor: "#6b7280", seuils: null },
 ] as const
 
 function getTypeInfo(type: string) {
   return TYPES.find((t) => t.value === type) ?? TYPES[TYPES.length - 1]
 }
 
+function checkAlerte(type: string, valeur: string): string | null {
+  const info = getTypeInfo(type)
+  if (!info.seuils) return null
+  const num = parseFloat(valeur.replace(",", "."))
+  if (isNaN(num)) return null
+  if (num > info.seuils.max) return `Valeur élevée (seuil : ${info.seuils.max} ${info.unite})`
+  if (num < info.seuils.min) return `Valeur basse (seuil : ${info.seuils.min} ${info.unite})`
+  return null
+}
+
 export default function MesuresSante() {
   const [mesures, setMesures] = useState<Mesure[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [showChart, setShowChart] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [filterType, setFilterType] = useState("")
@@ -65,6 +79,30 @@ export default function MesuresSante() {
     setLoading(true)
     fetchMesures()
   }, [fetchMesures])
+
+  // Données pour le graphique
+  const chartData = useMemo(() => {
+    const type = filterType || "POIDS"
+    return mesures
+      .filter((m) => m.type === type)
+      .map((m) => ({
+        date: new Date(m.createdAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }),
+        valeur: parseFloat(m.valeur.replace(",", ".")),
+      }))
+      .reverse()
+  }, [mesures, filterType])
+
+  // Alertes de mesures anormales
+  const alertes = useMemo(() => {
+    if (mesures.length === 0) return []
+    const dernières = new Map<string, Mesure>()
+    for (const m of mesures) {
+      if (!dernières.has(m.type)) dernières.set(m.type, m)
+    }
+    return Array.from(dernières.values())
+      .map((m) => ({ ...m, alerte: checkAlerte(m.type, m.valeur) }))
+      .filter((m) => m.alerte !== null)
+  }, [mesures])
 
   function handleTypeChange(type: string) {
     const info = getTypeInfo(type)
@@ -122,24 +160,64 @@ export default function MesuresSante() {
     )
   }
 
+  const chartTypeInfo = getTypeInfo(filterType || "POIDS")
+
   return (
     <div className="space-y-6">
       {error && (
         <div className="bg-red-50 px-4 py-3 font-body text-[13px] text-red-800">{error}</div>
       )}
 
-      {/* Filtres & bouton ajouter */}
+      {/* Alertes mesures anormales */}
+      {alertes.length > 0 && (
+        <div className="space-y-2">
+          {alertes.map((a) => {
+            const info = getTypeInfo(a.type)
+            return (
+              <div key={a.id} className="flex items-center gap-3 border border-orange-300 bg-orange-50 px-4 py-3">
+                <AlertTriangle size={16} className="shrink-0 text-orange-600" />
+                <div className="flex-1">
+                  <span className="font-body text-[13px] font-medium text-orange-900">{info.label} : {a.valeur} {a.unite}</span>
+                  <span className="ml-2 font-body text-[12px] text-orange-700">— {a.alerte}</span>
+                </div>
+                <a
+                  href="/prise-rdv"
+                  className="shrink-0 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-orange-700 underline hover:text-orange-900"
+                >
+                  Prendre RDV
+                </a>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Filtres & boutons */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="border border-border-brand bg-white px-3 py-2 font-body text-[13px] text-text-main outline-none focus:border-gold"
-        >
-          <option value="">Tous les types</option>
-          {TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="border border-border-brand bg-white px-3 py-2 font-body text-[13px] text-text-main outline-none focus:border-gold"
+          >
+            <option value="">Tous les types</option>
+            {TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+
+          {mesures.length > 1 && (
+            <button
+              onClick={() => setShowChart(!showChart)}
+              className={`flex items-center gap-1.5 border px-3 py-2 font-body text-[12px] transition-colors ${
+                showChart ? "border-gold bg-gold/10 text-gold" : "border-border-brand text-text-muted-brand hover:border-gold hover:text-gold"
+              }`}
+            >
+              <BarChart3 size={14} />
+              Graphique
+            </button>
+          )}
+        </div>
 
         <button
           onClick={() => setShowForm(!showForm)}
@@ -149,6 +227,41 @@ export default function MesuresSante() {
           {showForm ? "Fermer" : "Nouvelle mesure"}
         </button>
       </div>
+
+      {/* Graphique d'évolution */}
+      {showChart && chartData.length >= 2 && (
+        <div className="border border-border-brand border-t-2 border-t-gold bg-white p-5">
+          <p className="mb-4 font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+            Évolution — {chartTypeInfo.label} ({chartTypeInfo.unite})
+          </p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e3dc" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#8a8880" }} />
+              <YAxis tick={{ fontSize: 11, fill: "#8a8880" }} />
+              <Tooltip
+                contentStyle={{ border: "1px solid #d4d1c7", fontSize: 13, fontFamily: "var(--font-body)" }}
+                formatter={(value: unknown) => [`${value} ${chartTypeInfo.unite}`, chartTypeInfo.label]}
+              />
+              <Line
+                type="monotone"
+                dataKey="valeur"
+                stroke={chartTypeInfo.chartColor}
+                strokeWidth={2}
+                dot={{ fill: chartTypeInfo.chartColor, r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {showChart && chartData.length < 2 && (
+        <div className="border border-border-brand bg-white p-5 text-center">
+          <p className="font-body text-[13px] text-text-muted-brand">
+            Ajoutez au moins 2 mesures de type « {chartTypeInfo.label} » pour voir le graphique.
+          </p>
+        </div>
+      )}
 
       {/* Formulaire d'ajout */}
       {showForm && (

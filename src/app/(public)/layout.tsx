@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import Navbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
 import ChatBubble from "@/components/layout/ChatBubble"
+import ChatIA from "@/components/soins/ChatIA"
 
 export const metadata: Metadata = {
   title: {
@@ -31,6 +32,7 @@ export default function PublicLayout({
       </Suspense>
       <Footer />
       <ChatBubble />
+      <ChatIA />
     </>
   )
 }

@@ -60,12 +60,51 @@ export default function RootLayout({
       lang="fr"
       className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2D7A1F" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "HealthAndBeautyBusiness",
+              name: "Le Surnaturel de Dieu",
+              description: "Institut de bien-être holistique à Abidjan — Hammam, gommage, soins du visage, post-accouchement, sage-femme et boutique de produits naturels.",
+              url: APP_URL,
+              telephone: "+22507XXXXXXXX",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Cocody, Riviera Palmeraie",
+                addressLocality: "Abidjan",
+                addressCountry: "CI",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: 5.3600,
+                longitude: -3.9700,
+              },
+              openingHoursSpecification: [
+                { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], opens: "08:00", closes: "19:00" },
+              ],
+              priceRange: "$$",
+              image: `${APP_URL}/images/hero.jpg`,
+              sameAs: [],
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main">
         <SessionWrapper>
           <CartProvider>
             {children}
           </CartProvider>
         </SessionWrapper>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js")})}`,
+          }}
+        />
       </body>
     </html>
   );
