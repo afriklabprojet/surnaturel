@@ -78,32 +78,33 @@
 
 ---
 
-### Phase C — « Expérience professionnelle » (Impact : ★★★☆☆)
+### Phase C — « Expérience professionnelle » (Impact : ★★★☆☆) ✅ LIVRÉ
 
 > **Objectif** : Améliorer la qualité du service médical et la gestion
-> quotidienne.
+> quotidienne. **Déployé le 2025-07 (commit 2c2a26e).**
 
-| #  | Amélioration                                         | Pourquoi c'est prioritaire                                                                              | Impact |
-| -- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------ |
-| C1 | **Résumé IA des consultations** (pour la sage-femme) | Après une consultation, l'IA résume les notes pour gagner du temps.                                     | ★★★☆☆  |
-| C2 | **Historique des visites client** (visible en admin) | Voir combien de fois une cliente est venue, quels soins elle a pris, son panier moyen.                  | ★★★☆☆  |
-| C3 | **Tableau de bord rapports avancés**                 | Graphiques revenus/mois, soins les plus populaires, taux de conversion RDV.                             | ★★★☆☆  |
-| C4 | **Chat IA amélioré** (avec historique client)        | L'assistant se souvient des préférences de la cliente connectée pour des recommandations plus précises. | ★★☆☆☆  |
-| C5 | **Export CSV des données admin**                     | Exporter la liste des clients, commandes, RDV en fichier Excel.                                         | ★★☆☆☆  |
+| #  | Amélioration                                         | Pourquoi c'est prioritaire                                                                              | Impact | Statut |
+| -- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------ | ------ |
+| C1 | **Résumé IA des consultations** (pour la sage-femme) | Après une consultation, l'IA résume les notes pour gagner du temps.                                     | ★★★☆☆  | ✅      |
+| C2 | **Historique des visites client** (visible en admin) | Voir combien de fois une cliente est venue, quels soins elle a pris, son panier moyen.                  | ★★★☆☆  | ✅      |
+| C3 | **Tableau de bord rapports avancés**                 | Graphiques revenus/mois, soins les plus populaires, taux de conversion RDV.                             | ★★★☆☆  | ✅      |
+| C4 | **Chat IA amélioré** (avec historique client)        | L'assistant se souvient des préférences de la cliente connectée pour des recommandations plus précises. | ★★☆☆☆  | ✅      |
+| C5 | **Export CSV des données admin**                     | Exporter la liste des clients, commandes, RDV en fichier Excel.                                         | ★★☆☆☆  | ✅      |
 
 ---
 
-### Phase D — « Croissance long terme » (Impact : ★★☆☆☆)
+### Phase D — « Croissance long terme » (Impact : ★★☆☆☆) ✅ LIVRÉ
 
 > **Objectif** : Élargir la clientèle et se différencier durablement.
+> **Déployé le 2025-07 (commit 2c2a26e).**
 
-| #  | Amélioration                              | Pourquoi c'est prioritaire                                                   | Impact |
-| -- | ----------------------------------------- | ---------------------------------------------------------------------------- | ------ |
-| D1 | **Multi-langue (anglais + français)**     | Attirer la clientèle expatriée d'Abidjan (communauté anglophone importante). | ★★☆☆☆  |
-| D2 | **Google My Business automatisé**         | Synchroniser les avis et infos avec la fiche Google Maps.                    | ★★☆☆☆  |
-| D3 | **Mode sombre**                           | Confort visuel pour les utilisatrices le soir.                               | ★☆☆☆☆  |
-| D4 | **Tests automatisés** (APIs critiques)    | Prévenir les régressions lors des mises à jour.                              | ★☆☆☆☆  |
-| D5 | **Analytics avancées** (Vercel Analytics) | Comprendre le parcours des visiteuses et optimiser la conversion.            | ★★☆☆☆  |
+| #  | Amélioration                              | Pourquoi c'est prioritaire                                                   | Impact | Statut |
+| -- | ----------------------------------------- | ---------------------------------------------------------------------------- | ------ | ------ |
+| D1 | **Multi-langue (anglais + français)**     | Attirer la clientèle expatriée d'Abidjan (communauté anglophone importante). | ★★☆☆☆  | ✅      |
+| D2 | **Google My Business automatisé**         | Synchroniser les avis et infos avec la fiche Google Maps.                    | ★★☆☆☆  | ✅      |
+| D3 | **Mode sombre**                           | Confort visuel pour les utilisatrices le soir.                               | ★☆☆☆☆  | ✅      |
+| D4 | **Tests automatisés** (APIs critiques)    | Prévenir les régressions lors des mises à jour.                              | ★☆☆☆☆  | ✅      |
+| D5 | **Analytics avancées** (Vercel Analytics) | Comprendre le parcours des visiteuses et optimiser la conversion.            | ★★☆☆☆  | ✅      |
 
 ---
 
@@ -113,8 +114,8 @@
 | ------------------------ | ------------- | ------------------------------------------------------------------- |
 | **Phase A** — Revenus    | 2-3 semaines  | Acompte RDV + SMS + calendrier → moins de no-shows, plus de revenus |
 | **Phase B** — Engagement | 2-3 semaines  | Push + récompenses + galerie → clientes qui reviennent              |
-| **Phase C** — Pro        | 2-3 semaines  | IA sage-femme + rapports → gestion plus efficace                    |
-| **Phase D** — Croissance | Continu       | Multi-langue + analytics → nouvelle clientèle                       |
+| **Phase C** — Pro        | 2-3 semaines  | IA sage-femme + rapports → gestion plus efficace                    | ✅ Livré |
+| **Phase D** — Croissance | Continu       | Multi-langue + analytics → nouvelle clientèle                       | ✅ Livré |
 
 ---
 
