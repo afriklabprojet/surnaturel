@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Clock } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { formatPrix } from "@/lib/utils"
-import { SOINS_DATA, CATEGORIES_FILTRE } from "@/lib/soins-data"
+import { SOINS_DATA, CATEGORIES_FILTRE, FORFAITS_DATA, FAQ_SOINS, AVANTAGES } from "@/lib/soins-data"
 import SectionTag from "@/components/ui/SectionTag"
-import { BtnArrow } from "@/components/ui/buttons"
-import { fadeInUp, staggerContainer, staggerItem, cardHover } from "@/lib/animations"
+import SoinCard from "@/components/soins/SoinCard"
+import ForfaitCard from "@/components/soins/ForfaitCard"
+import FaqSection from "@/components/soins/FaqSection"
+import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
 
 export default function PageSoins() {
   const [categorieActive, setCategorieActive] = useState("TOUS")
@@ -19,6 +19,15 @@ export default function PageSoins() {
 
   return (
     <>
+      {/* Bandeau promo */}
+      <div className="bg-gold px-4 py-2.5 text-center">
+        <p className="font-body text-[12px] tracking-wide text-white">
+          <span className="font-medium">−10% sur votre 1er soin</span> avec le code{" "}
+          <span className="font-semibold tracking-widest">BIENVENUE10</span>
+          {" "}· Offre valable sur tous les soins
+        </p>
+      </div>
+
       {/* En-tête */}
       <section className="bg-white px-6 py-20 sm:py-24 lg:px-10">
         <motion.div
@@ -33,7 +42,7 @@ export default function PageSoins() {
           </h1>
           <p className="mx-auto mt-4 max-w-lg font-body text-sm text-text-mid">
             Découvrez notre gamme complète de soins pour votre beauté, votre
-            bien-être et votre santé.
+            bien-être et votre santé. {SOINS_DATA.length} soins experts à votre service.
           </p>
         </motion.div>
       </section>
@@ -75,60 +84,119 @@ export default function PageSoins() {
               className="mt-12 grid gap-px border border-border-brand bg-border-brand sm:grid-cols-2 lg:grid-cols-3"
             >
               {soinsFiltres.map((soin) => (
-                <motion.div
-                  key={soin.slug}
-                  variants={staggerItem}
-                  {...cardHover}
-                  className="group flex flex-col bg-white transition-colors duration-300 hover:bg-bg-page"
-                >
-                  {/* Image placeholder */}
-                  <div className="relative flex h-48 items-center justify-center bg-gradient-to-br from-primary-light to-bg-page">
-                    <soin.icon
-                      size={40}
-                      className="text-gold opacity-40"
-                    />
-                  </div>
-
-                  {/* Contenu */}
-                  <div className="flex flex-1 flex-col p-7">
-                    <h3 className="font-display text-xl font-light text-text-main">
-                      {soin.nom}
-                    </h3>
-
-                    <div className="mt-2 flex items-center gap-4 font-body text-[12px] text-text-muted-brand">
-                      <span className="flex items-center gap-1">
-                        <Clock size={13} />
-                        {soin.duree} min
-                      </span>
-                      <span className="font-medium text-gold">
-                        {formatPrix(soin.prix)}
-                      </span>
-                    </div>
-
-                    <p className="mt-3 flex-1 font-body text-[13px] leading-relaxed text-text-muted-brand">
-                      {soin.description}
-                    </p>
-
-                    <div className="mt-5 flex items-center justify-between gap-3 pt-4 border-t border-border-brand">
-                      <BtnArrow href={`/soins/${soin.slug}`}>
-                        En savoir plus
-                      </BtnArrow>
-                      <BtnArrow href={`/prise-rdv?soin=${soin.slug}`}>
-                        Réserver
-                      </BtnArrow>
-                    </div>
-                  </div>
-                </motion.div>
+                <SoinCard key={soin.slug} soin={soin} />
               ))}
             </motion.div>
           </AnimatePresence>
 
-          {/* Message si aucun résultat */}
           {soinsFiltres.length === 0 && (
             <p className="mt-12 text-center font-body text-sm text-text-muted-brand">
               Aucun soin trouvé dans cette catégorie.
             </p>
           )}
+        </div>
+      </section>
+
+      {/* Section Forfaits / Combos */}
+      <section className="border-t border-border-brand bg-white px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <motion.div
+            variants={fadeInUp}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <SectionTag>Économisez</SectionTag>
+            <h2 className="mt-4 font-display text-[28px] font-light text-text-main sm:text-[34px]">
+              Nos Forfaits <em className="text-primary-brand">Combinés</em>
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg font-body text-[13px] text-text-mid">
+              Combinez plusieurs soins et bénéficiez de tarifs préférentiels.
+              Chaque forfait est conçu pour une expérience complète.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {FORFAITS_DATA.map((forfait) => (
+              <ForfaitCard key={forfait.slug} forfait={forfait} />
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Section Pourquoi nous choisir */}
+      <section className="border-t border-border-brand bg-bg-page px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <motion.div
+            variants={fadeInUp}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <SectionTag>Notre différence</SectionTag>
+            <h2 className="mt-4 font-display text-[28px] font-light text-text-main sm:text-[34px]">
+              Pourquoi choisir <em className="text-primary-brand">Le Surnaturel de Dieu</em>
+            </h2>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="mt-12 grid gap-px border border-border-brand bg-border-brand sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {AVANTAGES.map((avantage, index) => (
+              <motion.div
+                key={index}
+                variants={staggerItem}
+                className="flex gap-4 bg-white p-7 transition-colors duration-300 hover:bg-bg-page"
+              >
+                <avantage.icon size={24} className="mt-0.5 shrink-0 text-gold" />
+                <div>
+                  <h3 className="font-display text-[16px] font-light text-text-main">
+                    {avantage.titre}
+                  </h3>
+                  <p className="mt-2 font-body text-[13px] leading-relaxed text-text-muted-brand">
+                    {avantage.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Section FAQ */}
+      <section className="border-t border-border-brand bg-white px-6 py-20 lg:px-10 lg:py-24">
+        <div className="mx-auto max-w-3xl">
+          <motion.div
+            variants={fadeInUp}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <SectionTag>Questions fréquentes</SectionTag>
+            <h2 className="mt-4 font-display text-[28px] font-light text-text-main sm:text-[34px]">
+              Tout savoir sur <em className="text-primary-brand">nos soins</em>
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg font-body text-[13px] text-text-mid">
+              Retrouvez les réponses aux questions les plus fréquemment posées.
+            </p>
+          </motion.div>
+
+          <div className="mt-12">
+            <FaqSection faqs={FAQ_SOINS} />
+          </div>
         </div>
       </section>
     </>

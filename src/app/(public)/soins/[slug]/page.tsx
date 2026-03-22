@@ -1,10 +1,12 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Clock, Tag, Check, Star, ArrowLeft } from "lucide-react"
-import { formatPrix, formatDate } from "@/lib/utils"
+import { Clock, Tag, Check, ArrowLeft, Gift } from "lucide-react"
+import { formatPrix } from "@/lib/utils"
 import { SOINS_DATA, getSoinBySlug, BIENFAITS_SOINS, ETAPES_SOINS } from "@/lib/soins-data"
 import SectionTag from "@/components/ui/SectionTag"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
+import StarRating from "@/components/soins/StarRating"
+import SoinAvis from "@/components/soins/SoinAvis"
 import type { Metadata } from "next"
 
 // ─── Génération des slugs statiques ──────────────────────────────
@@ -32,22 +34,6 @@ export async function generateMetadata({
   }
 }
 
-// ─── Composant étoiles ───────────────────────────────────────────
-
-function StarRating({ note, size = 16 }: { note: number; size?: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          size={size}
-          className={i <= note ? "fill-gold text-gold" : "text-border-brand"}
-        />
-      ))}
-    </div>
-  )
-}
-
 // ─── Page détail soin ────────────────────────────────────────────
 
 export default async function PageDetailSoin({ params }: PageProps) {
@@ -68,14 +54,6 @@ export default async function PageDetailSoin({ params }: PageProps) {
     ? autresSoins 
     : SOINS_DATA.filter((s) => s.slug !== slug).slice(0, 3)
 
-  // Mock avis
-  const mockAvis = [
-    { id: "1", note: 5, commentaire: "Une expérience exceptionnelle ! L'équipe est aux petits soins.", nom: "Aminata K.", date: new Date("2024-02-15") },
-    { id: "2", note: 5, commentaire: "Moment de détente absolue. Les produits sont de qualité.", nom: "Fatou D.", date: new Date("2024-01-28") },
-    { id: "3", note: 4, commentaire: "Très satisfaite du résultat. Ma peau n'a jamais été aussi douce.", nom: "Marie L.", date: new Date("2024-01-10") },
-  ]
-  const noteMoyenne = mockAvis.reduce((acc, a) => acc + a.note, 0) / mockAvis.length
-
   return (
     <>
       {/* Hero Section */}
@@ -86,16 +64,37 @@ export default async function PageDetailSoin({ params }: PageProps) {
           </div>
         </div>
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-primary-brand/80 to-transparent" />
+
+        {/* Badge catégorie */}
         <div className="absolute left-6 top-6 lg:left-10 lg:top-10">
           <span className="inline-flex items-center bg-gold px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-white">
             {soin.categorie.replace(/_/g, " ")}
           </span>
         </div>
+
+        {/* Badge soin si présent */}
+        {soin.badge && (
+          <div className="absolute right-6 top-6 lg:right-10 lg:top-10">
+            <span className="inline-flex items-center bg-white/90 px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-primary-brand">
+              {soin.badge}
+            </span>
+          </div>
+        )}
+
+        {/* Titre */}
         <div className="absolute inset-x-0 bottom-0 px-6 pb-12 lg:px-10 lg:pb-16">
           <div className="mx-auto max-w-7xl">
             <h1 className="font-display text-[36px] font-light text-white sm:text-[44px] lg:text-[52px]">
               {soin.nom}
             </h1>
+            <div className="mt-3 flex items-center gap-4 font-body text-[13px] text-white/80">
+              <span className="flex items-center gap-1.5">
+                <Clock size={14} />
+                {soin.duree} min
+              </span>
+              <span>·</span>
+              <span className="font-medium text-white">{formatPrix(soin.prix)}</span>
+            </div>
           </div>
         </div>
       </section>
@@ -184,41 +183,42 @@ export default async function PageDetailSoin({ params }: PageProps) {
                   <span className="font-body text-[13px] text-text-mid">{soin.categorie.replace(/_/g, " ")}</span>
                 </div>
               </div>
-              <div className="mt-4 flex items-center justify-center gap-2">
-                <StarRating note={Math.round(noteMoyenne)} />
-                <span className="font-body text-[13px] text-text-mid">{noteMoyenne.toFixed(1)} ({mockAvis.length} avis)</span>
-              </div>
               <div className="mt-6 space-y-3">
                 <BtnArrow href={`/prise-rdv?soin=${soin.slug}`} className="w-full justify-center bg-primary-brand text-white border-primary-brand hover:bg-primary-dark hover:border-primary-dark hover:text-white">
                   Réserver ce soin
                 </BtnArrow>
-                <BtnTextLine href={`/prise-rdv?soin=${soin.slug}&cadeau=true`} className="justify-center w-full">
-                  Offrir ce soin
-                </BtnTextLine>
+
+                {/* CTA Offrir - plus visible */}
+                <Link
+                  href={`/prise-rdv?soin=${soin.slug}&cadeau=true`}
+                  className="flex w-full items-center justify-center gap-2 border-2 border-gold bg-gold/5 py-3 font-body text-[11px] uppercase tracking-[0.1em] text-gold transition-colors duration-300 hover:bg-gold hover:text-white"
+                >
+                  <Gift size={14} />
+                  Offrir ce soin en cadeau
+                </Link>
+              </div>
+
+              {/* Code promo rappel */}
+              <div className="mt-4 border border-dashed border-gold/40 bg-gold/5 p-3 text-center">
+                <p className="font-body text-[11px] text-gold">
+                  Code <span className="font-semibold tracking-widest">BIENVENUE10</span>
+                </p>
+                <p className="font-body text-[10px] text-text-muted-brand">−10% sur votre 1er soin</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section avis */}
+      {/* Section avis - avec avis réels */}
       <section className="border-t border-border-brand bg-white px-6 py-16 lg:px-10 lg:py-20">
         <div className="mx-auto max-w-7xl">
           <SectionTag>Témoignages</SectionTag>
           <h2 className="mt-4 text-center font-display text-[28px] font-light text-text-main">
             Ce qu&apos;en disent nos <em className="text-primary-brand">clientes</em>
           </h2>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {mockAvis.map((avis) => (
-              <div key={avis.id} className="border border-border-brand bg-bg-page p-6 transition-colors duration-300 hover:border-gold">
-                <StarRating note={avis.note} />
-                <p className="mt-4 font-body text-[14px] italic leading-relaxed text-text-mid">&ldquo;{avis.commentaire}&rdquo;</p>
-                <div className="mt-4 pt-4 border-t border-border-brand">
-                  <p className="font-body text-[11px] uppercase tracking-widest text-text-main">{avis.nom}</p>
-                  <p className="mt-1 font-body text-[11px] text-text-muted-brand">{formatDate(avis.date)}</p>
-                </div>
-              </div>
-            ))}
+          <div className="mt-12">
+            <SoinAvis soinSlug={slug} />
           </div>
         </div>
       </section>
@@ -233,8 +233,13 @@ export default async function PageDetailSoin({ params }: PageProps) {
           <div className="mt-12 grid gap-px border border-border-brand bg-border-brand sm:grid-cols-2 lg:grid-cols-3">
             {soinsSimilaires.map((autre) => (
               <div key={autre.slug} className="group flex flex-col bg-white transition-colors duration-300 hover:bg-bg-page">
-                <div className="flex h-40 items-center justify-center bg-linear-to-br from-primary-light to-bg-page">
-                  <autre.icon size={36} className="text-gold opacity-30" />
+                <div className="relative flex h-40 items-center justify-center overflow-hidden bg-linear-to-br from-primary-light to-bg-page">
+                  <autre.icon size={36} className="text-gold opacity-30 transition-transform duration-500 group-hover:scale-110" />
+                  {autre.badge && (
+                    <span className="absolute left-0 top-3 bg-gold px-2 py-0.5 font-body text-[9px] uppercase tracking-[0.12em] text-white">
+                      {autre.badge}
+                    </span>
+                  )}
                 </div>
                 <div className="p-7">
                   <h3 className="font-display text-lg font-light text-text-main">{autre.nom}</h3>
