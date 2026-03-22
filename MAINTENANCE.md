@@ -44,15 +44,20 @@ surnaturel-de-dieu/
 ├── src/app/              ← Les pages du site
 │   ├── (public)/         ← Pages visibles par tout le monde
 │   │   ├── page.tsx      ← Page d'accueil
-│   │   ├── soins/        ← Page des soins
+│   │   ├── soins/        ← Page des soins (+ OG images dynamiques)
 │   │   ├── boutique/     ← La boutique
-│   │   └── blog/         ← Le blog
+│   │   ├── blog/         ← Le blog (+ OG images dynamiques)
+│   │   └── decouvrir-communaute/  ← (NOUVEAU) Page publique communauté
 │   ├── (auth)/           ← Connexion et inscription
 │   ├── (dashboard)/      ← Espace client connecté
 │   ├── (admin)/          ← Panel d'administration
+│   │   └── admin/signalements/  ← (NOUVEAU) Modération signalements
 │   └── api/              ← Les "coulisses" (logique serveur)
+│       └── health/       ← (NOUVEAU) Vérification santé du site
 │
-├── src/components/       ← Les morceaux réutilisables (boutons, cartes...)
+├── src/components/       ← Les morceaux réutilisables
+│   ├── medical/          ← Mesures santé (NOUVEAU : graphiques + alertes)
+│   └── soins/ChatIA.tsx   ← (NOUVEAU) Assistant IA recommandations
 │
 ├── src/lib/              ← Les outils techniques
 │   ├── auth.ts           ← Système de connexion
@@ -61,6 +66,11 @@ surnaturel-de-dieu/
 │   ├── jeko.ts           ← Paiement mobile
 │   ├── soins-data.ts     ← Liste des soins (modifiable)
 │   └── produits-data.ts  ← Liste des produits (modifiable)
+│
+├── public/
+│   ├── manifest.json     ← (NOUVEAU) Configuration PWA
+│   ├── robots.txt        ← (NOUVEAU) SEO — indique à Google quoi indexer
+│   └── sw.js             ← (NOUVEAU) Service Worker (cache hors-ligne)
 │
 ├── prisma/
 │   └── schema.prisma     ← Structure de la base de données
@@ -164,10 +174,60 @@ trouver les textes à modifier.
 Cherchez dans `src/components/layout/Footer.tsx` et `src/app/(public)/contact/`
 les informations à modifier (adresse, téléphone, email).
 
+Cherchez aussi dans `src/app/layout.tsx` le bloc JSON-LD (données structurées
+Google) pour y mettre le bon numéro de téléphone et l'adresse exacte :
+
+```json
+"telephone": "+22507XXXXXXXX",
+"address": {
+  "streetAddress": "Cocody, Riviera Palmeraie",
+  ...
+}
+```
+
 ### Modifier les horaires d'ouverture
 
 Cherchez dans les fichiers du footer et de la page de prise de RDV les créneaux
 horaires.
+
+### Modifier les recommandations du Chat IA
+
+Fichier : `src/components/soins/ChatIA.tsx`
+
+Le chat IA utilise un système de questions/réponses pour recommander des soins.
+
+**Pour modifier les questions posées** : trouvez le tableau `QUESTIONS` dans le
+fichier.
+
+**Pour modifier les soins recommandés** : trouvez le tableau `SOINS_DB` et
+ajustez les catégories (`categories`) associées à chaque soin.
+
+**Pour modifier les seuils de budget** : trouvez la fonction `recommend` et
+ajustez les montants.
+
+### Modifier les seuils d'alertes médicales
+
+Fichier : `src/components/medical/MesuresSante.tsx`
+
+Les alertes sont définies dans le tableau `TYPES`, chaque type a un champ
+`seuils` avec `min` et `max`. Par exemple :
+
+```typescript
+{ value: "TENSION_ARTERIELLE", seuils: { min: 9, max: 14 } }
+```
+
+Modifiez les valeurs `min` et `max` pour ajuster les seuils d'alerte.
+
+### Modifier le fichier robots.txt
+
+Fichier : `public/robots.txt`
+
+Ce fichier indique à Google quelles pages indexer. Il est déjà configuré pour :
+
+- ✅ Autoriser les pages publiques (accueil, soins, boutique, blog)
+- ❌ Bloquer les pages privées (admin, dashboard, API)
+
+Vous n'avez normalement pas besoin de le modifier.
 
 ---
 
@@ -468,7 +528,36 @@ Cron Jobs.
 - [ ] Tester une commande complète (panier → paiement → suivi)
 - [ ] Tester un RDV complet (réservation → confirmation → rappel)
 - [ ] Vérifier que les crons fonctionnent (rappels RDV, nettoyage stories)
+- [ ] Vérifier que `/api/health` répond `{"status":"ok"}` (santé du système)
+- [ ] Vérifier que le Chat IA s'affiche bien sur les pages publiques
 
 ---
 
-_Guide rédigé le 22 mars 2026 — Le Surnaturel de Dieu_
+## 🆕 Fichiers ajoutés lors des Phases 3-6 (référence)
+
+| Fichier                                             | Rôle                                           |
+| --------------------------------------------------- | ---------------------------------------------- |
+| `src/components/soins/ChatIA.tsx`                   | Assistant IA de recommandation soins           |
+| `src/app/(admin)/admin/signalements/page.tsx`       | Panel admin modération signalements            |
+| `src/app/(public)/decouvrir-communaute/page.tsx`    | Page publique communauté                       |
+| `src/app/(public)/soins/[slug]/opengraph-image.tsx` | Image OG dynamique par soin                    |
+| `src/app/(public)/blog/[slug]/opengraph-image.tsx`  | Image OG dynamique par article                 |
+| `src/app/api/health/route.ts`                       | Endpoint de monitoring                         |
+| `public/manifest.json`                              | Configuration PWA (installation mobile)        |
+| `public/robots.txt`                                 | Instructions SEO pour les moteurs de recherche |
+| `public/sw.js`                                      | Service Worker (cache hors-ligne)              |
+
+| Fichier modifié                                    | Ce qui a changé                             |
+| -------------------------------------------------- | ------------------------------------------- |
+| `src/components/medical/MesuresSante.tsx`          | + Graphiques Recharts + alertes seuils      |
+| `src/components/medical/DossierMedical.tsx`        | + Bouton export PDF                         |
+| `src/app/(dashboard)/mes-rdv/page.tsx`             | Fix timezone Africa/Abidjan + lien QR code  |
+| `src/app/(dashboard)/mes-rdv/[id]/qrcode/page.tsx` | Données réelles via API (plus de mock)      |
+| `src/app/layout.tsx`                               | + JSON-LD, + manifest PWA, + service worker |
+| `src/app/sitemap.ts`                               | + URLs avis et communauté                   |
+| `src/app/(public)/layout.tsx`                      | + Chat IA intégré                           |
+
+---
+
+_Guide mis à jour le 22 mars 2026 — Le Surnaturel de Dieu — Version incluant
+Phases 3-6_

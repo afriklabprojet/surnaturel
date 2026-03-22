@@ -1,278 +1,125 @@
 # 🗺️ Feuille de Route — Version 2 — Le Surnaturel de Dieu
 
 > Ce document liste les améliorations à construire, classées par **impact sur votre activité**.  
-> L'ordre est celui qui rapportera le plus vite à votre entreprise.
+> L'ordre est celui qui rapportera le plus vite à votre entreprise.  
+> _Mis à jour le 22 mars 2026 après déploiement des Phases 3-6._
 
 ---
 
-## 📊 État actuel du site (V1)
+## 📊 État actuel du site (après Phases 3-6)
 
-| Fonctionnalité | État | Verdict |
-|----------------|------|---------|
+| Fonctionnalité | État | Détail |
+|----------------|------|--------|
 | Page d'accueil | ✅ Complet | Prêt pour la production |
-| Catalogue des soins | ✅ Complet | Prêt |
-| Boutique en ligne | ✅ Complet | Prêt (produits, panier, checkout) |
+| Catalogue des soins | ✅ Complet | 16 soins + 3 forfaits, page détaillée par soin |
+| Boutique en ligne | ✅ Complet | Produits, panier, checkout |
 | Paiement Jeko Africa | ✅ Complet | Wave, Orange, MTN, Moov, Djamo |
 | Page sage-femme | ✅ Complet | Prêt |
-| Prise de rendez-vous | ✅ Complet | Réservation fonctionnelle |
-| Blog | ✅ Complet | Création et affichage d'articles |
-| Page À propos | ✅ Complet | Prêt |
-| Page Contact | ✅ Complet | Formulaire fonctionnel |
-| Inscription / Connexion | ✅ Complet | NextAuth avec email/mot de passe |
+| Prise de rendez-vous | ✅ Complet | Réservation + QR code billet réel |
+| Blog | ✅ Complet | Création, affichage, OG images dynamiques |
+| Pages About / Contact | ✅ Complet | Prêt |
+| Inscription / Connexion | ✅ Complet | NextAuth email/mot de passe |
 | Emails automatiques | ✅ Complet | Inscription, RDV, commande, rappels |
-| Panel admin | 🟡 Partiel | Structure présente, pages à compléter |
-| Tableau de bord client | 🟡 Partiel | Pages créées, contenu à développer |
-| Programme de fidélité | 🟡 Partiel | API prête, interface à construire |
-| Système d'avis | 🟡 Partiel | API prête, page publique manquante |
-| Communauté / Réseau social | ❌ Squelette | Schéma DB prêt, aucune interface |
-| Suivi médical | ❌ Squelette | Schéma DB prêt, aucune interface |
-| Parrainage | ❌ Non construit | API prête, aucune interface |
-| Messagerie temps réel | ❌ Non construit | Pusher configuré, pas d'interface |
+| Panel admin | ✅ Complet | 20 modules (soins, commandes, blog, clients, avis…) |
+| Tableau de bord client | ✅ Complet | RDV, commandes, profil, notifications, favoris |
+| Programme de fidélité | ✅ Complet | API + interface, points automatiques |
+| Système d'avis | ✅ Complet | API + page publique |
+| Parrainage | ✅ Complet | API + interface, code BIENVENUE10 |
+| Suivi médical | ✅ Complet | Dossier chiffré, mesures, graphiques Recharts, alertes, export PDF |
+| Communauté | ✅ Complet | Feed, groupes, événements, stories, messagerie, signalements |
+| Communauté publique | ✅ NOUVEAU | Page `/decouvrir-communaute` avec stats et aperçu |
+| Messagerie temps réel | ✅ Complet | Pusher, ChatBubble, conversations, recherche |
+| Admin signalements | ✅ NOUVEAU | Panel modération : rejeter / supprimer / résolu |
+| SEO robots.txt | ✅ NOUVEAU | Indexation Google correcte |
+| SEO JSON-LD | ✅ NOUVEAU | Données structurées HealthAndBeautyBusiness |
+| SEO OG dynamiques | ✅ NOUVEAU | Images personnalisées pour soins et blog |
+| SEO Sitemap | ✅ NOUVEAU | Étendu avec avis et communauté |
+| Monitoring | ✅ NOUVEAU | `/api/health` vérifie DB et statut |
+| PWA | ✅ NOUVEAU | Manifest, service worker, cache hors-ligne |
+| Chat IA soins | ✅ NOUVEAU | Assistant bien-être 3 questions → recommandations |
+| QR code réel | ✅ NOUVEAU | Connecté à l'API, plus de données fictives |
+| Timezone fix | ✅ NOUVEAU | Heures RDV affichées en Africa/Abidjan |
 
 ---
 
-## 🏆 Phase 1 — « Opérationnel » (Impact : CRITIQUE)
-
-> **Objectif** : Pouvoir gérer votre activité au quotidien avec le panel admin.  
-> **Sans cette phase, vous ne pouvez pas utiliser le site professionnellement.**
-
-### 1.1 — Panel d'administration complet
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Tableau de bord admin avec vrais chiffres | Voir vos revenus, RDV et commandes d'un coup d'œil |
-| Gestion des commandes (voir, changer le statut) | Traiter les commandes clients au quotidien |
-| Gestion des rendez-vous (confirmer, annuler) | Organiser votre planning quotidien |
-| Gestion du blog (créer, modifier, supprimer) | Publier du contenu pour attirer des clients |
-| Gestion des produits (ajouter, modifier stock/prix) | Gérer votre catalogue boutique |
-| Gestion des soins (modifier descriptions, prix) | Mettre à jour vos prestations |
-| Liste des clients | Connaître vos clients et leur historique |
-| Gestion des avis (approuver, rejeter, répondre) | Maîtriser votre e-réputation |
-
-**Impact** : ★★★★★ — Impossible de fonctionner sans.
-
-### 1.2 — Tableau de bord client complet
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Page « Mes rendez-vous » avec historique | Les clients veulent voir et gérer leurs RDV |
-| Page « Mes commandes » avec suivi | Les clients veulent suivre leurs achats |
-| Page « Mon profil » (modifier infos, photo) | Les clients veulent personnaliser leur compte |
-| Page « Mes notifications » | Les clients veulent être informés en temps réel |
-
-**Impact** : ★★★★★ — Les clients quitteront le site sans espace personnel fonctionnel.
-
-### 1.3 — Connexion données réelles
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Remplacer les soins fictifs par la base de données | Les données doivent venir de la DB, pas de fichiers statiques |
-| Remplacer les produits fictifs par la base de données | Idem — pouvoir modifier depuis l'admin |
-| Outil de gestion des créneaux de RDV | Définir les heures disponibles par jour/semaine |
-
-**Impact** : ★★★★★ — Les données en dur empêchent toute flexibilité.
+## 🏆 Ce qu'il reste à construire — classé par IMPACT
 
 ---
 
-## 💰 Phase 2 — « Revenus » (Impact : ÉLEVÉ)
+### Phase A — « Revenus immédiats » (Impact : ★★★★★)
 
-> **Objectif** : Augmenter vos revenus grâce aux fonctionnalités marketing.  
-> **Cette phase transforme le site en machine à revenus.**
+> **Objectif** : Augmenter directement votre chiffre d'affaires.  
+> **Chaque item est indépendant — vous pouvez les faire dans n'importe quel ordre.**
 
-### 2.1 — Page d'avis publics
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Page `/avis` avec tous les avis clients | Les avis sont le facteur n°1 de décision d'achat |
-| Afficher les avis sur les pages soins/produits | Rassurer sur chaque prestation/produit |
-| Invitation automatique après un soin/achat | Augmenter le nombre d'avis sans effort |
-
-**Impact** : ★★★★☆ — Les avis positifs convertissent les visiteurs en clients.
-
-### 2.2 — Programme de fidélité (interface)
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Page fidélité dans le tableau de bord | Les clients veulent voir leurs points |
-| Historique des points gagnés/dépensés | Transparence et engagement |
-| Catalogue de récompenses | Inciter les clients à revenir |
-
-**Impact** : ★★★★☆ — Un client fidèle coûte 5× moins qu'un nouveau client.
-
-### 2.3 — Programme de parrainage (interface)
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Page parrainage avec code unique | Chaque client peut vous amener de nouveaux clients |
-| Suivi des parrainages (qui a parrainé qui) | Motiver les ambassadeurs |
-| Récompense automatique (points bonus) | Rendre le système autonome |
-
-**Impact** : ★★★★☆ — Le bouche-à-oreille digital à coût zéro.
-
-### 2.4 — Page favoris
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Page « Mes favoris » dans le tableau de bord | Les clients veulent sauvegarder soins et produits |
-| Bouton favori sur chaque soin et produit | Faciliter la découverte et le retour |
-
-**Impact** : ★★★☆☆ — Augmente le taux de retour sur le site.
+| # | Amélioration | Pourquoi c'est prioritaire | Impact |
+|---|-------------|--------------------------|--------|
+| A1 | **Paiement d'acompte à la réservation RDV** | Les clientes qui ne paient rien ne viennent pas (30% de no-shows estimés). Un acompte de 2 000 F via Jeko élimine ce problème. | ★★★★★ |
+| A2 | **Rappels par SMS** (en complément des emails) | En Côte d'Ivoire, les emails sont souvent ignorés. Un SMS la veille du RDV est 10× plus efficace. Service : Twilio ou API SMS locale. | ★★★★★ |
+| A3 | **Calendrier de disponibilités par praticienne** | Empêcher les doubles réservations. Définir des plages horaires par jour/semaine. | ★★★★★ |
+| A4 | **Invitations automatiques d'avis après un soin** | Envoyer un email 24h après un RDV terminé pour demander un avis. Les avis sont le facteur n°1 de conversion. | ★★★★☆ |
+| A5 | **Code promo par campagne** (newsletter, événements) | Créer des codes promo temporaires pour des campagnes marketing ciblées. | ★★★★☆ |
 
 ---
 
-## 🩺 Phase 3 — « Soins spécialisés » (Impact : MOYEN-ÉLEVÉ)
+### Phase B — « Engagement client » (Impact : ★★★★☆)
 
-> **Objectif** : Proposer un suivi médical professionnel unique qui vous différencie de la concurrence.
+> **Objectif** : Faire revenir les clientes plus souvent et créer de l'attachement.
 
-### 3.1 — Espace suivi médical
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Dossier médical chiffré pour chaque patiente | Service professionnel de suivi |
-| Mesures de santé (poids, tension, etc.) | Suivi post-accouchement personnalisé |
-| Upload de documents médicaux | Centraliser les examens et ordonnances |
-| Messagerie médicale chiffrée | Communication confidentielle sage-femme/patiente |
-
-**Impact** : ★★★★☆ — Différenciateur majeur — aucun concurrent n'offre cela.
-
-### 3.2 — Améliorer le système de RDV
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Calendrier de disponibilités par praticienne | Éviter les doubles réservations |
-| Rappels par SMS (en plus des emails) | Les emails sont parfois ignorés en Côte d'Ivoire |
-| Paiement d'acompte à la réservation | Réduire les désistements |
-
-**Impact** : ★★★★☆ — Vos RDV sont votre revenu principal.
+| # | Amélioration | Pourquoi c'est prioritaire | Impact |
+|---|-------------|--------------------------|--------|
+| B1 | **Notifications push navigateur** | Alerter les clientes en temps réel (nouveau message, rappel RDV, promo) sans qu'elles ouvrent le site. | ★★★★☆ |
+| B2 | **Programme de récompenses visible** | Catalogue de récompenses échangeables contre des points fidélité (soin gratuit à X points). | ★★★★☆ |
+| B3 | **Galerie avant/après soins** | Montrer les résultats réels (avec consentement). Puissant pour la conversion. | ★★★☆☆ |
+| B4 | **Témoignages vidéo** | Intégrer des vidéos de clientes satisfaites sur la page d'accueil. | ★★★☆☆ |
+| B5 | **Newsletter automatique hebdomadaire** | Résumé des nouveaux articles, soins populaires, événements. Envoi automatique. | ★★★☆☆ |
 
 ---
 
-## 👥 Phase 4 — « Communauté » (Impact : MOYEN)
+### Phase C — « Expérience professionnelle » (Impact : ★★★☆☆)
 
-> **Objectif** : Créer un espace social qui fidélise vos clientes et attire de nouvelles.
+> **Objectif** : Améliorer la qualité du service médical et la gestion quotidienne.
 
-### 4.1 — Fil d'actualité communautaire
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Publier des posts (texte + photos) | Créer du lien entre les clientes |
-| Commenter et réagir aux posts | Engagement communautaire |
-| Stories éphémères (24h) | Contenu fun qui engage |
-| Système de suivi (followers) | Réseau social intégré |
-
-**Impact** : ★★★☆☆ — Crée de l'attachement émotionnel à votre marque.
-
-### 4.2 — Groupes et événements
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Créer des groupes (ex: « Post-accouchement ») | Auto-organisation des clientes |
-| Organiser des événements (ateliers, journées portes ouvertes) | Générer du trafic physique |
-| Système de participation aux événements | Gérer les inscriptions |
-
-**Impact** : ★★★☆☆ — Avantage concurrentiel, mais pas urgent.
-
-### 4.3 — Messagerie temps réel
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Chat en temps réel entre membres | Communication instantanée |
-| Notifications push (navigateur) | Engagement en temps réel |
-| Indicateur « en ligne » / « en train d'écrire » | UX de qualité |
-
-**Impact** : ★★☆☆☆ — Fonctionnalité « nice to have », pas critique.
+| # | Amélioration | Pourquoi c'est prioritaire | Impact |
+|---|-------------|--------------------------|--------|
+| C1 | **Résumé IA des consultations** (pour la sage-femme) | Après une consultation, l'IA résume les notes pour gagner du temps. | ★★★☆☆ |
+| C2 | **Historique des visites client** (visible en admin) | Voir combien de fois une cliente est venue, quels soins elle a pris, son panier moyen. | ★★★☆☆ |
+| C3 | **Tableau de bord rapports avancés** | Graphiques revenus/mois, soins les plus populaires, taux de conversion RDV. | ★★★☆☆ |
+| C4 | **Chat IA amélioré** (avec historique client) | L'assistant se souvient des préférences de la cliente connectée pour des recommandations plus précises. | ★★☆☆☆ |
+| C5 | **Export CSV des données admin** | Exporter la liste des clients, commandes, RDV en fichier Excel. | ★★☆☆☆ |
 
 ---
 
-## 🔧 Phase 5 — « Optimisation » (Impact : CONTINU)
+### Phase D — « Croissance long terme » (Impact : ★★☆☆☆)
 
-> **Objectif** : Polir le site, améliorer les performances et le référencement.
+> **Objectif** : Élargir la clientèle et se différencier durablement.
 
-### 5.1 — SEO et référencement
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Ajouter `robots.txt` | Permettre à Google d'indexer le site |
-| Données structurées JSON-LD (soins, produits) | Apparaître dans les résultats enrichis Google |
-| Optimiser les temps de chargement | Google favorise les sites rapides |
-| Pages AMP pour le blog (optionnel) | Meilleur référencement mobile |
-
-**Impact** : ★★★☆☆ — Le SEO génère du trafic gratuit sur le long terme.
-
-### 5.2 — Corrections techniques
-
-| Tâche | Détail |
-|-------|--------|
-| Corriger 9 warnings Tailwind CSS | `tracking-[0.1em]` → `tracking-widest`, etc. |
-| Migrer les données fictives vers la DB | soins-data.ts et produits-data.ts → Prisma |
-| Seed de base de données de test | Préremplir la DB pour les démos |
-
-**Impact** : ★★☆☆☆ — Qualité du code, pas visible pour les utilisateurs.
-
-### 5.3 — Performance et monitoring
-
-| Tâche | Pourquoi c'est prioritaire |
-|-------|---------------------------|
-| Ajouter Vercel Analytics | Comprendre le trafic et les conversions |
-| Ajouter un système de logs structurés | Détecter les erreurs avant les clients |
-| Tests automatisés (au moins les APIs critiques) | Éviter les régressions lors des mises à jour |
-
-**Impact** : ★★☆☆☆ — Prévention des problèmes futurs.
-
----
-
-## 🌟 Phase 6 — « Innovation » (Impact : FUTUR)
-
-> **Objectif** : Se différencier et préparer la croissance.
-
-### 6.1 — Application mobile (PWA)
-
-| Tâche | Pourquoi |
-|-------|---------|
-| Transformer le site en Progressive Web App | Les clientes d'Abidjan utilisent surtout le téléphone |
-| Notifications push mobiles | Rappels de RDV sur le téléphone |
-| Mode hors-ligne pour le contenu clé | Fonctionner même avec un réseau instable |
-
-**Impact** : ★★★★☆ — En Côte d'Ivoire, 80%+ du trafic web est mobile.
-
-### 6.2 — Multi-langue
-
-| Tâche | Pourquoi |
-|-------|---------|
-| Ajouter l'anglais | Attirer la clientèle expatriée d'Abidjan |
-| Système i18n avec Next.js | Infrastructure pour d'autres langues |
-
-**Impact** : ★★☆☆☆ — Marché secondaire mais en croissance.
-
-### 6.3 — Intelligence artificielle
-
-| Tâche | Pourquoi |
-|-------|---------|
-| Chatbot IA pour les questions fréquentes | Répondre automatiquement aux questions clients 24/7 |
-| Recommandation de soins personnalisée | Proposer le bon soin selon l'historique du client |
-| Résumé automatique des rendez-vous (pour la sage-femme) | Gain de temps pour le personnel médical |
-
-**Impact** : ★★☆☆☆ — Innovant, mais nécessite un investissement en temps.
+| # | Amélioration | Pourquoi c'est prioritaire | Impact |
+|---|-------------|--------------------------|--------|
+| D1 | **Multi-langue (anglais + français)** | Attirer la clientèle expatriée d'Abidjan (communauté anglophone importante). | ★★☆☆☆ |
+| D2 | **Google My Business automatisé** | Synchroniser les avis et infos avec la fiche Google Maps. | ★★☆☆☆ |
+| D3 | **Mode sombre** | Confort visuel pour les utilisatrices le soir. | ★☆☆☆☆ |
+| D4 | **Tests automatisés** (APIs critiques) | Prévenir les régressions lors des mises à jour. | ★☆☆☆☆ |
+| D5 | **Analytics avancées** (Vercel Analytics) | Comprendre le parcours des visiteuses et optimiser la conversion. | ★★☆☆☆ |
 
 ---
 
 ## 📅 Planning suggéré
 
-| Phase | Durée estimée | Résultat |
-|-------|---------------|---------|
-| **Phase 1** — Opérationnel | 3-4 semaines | Admin + Dashboard fonctionnels → site utilisable au quotidien |
-| **Phase 2** — Revenus | 2-3 semaines | Avis, fidélité, parrainage → plus de clients et de ventes |
-| **Phase 3** — Soins spécialisés | 2-3 semaines | Suivi médical → avantage concurrentiel unique |
-| **Phase 4** — Communauté | 3-4 semaines | Réseau social → fidélisation à long terme |
-| **Phase 5** — Optimisation | Continu | SEO, performance → croissance organique |
-| **Phase 6** — Innovation | Selon budget | Mobile, IA → différenciation sur le marché |
+| Phase | Durée estimée | Résultat attendu |
+|-------|---------------|-----------------|
+| **Phase A** — Revenus | 2-3 semaines | Acompte RDV + SMS + calendrier → moins de no-shows, plus de revenus |
+| **Phase B** — Engagement | 2-3 semaines | Push + récompenses + galerie → clientes qui reviennent |
+| **Phase C** — Pro | 2-3 semaines | IA sage-femme + rapports → gestion plus efficace |
+| **Phase D** — Croissance | Continu | Multi-langue + analytics → nouvelle clientèle |
 
 ---
 
 ## 💡 Conseil final
 
-> **Commencez par la Phase 1**. Sans un admin fonctionnel et un tableau de bord client complet, le site est une vitrine qui ne permet pas de gérer votre activité. Une fois la Phase 1 terminée, vous pouvez ouvrir le site au public et commencer à générer des revenus pendant que les phases suivantes sont en développement.
+> **Votre site est opérationnel et complet.** Vous pouvez l'ouvrir au public dès maintenant.  
+> La Phase A (acompte + SMS + calendrier) est la seule qui impacte directement vos revenus — commencez par là.  
+> Tout le reste peut attendre que l'institut tourne et génère des revenus.
 
 ---
 
-*Feuille de route rédigée le 22 mars 2026 — Le Surnaturel de Dieu*
+*Feuille de route mise à jour le 22 mars 2026 — Le Surnaturel de Dieu — V2*
