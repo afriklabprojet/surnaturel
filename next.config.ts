@@ -8,7 +8,8 @@ const csp = [
   "default-src 'self'",
 
   // Scripts : 'unsafe-inline' requis par Next.js (hydration + data scripts)
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.vercel-insights.com",
+  // 'unsafe-eval' requis par React en dev (callstack reconstruction) — jamais utilisé en prod
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com https://cdn.vercel-insights.com`,
 
   // Styles : 'unsafe-inline' requis par Tailwind + styled-jsx
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
