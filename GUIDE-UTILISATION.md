@@ -21,6 +21,12 @@
 11. [Nouveautés — Assistant Bien-Être IA](#11--assistant-bien-être-ia)
 12. [Nouveautés — Application mobile (PWA)](#12--application-mobile-pwa)
 13. [Nouveautés — Modération des signalements](#13--modération-des-signalements)
+14. [Rapports et statistiques avancés](#14--rapports-et-statistiques-avancés-nouveau--phase-c)
+15. [Résumé IA des clients](#15--résumé-ia-des-clients-nouveau--phase-c)
+16. [Export CSV des données](#16--export-csv-des-données-nouveau--phase-c)
+17. [Mode sombre](#17--mode-sombre-nouveau--phase-d)
+18. [Multi-langue FR/EN](#18--multi-langue-français--anglais-nouveau--phase-d)
+19. [Analytics et performances](#19--analytics-et-performances-nouveau--phase-d)
 
 ---
 
@@ -400,6 +406,120 @@ admin du matin.
 
 ---
 
+## 14 — Rapports et statistiques avancés (NOUVEAU — Phase C)
+
+### Où ?
+
+Menu admin > **"Rapports"**
+
+### Ce que vous voyez
+
+1. **Graphique du chiffre d'affaires** : courbe des revenus sur les 6 derniers mois
+2. **Graphique des rendez-vous** : barres montrant le nombre de RDV par mois
+3. **Soins populaires** : classement des soins les plus réservés
+4. **Taux de conversion** : pourcentage de RDV confirmés sur le total
+
+> Les graphiques se mettent à jour automatiquement. Vous n'avez rien à
+> configurer.
+
+---
+
+## 15 — Résumé IA des clients (NOUVEAU — Phase C)
+
+### Où ?
+
+Menu admin > **"Utilisateurs"** > cliquez sur un client > **"Résumé IA"**
+
+### Ce que ça fait
+
+L'intelligence artificielle analyse automatiquement l'historique d'un client :
+- Nombre total de visites et montant total dépensé
+- Ses soins préférés (affichés en étiquettes colorées)
+- Alertes de santé éventuelles (si le client a un dossier médical)
+- Un paragraphe de synthèse en langage naturel
+
+### Quand l'utiliser
+
+Avant un rendez-vous, consultez ce résumé pour personnaliser l'accueil.
+
+---
+
+## 16 — Export CSV des données (NOUVEAU — Phase C)
+
+### Où ?
+
+Dans les pages admin suivantes, un bouton **📥 CSV** apparaît en haut à droite :
+- **Utilisateurs** → exporte la liste de tous les clients
+- **Commandes** → exporte toutes les commandes
+- **Rendez-vous** → exporte tous les RDV
+- **Avis** → exporte tous les avis clients
+
+### Comment ça marche
+
+1. Cliquez le bouton **📥 CSV**
+2. Un fichier se télécharge automatiquement sur votre ordinateur
+3. Ouvrez-le avec **Excel**, **Google Sheets** ou **Numbers**
+
+> Le fichier contient toutes les colonnes importantes (nom, email, date, statut,
+> montant, etc.). Parfait pour faire des bilans mensuels ou annuels.
+
+---
+
+## 17 — Mode sombre (NOUVEAU — Phase D)
+
+### Comment l'activer
+
+1. Dans la barre de navigation, cliquez l'icône **🌙** (lune)
+2. Le site passe en mode sombre (fond foncé, textes clairs)
+3. Cliquez **☀️** (soleil) pour revenir au mode clair
+
+### Vos clientes l'utilisent aussi
+
+Le mode sombre est disponible pour tout le monde. Certaines clientes
+préfèrent naviguer le soir avec un écran moins lumineux.
+
+> Le choix est mémorisé : si une personne choisit le mode sombre, il reste
+> activé lors de sa prochaine visite.
+
+---
+
+## 18 — Multi-langue français / anglais (NOUVEAU — Phase D)
+
+### Comment changer de langue
+
+1. Dans la barre de navigation, cliquez le bouton **FR** ou **EN**
+2. Les textes principaux du site passent en anglais (ou en français)
+
+### Ce qui change
+
+Les boutons, le menu, les titres principaux sont traduits. Le contenu des soins,
+des articles de blog et des produits reste en français (ce sont vos contenus
+personnalisés).
+
+> C'est utile pour la clientèle expatriée anglophone d'Abidjan.
+
+---
+
+## 19 — Analytics et performances (NOUVEAU — Phase D)
+
+### Ce que c'est
+
+Le site mesure automatiquement :
+- **Combien de personnes visitent votre site** (nombre de visiteurs par jour/semaine/mois)
+- **Quelles pages sont les plus populaires**
+- **D'où viennent vos visiteurs** (Google, Instagram, lien direct…)
+- **La vitesse de chargement du site**
+
+### Où consulter les statistiques
+
+1. Connectez-vous sur [vercel.com](https://vercel.com) > votre projet
+2. Onglet **"Analytics"** (pour le trafic)
+3. Onglet **"Speed Insights"** (pour les performances)
+
+> Vous n'avez rien à configurer. Les données se collectent automatiquement.
+
+---
+
 ## 📞 En cas de problème
 
 | Problème                                  | Quoi faire                                                                        |
@@ -411,27 +531,46 @@ admin du matin.
 | Vous avez oublié votre mot de passe admin | Utilisez la page `/mot-de-passe-oublie`                                           |
 | Le site est-il en panne ?                 | Vérifiez `/api/health` — si vous voyez `{"status":"ok"}`, tout fonctionne         |
 | L'assistant IA ne s'affiche pas           | Le bouton ✨ n'apparaît que sur les pages publiques (pas l'admin ni le dashboard) |
+| Le mode sombre ne s'active pas            | Cliquez l'icône 🌙 dans la barre de navigation (en haut à droite)                |
+| Le CSV ne se télécharge pas               | Essayez un autre navigateur ou désactivez les bloqueurs de popups                 |
 
 ---
 
 ## 🌍 Pages publiques disponibles
 
-Votre site a une nouvelle page publique pour attirer des inscriptions :
+| Page                | Adresse                 | Contenu                                                            |
+| ------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Page d'accueil      | `/`                     | Présentation de l'institut                                         |
+| Soins & Services    | `/soins`                | Catalogue complet des soins                                        |
+| Boutique            | `/boutique`             | Produits naturels en vente                                         |
+| Blog                | `/blog`                 | Articles et conseils                                               |
+| Sage-femme          | `/sage-femme`           | Services de la sage-femme                                          |
+| Avis                | `/avis`                 | Avis clients                                                       |
+| Contact             | `/contact`              | Formulaire de contact                                              |
+| À propos            | `/a-propos`             | L'histoire de l'institut                                           |
+| Communauté          | `/decouvrir-communaute` | Aperçu public : stats, posts récents, événements, CTA inscription  |
+| Prise de RDV        | `/prise-rdv`            | Réserver un créneau                                                |
 
-| Page                     | Adresse                 | Contenu                                                           |
-| ------------------------ | ----------------------- | ----------------------------------------------------------------- |
-| Page d'accueil           | `/`                     | Présentation de l'institut                                        |
-| Soins & Services         | `/soins`                | Catalogue complet des soins                                       |
-| Boutique                 | `/boutique`             | Produits naturels en vente                                        |
-| Blog                     | `/blog`                 | Articles et conseils                                              |
-| Sage-femme               | `/sage-femme`           | Services de la sage-femme                                         |
-| Avis                     | `/avis`                 | Avis clients                                                      |
-| Contact                  | `/contact`              | Formulaire de contact                                             |
-| À propos                 | `/a-propos`             | L'histoire de l'institut                                          |
-| **Communauté** (NOUVEAU) | `/decouvrir-communaute` | Aperçu public : stats, posts récents, événements, CTA inscription |
-| Prise de RDV             | `/prise-rdv`            | Réserver un créneau                                               |
+---
+
+## 🗓️ Routine quotidienne mise à jour
+
+| Moment             | Action                               | Temps estimé |
+| ------------------ | ------------------------------------ | ------------ |
+| **Matin (9h)**     | Consulter le tableau de bord admin   | 5 min        |
+| **Matin**          | Confirmer les RDV du jour            | 5 min        |
+| **Mi-journée**     | Traiter les commandes payées         | 10 min       |
+| **Après-midi**     | Répondre aux messages et avis        | 15 min       |
+| **Fin de journée** | Vérifier les notifications restantes | 5 min        |
+| **Fin de journée** | Vérifier les signalements communauté | 5 min        |
+| **1x par semaine** | Publier un article de blog           | 30 min       |
+| **1x par semaine** | Consulter les rapports avancés       | 10 min       |
+| **1x par mois**    | Exporter les CSV pour bilan mensuel  | 10 min       |
+| **1x par mois**    | Consulter Vercel Analytics           | 10 min       |
+
+**Temps total : environ 45 minutes par jour + 40 min par semaine + 20 min par mois**
 
 ---
 
 _Guide mis à jour le 22 mars 2026 — Le Surnaturel de Dieu — Version incluant
-Phases 3-6_
+Phases 3-6 + Phases C-D_

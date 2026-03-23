@@ -298,6 +298,21 @@ Après le déploiement, vérifiez que tout fonctionne :
 | Alertes santé       | Ajoutez une mesure hors seuil (ex: tension > 14)                | Une alerte rouge s'affiche avec un lien vers la prise de RDV |
 | Export PDF          | Suivi médical > Dossier > « Exporter PDF »                      | La fenêtre d'impression s'ouvre                              |
 
+### Fonctionnalités Phases C-D
+
+| Vérification         | Comment tester                                                       | ✅ OK si...                                                |
+| -------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Rapports avancés     | Admin > Rapports                                                     | Graphiques CA, RDV, soins populaires, taux de conversion   |
+| Résumé IA client     | Admin > Utilisateurs > cliquer un client > "Résumé IA"              | Synthèse avec stats, soins préférés, alertes               |
+| Export CSV clients   | Admin > Utilisateurs > bouton 📥 CSV                                | Fichier `.csv` téléchargé, ouvrable dans Excel             |
+| Export CSV commandes | Admin > Commandes > bouton 📥 CSV                                   | Fichier `.csv` téléchargé                                  |
+| Export CSV RDV       | Admin > RDV > bouton 📥 CSV                                          | Fichier `.csv` téléchargé                                  |
+| Export CSV avis      | Admin > Avis > bouton 📥 CSV                                         | Fichier `.csv` téléchargé                                  |
+| Mode sombre          | Cliquez l'icône 🌙 dans la navbar                                   | Le site passe en fond sombre, texte clair                  |
+| Multi-langue         | Cliquez FR/EN dans la navbar                                         | Les boutons et menus passent en anglais                    |
+| Analytics Vercel     | Vercel Dashboard > onglet Analytics                                  | Vous voyez les statistiques de trafic                      |
+| Tests automatisés    | Dans le terminal : `npm run test`                                    | 22 tests passent (22 vert, 0 rouge)                        |
+
 ---
 
 ## 🆘 Problèmes courants

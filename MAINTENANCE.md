@@ -530,6 +530,10 @@ Cron Jobs.
 - [ ] Vérifier que les crons fonctionnent (rappels RDV, nettoyage stories)
 - [ ] Vérifier que `/api/health` répond `{"status":"ok"}` (santé du système)
 - [ ] Vérifier que le Chat IA s'affiche bien sur les pages publiques
+- [ ] Vérifier que le mode sombre fonctionne (cliquer 🌙)
+- [ ] Vérifier que la bascule FR/EN fonctionne
+- [ ] Lancer les tests : `npm run test` (22 tests doivent passer)
+- [ ] Consulter Vercel Analytics (onglet Analytics dans Vercel Dashboard)
 
 ---
 
@@ -559,5 +563,89 @@ Cron Jobs.
 
 ---
 
+## 🆕 Fichiers ajoutés lors des Phases C-D (référence)
+
+| Fichier                                              | Rôle                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------- |
+| `src/app/api/admin/clients/[id]/resume/route.ts`    | API résumé IA d'un client (GET, rôle ADMIN/SAGE_FEMME)        |
+| `src/app/api/admin/rapports/route.ts`                | API rapports avancés (revenus, RDV, soins populaires)         |
+| `src/app/api/admin/export/route.ts`                  | API export CSV (clients, commandes, RDV, avis)                |
+| `src/app/api/soins/preferences/route.ts`             | API préférences client pour Chat IA personnalisé              |
+| `src/app/api/avis/aggregate/route.ts`                | API données agrégées avis (pour Google My Business)           |
+| `src/lib/i18n/fr.json`                              | Traductions françaises                                         |
+| `src/lib/i18n/en.json`                              | Traductions anglaises                                          |
+| `src/lib/i18n/index.tsx`                             | Provider i18n + hook `useI18n()`                               |
+| `src/components/layout/LangSwitch.tsx`               | Bouton bascule langue FR/EN                                    |
+| `src/components/layout/ThemeToggle.tsx`               | Bouton bascule mode sombre (lune/soleil)                       |
+| `vitest.config.ts`                                    | Configuration des tests automatisés                            |
+| `__tests__/core.test.ts`                              | 12 tests unitaires (utilitaires, crypto, etc.)                |
+| `__tests__/api.test.ts`                               | 10 tests d'intégration (APIs critiques)                        |
+
+| Fichier modifié (Phases C-D)                        | Ce qui a changé                                                 |
+| --------------------------------------------------- | --------------------------------------------------------------- |
+| `src/app/(admin)/admin/clients/[id]/page.tsx`       | + Section résumé IA avec stats, soins préférés, alertes         |
+| `src/app/(admin)/admin/rapports/page.tsx`            | + Graphiques Recharts (CA, RDV, soins populaires, statuts)      |
+| `src/app/(admin)/admin/clients/page.tsx`             | + Bouton export CSV                                              |
+| `src/app/(admin)/admin/commandes/page.tsx`           | + Bouton export CSV                                              |
+| `src/app/(admin)/admin/rdv/page.tsx`                 | + Bouton export CSV                                              |
+| `src/app/(admin)/admin/avis/page.tsx`                | + Bouton export CSV                                              |
+| `src/components/soins/ChatIA.tsx`                    | + Préférences client, recommandations personnalisées             |
+| `src/components/layout/Navbar.tsx`                   | + ThemeToggle + LangSwitch + traductions boutons                 |
+| `src/components/layout/Footer.tsx`                   | + Client component + traductions i18n                            |
+| `src/app/layout.tsx`                                 | + @vercel/analytics + @vercel/speed-insights + i18n + JSON-LD+  |
+| `src/app/globals.css`                                | + Variables CSS mode sombre (`.dark`)                            |
+
+### Modifier les traductions
+
+Fichier : `src/lib/i18n/fr.json` (français) ou `src/lib/i18n/en.json` (anglais)
+
+Le format est simple — clé : valeur :
+
+```json
+{
+  "nav": {
+    "connexion": "Connexion",
+    "rdv": "Prendre RDV",
+    "espace": "Mon espace"
+  }
+}
+```
+
+Pour ajouter une traduction : ajoutez la même clé dans les deux fichiers.
+
+### Modifier le mode sombre
+
+Fichier : `src/app/globals.css` — section `.dark`
+
+Les couleurs du mode sombre sont définies avec des variables CSS. Pour ajuster :
+
+```css
+.dark {
+  --color-bg-page: #1a1a1a;       /* Fond principal */
+  --color-text-dark: #f0f0f0;      /* Texte principal */
+  --color-primary-brand: #3a9f2a;  /* Vert plus clair pour contraste */
+}
+```
+
+### Lancer les tests automatisés
+
+```bash
+# Lancer tous les tests (22 tests)
+npm run test
+
+# Lancer les tests en mode surveillance (relance à chaque modification)
+npm run test:watch
+```
+
+Les tests vérifient :
+- Les utilitaires (`utils.ts`, `crypto.ts`)
+- La validation des données
+- Les réponses des APIs critiques (auth, santé, avis, commandes…)
+
+> **Quand lancer les tests ?** Après chaque modification de code, avant de
+> pousser sur GitHub. Si un test échoue, ne poussez pas — corrigez d'abord.
+
+---
+
 _Guide mis à jour le 22 mars 2026 — Le Surnaturel de Dieu — Version incluant
-Phases 3-6_
+Phases 3-6 + Phases C-D_
