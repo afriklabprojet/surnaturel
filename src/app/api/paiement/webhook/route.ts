@@ -30,7 +30,10 @@ export async function POST(req: NextRequest) {
 
   const commande = await prisma.commande.findUnique({
     where: { id: commandeId },
-    include: { user: { select: { id: true, email: true, prenom: true, nom: true } } },
+    include: {
+      user: { select: { id: true, email: true, prenom: true, nom: true } },
+      lignes: { include: { produit: { select: { nom: true } } } },
+    },
   })
 
   if (!commande) {
@@ -43,12 +46,19 @@ export async function POST(req: NextRequest) {
       data: { statut: "PAYEE", paiementId: paymentRequestId },
     })
 
-    // Email de confirmation
+    // Reçu de paiement détaillé
     envoyerEmailCommandePayee({
       destinataire: commande.user.email,
       prenom: commande.user.prenom,
       commandeId: commande.id,
       total: commande.total,
+      methode: (body as Record<string, string>).paymentMethod ?? undefined,
+      reference: paymentRequestId,
+      lignes: commande.lignes.map((l) => ({
+        nom: l.produit.nom,
+        quantite: l.quantite,
+        prixUnitaire: l.prixUnitaire,
+      })),
     }).catch(console.error)
 
     // Points fidélité (+1 pt par 100 FCFA)

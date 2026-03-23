@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { envoyerEmailConfirmationCommande } from "@/lib/email"
 
 const ligneSchema = z.object({
   produitId: z.string().min(1),
@@ -87,8 +88,25 @@ export async function POST(request: Request) {
           total,
           lignes: { create: lignes },
         },
+        include: {
+          lignes: { include: { produit: { select: { nom: true } } } },
+          user: { select: { email: true, prenom: true } },
+        },
       })
     })
+
+    // Email de confirmation (non-bloquant)
+    envoyerEmailConfirmationCommande({
+      destinataire: commande.user.email,
+      prenom: commande.user.prenom,
+      commandeId: commande.id,
+      total: commande.total,
+      lignes: commande.lignes.map((l) => ({
+        nom: l.produit.nom,
+        quantite: l.quantite,
+        prixUnitaire: l.prixUnitaire,
+      })),
+    }).catch(console.error)
 
     return NextResponse.json({ commandeId: commande.id }, { status: 201 })
   } catch (error) {

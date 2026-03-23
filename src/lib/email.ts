@@ -225,35 +225,188 @@ export async function envoyerEmailCommandePayee(params: {
   prenom: string
   commandeId: string
   total: number
+  methode?: string
+  reference?: string
+  lignes?: { nom: string; quantite: number; prixUnitaire: number }[]
 }) {
+  const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+  const ref = params.commandeId.slice(-8).toUpperCase()
+  const date = new Date().toLocaleDateString("fr-CI", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+
   const totalFormate = new Intl.NumberFormat("fr-CI", {
     style: "currency",
     currency: "XOF",
     minimumFractionDigits: 0,
   }).format(params.total)
 
+  const lignesHtml = params.lignes?.length
+    ? params.lignes
+        .map(
+          (l, i) =>
+            `<tr style="background:${i % 2 === 0 ? "#E8F5E3" : "#fff"};">
+              <td style="padding:10px;">${l.nom}</td>
+              <td style="padding:10px;text-align:center;">${l.quantite}</td>
+              <td style="padding:10px;text-align:right;">${new Intl.NumberFormat("fr-CI").format(l.prixUnitaire)} F</td>
+            </tr>`
+        )
+        .join("")
+    : ""
+
+  const produitsTable = lignesHtml
+    ? `<table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <tr style="background:#2D7A1F;color:#fff;">
+          <th style="padding:10px;text-align:left;">Produit</th>
+          <th style="padding:10px;text-align:center;">Qté</th>
+          <th style="padding:10px;text-align:right;">Prix</th>
+        </tr>
+        ${lignesHtml}
+        <tr style="border-top:2px solid #2D7A1F;">
+          <td colspan="2" style="padding:10px;font-weight:700;">Total</td>
+          <td style="padding:10px;text-align:right;font-weight:700;">${totalFormate}</td>
+        </tr>
+      </table>`
+    : `<p>Total : <strong>${totalFormate}</strong></p>`
+
+  const methodeHtml = params.methode
+    ? `<tr><td style="padding:10px;font-weight:600;">Méthode</td><td style="padding:10px;">${params.methode}</td></tr>`
+    : ""
+  const refTransHtml = params.reference
+    ? `<tr style="background:#E8F5E3;"><td style="padding:10px;font-weight:600;">Réf. transaction</td><td style="padding:10px;font-family:monospace;">${params.reference}</td></tr>`
+    : ""
+
   return resend.emails.send({
     from: FROM,
     to: params.destinataire,
-    subject: "Paiement confirmé — Le Surnaturel de Dieu",
+    subject: `Reçu de paiement #${ref} — Le Surnaturel de Dieu`,
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;">
+        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
           <h1 style="color:#fff;margin:0;font-size:20px;">
             Paiement confirmé
           </h1>
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;">
+          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
           <p>Bonjour <strong>${params.prenom}</strong>,</p>
-          <p>Votre paiement de <strong>${totalFormate}</strong> a été confirmé avec succès.</p>
-          <p>Commande : <strong>#${params.commandeId.slice(-8).toUpperCase()}</strong></p>
-          <p>Nous préparons votre commande. Vous recevrez une notification lorsqu'elle sera expédiée.</p>
-          <a href="${process.env.NEXTAUTH_URL}/commandes"
+          <p>Votre paiement a été reçu et confirmé. Voici votre reçu :</p>
+
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr style="background:#E8F5E3;">
+              <td style="padding:10px;font-weight:600;">Commande</td>
+              <td style="padding:10px;">#${ref}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;font-weight:600;">Date</td>
+              <td style="padding:10px;">${date}</td>
+            </tr>
+            ${methodeHtml}
+            ${refTransHtml}
+            <tr>
+              <td style="padding:10px;font-weight:600;">Montant</td>
+              <td style="padding:10px;font-weight:700;color:#2D7A1F;">${totalFormate}</td>
+            </tr>
+          </table>
+
+          ${produitsTable}
+
+          <div style="background:#FEF3CD;border:1px solid #B8972A;padding:12px;
+            border-radius:6px;margin-top:16px;">
+            <p style="margin:0;font-size:13px;color:#856404;">
+              📄 Conservez ce reçu comme preuve de paiement.
+            </p>
+          </div>
+
+          <p style="margin-top:16px;">Nous préparons votre commande. Vous recevrez
+            une notification lorsqu'elle sera expédiée.</p>
+
+          <a href="${appUrl}/commandes"
              style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;text-decoration:none;margin-top:16px;">
+             padding:12px 24px;border-radius:8px;text-decoration:none;
+             margin-top:16px;">
             Suivre ma commande
           </a>
+        </div>
+      </div>
+    `,
+  })
+}
+
+export async function envoyerEmailConfirmationCommande(params: {
+  destinataire: string
+  prenom: string
+  commandeId: string
+  total: number
+  lignes: { nom: string; quantite: number; prixUnitaire: number }[]
+}) {
+  const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+  const ref = params.commandeId.slice(-8).toUpperCase()
+
+  const totalFormate = new Intl.NumberFormat("fr-CI", {
+    style: "currency",
+    currency: "XOF",
+    minimumFractionDigits: 0,
+  }).format(params.total)
+
+  const lignesHtml = params.lignes
+    .map(
+      (l, i) =>
+        `<tr style="background:${i % 2 === 0 ? "#E8F5E3" : "#fff"};">
+          <td style="padding:10px;">${l.nom}</td>
+          <td style="padding:10px;text-align:center;">${l.quantite}</td>
+          <td style="padding:10px;text-align:right;">${new Intl.NumberFormat("fr-CI").format(l.prixUnitaire)} F</td>
+        </tr>`
+    )
+    .join("")
+
+  return resend.emails.send({
+    from: FROM,
+    to: params.destinataire,
+    subject: `Commande #${ref} enregistrée — Le Surnaturel de Dieu`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
+        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
+          <h1 style="color:#fff;margin:0;font-size:20px;">
+            Commande enregistrée
+          </h1>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;
+          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
+          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Votre commande <strong>#${ref}</strong> a été enregistrée.
+             Elle sera validée dès réception de votre paiement.</p>
+
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr style="background:#2D7A1F;color:#fff;">
+              <th style="padding:10px;text-align:left;">Produit</th>
+              <th style="padding:10px;text-align:center;">Qté</th>
+              <th style="padding:10px;text-align:right;">Prix</th>
+            </tr>
+            ${lignesHtml}
+            <tr style="border-top:2px solid #2D7A1F;">
+              <td colspan="2" style="padding:10px;font-weight:700;">Total à payer</td>
+              <td style="padding:10px;text-align:right;font-weight:700;color:#2D7A1F;">
+                ${totalFormate}
+              </td>
+            </tr>
+          </table>
+
+          <a href="${appUrl}/commandes/${params.commandeId}"
+             style="display:inline-block;background:#2D7A1F;color:#fff;
+             padding:12px 24px;border-radius:8px;text-decoration:none;
+             margin-top:16px;">
+            Suivre ma commande
+          </a>
+
+          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
+            Cette commande sera automatiquement annulée si le paiement
+            n'est pas reçu dans les 24 heures.
+          </p>
         </div>
       </div>
     `,
@@ -288,8 +441,20 @@ export async function envoyerEmailResetMotDePasse(params: {
              margin-top:16px;">
             Réinitialiser mon mot de passe
           </a>
-          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
-            Si vous n'avez pas fait cette demande, ignorez simplement cet email.
+
+          <div style="background:#FFF3CD;border:1px solid #B8972A;padding:12px;
+            border-radius:6px;margin-top:24px;">
+            <p style="margin:0;font-size:13px;color:#856404;">
+              ⚠️ <strong>Vous n'êtes pas à l'origine de cette demande ?</strong><br/>
+              Ignorez cet email — votre mot de passe reste inchangé.
+              Si vous recevez plusieurs emails de ce type, changez votre
+              mot de passe immédiatement et contactez-nous.
+            </p>
+          </div>
+
+          <p style="color:#6B7280;font-size:12px;margin-top:16px;">
+            Ce lien ne fonctionne qu'une seule fois et expire dans 1 heure.
+            Ne le partagez avec personne.
           </p>
         </div>
       </div>
