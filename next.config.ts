@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /* ━━━━━━━━━━ Security Headers ━━━━━━━━━━ */
 
@@ -90,4 +91,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Envoyer les source maps à Sentry (pas exposées publiquement)
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Tunnel pour éviter les ad-blockers
+  tunnelRoute: "/monitoring",
+});

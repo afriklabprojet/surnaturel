@@ -284,13 +284,15 @@ Pour les RDV confirmés :
 ### Gérer la fidélité (admin)
 
 1. Menu admin > **"Fidélité"** (`/admin/fidelite`)
-2. Vous voyez la liste de tous les clients avec leurs **points totaux** et les 3 derniers mouvements
+2. Vous voyez la liste de tous les clients avec leurs **points totaux** et les 3
+   derniers mouvements
 3. **Ajuster les points** : cliquez "Ajuster" sur un client
    - Entrez un nombre positif pour **ajouter** des points
    - Entrez un nombre négatif pour **retirer** des points
    - Choisissez le type : RDV, Commande, Parrainage, Avis ou Récompense
    - Ajoutez une raison (ex: "Geste commercial")
-4. **Historique** : cliquez "Historique" pour voir tous les mouvements d'un client
+4. **Historique** : cliquez "Historique" pour voir tous les mouvements d'un
+   client
 
 ### Parrainage
 
@@ -308,7 +310,8 @@ Pour les RDV confirmés :
    - Le **statut** : En attente (gris), Actif (bleu), Récompensé (or)
 3. **Filtrer** par statut pour retrouver rapidement un parrainage
 4. Actions possibles :
-   - **Activer** : passe un parrainage en attente à actif (quand le filleul est inscrit)
+   - **Activer** : passe un parrainage en attente à actif (quand le filleul est
+     inscrit)
    - **Récompenser** : accorde la récompense au parrain
    - **Supprimer** : supprime le parrainage
 
@@ -447,7 +450,8 @@ Menu admin > **"Rapports"**
 
 ### Ce que vous voyez
 
-1. **Graphique du chiffre d'affaires** : courbe des revenus sur les 6 derniers mois
+1. **Graphique du chiffre d'affaires** : courbe des revenus sur les 6 derniers
+   mois
 2. **Graphique des rendez-vous** : barres montrant le nombre de RDV par mois
 3. **Soins populaires** : classement des soins les plus réservés
 4. **Taux de conversion** : pourcentage de RDV confirmés sur le total
@@ -466,6 +470,7 @@ Menu admin > **"Utilisateurs"** > cliquez sur un client > **"Résumé IA"**
 ### Ce que ça fait
 
 L'intelligence artificielle analyse automatiquement l'historique d'un client :
+
 - Nombre total de visites et montant total dépensé
 - Ses soins préférés (affichés en étiquettes colorées)
 - Alertes de santé éventuelles (si le client a un dossier médical)
@@ -482,6 +487,7 @@ Avant un rendez-vous, consultez ce résumé pour personnaliser l'accueil.
 ### Où ?
 
 Dans les pages admin suivantes, un bouton **📥 CSV** apparaît en haut à droite :
+
 - **Utilisateurs** → exporte la liste de tous les clients
 - **Commandes** → exporte toutes les commandes
 - **Rendez-vous** → exporte tous les RDV
@@ -508,8 +514,8 @@ Dans les pages admin suivantes, un bouton **📥 CSV** apparaît en haut à droi
 
 ### Vos clientes l'utilisent aussi
 
-Le mode sombre est disponible pour tout le monde. Certaines clientes
-préfèrent naviguer le soir avec un écran moins lumineux.
+Le mode sombre est disponible pour tout le monde. Certaines clientes préfèrent
+naviguer le soir avec un écran moins lumineux.
 
 > Le choix est mémorisé : si une personne choisit le mode sombre, il reste
 > activé lors de sa prochaine visite.
@@ -538,7 +544,9 @@ personnalisés).
 ### Ce que c'est
 
 Le site mesure automatiquement :
-- **Combien de personnes visitent votre site** (nombre de visiteurs par jour/semaine/mois)
+
+- **Combien de personnes visitent votre site** (nombre de visiteurs par
+  jour/semaine/mois)
 - **Quelles pages sont les plus populaires**
 - **D'où viennent vos visiteurs** (Google, Instagram, lien direct…)
 - **La vitesse de chargement du site**
@@ -564,7 +572,7 @@ Le site mesure automatiquement :
 | Vous avez oublié votre mot de passe admin | Utilisez la page `/mot-de-passe-oublie`                                           |
 | Le site est-il en panne ?                 | Vérifiez `/api/health` — si vous voyez `{"status":"ok"}`, tout fonctionne         |
 | L'assistant IA ne s'affiche pas           | Le bouton ✨ n'apparaît que sur les pages publiques (pas l'admin ni le dashboard) |
-| Le mode sombre ne s'active pas            | Cliquez l'icône 🌙 dans la barre de navigation (en haut à droite)                |
+| Le mode sombre ne s'active pas            | Cliquez l'icône 🌙 dans la barre de navigation (en haut à droite)                 |
 | Le CSV ne se télécharge pas               | Essayez un autre navigateur ou désactivez les bloqueurs de popups                 |
 
 ---
@@ -578,6 +586,7 @@ Menu admin > **"Soins"** (adresse : `/admin/soins`)
 ### Ce que vous voyez
 
 Une grille de cartes montrant tous vos soins, chacun avec :
+
 - Le **nom** du soin et son **image**
 - Un badge de **catégorie** coloré (Hammam, Gommage, Visage, etc.)
 - Le **prix** en FCFA et la **durée** en minutes
@@ -591,7 +600,8 @@ Une grille de cartes montrant tous vos soins, chacun avec :
    - **Description** : ce que fait le soin
    - **Prix** : en FCFA (ex: 15000)
    - **Durée** : en minutes (ex: 60)
-   - **Catégorie** : choisissez parmi Hammam, Gommage, Amincissant, Visage, Post-accouchement, Conseil esthétique, Sage-femme
+   - **Catégorie** : choisissez parmi Hammam, Gommage, Amincissant, Visage,
+     Post-accouchement, Conseil esthétique, Sage-femme
    - **Image** : uploadez une photo ou collez une URL Cloudinary
 3. Cliquez **"Enregistrer"**
 
@@ -612,7 +622,8 @@ Une grille de cartes montrant tous vos soins, chacun avec :
 1. Cliquez l'icône **poubelle** rouge
 2. Confirmez la suppression
 
-> **Attention** : La suppression est définitive. Préférez désactiver un soin plutôt que le supprimer.
+> **Attention** : La suppression est définitive. Préférez désactiver un soin
+> plutôt que le supprimer.
 
 ---
 
@@ -627,6 +638,7 @@ Menu admin > **"Paramètres"** (adresse : `/admin/parametres`)
 #### Onglet 1 — Centre
 
 Modifiez les informations de votre institut :
+
 - **Nom du centre** : Le Surnaturel de Dieu
 - **Adresse** : votre adresse physique
 - **Téléphone** : votre numéro
@@ -638,6 +650,7 @@ Cliquez **"Enregistrer"** après chaque modification.
 #### Onglet 2 — Personnel
 
 Gérez les comptes de votre équipe :
+
 - Voir la liste du personnel existant (nom, email, rôle)
 - **Créer un nouveau compte** :
   1. Remplissez Prénom, Nom, Email
@@ -646,11 +659,13 @@ Gérez les comptes de votre équipe :
   4. Cliquez **"Créer le compte"**
 - **Supprimer un compte** : cliquez l'icône poubelle (avec confirmation)
 
-> **Conseil** : Changez le mot de passe initial dès la première connexion du nouvel employé.
+> **Conseil** : Changez le mot de passe initial dès la première connexion du
+> nouvel employé.
 
 #### Onglet 3 — Logs d'accès
 
-Consultez qui a accédé aux données médicales, quand et quelle action a été effectuée. C'est un journal de sécurité automatique.
+Consultez qui a accédé aux données médicales, quand et quelle action a été
+effectuée. C'est un journal de sécurité automatique.
 
 ---
 
@@ -662,7 +677,9 @@ Menu admin > **"Professionnels"** (adresse : `/admin/professionnels`)
 
 ### Ce que vous voyez
 
-Une grille de cartes pour chaque professionnel de santé (sage-femmes, naturopathes, etc.) avec :
+Une grille de cartes pour chaque professionnel de santé (sage-femmes,
+naturopathes, etc.) avec :
+
 - Nom et rôle
 - Spécialité
 - Jours de disponibilité (en badges)
@@ -674,12 +691,15 @@ Une grille de cartes pour chaque professionnel de santé (sage-femmes, naturopat
 2. Modifiez :
    - **Spécialité** : ex. Obstétrique, Naturopathie
    - **N° d'ordre** : numéro professionnel
-   - **Jours de disponibilité** : cliquez sur les jours pour les activer/désactiver (Lundi à Dimanche)
+   - **Jours de disponibilité** : cliquez sur les jours pour les
+     activer/désactiver (Lundi à Dimanche)
    - **Horaires** : ex. 9h00 - 17h00
-   - **Langues** : tapez une langue puis appuyez Entrée pour l'ajouter, cliquez × pour la retirer
+   - **Langues** : tapez une langue puis appuyez Entrée pour l'ajouter, cliquez
+     × pour la retirer
 3. Cliquez **"Enregistrer"**
 
-> Ces informations aident les clientes à choisir le bon créneau lors de la prise de RDV.
+> Ces informations aident les clientes à choisir le bon créneau lors de la prise
+> de RDV.
 
 ---
 
@@ -691,20 +711,23 @@ Menu admin > **"Vérification"** (adresse : `/admin/verification`)
 
 ### À quoi ça sert ?
 
-Vérifier les comptes utilisateurs pour instaurer la confiance dans la communauté. Un utilisateur vérifié a un badge visible par les autres membres.
+Vérifier les comptes utilisateurs pour instaurer la confiance dans la
+communauté. Un utilisateur vérifié a un badge visible par les autres membres.
 
 ### Les 3 statuts
 
-| Statut | Badge | Signification |
-|--------|-------|---------------|
-| **Non vérifié** | ❌ Rouge | Compte standard, non vérifié |
-| **Membre vérifié** | ✅ Bleu | Identité confirmée par l'admin |
-| **Professionnel santé** | 🛡️ Or | Professionnel de santé certifié |
+| Statut                  | Badge    | Signification                   |
+| ----------------------- | -------- | ------------------------------- |
+| **Non vérifié**         | ❌ Rouge | Compte standard, non vérifié    |
+| **Membre vérifié**      | ✅ Bleu  | Identité confirmée par l'admin  |
+| **Professionnel santé** | 🛡️ Or    | Professionnel de santé certifié |
 
 ### Comment vérifier un utilisateur
 
-1. Utilisez la **barre de recherche** ou les **filtres** (Tous, Non vérifié, Vérifié, Professionnel)
-2. Consultez l'activité de chaque utilisateur : nombre de RDV, commandes et posts
+1. Utilisez la **barre de recherche** ou les **filtres** (Tous, Non vérifié,
+   Vérifié, Professionnel)
+2. Consultez l'activité de chaque utilisateur : nombre de RDV, commandes et
+   posts
 3. Cliquez **"Vérifier"** pour donner le statut Membre vérifié
 4. Cliquez **"Pro santé"** pour les professionnels de santé
 5. Cliquez **"Retirer"** pour revenir au statut non vérifié
@@ -720,6 +743,7 @@ Menu admin > **"Messages"** (adresse : `/admin/messages`)
 ### Ce que vous voyez
 
 Une interface de messagerie en deux colonnes :
+
 - **À gauche** : la liste de toutes vos conversations avec les utilisateurs
 - **À droite** : le chat avec l'utilisateur sélectionné
 
@@ -732,7 +756,8 @@ Une interface de messagerie en deux colonnes :
 5. Les conversations se rafraîchissent automatiquement toutes les 5 secondes
 6. Les messages se marquent comme lus quand vous ouvrez la conversation
 
-> Utilisez cette messagerie pour répondre aux questions des clientes ou coordonner avec votre équipe.
+> Utilisez cette messagerie pour répondre aux questions des clientes ou
+> coordonner avec votre équipe.
 
 ---
 
@@ -745,6 +770,7 @@ Menu admin > **"Communauté"** (adresse : `/admin/communaute`)
 ### Onglet Statistiques
 
 Vue d'ensemble de la communauté avec des chiffres clés :
+
 - **Membres** : total et actifs (7 jours / 30 jours)
 - **Publications** : nombre total de posts
 - **Groupes** et **Événements** : combien il y en a
@@ -755,8 +781,10 @@ Vue d'ensemble de la communauté avec des chiffres clés :
 ### Onglet Signalements
 
 Gérez les contenus signalés par les membres :
+
 1. Filtrez par statut : **En attente**, **En cours**, **Résolu**, **Rejeté**
-2. Pour chaque signalement, vous voyez : qui a signalé, pourquoi, et le contenu concerné
+2. Pour chaque signalement, vous voyez : qui a signalé, pourquoi, et le contenu
+   concerné
 3. Vos 3 options :
    - ✅ **Résolu** — le signalement est traité
    - ❌ **Rejeter** — le signalement est infondé
@@ -772,9 +800,11 @@ Menu admin > **"Événements"** (adresse : `/admin/evenements`)
 
 ### Ce que vous voyez
 
-La liste de tous les événements de la communauté, avec un filtre pour voir les événements **à venir** ou **passés**.
+La liste de tous les événements de la communauté, avec un filtre pour voir les
+événements **à venir** ou **passés**.
 
 Chaque carte d'événement montre :
+
 - La **date** (en badge coloré)
 - Le **titre** et la **description**
 - Le **lieu** et le nombre de **participants**
@@ -808,7 +838,9 @@ Menu admin > **"Groupes"** (adresse : `/admin/groupes`)
 
 ### Ce que vous voyez
 
-Une grille de cartes avec tous les groupes de la communauté. Chaque carte montre :
+Une grille de cartes avec tous les groupes de la communauté. Chaque carte montre
+:
+
 - L'**image** du groupe (ou une icône par défaut)
 - Un badge de **visibilité** : Public (bleu), Privé (or), Secret (rouge)
 - Le **nom** et la **description**
@@ -816,11 +848,11 @@ Une grille de cartes avec tous les groupes de la communauté. Chaque carte montr
 
 ### Les types de visibilité
 
-| Type | Qui peut voir | Qui peut rejoindre |
-|------|--------------|--------------------|
-| **Public** | Tout le monde | Tout le monde |
-| **Privé** | Tout le monde | Sur demande (approbation nécessaire) |
-| **Secret** | Membres uniquement | Sur invitation uniquement |
+| Type       | Qui peut voir      | Qui peut rejoindre                   |
+| ---------- | ------------------ | ------------------------------------ |
+| **Public** | Tout le monde      | Tout le monde                        |
+| **Privé**  | Tout le monde      | Sur demande (approbation nécessaire) |
+| **Secret** | Membres uniquement | Sur invitation uniquement            |
 
 ### Créer un groupe
 
@@ -835,6 +867,7 @@ Une grille de cartes avec tous les groupes de la communauté. Chaque carte montr
 ### Voir les détails d'un groupe
 
 Cliquez **"Détails"** pour voir :
+
 - La description complète et les règles
 - La liste des **membres** avec leurs rôles (Admin, Modérateur, Membre)
 - Les **questions d'adhésion** (pour les groupes privés)
@@ -854,11 +887,13 @@ Menu admin > **"Blocages"** (adresse : `/admin/blocages`)
 
 ### À quoi ça sert ?
 
-Quand un membre de la communauté bloque un autre membre, la relation apparaît ici. Vous pouvez intervenir si un blocage est abusif.
+Quand un membre de la communauté bloque un autre membre, la relation apparaît
+ici. Vous pouvez intervenir si un blocage est abusif.
 
 ### Ce que vous voyez
 
 Une table montrant toutes les relations de blocage :
+
 - **Bloqueur** : la personne qui a bloqué (avec avatar et email)
 - **Bloqué** : la personne bloquée
 - **Date** : quand le blocage a eu lieu
@@ -869,7 +904,8 @@ Une table montrant toutes les relations de blocage :
 2. Cliquez **"Débloquer"** sur la relation concernée
 3. Confirmez la suppression du blocage
 
-> Vous ne devriez intervenir que si un blocage semble abusif ou s'il y a une demande explicite.
+> Vous ne devriez intervenir que si un blocage semble abusif ou s'il y a une
+> demande explicite.
 
 ---
 
@@ -877,44 +913,44 @@ Une table montrant toutes les relations de blocage :
 
 Voici **toutes les pages** de votre panel admin avec ce qu'elles font :
 
-| Page | Adresse | Ce que vous y faites |
-|------|---------|---------------------|
-| **Tableau de bord** | `/admin` | Vue d'ensemble : RDV du jour, commandes, nouveaux clients |
-| **Rendez-vous** | `/admin/rdv` | Confirmer, annuler, gérer les RDV + export CSV |
-| **Commandes** | `/admin/commandes` | Traiter les commandes (statuts) + export CSV |
-| **Soins** | `/admin/soins` | Ajouter, modifier, activer/désactiver les soins |
-| **Blog** | `/admin/blog` | Publier, modifier, supprimer des articles |
-| **Clients** | `/admin/clients` | Voir les clients, changer les rôles, résumé IA + export CSV |
-| **Avis** | `/admin/avis` | Approuver, rejeter, répondre aux avis + export CSV |
-| **Rapports** | `/admin/rapports` | Graphiques CA, RDV, soins populaires, conversion |
-| **Fidélité** | `/admin/fidelite` | Voir/ajuster les points, consulter les historiques |
-| **Parrainages** | `/admin/parrainages` | Activer, récompenser, supprimer les parrainages |
-| **Communauté** | `/admin/communaute` | Statistiques + modération des signalements |
-| **Événements** | `/admin/evenements` | Créer, modifier, supprimer les événements |
-| **Groupes** | `/admin/groupes` | Créer, gérer, supprimer les groupes |
-| **Signalements** | `/admin/signalements` | Traiter les contenus signalés |
-| **Messages** | `/admin/messages` | Messagerie avec les utilisateurs |
-| **Professionnels** | `/admin/professionnels` | Gérer les profils des sage-femmes et praticiens |
-| **Vérification** | `/admin/verification` | Vérifier les comptes (badge confiance) |
-| **Blocages** | `/admin/blocages` | Gérer les relations de blocage entre membres |
-| **Paramètres** | `/admin/parametres` | Infos du centre, gestion du personnel, logs d'accès |
+| Page                | Adresse                 | Ce que vous y faites                                        |
+| ------------------- | ----------------------- | ----------------------------------------------------------- |
+| **Tableau de bord** | `/admin`                | Vue d'ensemble : RDV du jour, commandes, nouveaux clients   |
+| **Rendez-vous**     | `/admin/rdv`            | Confirmer, annuler, gérer les RDV + export CSV              |
+| **Commandes**       | `/admin/commandes`      | Traiter les commandes (statuts) + export CSV                |
+| **Soins**           | `/admin/soins`          | Ajouter, modifier, activer/désactiver les soins             |
+| **Blog**            | `/admin/blog`           | Publier, modifier, supprimer des articles                   |
+| **Clients**         | `/admin/clients`        | Voir les clients, changer les rôles, résumé IA + export CSV |
+| **Avis**            | `/admin/avis`           | Approuver, rejeter, répondre aux avis + export CSV          |
+| **Rapports**        | `/admin/rapports`       | Graphiques CA, RDV, soins populaires, conversion            |
+| **Fidélité**        | `/admin/fidelite`       | Voir/ajuster les points, consulter les historiques          |
+| **Parrainages**     | `/admin/parrainages`    | Activer, récompenser, supprimer les parrainages             |
+| **Communauté**      | `/admin/communaute`     | Statistiques + modération des signalements                  |
+| **Événements**      | `/admin/evenements`     | Créer, modifier, supprimer les événements                   |
+| **Groupes**         | `/admin/groupes`        | Créer, gérer, supprimer les groupes                         |
+| **Signalements**    | `/admin/signalements`   | Traiter les contenus signalés                               |
+| **Messages**        | `/admin/messages`       | Messagerie avec les utilisateurs                            |
+| **Professionnels**  | `/admin/professionnels` | Gérer les profils des sage-femmes et praticiens             |
+| **Vérification**    | `/admin/verification`   | Vérifier les comptes (badge confiance)                      |
+| **Blocages**        | `/admin/blocages`       | Gérer les relations de blocage entre membres                |
+| **Paramètres**      | `/admin/parametres`     | Infos du centre, gestion du personnel, logs d'accès         |
 
 ---
 
 ## 🌍 Pages publiques disponibles
 
-| Page                | Adresse                 | Contenu                                                            |
-| ------------------- | ----------------------- | ------------------------------------------------------------------ |
-| Page d'accueil      | `/`                     | Présentation de l'institut                                         |
-| Soins & Services    | `/soins`                | Catalogue complet des soins                                        |
-| Boutique            | `/boutique`             | Produits naturels en vente                                         |
-| Blog                | `/blog`                 | Articles et conseils                                               |
-| Sage-femme          | `/sage-femme`           | Services de la sage-femme                                          |
-| Avis                | `/avis`                 | Avis clients                                                       |
-| Contact             | `/contact`              | Formulaire de contact                                              |
-| À propos            | `/a-propos`             | L'histoire de l'institut                                           |
-| Communauté          | `/decouvrir-communaute` | Aperçu public : stats, posts récents, événements, CTA inscription  |
-| Prise de RDV        | `/prise-rdv`            | Réserver un créneau                                                |
+| Page             | Adresse                 | Contenu                                                           |
+| ---------------- | ----------------------- | ----------------------------------------------------------------- |
+| Page d'accueil   | `/`                     | Présentation de l'institut                                        |
+| Soins & Services | `/soins`                | Catalogue complet des soins                                       |
+| Boutique         | `/boutique`             | Produits naturels en vente                                        |
+| Blog             | `/blog`                 | Articles et conseils                                              |
+| Sage-femme       | `/sage-femme`           | Services de la sage-femme                                         |
+| Avis             | `/avis`                 | Avis clients                                                      |
+| Contact          | `/contact`              | Formulaire de contact                                             |
+| À propos         | `/a-propos`             | L'histoire de l'institut                                          |
+| Communauté       | `/decouvrir-communaute` | Aperçu public : stats, posts récents, événements, CTA inscription |
+| Prise de RDV     | `/prise-rdv`            | Réserver un créneau                                               |
 
 ---
 
@@ -936,8 +972,10 @@ Voici **toutes les pages** de votre panel admin avec ce qu'elles font :
 | **Si besoin**      | Vérifier des comptes utilisateurs    | 5 min        |
 | **Si besoin**      | Gérer les blocages signalés          | 5 min        |
 
-**Temps total : environ 45 minutes par jour + 40 min par semaine + 30 min par mois**
+**Temps total : environ 45 minutes par jour + 40 min par semaine + 30 min par
+mois**
 
 ---
 
-_Guide mis à jour le 23 mars 2026 — Le Surnaturel de Dieu — Version complète (toutes fonctionnalités documentées)_
+_Guide mis à jour le 23 mars 2026 — Le Surnaturel de Dieu — Version complète
+(toutes fonctionnalités documentées)_

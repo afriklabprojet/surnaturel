@@ -11,43 +11,43 @@
 
 ### Tout ce qui est en ligne et opérationnel
 
-| Fonctionnalité              | État       | Détail                                                             |
-| --------------------------- | ---------- | ------------------------------------------------------------------ |
-| Page d'accueil              | ✅ Complet | Prêt pour la production                                            |
-| Catalogue des soins         | ✅ Complet | 16 soins + 3 forfaits, page détaillée par soin                     |
-| Boutique en ligne           | ✅ Complet | Produits, panier, checkout                                         |
-| Paiement Jeko Africa        | ✅ Complet | Wave, Orange, MTN, Moov, Djamo                                     |
-| Page sage-femme             | ✅ Complet | Prêt                                                               |
-| Prise de rendez-vous        | ✅ Complet | Réservation + QR code billet réel                                  |
-| Blog                        | ✅ Complet | Création, affichage, OG images dynamiques                          |
-| Pages About / Contact       | ✅ Complet | Prêt                                                               |
-| Inscription / Connexion     | ✅ Complet | NextAuth email/mot de passe                                        |
-| Emails automatiques         | ✅ Complet | Inscription, RDV, commande, rappels                                |
-| Panel admin                 | ✅ Complet | 20+ modules (soins, commandes, blog, clients, avis…)               |
-| Tableau de bord client      | ✅ Complet | RDV, commandes, profil, notifications, favoris                     |
-| Programme de fidélité       | ✅ Complet | API + interface, points automatiques                               |
-| Système d'avis              | ✅ Complet | API + page publique                                                |
-| Parrainage                  | ✅ Complet | API + interface, code BIENVENUE10                                  |
-| Suivi médical               | ✅ Complet | Dossier chiffré, mesures, graphiques Recharts, alertes, export PDF |
-| Communauté                  | ✅ Complet | Feed, groupes, événements, stories, messagerie, signalements       |
-| Communauté publique         | ✅ Complet | Page `/decouvrir-communaute` avec stats et aperçu                  |
-| Messagerie temps réel       | ✅ Complet | Pusher, ChatBubble, conversations, recherche                       |
-| Admin signalements          | ✅ Complet | Panel modération : rejeter / supprimer / résolu                    |
-| SEO complet                 | ✅ Complet | robots.txt, JSON-LD, OG dynamiques, Sitemap étendu                 |
-| Monitoring                  | ✅ Complet | `/api/health` vérifie DB et statut                                 |
-| PWA                         | ✅ Complet | Manifest, service worker, cache hors-ligne                         |
-| Chat IA soins               | ✅ Complet | Assistant bien-être — recommandations personnalisées               |
-| QR code réel                | ✅ Complet | Connecté à l'API, données réelles                                  |
-| Timezone fix                | ✅ Complet | Heures RDV affichées en Africa/Abidjan                             |
-| Résumé IA consultations     | ✅ Complet | Synthèse IA d'un client (stats, préférences, alertes)             |
-| Rapports avancés            | ✅ Complet | Graphiques CA, RDV, soins populaires, taux de conversion          |
-| Export CSV admin            | ✅ Complet | Export clients, commandes, RDV, avis en fichier Excel             |
-| Chat IA personnalisé        | ✅ Complet | Recommandations basées sur l'historique du client connecté        |
-| Multi-langue FR/EN          | ✅ Complet | Bascule dans la navbar, traductions des éléments de navigation    |
-| Google My Business          | ✅ Complet | JSON-LD enrichi + API agrégation avis                             |
-| Mode sombre                 | ✅ Complet | Toggle dans la navbar, mémorisé en localStorage                   |
-| Tests automatisés           | ✅ Complet | 22 tests Vitest (utilitaires + APIs)                              |
-| Vercel Analytics            | ✅ Complet | @vercel/analytics + @vercel/speed-insights                        |
+| Fonctionnalité          | État       | Détail                                                             |
+| ----------------------- | ---------- | ------------------------------------------------------------------ |
+| Page d'accueil          | ✅ Complet | Prêt pour la production                                            |
+| Catalogue des soins     | ✅ Complet | 16 soins + 3 forfaits, page détaillée par soin                     |
+| Boutique en ligne       | ✅ Complet | Produits, panier, checkout                                         |
+| Paiement Jeko Africa    | ✅ Complet | Wave, Orange, MTN, Moov, Djamo                                     |
+| Page sage-femme         | ✅ Complet | Prêt                                                               |
+| Prise de rendez-vous    | ✅ Complet | Réservation + QR code billet réel                                  |
+| Blog                    | ✅ Complet | Création, affichage, OG images dynamiques                          |
+| Pages About / Contact   | ✅ Complet | Prêt                                                               |
+| Inscription / Connexion | ✅ Complet | NextAuth email/mot de passe                                        |
+| Emails automatiques     | ✅ Complet | Inscription, RDV, commande, rappels                                |
+| Panel admin             | ✅ Complet | 20+ modules (soins, commandes, blog, clients, avis…)               |
+| Tableau de bord client  | ✅ Complet | RDV, commandes, profil, notifications, favoris                     |
+| Programme de fidélité   | ✅ Complet | API + interface, points automatiques                               |
+| Système d'avis          | ✅ Complet | API + page publique                                                |
+| Parrainage              | ✅ Complet | API + interface, code BIENVENUE10                                  |
+| Suivi médical           | ✅ Complet | Dossier chiffré, mesures, graphiques Recharts, alertes, export PDF |
+| Communauté              | ✅ Complet | Feed, groupes, événements, stories, messagerie, signalements       |
+| Communauté publique     | ✅ Complet | Page `/decouvrir-communaute` avec stats et aperçu                  |
+| Messagerie temps réel   | ✅ Complet | Pusher, ChatBubble, conversations, recherche                       |
+| Admin signalements      | ✅ Complet | Panel modération : rejeter / supprimer / résolu                    |
+| SEO complet             | ✅ Complet | robots.txt, JSON-LD, OG dynamiques, Sitemap étendu                 |
+| Monitoring              | ✅ Complet | `/api/health` vérifie DB et statut                                 |
+| PWA                     | ✅ Complet | Manifest, service worker, cache hors-ligne                         |
+| Chat IA soins           | ✅ Complet | Assistant bien-être — recommandations personnalisées               |
+| QR code réel            | ✅ Complet | Connecté à l'API, données réelles                                  |
+| Timezone fix            | ✅ Complet | Heures RDV affichées en Africa/Abidjan                             |
+| Résumé IA consultations | ✅ Complet | Synthèse IA d'un client (stats, préférences, alertes)              |
+| Rapports avancés        | ✅ Complet | Graphiques CA, RDV, soins populaires, taux de conversion           |
+| Export CSV admin        | ✅ Complet | Export clients, commandes, RDV, avis en fichier Excel              |
+| Chat IA personnalisé    | ✅ Complet | Recommandations basées sur l'historique du client connecté         |
+| Multi-langue FR/EN      | ✅ Complet | Bascule dans la navbar, traductions des éléments de navigation     |
+| Google My Business      | ✅ Complet | JSON-LD enrichi + API agrégation avis                              |
+| Mode sombre             | ✅ Complet | Toggle dans la navbar, mémorisé en localStorage                    |
+| Tests automatisés       | ✅ Complet | 22 tests Vitest (utilitaires + APIs)                               |
+| Vercel Analytics        | ✅ Complet | @vercel/analytics + @vercel/speed-insights                         |
 
 > **Résultat** : 35+ fonctionnalités livrées. Le site est complet et
 > opérationnel pour accueillir des clientes dès maintenant.
@@ -99,13 +99,13 @@ meilleure fidélisation.
 
 > Déployé le 22 mars 2026 (commit `2c2a26e`).
 
-| # | Amélioration | Statut |
-|---|---|---|
-| C1 | Résumé IA des consultations | ✅ |
-| C2 | Historique des visites client | ✅ |
-| C3 | Tableau de bord rapports avancés | ✅ |
-| C4 | Chat IA amélioré (avec historique client) | ✅ |
-| C5 | Export CSV des données admin | ✅ |
+| #  | Amélioration                              | Statut |
+| -- | ----------------------------------------- | ------ |
+| C1 | Résumé IA des consultations               | ✅     |
+| C2 | Historique des visites client             | ✅     |
+| C3 | Tableau de bord rapports avancés          | ✅     |
+| C4 | Chat IA amélioré (avec historique client) | ✅     |
+| C5 | Export CSV des données admin              | ✅     |
 
 ---
 
@@ -113,13 +113,13 @@ meilleure fidélisation.
 
 > Déployé le 22 mars 2026 (commit `2c2a26e`).
 
-| # | Amélioration | Statut |
-|---|---|---|
-| D1 | Multi-langue (anglais + français) | ✅ |
-| D2 | Google My Business automatisé | ✅ |
-| D3 | Mode sombre | ✅ |
-| D4 | Tests automatisés (22 tests API + utilitaires) | ✅ |
-| D5 | Analytics avancées (Vercel Analytics + Speed Insights) | ✅ |
+| #  | Amélioration                                           | Statut |
+| -- | ------------------------------------------------------ | ------ |
+| D1 | Multi-langue (anglais + français)                      | ✅     |
+| D2 | Google My Business automatisé                          | ✅     |
+| D3 | Mode sombre                                            | ✅     |
+| D4 | Tests automatisés (22 tests API + utilitaires)         | ✅     |
+| D5 | Analytics avancées (Vercel Analytics + Speed Insights) | ✅     |
 
 ---
 
@@ -127,31 +127,31 @@ meilleure fidélisation.
 
 > **Objectif** : Optimiser l'existant et ajouter des fonctionnalités de confort.
 
-| #  | Amélioration                                       | Pourquoi                                                                         | Impact |
-| -- | -------------------------------------------------- | -------------------------------------------------------------------------------- | ------ |
-| E1 | **Paiement en ligne boutique** (panier complet)    | Permettre le paiement direct du panier via Jeko sans passage par WhatsApp.       | ★★★☆☆  |
-| E2 | **Système de coupons avancé** (admin)              | Interface admin pour créer/gérer des coupons avec date d'expiration, limites.    | ★★★☆☆  |
-| E3 | **Espace sage-femme dédié** (tableau de bord pro)  | Interface dédiée pour la sage-femme : ses RDV du jour, ses patients, ses notes.  | ★★☆☆☆  |
-| E4 | **Application mobile native** (React Native)       | Une vraie app sur l'App Store/Google Play pour celles qui ne savent pas installer une PWA. | ★★☆☆☆  |
-| E5 | **Intégration WhatsApp Business API**              | Notifications RDV par WhatsApp au lieu d'email/SMS.                              | ★★☆☆☆  |
-| E6 | **Système d'abonnements mensuels**                 | Forfaits mensuels payés automatiquement (ex : 2 soins/mois pour X FCFA).        | ★★☆☆☆  |
+| #  | Amélioration                                      | Pourquoi                                                                                   | Impact |
+| -- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------ |
+| E1 | **Paiement en ligne boutique** (panier complet)   | Permettre le paiement direct du panier via Jeko sans passage par WhatsApp.                 | ★★★☆☆  |
+| E2 | **Système de coupons avancé** (admin)             | Interface admin pour créer/gérer des coupons avec date d'expiration, limites.              | ★★★☆☆  |
+| E3 | **Espace sage-femme dédié** (tableau de bord pro) | Interface dédiée pour la sage-femme : ses RDV du jour, ses patients, ses notes.            | ★★☆☆☆  |
+| E4 | **Application mobile native** (React Native)      | Une vraie app sur l'App Store/Google Play pour celles qui ne savent pas installer une PWA. | ★★☆☆☆  |
+| E5 | **Intégration WhatsApp Business API**             | Notifications RDV par WhatsApp au lieu d'email/SMS.                                        | ★★☆☆☆  |
+| E6 | **Système d'abonnements mensuels**                | Forfaits mensuels payés automatiquement (ex : 2 soins/mois pour X FCFA).                   | ★★☆☆☆  |
 
 ---
 
 ## 📅 Ordre de construction recommandé
 
-| Priorité | Phase | Ce que ça apporte |
-|----------|-------|-------------------|
-| 🔴 1     | **A1** — Acompte RDV | Élimine les absences, sécurise vos revenus |
-| 🔴 2     | **A3** — Calendrier disponibilités | Évite les doubles réservations, organise le planning |
-| 🟠 3     | **A2** — SMS de rappel | Les clientes ne ratent plus jamais un RDV |
-| 🟠 4     | **A4** — Demande d'avis automatique | Plus d'avis = plus de nouvelles clientes |
-| 🟡 5     | **B1** — Notifications push | Restez en contact sans effort |
-| 🟡 6     | **B2** — Récompenses fidélité | Motivez les clientes à revenir |
-| 🟢 7     | **A5** — Codes promo campagne | Boostez les promotions ponctuelles |
-| 🟢 8     | **B3+B4** — Galerie + témoignages | Social proof pour convertir les hésitantes |
-| 🔵 9     | **B5** — Newsletter auto | Gardez le contact toutes les semaines |
-| 🔵 10    | **E1-E6** — Améliorations futures | Quand l'institut tourne bien et génère des revenus |
+| Priorité | Phase                               | Ce que ça apporte                                    |
+| -------- | ----------------------------------- | ---------------------------------------------------- |
+| 🔴 1     | **A1** — Acompte RDV                | Élimine les absences, sécurise vos revenus           |
+| 🔴 2     | **A3** — Calendrier disponibilités  | Évite les doubles réservations, organise le planning |
+| 🟠 3     | **A2** — SMS de rappel              | Les clientes ne ratent plus jamais un RDV            |
+| 🟠 4     | **A4** — Demande d'avis automatique | Plus d'avis = plus de nouvelles clientes             |
+| 🟡 5     | **B1** — Notifications push         | Restez en contact sans effort                        |
+| 🟡 6     | **B2** — Récompenses fidélité       | Motivez les clientes à revenir                       |
+| 🟢 7     | **A5** — Codes promo campagne       | Boostez les promotions ponctuelles                   |
+| 🟢 8     | **B3+B4** — Galerie + témoignages   | Social proof pour convertir les hésitantes           |
+| 🔵 9     | **B5** — Newsletter auto            | Gardez le contact toutes les semaines                |
+| 🔵 10    | **E1-E6** — Améliorations futures   | Quand l'institut tourne bien et génère des revenus   |
 
 ---
 

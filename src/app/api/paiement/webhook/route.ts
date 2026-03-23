@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { envoyerEmailCommandePayee } from "@/lib/email"
 import { crediterCommande } from "@/lib/fidelite"
 import { notifierCommandePayee } from "@/lib/notifications"
+import { capturePaymentError } from "@/lib/sentry"
 
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get("x-api-key")
@@ -71,6 +72,12 @@ export async function POST(req: NextRequest) {
       where: { id: commandeId },
       data: { statut: "ANNULEE", paiementId: paymentRequestId },
     })
+
+    capturePaymentError(
+      new Error(`Paiement échoué: ${reference}`),
+      paymentRequestId,
+      { commandeId, montant: commande.total, methode: (body as Record<string, string>).paymentMethod }
+    )
   }
 
   return NextResponse.json({ ok: true })

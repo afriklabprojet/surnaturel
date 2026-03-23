@@ -4,6 +4,7 @@ import crypto from "crypto"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailResetMotDePasse } from "@/lib/email"
+import { captureAuthError } from "@/lib/sentry"
 
 // ─── POST : demander un reset (envoie un email) ─────────────────
 
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Email invalide" }, { status: 400 })
     }
-    console.error("[RESET-PASSWORD POST]", error)
+    captureAuthError(error, undefined, { action: "request-reset" })
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -85,7 +86,7 @@ export async function PUT(req: NextRequest) {
       const msg = error.issues[0]?.message || "Données invalides"
       return NextResponse.json({ error: msg }, { status: 400 })
     }
-    console.error("[RESET-PASSWORD PUT]", error)
+    captureAuthError(error, undefined, { action: "confirm-reset" })
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

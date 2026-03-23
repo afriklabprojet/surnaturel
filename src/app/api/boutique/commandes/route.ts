@@ -3,6 +3,7 @@ import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailConfirmationCommande } from "@/lib/email"
+import { captureApiError } from "@/lib/sentry"
 
 const ligneSchema = z.object({
   produitId: z.string().min(1),
@@ -112,6 +113,9 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erreur lors de la création de la commande"
     const isStockError = message.includes("Stock insuffisant") || message.includes("introuvable")
+    if (!isStockError) {
+      captureApiError(error, { route: "/api/boutique/commandes", method: "POST", userId: session.user?.id })
+    }
     return NextResponse.json(
       { error: message },
       { status: isStockError ? 409 : 500 }
