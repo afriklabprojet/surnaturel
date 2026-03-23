@@ -224,6 +224,9 @@ model Message {
   createdAt      DateTime    @default(now())
 
   @@index([expediteurId, destinataireId])
+  @@index([destinataireId, lu])          // conversations: comptage non-lus
+  @@index([expediteurId, createdAt])     // conversations: tri par date
+  @@index([destinataireId, createdAt])   // historique: pagination
 }
 
 // ─── Messages médicaux (table dédiée, totalement isolée) ─────────
@@ -239,6 +242,9 @@ model MessageMedical {
   createdAt      DateTime @default(now())
 
   @@index([expediteurId, destinataireId])
+  @@index([destinataireId, lu])
+  @@index([expediteurId, createdAt])
+  @@index([destinataireId, createdAt])
 }
 
 model DossierMedical {

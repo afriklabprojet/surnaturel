@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, memo } from "react"
 import { Send, Loader2, MessageSquare, Mic, X, Reply, Play, Pause, CornerDownRight } from "lucide-react"
 import { Avatar } from "@/components/messagerie/ListeConversations"
 
@@ -110,8 +110,8 @@ function groupReactions(reactions: ReactionData[]) {
   return Object.entries(map).map(([type, count]) => ({ type, count }))
 }
 
-/* ━━━━━━━━━━ Lecteur audio vocal ━━━━━━━━━━ */
-function LecteurVocal({ url, duree }: { url: string; duree?: number | null }) {
+/* ━━━━━━━━━━ Lecteur audio vocal (memoized) ━━━━━━━━━━ */
+const LecteurVocal = memo(function LecteurVocal({ url, duree }: { url: string; duree?: number | null }) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -170,7 +170,7 @@ function LecteurVocal({ url, duree }: { url: string; duree?: number | null }) {
       </div>
     </div>
   )
-}
+})
 
 /* ━━━━━━━━━━ Composant principal ━━━━━━━━━━ */
 export default function FenetreChat({

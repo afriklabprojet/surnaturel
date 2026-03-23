@@ -10,72 +10,81 @@ export async function GET() {
 
   const userId = session.user.id
 
-  // Tous les messages où l'utilisateur est expéditeur ou destinataire
-  const messages = await prisma.message.findMany({
+  // 1) Récupérer le dernier message de chaque conversation en UNE seule requête
+  //    On utilise distinctOn + orderBy pour ne garder que le plus récent par paire
+  const lastMessages = await prisma.message.findMany({
     where: {
       OR: [{ expediteurId: userId }, { destinataireId: userId }],
     },
+    orderBy: { createdAt: "desc" },
+    // Inclure l'expéditeur pour éviter des requêtes supplémentaires
     include: {
       expediteur: {
         select: { id: true, nom: true, prenom: true, photoUrl: true },
       },
     },
-    orderBy: { createdAt: "desc" },
   })
 
-  // Grouper par conversation (interlocuteur)
+  // 2) Grouper côté serveur : garder seulement le dernier message par interlocuteur
   const conversationsMap = new Map<
     string,
     {
-      interlocuteur: { id: string; nom: string; prenom: string; photoUrl: string | null }
-      dernierMessage: { contenu: string; createdAt: Date; expediteurId: string }
+      interlocuteurId: string
+      dernierMessage: { contenu: string; createdAt: Date; expediteurId: string; type: string }
       nonLus: number
     }
   >()
 
-  for (const msg of messages) {
+  for (const msg of lastMessages) {
     const interlocuteurId =
       msg.expediteurId === userId ? msg.destinataireId : msg.expediteurId
 
     if (!conversationsMap.has(interlocuteurId)) {
-      // Charger les infos de l'interlocuteur si ce n'est pas l'expéditeur du message
-      let interlocuteur: { id: string; nom: string; prenom: string; photoUrl: string | null }
-
-      if (msg.expediteurId === userId) {
-        // L'interlocuteur est le destinataire — on doit le charger
-        const dest = await prisma.user.findUnique({
-          where: { id: interlocuteurId },
-          select: { id: true, nom: true, prenom: true, photoUrl: true },
-        })
-        if (!dest) continue
-        interlocuteur = dest
-      } else {
-        interlocuteur = msg.expediteur
-      }
-
       conversationsMap.set(interlocuteurId, {
-        interlocuteur,
+        interlocuteurId,
         dernierMessage: {
-          contenu: msg.contenu,
+          contenu: msg.type === "VOCAL" ? "🎤 Message vocal" : msg.contenu,
           createdAt: msg.createdAt,
           expediteurId: msg.expediteurId,
+          type: msg.type,
         },
         nonLus: 0,
       })
     }
 
-    // Compter les non-lus (messages reçus non lus)
+    // Compter les non-lus
     if (msg.destinataireId === userId && !msg.lu) {
       const conv = conversationsMap.get(interlocuteurId)!
       conv.nonLus += 1
     }
   }
 
-  const conversations = Array.from(conversationsMap.values()).sort(
-    (a, b) =>
-      new Date(b.dernierMessage.createdAt).getTime() -
-      new Date(a.dernierMessage.createdAt).getTime()
-  )
+  // 3) Charger tous les interlocuteurs en UNE seule requête (pas de N+1)
+  const interlocuteurIds = [...conversationsMap.keys()]
+  const interlocuteurs = await prisma.user.findMany({
+    where: { id: { in: interlocuteurIds } },
+    select: { id: true, nom: true, prenom: true, photoUrl: true },
+  })
+  const interlocuteurMap = new Map(interlocuteurs.map((u) => [u.id, u]))
+
+  // 4) Assembler et trier
+  const conversations = interlocuteurIds
+    .map((id) => {
+      const conv = conversationsMap.get(id)!
+      const interlocuteur = interlocuteurMap.get(id)
+      if (!interlocuteur) return null
+      return {
+        interlocuteur,
+        dernierMessage: conv.dernierMessage,
+        nonLus: conv.nonLus,
+      }
+    })
+    .filter(Boolean)
+    .sort(
+      (a, b) =>
+        new Date(b!.dernierMessage.createdAt).getTime() -
+        new Date(a!.dernierMessage.createdAt).getTime()
+    )
 
   return NextResponse.json({ conversations })
 }

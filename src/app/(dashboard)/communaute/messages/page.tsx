@@ -320,17 +320,39 @@ export default function PageCommunaute() {
     })
   }
 
-  // ── Indicateur « en train d'écrire » via Pusher ────────
+  // ── Indicateur « en train d'écrire » via Pusher (debounced) ──
+  const typingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastTypingSentRef = useRef(false)
+
   function handleTyping(enCours: boolean) {
     if (!activeInterlocuteur) return
+
+    // Éviter d'envoyer le même état deux fois d'affilée
+    if (enCours === lastTypingSentRef.current && enCours) return
+
+    // Si on arrête d'écrire, envoyer immédiatement
+    if (!enCours) {
+      if (typingDebounceRef.current) clearTimeout(typingDebounceRef.current)
+      lastTypingSentRef.current = false
+      fetch("/api/messages/ecriture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destinataireId: activeInterlocuteur.id, actif: false }),
+      }).catch(() => {})
+      return
+    }
+
+    // Debounce : envoyer "en train d'écrire" au maximum 1 fois / 3s
+    if (typingDebounceRef.current) return
+    lastTypingSentRef.current = true
     fetch("/api/messages/ecriture", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        destinataireId: activeInterlocuteur.id,
-        actif: enCours,
-      }),
+      body: JSON.stringify({ destinataireId: activeInterlocuteur.id, actif: true }),
     }).catch(() => {})
+    typingDebounceRef.current = setTimeout(() => {
+      typingDebounceRef.current = null
+    }, 3000)
   }
 
   if (status === "loading" || loadingConvs) {
