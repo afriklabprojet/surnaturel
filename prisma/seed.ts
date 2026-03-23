@@ -3,7 +3,12 @@ config({ path: ".env.local" })
 
 import { PrismaClient } from "../src/generated/prisma/client"
 import { PrismaNeon } from "@prisma/adapter-neon"
+import { neonConfig } from "@neondatabase/serverless"
+import ws from "ws"
 import bcrypt from "bcryptjs"
+
+// Enable WebSocket in Node.js CLI environment
+neonConfig.webSocketConstructor = ws
 
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter } as never)
@@ -320,6 +325,80 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
     await prisma.rendezVous.create({ data })
   }
   console.log("✅ 5 rendez-vous créés")
+
+  // ─── Clientes fictives + Avis ──────────────────────────────
+  const clientesData = [
+    { email: "adjoua.kone@test.com", nom: "Koné", prenom: "Adjoua", ville: "Cocody" },
+    { email: "fatou.diallo@test.com", nom: "Diallo", prenom: "Fatou", ville: "Plateau" },
+    { email: "mariam.traore@test.com", nom: "Traoré", prenom: "Mariam", ville: "Yopougon" },
+    { email: "awa.coulibaly@test.com", nom: "Coulibaly", prenom: "Awa", ville: "Marcory" },
+    { email: "aminata.bamba@test.com", nom: "Bamba", prenom: "Aminata", ville: "Treichville" },
+    { email: "marie.yao@test.com", nom: "Yao", prenom: "Marie-Claire", ville: "Riviera" },
+    { email: "grace.kouame@test.com", nom: "Kouamé", prenom: "Grâce", ville: "Angré" },
+    { email: "sarah.ouattara@test.com", nom: "Ouattara", prenom: "Sarah", ville: "Abobo" },
+    { email: "rose.koffi@test.com", nom: "Koffi", prenom: "Rose", ville: "Bingerville" },
+    { email: "celine.aka@test.com", nom: "Aka", prenom: "Céline", ville: "Cocody" },
+    { email: "ruth.dje@test.com", nom: "Djé", prenom: "Ruth", ville: "Marcory" },
+    { email: "laure.gnagne@test.com", nom: "Gnagné", prenom: "Laure", ville: "Plateau" },
+  ]
+
+  const clientes = []
+  for (const c of clientesData) {
+    const cl = await prisma.user.upsert({
+      where: { email: c.email },
+      update: {},
+      create: {
+        email: c.email,
+        passwordHash: clientHash,
+        nom: c.nom,
+        prenom: c.prenom,
+        role: "CLIENT",
+        ville: c.ville,
+      },
+    })
+    clientes.push(cl)
+  }
+
+  // Créer un RDV terminé + avis pour chaque cliente
+  const avisTextes = [
+    { note: 5, commentaire: "Depuis que je fais le hammam royal chez Le Surnaturel de Dieu, ma peau a complètement changé. L'accueil est chaleureux, le cadre est apaisant, et Marie Jeanne prend le temps de comprendre vos besoins. C'est mon rituel mensuel !" },
+    { note: 5, commentaire: "J'ai découvert l'institut après mon deuxième accouchement, sur les conseils d'une amie. Le programme post-accouchement m'a vraiment aidée à retrouver confiance en moi. L'équipe est bienveillante et très professionnelle." },
+    { note: 5, commentaire: "Le soin visage éclat est tout simplement extraordinaire ! Ma peau n'a jamais été aussi lumineuse. Je recommande vivement cet institut à toutes les femmes d'Abidjan qui veulent prendre soin d'elles." },
+    { note: 5, commentaire: "Le gommage corps luxe est un vrai moment de bonheur. Ma peau est devenue incroyablement douce et soyeuse. Les produits utilisés sont naturels et sentent divinement bon. J'y retourne chaque mois !" },
+    { note: 4, commentaire: "Très bon soin amincissant, j'ai vu des résultats dès la troisième séance. Le protocole est sérieux et bien expliqué. Juste un petit bémol sur le temps d'attente à l'accueil, mais sinon c'est top." },
+    { note: 5, commentaire: "Marie Jeanne est une vraie professionnelle. Son conseil esthétique m'a permis de trouver la routine parfaite pour ma peau. Je ne jure plus que par ses recommandations. Merci infiniment !" },
+    { note: 5, commentaire: "J'ai offert une carte cadeau hammam + gommage à ma mère pour la fête des mères. Elle est revenue transformée et rayonnante. Depuis, on y va ensemble une fois par mois. Un vrai rituel mère-fille !" },
+    { note: 4, commentaire: "Le soin visage a fait des merveilles sur mon teint. En une seule séance, mes taches se sont atténuées. L'ambiance zen du centre aide vraiment à se détendre. Je recommande les yeux fermés." },
+    { note: 5, commentaire: "Après 3 grossesses, je pensais ne jamais retrouver mon corps d'avant. Le programme post-accouchement m'a prouvé le contraire. En 6 séances, j'ai retrouvé ma confiance et mon énergie." },
+    { note: 5, commentaire: "Le hammam suivi du gommage, c'est le combo parfait. Ma peau est purifiée, douce, et je me sens légère. Le cadre est propre et soigné. C'est vraiment un endroit où on se sent bien." },
+    { note: 4, commentaire: "Très satisfaite du soin amincissant. Les résultats sont visibles et durables si on suit les conseils de l'équipe. Le seul petit moins : j'aimerais des créneaux en soirée, mais sinon rien à redire." },
+    { note: 5, commentaire: "Le Surnaturel de Dieu porte bien son nom ! Chaque visite est une expérience divine. L'accueil, les soins, l'ambiance... tout est parfait. C'est devenu mon endroit préféré à Abidjan." },
+  ]
+
+  for (let i = 0; i < clientes.length; i++) {
+    const soin = soins[i % soins.length]
+    const daysAgo = (i + 1) * 5 // RDVs étalés dans le passé
+    const rdv = await prisma.rendezVous.create({
+      data: {
+        userId: clientes[i].id,
+        soinId: soin.id,
+        dateHeure: new Date(now.getTime() - daysAgo * 86400000),
+        statut: "TERMINE",
+      },
+    })
+    await prisma.avis.create({
+      data: {
+        userId: clientes[i].id,
+        rdvId: rdv.id,
+        soinId: soin.id,
+        note: avisTextes[i].note,
+        commentaire: avisTextes[i].commentaire,
+        publie: true,
+        createdAt: new Date(now.getTime() - (daysAgo - 1) * 86400000),
+      },
+    })
+  }
+  console.log("✅ 12 clientes + 12 avis publiés créés")
 
   console.log("\n🎉 Seed terminé avec succès !")
   console.log("─────────────────────────────────────")

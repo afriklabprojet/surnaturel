@@ -130,9 +130,10 @@ interface Temoignage {
   nom: string
   texte: string
   etoiles: number
+  soin?: string
 }
 
-const TEMOIGNAGES: Temoignage[] = [
+const TEMOIGNAGES_FALLBACK: Temoignage[] = [
   {
     nom: "Adjoua K. — Cocody",
     texte:
@@ -156,6 +157,28 @@ const TEMOIGNAGES: Temoignage[] = [
 // ─── Page Accueil ────────────────────────────────────────────────
 
 export default function PageAccueil() {
+  const [temoignages, setTemoignages] = useState<Temoignage[]>(TEMOIGNAGES_FALLBACK)
+
+  useEffect(() => {
+    fetch("/api/avis/aggregate")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.reviews?.length >= 3) {
+          const top = data.reviews
+            .filter((r: { note: number; commentaire: string }) => r.note >= 4 && r.commentaire)
+            .slice(0, 6)
+            .map((r: { user: { prenom: string; nom: string }; commentaire: string; note: number; soin: { nom: string } }) => ({
+              nom: `${r.user.prenom} ${r.user.nom.charAt(0)}.`,
+              texte: r.commentaire,
+              etoiles: r.note,
+              soin: r.soin?.nom,
+            }))
+          if (top.length >= 3) setTemoignages(top)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <>
       {/* ── 1. Hero Section — 2 colonnes ────────────────────────── */}
@@ -311,9 +334,9 @@ export default function PageAccueil() {
             viewport={{ once: true, margin: "-50px" }}
             className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
           >
-            {TEMOIGNAGES.map((temoignage) => (
+            {temoignages.map((temoignage, idx) => (
               <motion.div
-                key={temoignage.nom}
+                key={temoignage.nom + idx}
                 variants={staggerItem}
                 {...cardHover}
                 className="border-t-2 border-gold bg-white p-8"
@@ -337,6 +360,9 @@ export default function PageAccueil() {
                 <p className="mt-5 font-display text-sm font-medium text-text-main">
                   {temoignage.nom}
                 </p>
+                {temoignage.soin && (
+                  <p className="font-body text-[11px] text-gold">{temoignage.soin}</p>
+                )}
               </motion.div>
             ))}
           </motion.div>

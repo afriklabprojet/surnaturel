@@ -111,7 +111,7 @@ export default function PageDashboard() {
 
         // Avis en attente
         try {
-          const avisRes = await fetch("/api/avis")
+          const avisRes = await fetch("/api/avis?mesAvis=true")
           if (avisRes.ok) {
             const avisData = await avisRes.json()
             setRdvsSansAvis((avisData.rdvsSansAvis || []).slice(0, 3))
