@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Loader2, ArrowLeft } from "lucide-react"
 import ListeConversations from "@/components/messagerie/ListeConversations"
@@ -49,6 +49,8 @@ interface MessageData {
 export default function PageCommunaute() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const toUserId = searchParams.get("to")
 
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeInterlocuteur, setActiveInterlocuteur] =
@@ -137,6 +139,30 @@ export default function PageCommunaute() {
       fetchConversations()
     }
   }, [status, fetchConversations])
+
+  // ── Auto-ouvrir conversation depuis ?to=userId ──────────
+  useEffect(() => {
+    if (!toUserId || status !== "authenticated" || loadingConvs) return
+    const existing = conversations.find((c) => c.interlocuteur.id === toUserId)
+    if (existing) {
+      handleSelectConversation(existing.interlocuteur)
+    } else {
+      fetch(`/api/communaute/profil?userId=${toUserId}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data) {
+            handleNewConversation({
+              id: data.id,
+              nom: data.nom,
+              prenom: data.prenom,
+              photoUrl: data.photoUrl,
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toUserId, status, loadingConvs])
 
   // ── Charger les messages d'une conversation ─────────────
   const fetchMessages = useCallback(async (userId: string) => {

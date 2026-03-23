@@ -316,6 +316,13 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
                 {profil.isFollowing ? "Abonné" : "Suivre"}
               </button>
               <div className="ml-auto flex items-center gap-1">
+                <Link
+                  href={`/communaute/messages?to=${id}`}
+                  className="p-2 text-text-muted-brand hover:text-gold transition-colors"
+                  title="Envoyer un message"
+                >
+                  <MessageCircle size={14} />
+                </Link>
                 <button onClick={handleReport} className="p-2 text-text-muted-brand hover:text-gold transition-colors" title="Signaler">
                   <Flag size={14} />
                 </button>

@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         type: "NOUVEAU_MESSAGE",
         titre: "Nouveau message",
         message: `${message.expediteur.prenom} ${message.expediteur.nom} vous a envoyé un message`,
-        lien: "/communaute/messagerie",
+        lien: "/communaute/messages",
       })
     }
   } catch { /* notification optionnelle */ }
