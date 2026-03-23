@@ -47,17 +47,37 @@ surnaturel-de-dieu/
 │   │   ├── soins/        ← Page des soins (+ OG images dynamiques)
 │   │   ├── boutique/     ← La boutique
 │   │   ├── blog/         ← Le blog (+ OG images dynamiques)
-│   │   └── decouvrir-communaute/  ← (NOUVEAU) Page publique communauté
+│   │   └── decouvrir-communaute/  ← Page publique communauté
 │   ├── (auth)/           ← Connexion et inscription
 │   ├── (dashboard)/      ← Espace client connecté
-│   ├── (admin)/          ← Panel d'administration
-│   │   └── admin/signalements/  ← (NOUVEAU) Modération signalements
+│   ├── (admin)/          ← Panel d'administration (21 pages)
+│   │   └── admin/
+│   │       ├── page.tsx         ← Tableau de bord
+│   │       ├── rdv/             ← Gestion des rendez-vous
+│   │       ├── commandes/       ← Gestion des commandes
+│   │       ├── soins/           ← Catalogue des soins
+│   │       ├── blog/            ← Gestion du blog
+│   │       ├── clients/         ← Gestion des clients + Résumé IA
+│   │       ├── avis/            ← Modération des avis
+│   │       ├── rapports/        ← Graphiques et statistiques
+│   │       ├── fidelite/        ← Points de fidélité
+│   │       ├── parrainages/     ← Gestion des parrainages
+│   │       ├── communaute/      ← Stats communauté + signalements
+│   │       ├── evenements/      ← Gestion des événements
+│   │       ├── groupes/         ← Gestion des groupes
+│   │       ├── signalements/    ← Modération des signalements
+│   │       ├── messages/        ← Messagerie admin
+│   │       ├── professionnels/  ← Profils des praticiens
+│   │       ├── verification/    ← Vérification des comptes
+│   │       ├── blocages/        ← Gestion des blocages
+│   │       ├── parametres/      ← Infos centre + personnel + logs
+│   │       └── login/           ← Connexion admin
 │   └── api/              ← Les "coulisses" (logique serveur)
-│       └── health/       ← (NOUVEAU) Vérification santé du site
+│       └── health/       ← Vérification santé du site
 │
 ├── src/components/       ← Les morceaux réutilisables
-│   ├── medical/          ← Mesures santé (NOUVEAU : graphiques + alertes)
-│   └── soins/ChatIA.tsx   ← (NOUVEAU) Assistant IA recommandations
+│   ├── medical/          ← Mesures santé (graphiques + alertes)
+│   └── soins/ChatIA.tsx   ← Assistant IA recommandations
 │
 ├── src/lib/              ← Les outils techniques
 │   ├── auth.ts           ← Système de connexion
@@ -65,16 +85,26 @@ surnaturel-de-dieu/
 │   ├── email.ts          ← Envoi d'emails
 │   ├── jeko.ts           ← Paiement mobile
 │   ├── soins-data.ts     ← Liste des soins (modifiable)
-│   └── produits-data.ts  ← Liste des produits (modifiable)
+│   ├── produits-data.ts  ← Liste des produits (modifiable)
+│   └── i18n/             ← Traductions FR/EN
 │
 ├── public/
-│   ├── manifest.json     ← (NOUVEAU) Configuration PWA
-│   ├── robots.txt        ← (NOUVEAU) SEO — indique à Google quoi indexer
-│   └── sw.js             ← (NOUVEAU) Service Worker (cache hors-ligne)
+│   ├── manifest.json     ← Configuration PWA (installation mobile)
+│   ├── robots.txt        ← SEO — indique à Google quoi indexer
+│   └── sw.js             ← Service Worker (cache hors-ligne)
 │
 ├── prisma/
-│   └── schema.prisma     ← Structure de la base de données
+│   ├── schema.prisma     ← Structure de la base de données
+│   ├── create-admins.ts  ← Script création comptes admin
+│   └── seed.ts           ← Données de test (⚠️ ne pas lancer en production)
 │
+├── __tests__/            ← 22 tests automatisés
+│
+├── DEPLOIEMENT.md        ← Comment mettre le site en ligne
+├── GUIDE-UTILISATION.md  ← Comment utiliser le site au quotidien
+├── MAINTENANCE.md        ← Ce document
+├── ROADMAP-V2.md         ← Ce qu'il reste à construire
+├── MES-IDENTIFIANTS.md   ← Vos identifiants (⚠️ confidentiel, pas sur GitHub)
 └── INSTRUCTIONS.md       ← Les règles du projet
 ```
 
@@ -500,11 +530,17 @@ La base de données n'est pas accessible :
 Les crons sont configurés dans `vercel.json` :
 
 - Rappels RDV : tous les jours à 8h (`0 8 * * *`)
-- Nettoyage stories : toutes les heures
-- Publications planifiées : toutes les minutes
 
-En plan Hobby Vercel, les crons sont limités. Vérifiez dans Vercel > Settings >
-Cron Jobs.
+> **Note** : Le plan Hobby de Vercel ne supporte qu'1 cron job. Les deux autres
+> tâches planifiées (nettoyage stories et publications planifiées) sont définies
+> dans le code mais nécessitent le plan Pro de Vercel pour fonctionner
+> automatiquement. En plan Hobby, seul le rappel RDV quotidien fonctionne.
+>
+> **Alternative gratuite** : Vous pouvez utiliser un service comme
+> [cron-job.org](https://cron-job.org) (gratuit) pour appeler manuellement les
+> URLs suivantes avec le header `Authorization: Bearer VOTRE_CRON_SECRET` :
+> - `https://votre-site.com/api/cron/nettoyage-stories` (toutes les heures)
+> - `https://votre-site.com/api/cron/publication-planifiee` (toutes les minutes)
 
 ### Comment contacter le support technique
 
@@ -534,6 +570,8 @@ Cron Jobs.
 - [ ] Vérifier que la bascule FR/EN fonctionne
 - [ ] Lancer les tests : `npm run test` (22 tests doivent passer)
 - [ ] Consulter Vercel Analytics (onglet Analytics dans Vercel Dashboard)
+- [ ] Vérifier les profils professionnels (`/admin/professionnels`)
+- [ ] Vérifier les paramètres du centre (`/admin/parametres`)
 
 ---
 
@@ -599,6 +637,26 @@ Cron Jobs.
 
 Fichier : `src/lib/i18n/fr.json` (français) ou `src/lib/i18n/en.json` (anglais)
 
+> **Attention au fichier `prisma/seed.ts`** : Ce fichier crée des données de
+> test (utilisateurs, soins, produits, articles de blog, RDV). **Ne le lancez
+> jamais en production** (`npx prisma db seed`) car il écraserait vos vraies
+> données. Il sert uniquement à un développeur qui travaille en local.
+
+### Réinitialiser les données après un test (local uniquement)
+
+Si un développeur veut repartir de zéro en local :
+
+```bash
+# Supprimer toutes les données et recréer les tables
+npx prisma migrate reset
+
+# Recréer les comptes admin
+npx tsx prisma/create-admins.ts
+```
+
+> **Ne faites JAMAIS `prisma migrate reset` sur la base de production.** Cela
+> supprimerait toutes les données clients.
+
 Le format est simple — clé : valeur :
 
 ```json
@@ -647,5 +705,5 @@ Les tests vérifient :
 
 ---
 
-_Guide mis à jour le 22 mars 2026 — Le Surnaturel de Dieu — Version incluant
-Phases 3-6 + Phases C-D_
+_Guide mis à jour le 23 mars 2026 — Le Surnaturel de Dieu — Version complète
+(toutes les pages admin documentées)_

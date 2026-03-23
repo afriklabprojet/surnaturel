@@ -367,4 +367,4 @@ Après le déploiement, vérifiez que tout fonctionne :
 
 ---
 
-_Document rédigé le 22 mars 2026 — Le Surnaturel de Dieu_
+_Document rédigé le 23 mars 2026 — Le Surnaturel de Dieu_
