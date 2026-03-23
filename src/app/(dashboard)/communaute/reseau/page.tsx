@@ -15,6 +15,7 @@ import {
   Check,
   X,
   MapPin,
+  MessageCircle,
 } from "lucide-react"
 
 interface UserCard {
@@ -250,6 +251,9 @@ function PageReseauContent() {
                   user={c}
                   actionButton={
                     <div className="flex items-center gap-1">
+                      <Link href={`/communaute/messages?to=${c.id}`} className="p-1.5 text-text-muted-brand hover:text-gold transition-colors" title="Envoyer un message">
+                        <MessageCircle size={14} />
+                      </Link>
                       <Link href={`/communaute/profil/${c.id}`} className="px-3 py-1.5 border border-border-brand font-body text-[10px] font-medium uppercase tracking-wider text-text-mid hover:border-gold hover:text-gold transition-colors">
                         Profil
                       </Link>

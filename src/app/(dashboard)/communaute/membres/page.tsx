@@ -12,6 +12,7 @@ import {
   FileText,
   UserPlus,
   X,
+  MessageCircle,
 } from "lucide-react"
 import BadgeVerification from "@/components/ui/BadgeVerification"
 
@@ -242,6 +243,13 @@ export default function PageMembres() {
               )}
 
               <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-border-brand">
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(`/communaute/messages?to=${membre.id}`) }}
+                  className="p-1 text-text-muted-brand hover:text-gold transition-colors cursor-pointer"
+                  title="Envoyer un message"
+                >
+                  <MessageCircle size={12} />
+                </span>
                 <div className="flex items-center gap-1">
                   <FileText size={10} className="text-text-muted-brand" />
                   <span className="font-body text-[10px] text-text-muted-brand">
