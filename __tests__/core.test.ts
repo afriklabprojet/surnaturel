@@ -126,3 +126,61 @@ describe("fidelite", () => {
     expect(typeof mod).toBe("object")
   })
 })
+
+describe("rate-limit", () => {
+  it("allows requests under the limit", async () => {
+    const { createRateLimiter } = await import("../src/lib/rate-limit")
+    const limiter = createRateLimiter({ limit: 3, windowMs: 60_000 })
+
+    const r1 = limiter("ip-test")
+    expect(r1.allowed).toBe(true)
+    expect(r1.remaining).toBe(2)
+
+    const r2 = limiter("ip-test")
+    expect(r2.allowed).toBe(true)
+    expect(r2.remaining).toBe(1)
+
+    const r3 = limiter("ip-test")
+    expect(r3.allowed).toBe(true)
+    expect(r3.remaining).toBe(0)
+  })
+
+  it("blocks requests over the limit", async () => {
+    const { createRateLimiter } = await import("../src/lib/rate-limit")
+    const limiter = createRateLimiter({ limit: 2, windowMs: 60_000 })
+
+    limiter("ip-block")
+    limiter("ip-block")
+
+    const r3 = limiter("ip-block")
+    expect(r3.allowed).toBe(false)
+    expect(r3.remaining).toBe(0)
+    expect(r3.retryAfterSeconds).toBeGreaterThan(0)
+  })
+
+  it("isolates different keys", async () => {
+    const { createRateLimiter } = await import("../src/lib/rate-limit")
+    const limiter = createRateLimiter({ limit: 1, windowMs: 60_000 })
+
+    limiter("ip-a")
+    const ra = limiter("ip-a")
+    expect(ra.allowed).toBe(false)
+
+    const rb = limiter("ip-b")
+    expect(rb.allowed).toBe(true)
+  })
+
+  it("resets after window expires", async () => {
+    const { createRateLimiter } = await import("../src/lib/rate-limit")
+    const limiter = createRateLimiter({ limit: 1, windowMs: 50 }) // 50ms window
+
+    limiter("ip-expire")
+    const blocked = limiter("ip-expire")
+    expect(blocked.allowed).toBe(false)
+
+    await new Promise((r) => setTimeout(r, 60))
+
+    const after = limiter("ip-expire")
+    expect(after.allowed).toBe(true)
+  })
+})

@@ -1,5 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
+import { createRateLimiter } from "@/lib/rate-limit"
+
+/* ━━━━━━━━━━ Rate Limiters ━━━━━━━━━━ */
+
+const authLimiter = createRateLimiter({ limit: 5, windowMs: 15 * 60 * 1000 })   // 5 req / 15 min
+const contactLimiter = createRateLimiter({ limit: 3, windowMs: 60 * 60 * 1000 }) // 3 req / 1 h
+const paiementLimiter = createRateLimiter({ limit: 10, windowMs: 60 * 60 * 1000 }) // 10 req / 1 h
+
+type Limiter = ReturnType<typeof createRateLimiter>
+
+const rateLimitRules: { test: (p: string) => boolean; limiter: Limiter }[] = [
+  { test: (p) => p.startsWith("/api/auth/"),     limiter: authLimiter },
+  { test: (p) => p === "/api/contact",            limiter: contactLimiter },
+  { test: (p) => p.startsWith("/api/paiement/"),  limiter: paiementLimiter },
+]
+
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown"
+  )
+}
+
+/* ━━━━━━━━━━ Auth / Routes protégées ━━━━━━━━━━ */
 
 const protectedRoutes = [
   "/profil",
@@ -20,10 +45,35 @@ const roleRestrictedRoutes: Record<string, string[]> = {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // /admin/login accessible sans session
+  /* ── Rate limiting (avant toute logique auth) ── */
+  const rule = rateLimitRules.find((r) => r.test(pathname))
+  if (rule) {
+    const ip = getClientIp(req)
+    const result = rule.limiter(ip)
+
+    const headers = new Headers()
+    headers.set("X-RateLimit-Limit", String(result.limit))
+    headers.set("X-RateLimit-Remaining", String(result.remaining))
+
+    if (!result.allowed) {
+      headers.set("Retry-After", String(result.retryAfterSeconds))
+      const minutes = Math.ceil(result.retryAfterSeconds / 60)
+      return NextResponse.json(
+        { error: `Trop de tentatives. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.` },
+        { status: 429, headers }
+      )
+    }
+
+    // Autorisé → ajouter les headers informatifs à la réponse
+    const response = NextResponse.next()
+    response.headers.set("X-RateLimit-Limit", String(result.limit))
+    response.headers.set("X-RateLimit-Remaining", String(result.remaining))
+    return response
+  }
+
+  /* ── /admin/login accessible sans session ── */
   if (pathname === "/admin/login") {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    // Si déjà connecté en ADMIN, rediriger vers le dashboard
     if (token && (token.role as string) === "ADMIN") {
       const url = req.nextUrl.clone()
       url.pathname = "/admin"
@@ -43,7 +93,6 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
 
   if (!token) {
-    // Routes admin → rediriger vers /admin/login
     if (pathname.startsWith("/admin")) {
       const url = req.nextUrl.clone()
       url.pathname = "/admin/login"
@@ -60,7 +109,6 @@ export async function middleware(req: NextRequest) {
     if (pathname === route || pathname.startsWith(route + "/")) {
       const userRole = token.role as string
       if (!allowedRoles.includes(userRole)) {
-        // Non-ADMIN tentant d'accéder à /admin → rediriger vers /admin/login
         if (route === "/admin") {
           const url = req.nextUrl.clone()
           url.pathname = "/admin/login"
@@ -71,7 +119,6 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(url)
       }
 
-      // Logger chaque accès à l'espace médical — SANS données médicales
       if (route === "/suivi-medical") {
         console.log(
           `[MEDICAL] userId:${token.id} route:${pathname} at:${new Date().toISOString()}`
@@ -85,6 +132,9 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/api/auth/:path*",
+    "/api/contact",
+    "/api/paiement/:path*",
     "/profil/:path*",
     "/mes-rdv/:path*",
     "/commandes/:path*",
