@@ -93,22 +93,21 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Pusher temps réel
+  // Pusher temps réel + notification en arrière-plan (ne bloque pas la réponse)
   const channelName = PUSHER_CHANNELS.conversation(session.user.id, destinataireId)
-  try {
-    await getPusherServeur().trigger(channelName, PUSHER_EVENTS.NOUVEAU_MESSAGE, message)
-  } catch { /* optionnel */ }
+  getPusherServeur().trigger(channelName, PUSHER_EVENTS.NOUVEAU_MESSAGE, message).catch(() => {})
 
-  // Notification
-  try {
-    await creerNotification({
-      userId: destinataireId,
-      type: "NOUVEAU_MESSAGE",
-      titre: "Nouveau message vocal",
-      message: `${message.expediteur.prenom} ${message.expediteur.nom} vous a envoyé un message vocal`,
-      lien: "/communaute/messages",
-    })
-  } catch { /* optionnel */ }
+  void (async () => {
+    try {
+      await creerNotification({
+        userId: destinataireId,
+        type: "NOUVEAU_MESSAGE",
+        titre: "Nouveau message vocal",
+        message: `${message.expediteur.prenom} ${message.expediteur.nom} vous a envoyé un message vocal`,
+        lien: "/communaute/messages",
+      })
+    } catch { /* optionnel */ }
+  })()
 
   return NextResponse.json({ message }, { status: 201 })
 }

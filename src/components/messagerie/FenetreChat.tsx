@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, memo } from "react"
-import { Send, Loader2, MessageSquare, Mic, X, Reply, Play, Pause, CornerDownRight } from "lucide-react"
+import { Send, Loader2, MessageSquare, Mic, X, Reply, Play, Pause, CornerDownRight, Clock, AlertCircle, RotateCcw } from "lucide-react"
 import { Avatar } from "@/components/messagerie/ListeConversations"
 
 // ─── CSS keyframes pour typing dots + waveform ─────────────────
@@ -53,6 +53,9 @@ interface MessageData {
     prenom: string
     photoUrl: string | null
   }
+  _optimistic?: boolean
+  _status?: "sending" | "sent" | "error"
+  _tempId?: string
 }
 
 interface Interlocuteur {
@@ -71,6 +74,7 @@ interface FenetreChatProps {
   onSendVocal: (file: Blob, duree: number, replyToId?: string) => void
   onReaction: (messageId: string, type: string) => void
   onTyping: (enCours: boolean) => void
+  onRetry?: (tempId: string) => void
   loading: boolean
 }
 
@@ -182,6 +186,7 @@ export default function FenetreChat({
   onSendVocal,
   onReaction,
   onTyping,
+  onRetry,
   loading,
 }: FenetreChatProps) {
   const [saisie, setSaisie] = useState("")
@@ -205,7 +210,7 @@ export default function FenetreChat({
   const streamRef = useRef<MediaStream | null>(null)
 
   const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    bottomRef.current?.scrollIntoView({ behavior: "instant" })
   }, [])
 
   useEffect(() => {
@@ -389,7 +394,7 @@ export default function FenetreChat({
                     </div>
                   )}
 
-                  <div className={`group mb-3 flex ${isMine ? "justify-end" : "justify-start"}`}>
+                  <div className={`group mb-3 flex ${isMine ? "justify-end" : "justify-start"} ${msg._status === "sending" ? "opacity-70" : ""} ${msg._status === "error" ? "opacity-60" : ""}`}>
                     <div className={`relative max-w-[75%] ${isMine ? "items-end" : "items-start"}`}>
                       {!isMine && (
                         <p className="mb-1 font-display text-[12px] text-gold">
@@ -480,9 +485,27 @@ export default function FenetreChat({
                         <span className="font-body text-[10px] text-text-muted-brand">
                           {formatHeureMessage(msg.createdAt)}
                         </span>
-                        {isMine && (
+                        {isMine && msg._status === "sending" && (
+                          <Clock size={10} className="text-text-muted-brand animate-pulse" />
+                        )}
+                        {isMine && msg._status === "error" && (
+                          <button
+                            onClick={() => onRetry?.(msg._tempId!)}
+                            className="flex items-center gap-0.5 text-danger hover:text-danger/80 transition-colors"
+                            title="Erreur — cliquez pour réessayer"
+                          >
+                            <AlertCircle size={10} />
+                            <RotateCcw size={9} />
+                          </button>
+                        )}
+                        {isMine && !msg._status && (
                           <span className={`font-body text-[10px] ${msg.lu ? "text-primary-brand" : "text-text-muted-brand"}`}>
                             ✓✓
+                          </span>
+                        )}
+                        {isMine && msg._status === "sent" && (
+                          <span className="font-body text-[10px] text-text-muted-brand">
+                            ✓
                           </span>
                         )}
                       </div>

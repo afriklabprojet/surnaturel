@@ -44,6 +44,9 @@ interface MessageData {
     prenom: string
     photoUrl: string | null
   }
+  _optimistic?: boolean
+  _status?: "sending" | "sent" | "error"
+  _tempId?: string
 }
 
 export default function PageCommunaute() {
@@ -68,8 +71,13 @@ export default function PageCommunaute() {
   // ── Pusher : écoute temps réel ──────────────────────────
   const handleNouveauMessage = useCallback(
     (msg: MessageData) => {
+      // Skip our own messages — already shown via optimistic update
       if (msg.expediteurId === currentUserId) return
-      setMessages((prev) => [...prev, msg])
+      // Deduplicate: skip if message ID already exists
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
       updateConversationPreview(msg)
 
       if (activeRef.current && msg.expediteurId === activeRef.current.id) {
@@ -205,10 +213,45 @@ export default function PageCommunaute() {
     setShowChat(true)
   }
 
-  // ── Envoyer un message ──────────────────────────────────
-  function handleSendMessage(contenu: string, replyToId?: string) {
-    if (!activeInterlocuteur) return
+  // ── Compteur ID temporaire ──────────────────────────────
+  const tempIdCounter = useRef(0)
 
+  // ── Envoyer un message (optimistic) ─────────────────────
+  function handleSendMessage(contenu: string, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId,
+      expediteurId: currentUserId,
+      destinataireId: activeInterlocuteur.id,
+      contenu,
+      type: "TEXTE",
+      lu: false,
+      createdAt: new Date().toISOString(),
+      replyTo: replyToId ? messages.find((m) => m.id === replyToId) ? {
+        id: replyToId,
+        contenu: messages.find((m) => m.id === replyToId)!.contenu,
+        type: messages.find((m) => m.id === replyToId)!.type,
+        expediteur: messages.find((m) => m.id === replyToId)!.expediteur,
+      } : null : null,
+      reactions: [],
+      expediteur: {
+        id: currentUserId,
+        nom: session.user.nom ?? "",
+        prenom: session.user.prenom ?? "",
+        photoUrl: session.user.photoUrl ?? null,
+      },
+      _optimistic: true,
+      _status: "sending",
+      _tempId: tempId,
+    }
+
+    // Instantly show the message
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    // Send to server in background
     fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -218,17 +261,62 @@ export default function PageCommunaute() {
         ...(replyToId ? { replyToId } : {}),
       }),
     })
-      .then((res) => res.json())
-      .then((data: { message: MessageData }) => {
-        setMessages((prev) => [...prev, data.message])
-        updateConversationPreview(data.message)
+      .then((res) => {
+        if (!res.ok) throw new Error("send failed")
+        return res.json()
       })
-      .catch(() => {})
+      .then((data: { message: MessageData }) => {
+        // Replace optimistic message with real one
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId
+              ? { ...data.message, _status: "sent" as const }
+              : m
+          )
+        )
+      })
+      .catch(() => {
+        // Mark as failed — user can retry
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId
+              ? { ...m, _status: "error" as const }
+              : m
+          )
+        )
+      })
   }
 
-  // ── Envoyer un message vocal ────────────────────────────
+  // ── Envoyer un message vocal (optimistic) ───────────────
   function handleSendVocal(file: Blob, duree: number, replyToId?: string) {
-    if (!activeInterlocuteur) return
+    if (!activeInterlocuteur || !session?.user) return
+
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId,
+      expediteurId: currentUserId,
+      destinataireId: activeInterlocuteur.id,
+      contenu: "🎤 Envoi en cours…",
+      type: "VOCAL",
+      dureeSecondes: duree,
+      lu: false,
+      createdAt: new Date().toISOString(),
+      replyTo: null,
+      reactions: [],
+      expediteur: {
+        id: currentUserId,
+        nom: session.user.nom ?? "",
+        prenom: session.user.prenom ?? "",
+        photoUrl: session.user.photoUrl ?? null,
+      },
+      _optimistic: true,
+      _status: "sending",
+      _tempId: tempId,
+    }
+
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
     const formData = new FormData()
     formData.append("audio", file, "vocal.webm")
     formData.append("destinataireId", activeInterlocuteur.id)
@@ -236,15 +324,44 @@ export default function PageCommunaute() {
     if (replyToId) formData.append("replyToId", replyToId)
 
     fetch("/api/messages/vocal", { method: "POST", body: formData })
-      .then((res) => res.json())
-      .then((data: { message: MessageData }) => {
-        setMessages((prev) => [...prev, data.message])
-        updateConversationPreview(data.message)
+      .then((res) => {
+        if (!res.ok) throw new Error("send failed")
+        return res.json()
       })
-      .catch(() => {})
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId
+              ? { ...data.message, _status: "sent" as const }
+              : m
+          )
+        )
+      })
+      .catch(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId
+              ? { ...m, _status: "error" as const, contenu: "🎤 Message vocal" }
+              : m
+          )
+        )
+      })
   }
 
-  // ── Réagir à un message ─────────────────────────────────
+  // ── Renvoyer un message échoué ───────────────────────────
+  function handleRetry(tempId: string) {
+    const failedMsg = messages.find((m) => m._tempId === tempId)
+    if (!failedMsg || !activeInterlocuteur) return
+
+    // Remove the failed message
+    setMessages((prev) => prev.filter((m) => m._tempId !== tempId))
+
+    // Resend it through the normal optimistic path
+    if (failedMsg.type === "VOCAL") return // Can't retry vocal (blob is gone)
+    handleSendMessage(failedMsg.contenu, failedMsg.replyTo?.id)
+  }
+
+  // ── Réagir à un message ─────────────────────────────────────
   function handleReaction(messageId: string, type: string) {
     if (!activeInterlocuteur) return
     fetch(`/api/messages/${activeInterlocuteur.id}/reaction`, {
@@ -424,6 +541,7 @@ export default function PageCommunaute() {
               onSendVocal={handleSendVocal}
               onReaction={handleReaction}
               onTyping={handleTyping}
+              onRetry={handleRetry}
               loading={loadingMessages}
             />
           </div>

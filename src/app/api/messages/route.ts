@@ -76,26 +76,28 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Émettre l'événement en temps réel via Pusher
+  // Émettre l'événement en temps réel via Pusher (fire-and-forget pour ne pas bloquer la réponse)
   const channelName = PUSHER_CHANNELS.conversation(session.user.id, destinataireId)
-  await getPusherServeur().trigger(channelName, PUSHER_EVENTS.NOUVEAU_MESSAGE, message)
+  getPusherServeur().trigger(channelName, PUSHER_EVENTS.NOUVEAU_MESSAGE, message).catch(() => {})
 
-  // Notification persistante (vérifier préférence)
-  try {
-    const destPrefs = await prisma.user.findUnique({
-      where: { id: destinataireId },
-      select: { notifMessages: true },
-    })
-    if (destPrefs?.notifMessages) {
-      await creerNotification({
-        userId: destinataireId,
-        type: "NOUVEAU_MESSAGE",
-        titre: "Nouveau message",
-        message: `${message.expediteur.prenom} ${message.expediteur.nom} vous a envoyé un message`,
-        lien: "/communaute/messages",
+  // Notification persistante en arrière-plan (ne bloque pas la réponse)
+  void (async () => {
+    try {
+      const destPrefs = await prisma.user.findUnique({
+        where: { id: destinataireId },
+        select: { notifMessages: true },
       })
-    }
-  } catch { /* notification optionnelle */ }
+      if (destPrefs?.notifMessages) {
+        await creerNotification({
+          userId: destinataireId,
+          type: "NOUVEAU_MESSAGE",
+          titre: "Nouveau message",
+          message: `${message.expediteur.prenom} ${message.expediteur.nom} vous a envoyé un message`,
+          lien: "/communaute/messages",
+        })
+      }
+    } catch { /* notification optionnelle */ }
+  })()
 
   return NextResponse.json({ message }, { status: 201 })
 }
