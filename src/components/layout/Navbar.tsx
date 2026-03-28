@@ -41,11 +41,15 @@ const NAVIGATION: NavItem[] = [
     label: "Soins & Services",
     href: "/soins",
     children: [
-      { label: "Hammam", href: "/soins/hammam-royal", icon: "Flame" },
+      { label: "Tous les soins", href: "/soins", icon: "Sparkles" },
+      { label: "Hammam Royal", href: "/soins/hammam-royal", icon: "Flame" },
+      { label: "Hammam Duo", href: "/soins/hammam-duo", icon: "Flame" },
       { label: "Gommage corps", href: "/soins/gommage-corps-luxe", icon: "Sparkles" },
+      { label: "Gommage visage", href: "/soins/gommage-visage-eclat", icon: "Sparkles" },
       { label: "Soin amincissant", href: "/soins/soin-amincissant-expert", icon: "Zap" },
       { label: "Soin du visage", href: "/soins/soin-visage-eclat", icon: "Smile" },
       { label: "Post-accouchement", href: "/soins/programme-post-accouchement", icon: "Baby" },
+      { label: "Sage-femme", href: "/soins/consultation-sage-femme", icon: "Baby" },
       { label: "Conseil esthétique", href: "/soins/conseil-esthetique", icon: "Wand2" },
     ],
   },
@@ -118,35 +122,43 @@ export default function Navbar() {
             >
               {item.children ? (
                 <>
-                  <button
+                  <div
                     className="group flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.06em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                    role="menuitem"
                     aria-expanded={openDropdown === item.label}
                     aria-haspopup="true"
                   >
-                    <span className="relative">
+                    <Link href={item.href} className="relative">
                       {item.label}
                       <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold transition-all duration-300 group-hover:w-full" />
-                    </span>
+                    </Link>
                     <ChevronDown
                       size={13}
                       className={`shrink-0 transition-transform duration-300 ${openDropdown === item.label ? "rotate-180" : ""}`}
                     />
-                  </button>
+                  </div>
                   {openDropdown === item.label && (
                     <div
-                      className="absolute left-0 top-full z-50 mt-0 w-60 animate-dropdown-in border border-border-brand bg-white p-3 shadow-sm"
+                      className="absolute left-0 top-full z-50 mt-0 w-64 animate-dropdown-in border border-border-brand bg-white p-3 shadow-sm"
                     >
-                      {item.children.map((child) => {
+                      {item.children.map((child, idx) => {
                         const Icon = child.icon ? iconMap[child.icon] : null
+                        const isFirst = idx === 0 && child.href === item.href
                         return (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className="flex items-center gap-3 px-3 py-2.5 font-body text-[12px] text-text-mid transition-colors duration-300 hover:text-primary-brand"
-                          >
-                            {Icon && <Icon size={16} className="text-gold" />}
-                            {child.label}
-                          </Link>
+                          <div key={child.href + child.label}>
+                            <Link
+                              href={child.href}
+                              className={`flex items-center gap-3 px-3 py-2.5 font-body text-[12px] transition-colors duration-300 hover:text-primary-brand ${
+                                isFirst
+                                  ? "font-medium text-primary-brand"
+                                  : "text-text-mid"
+                              }`}
+                            >
+                              {Icon && <Icon size={16} className="text-gold" />}
+                              {child.label}
+                            </Link>
+                            {isFirst && <div className="my-1 h-px bg-border-brand" />}
+                          </div>
                         )
                       })}
                     </div>
@@ -272,17 +284,26 @@ export default function Navbar() {
               <li key={item.label} className={i > 0 ? "border-t border-border-brand" : ""}>
                 {item.children ? (
                   <>
-                    <button
-                      className="flex w-full items-center justify-between py-4 font-body text-[13px] font-medium uppercase tracking-widest text-text-main"
-                      onClick={() => toggleMobileDropdown(item.label)}
-                      aria-expanded={openMobileDropdown === item.label}
-                    >
-                      {item.label}
-                      <ChevronDown
-                        size={16}
-                        className={`text-gold transition-transform duration-300 ${openMobileDropdown === item.label ? "rotate-180" : ""}`}
-                      />
-                    </button>
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={item.href}
+                        className="flex-1 py-4 font-body text-[13px] font-medium uppercase tracking-widest text-text-main"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                      <button
+                        className="flex h-10 w-10 items-center justify-center"
+                        onClick={() => toggleMobileDropdown(item.label)}
+                        aria-expanded={openMobileDropdown === item.label}
+                        aria-label={`Ouvrir le sous-menu ${item.label}`}
+                      >
+                        <ChevronDown
+                          size={16}
+                          className={`text-gold transition-transform duration-300 ${openMobileDropdown === item.label ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                    </div>
                     {openMobileDropdown === item.label && (
                       <ul className="mb-4 ml-4 space-y-2 border-l border-gold/30 pl-4">
                         {item.children.map((child) => {
