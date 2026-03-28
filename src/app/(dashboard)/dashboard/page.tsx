@@ -59,6 +59,7 @@ const STATUT_BADGE: Record<string, { bg: string; text: string; label: string }> 
 export default function PageDashboard() {
   const { data: session } = useSession()
   const [loading, setLoading] = useState(true)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [rdvs, setRdvs] = useState<RDV[]>([])
   const [commandes, setCommandes] = useState<Commande[]>([])
   const [stats, setStats] = useState({
@@ -132,6 +133,14 @@ export default function PageDashboard() {
           palier: fideliteData.palierActuel?.nom || "Bronze",
           messagesNonLus: msgData.filter((c: { unread: number }) => c.unread > 0).length,
         })
+
+        // Onboarding : si aucun RDV et aucune commande, c'est un nouvel utilisateur
+        if (rdvData.length === 0 && cmdData.length === 0) {
+          const dismissed = localStorage.getItem("onboarding_dismissed")
+          if (!dismissed) {
+            setShowOnboarding(true)
+          }
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -172,6 +181,91 @@ export default function PageDashboard() {
         <p className="mt-1 font-body text-[14px] text-gold capitalize">{today}</p>
         <div className="mt-3 h-px w-10 bg-gold" />
       </motion.section>
+
+      {/* Onboarding — nouvel utilisateur */}
+      {showOnboarding && (
+        <motion.section
+          variants={staggerItem}
+          className="border border-gold bg-gold-light p-6 sm:p-8"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles size={20} className="text-gold" />
+                <h2 className="font-display text-[22px] font-light text-text-main">
+                  Bienvenue au Surnaturel de Dieu, {prenom} !
+                </h2>
+              </div>
+              <p className="font-body text-[14px] leading-relaxed text-text-mid max-w-2xl">
+                C&apos;est votre première visite dans votre espace personnel. Voici comment commencer :
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowOnboarding(false)
+                localStorage.setItem("onboarding_dismissed", "true")
+              }}
+              className="font-body text-[11px] text-text-muted-brand hover:text-text-main transition-colors"
+              aria-label="Fermer le guide de bienvenue"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <Link
+              href="/prise-rdv"
+              className="flex items-start gap-3 border border-gold/30 bg-white p-4 hover:border-gold transition-colors group"
+            >
+              <div className="flex h-10 w-10 items-center justify-center bg-primary-light shrink-0">
+                <Calendar size={18} className="text-primary-brand" />
+              </div>
+              <div>
+                <p className="font-body text-[13px] font-medium text-text-main group-hover:text-primary-brand transition-colors">
+                  1. Réservez votre premier soin
+                </p>
+                <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+                  Hammam, gommage, visage... Choisissez et réservez en ligne.
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              href="/boutique"
+              className="flex items-start gap-3 border border-gold/30 bg-white p-4 hover:border-gold transition-colors group"
+            >
+              <div className="flex h-10 w-10 items-center justify-center bg-gold-light shrink-0">
+                <ShoppingBag size={18} className="text-gold" />
+              </div>
+              <div>
+                <p className="font-body text-[13px] font-medium text-text-main group-hover:text-gold transition-colors">
+                  2. Découvrez la boutique
+                </p>
+                <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+                  Des produits naturels pour prolonger les bienfaits chez vous.
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              href="/profil"
+              className="flex items-start gap-3 border border-gold/30 bg-white p-4 hover:border-gold transition-colors group"
+            >
+              <div className="flex h-10 w-10 items-center justify-center bg-primary-light shrink-0">
+                <CheckCircle size={18} className="text-primary-brand" />
+              </div>
+              <div>
+                <p className="font-body text-[13px] font-medium text-text-main group-hover:text-primary-brand transition-colors">
+                  3. Complétez votre profil
+                </p>
+                <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+                  Pour un accompagnement personnalisé et des recommandations sur-mesure.
+                </p>
+              </div>
+            </Link>
+          </div>
+        </motion.section>
+      )}
 
       {/* 4 cartes métriques */}
       <motion.div variants={staggerItem} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

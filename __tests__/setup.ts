@@ -61,6 +61,13 @@ export const prismaMock = {
   mention: { createMany: vi.fn() },
   postSauvegarde: { findMany: vi.fn() },
   notification: { create: vi.fn() },
+  codePromo: {
+    findUnique: vi.fn(),
+    update: vi.fn(),
+  },
+  utilisationCode: {
+    create: vi.fn(),
+  },
   $transaction: vi.fn((fn: (tx: typeof prismaMock) => Promise<unknown>) =>
     fn(prismaMock)
   ),
@@ -112,6 +119,13 @@ vi.mock("@/lib/pusher", () => ({
 vi.mock("@/lib/notifications", () => ({
   creerNotification: vi.fn().mockResolvedValue(undefined),
   notifierRDVConfirme: vi.fn().mockResolvedValue(undefined),
+  notifierCommandePayee: vi.fn().mockResolvedValue(undefined),
+}))
+
+/* ───── Fidélité ────────────────────────────────────────────────────── */
+vi.mock("@/lib/fidelite", () => ({
+  crediterCommande: vi.fn().mockResolvedValue(undefined),
+  crediterParrainage: vi.fn().mockResolvedValue(undefined),
 }))
 
 /* ───── Sentry ────────────────────────────────────────────────────── */

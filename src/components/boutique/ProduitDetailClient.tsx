@@ -8,6 +8,10 @@ import {
   Minus,
   Plus,
   Package,
+  Check,
+  Truck,
+  Shield,
+  Leaf,
 } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 import { useCart } from "@/lib/cart-context"
@@ -48,11 +52,16 @@ export default function ProduitDetailClient({
   similaires: ProduitSimilaire[]
 }) {
   const [quantite, setQuantite] = useState(1)
+  const [ajouteAuPanier, setAjouteAuPanier] = useState(false)
+  const [activeTab, setActiveTab] = useState<"description" | "details" | "livraison">("description")
   const { addItem } = useCart()
   const prixEffectif =
     produit.prixPromo && produit.prixPromo < produit.prix
       ? produit.prixPromo
       : produit.prix
+  const reduction = produit.prixPromo && produit.prixPromo < produit.prix
+    ? Math.round(((produit.prix - produit.prixPromo) / produit.prix) * 100)
+    : 0
 
   function decremente() {
     setQuantite((q) => Math.max(1, q - 1))
@@ -71,8 +80,18 @@ export default function ProduitDetailClient({
       imageUrl: produit.imageUrl || "/images/placeholder-produit.jpg",
       stock: produit.stock,
     })
-    setQuantite(1)
+    setAjouteAuPanier(true)
+    setTimeout(() => {
+      setAjouteAuPanier(false)
+      setQuantite(1)
+    }, 1500)
   }
+
+  const TABS = [
+    { id: "description" as const, label: "Description" },
+    { id: "details" as const, label: "Détails" },
+    { id: "livraison" as const, label: "Livraison" },
+  ]
 
   return (
     <>
@@ -117,15 +136,35 @@ export default function ProduitDetailClient({
               {formatPrix(prixEffectif)}
             </p>
             {produit.prixPromo && produit.prixPromo < produit.prix && (
-              <p className="font-body text-[14px] text-text-muted-brand line-through">
-                {formatPrix(produit.prix)}
-              </p>
+              <>
+                <p className="font-body text-[14px] text-text-muted-brand line-through">
+                  {formatPrix(produit.prix)}
+                </p>
+                <span className="bg-gold px-2 py-0.5 font-body text-[10px] font-semibold uppercase text-white">
+                  -{reduction}%
+                </span>
+              </>
             )}
           </div>
 
           <p className="mt-6 font-body text-[14px] leading-relaxed text-text-mid">
-            {produit.descriptionLongue ?? produit.description}
+            {produit.description}
           </p>
+
+          {/* Avantages rapides */}
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            {[
+              { icon: Leaf, text: "100% naturel" },
+              { icon: Truck, text: "Livraison 48h" },
+              { icon: Shield, text: "Qualité garantie" },
+              { icon: Check, text: "Testé dermatologiquement" },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-2">
+                <item.icon size={14} className="text-primary-brand shrink-0" />
+                <span className="font-body text-[11px] text-text-mid">{item.text}</span>
+              </div>
+            ))}
+          </div>
 
           {/* Sélecteur quantité + Ajouter au panier */}
           {produit.stock > 0 ? (
@@ -154,11 +193,25 @@ export default function ProduitDetailClient({
 
               <button
                 onClick={handleAddToCart}
-                className="flex items-center justify-center gap-2 w-full bg-primary-brand px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark"
+                disabled={ajouteAuPanier}
+                className={`flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 ${
+                  ajouteAuPanier
+                    ? "bg-success"
+                    : "bg-primary-brand hover:bg-primary-dark"
+                }`}
               >
-                <ShoppingCart size={18} />
-                Ajouter au panier
-                <span className="transition-transform duration-200">→</span>
+                {ajouteAuPanier ? (
+                  <>
+                    <Check size={18} />
+                    Ajouté au panier !
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    Ajouter au panier
+                    <span className="transition-transform duration-200">→</span>
+                  </>
+                )}
               </button>
               <BtnTextLine href="/boutique" className="mt-3">
                 Continuer mes achats
@@ -167,6 +220,81 @@ export default function ProduitDetailClient({
           ) : (
             <div className="mt-8 border border-red-200 bg-red-50 px-4 py-3 font-body text-[13px] text-danger">
               Ce produit est actuellement en rupture de stock.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Onglets Description / Détails / Livraison */}
+      <div className="mt-12">
+        <div className="flex border-b border-border-brand">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 ${
+                activeTab === tab.id
+                  ? "border-b-2 border-primary-brand text-primary-brand"
+                  : "text-text-muted-brand hover:text-text-main"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="border border-t-0 border-border-brand bg-white p-6 sm:p-8">
+          {activeTab === "description" && (
+            <div className="font-body text-[14px] leading-[1.8] text-text-mid whitespace-pre-line">
+              {produit.descriptionLongue ?? produit.description}
+            </div>
+          )}
+          {activeTab === "details" && (
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex justify-between border-b border-border-brand pb-2">
+                  <span className="font-body text-[12px] text-text-muted-brand">Catégorie</span>
+                  <span className="font-body text-[12px] font-medium text-text-main">{produit.categorie}</span>
+                </div>
+                <div className="flex justify-between border-b border-border-brand pb-2">
+                  <span className="font-body text-[12px] text-text-muted-brand">Disponibilité</span>
+                  <span className={`font-body text-[12px] font-medium ${produit.stock > 0 ? "text-success" : "text-danger"}`}>
+                    {produit.stock > 0 ? `En stock (${produit.stock})` : "Rupture de stock"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-border-brand pb-2">
+                  <span className="font-body text-[12px] text-text-muted-brand">Référence</span>
+                  <span className="font-body text-[12px] font-medium text-text-main">{produit.id.slice(0, 8).toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between border-b border-border-brand pb-2">
+                  <span className="font-body text-[12px] text-text-muted-brand">Ingrédients</span>
+                  <span className="font-body text-[12px] font-medium text-text-main">100% naturels</span>
+                </div>
+              </div>
+            </div>
+          )}
+          {activeTab === "livraison" && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Truck size={18} className="text-primary-brand shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-body text-[13px] font-medium text-text-main">Livraison à Abidjan</p>
+                  <p className="font-body text-[12px] text-text-muted-brand">Livraison sous 48h ouvrées dans Abidjan et communes.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Shield size={18} className="text-primary-brand shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-body text-[13px] font-medium text-text-main">Retours acceptés</p>
+                  <p className="font-body text-[12px] text-text-muted-brand">Retour possible sous 7 jours si le produit est non ouvert.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Package size={18} className="text-primary-brand shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-body text-[13px] font-medium text-text-main">Emballage soigné</p>
+                  <p className="font-body text-[12px] text-text-muted-brand">Chaque commande est emballée avec soin dans un packaging écologique.</p>
+                </div>
+              </div>
             </div>
           )}
         </div>

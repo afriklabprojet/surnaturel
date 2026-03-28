@@ -44,8 +44,8 @@ const NAV_ITEMS = [
 const MOBILE_NAV = [
   { href: "/dashboard", icon: Home, label: "Accueil" },
   { href: "/mes-rdv", icon: Calendar, label: "RDV" },
-  { href: "/communaute", icon: Users, label: "Communauté" },
-  { href: "/communaute/messages", icon: MessageCircle, label: "Messages" },
+  { href: "/fidelite", icon: Gift, label: "Fidélité" },
+  { href: "/commandes", icon: ShoppingBag, label: "Commandes" },
   { href: "/profil", icon: User, label: "Profil" },
 ] as const
 
@@ -287,7 +287,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-brand bg-white py-2 lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-brand bg-white py-2 safe-area-pb lg:hidden">
         {MOBILE_NAV.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
@@ -295,14 +295,17 @@ export default function DashboardLayout({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px] ${
                 active ? "text-primary-brand" : "text-text-muted-brand"
               }`}
             >
-              <Icon size={20} />
-              {active && (
-                <span className="font-body text-[9px] font-medium">{item.label}</span>
-              )}
+              <div className="relative">
+                <Icon size={20} />
+                {active && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-gold rounded-full" />
+                )}
+              </div>
+              <span className={`font-body text-[9px] ${active ? "font-medium" : ""}`}>{item.label}</span>
             </Link>
           )
         })}

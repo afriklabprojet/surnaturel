@@ -76,7 +76,7 @@ export default function SearchBar() {
 
     setLoading(true)
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=5`)
+      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=10`)
       const data = await res.json()
       setResults(data)
       setSelectedIndex(-1)
@@ -223,11 +223,42 @@ export default function SearchBar() {
               ) : results && results.total === 0 ? (
                 <div className="px-4 py-8 text-center">
                   <p className="font-body text-[14px] text-text-mid">
-                    Aucun résultat pour "<span className="font-semibold">{query}</span>"
+                    Aucun résultat pour &quot;<span className="font-semibold">{query}</span>&quot;
                   </p>
-                  <p className="mt-2 font-body text-[13px] text-text-muted-brand">
-                    Essayez avec d'autres termes de recherche
+                  <p className="mt-3 font-body text-[13px] text-text-muted-brand">
+                    Vous cherchiez peut-être :
                   </p>
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    {["Hammam", "Soin visage", "Gommage corporel", "Massage", "Produits naturels", "Manucure"].map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => setQuery(suggestion)}
+                        className="px-3 py-1.5 bg-bg-page border border-border-brand font-body text-[12px] text-text-mid transition-colors duration-200 hover:bg-primary-light hover:border-primary-brand"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-border-brand">
+                    <p className="font-body text-[12px] text-text-muted-brand">
+                      Parcourir par catégorie
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-center gap-2">
+                      {[
+                        { label: "Nos soins", url: "/soins" },
+                        { label: "Boutique", url: "/boutique" },
+                        { label: "Blog", url: "/blog" },
+                      ].map((link) => (
+                        <button
+                          key={link.url}
+                          onClick={() => navigateTo(link.url)}
+                          className="px-3 py-1.5 bg-primary-brand/5 border border-primary-brand/20 font-body text-[12px] text-primary-brand font-medium transition-colors duration-200 hover:bg-primary-brand/10"
+                        >
+                          {link.label} →
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : results && results.total > 0 ? (
                 <div className="py-2">

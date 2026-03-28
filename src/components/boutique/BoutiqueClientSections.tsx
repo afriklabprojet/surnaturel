@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
-import { ChevronLeft, ChevronRight, Package } from "lucide-react"
+import { ChevronLeft, ChevronRight, Package, SlidersHorizontal } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import CarteP from "@/components/boutique/CarteP"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
@@ -148,6 +148,10 @@ export function BoutiqueCatalogue({
   const [categorie, setCategorie] = useState(searchParams.get("categorie") || "tout")
   const [tri, setTri] = useState("popularite")
   const [page, setPage] = useState(1)
+  const [prixMin, setPrixMin] = useState("")
+  const [prixMax, setPrixMax] = useState("")
+  const [enStock, setEnStock] = useState(false)
+  const [showFiltres, setShowFiltres] = useState(false)
   const [produits, setProduits] = useState<Produit[]>(produitsInitiaux)
   const [totalPages, setTotalPages] = useState(pagesInitiales)
   const [loading, setLoading] = useState(false)
@@ -164,6 +168,9 @@ export function BoutiqueCatalogue({
         page: String(page),
         limit: "8",
       })
+      if (prixMin) params.set("prixMin", prixMin)
+      if (prixMax) params.set("prixMax", prixMax)
+      if (enStock) params.set("enStock", "true")
       const res = await fetch(`/api/boutique/produits?${params}`)
       if (res.ok) {
         const data: ProduitsResponse = await res.json()
@@ -175,7 +182,7 @@ export function BoutiqueCatalogue({
     } finally {
       setLoading(false)
     }
-  }, [categorie, tri, page])
+  }, [categorie, tri, page, prixMin, prixMax, enStock])
 
   // Only fetch client-side when filters change (not on initial mount)
   useEffect(() => {
@@ -253,6 +260,22 @@ export function BoutiqueCatalogue({
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowFiltres((v) => !v)}
+                className={`flex items-center gap-2 px-4 py-2.5 border font-body text-[11px] uppercase tracking-[0.12em] transition-colors duration-200 ${
+                  showFiltres || prixMin || prixMax || enStock
+                    ? "border-gold text-gold bg-gold-light"
+                    : "border-border-brand text-neutral-500 hover:border-gold hover:text-gold"
+                }`}
+              >
+                <SlidersHorizontal size={14} />
+                Filtres
+                {(prixMin || prixMax || enStock) && (
+                  <span className="ml-1 w-5 h-5 flex items-center justify-center bg-gold text-white text-[10px] font-medium">
+                    {(prixMin ? 1 : 0) + (prixMax ? 1 : 0) + (enStock ? 1 : 0)}
+                  </span>
+                )}
+              </button>
               <span className="font-body text-[11px] text-text-muted-brand">
                 Trier par
               </span>
@@ -269,6 +292,52 @@ export function BoutiqueCatalogue({
               </select>
             </div>
           </div>
+
+          {/* Panneau de filtres avancés */}
+          {showFiltres && (
+            <div className="mt-4 pt-4 border-t border-border-brand flex flex-col sm:flex-row sm:items-end gap-4">
+              <div className="flex items-center gap-3">
+                <span className="font-body text-[12px] text-text-muted-brand whitespace-nowrap">Prix :</span>
+                <input
+                  type="number"
+                  value={prixMin}
+                  onChange={(e) => { setPrixMin(e.target.value); setPage(1); setHasNavigated(true) }}
+                  placeholder="Min"
+                  min="0"
+                  className="w-24 border border-border-brand bg-white px-3 py-2 font-body text-[12px] text-text-main outline-none focus:border-gold transition-colors duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="font-body text-[12px] text-text-muted-brand">—</span>
+                <input
+                  type="number"
+                  value={prixMax}
+                  onChange={(e) => { setPrixMax(e.target.value); setPage(1); setHasNavigated(true) }}
+                  placeholder="Max"
+                  min="0"
+                  className="w-24 border border-border-brand bg-white px-3 py-2 font-body text-[12px] text-text-main outline-none focus:border-gold transition-colors duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="font-body text-[11px] text-text-muted-brand">FCFA</span>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={enStock}
+                  onChange={(e) => { setEnStock(e.target.checked); setPage(1); setHasNavigated(true) }}
+                  className="w-4 h-4 border-border-brand text-primary-brand focus:ring-primary-brand accent-primary-brand"
+                />
+                <span className="font-body text-[12px] text-text-mid">En stock uniquement</span>
+              </label>
+
+              {(prixMin || prixMax || enStock) && (
+                <button
+                  onClick={() => { setPrixMin(""); setPrixMax(""); setEnStock(false); setPage(1); setHasNavigated(true) }}
+                  className="font-body text-[11px] text-gold underline underline-offset-2 hover:text-primary-brand transition-colors duration-200"
+                >
+                  Réinitialiser les filtres
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

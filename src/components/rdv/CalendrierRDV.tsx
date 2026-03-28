@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Clock, Coffee } from "lucide-react"
 
 const JOURS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+const JOURS_COMPLETS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 const MOIS = [
   "Janvier",
   "Février",
@@ -19,11 +20,13 @@ const MOIS = [
   "Décembre",
 ]
 
-// Créneaux 08h–18h
-const CRENEAUX = Array.from({ length: 11 }, (_, i) => 8 + i)
+// Plages horaires : matin 08h–12h, après-midi 14h–18h (pause déjeuner 12h–14h)
+const CRENEAUX_MATIN = [8, 9, 10, 11]
+const CRENEAUX_APRES_MIDI = [14, 15, 16, 17]
 
 interface CalendrierRDVProps {
   soinId: string
+  soinDuree?: number // durée du soin en minutes
   selectedDate: string | null
   selectedHeure: number | null
   onSelectDate: (date: string) => void
@@ -43,8 +46,17 @@ function formatDateISO(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
 }
 
+function formatDateHumaine(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00")
+  const jourSemaine = JOURS_COMPLETS[d.getDay() === 0 ? 6 : d.getDay() - 1]
+  const jour = d.getDate()
+  const mois = MOIS[d.getMonth()]
+  return `${jourSemaine} ${jour} ${mois}`
+}
+
 export default function CalendrierRDV({
   soinId,
+  soinDuree = 60,
   selectedDate,
   selectedHeure,
   onSelectDate,
@@ -55,6 +67,14 @@ export default function CalendrierRDV({
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
   const [heuresReservees, setHeuresReservees] = useState<number[]>([])
   const [loadingCreneaux, setLoadingCreneaux] = useState(false)
+
+  // Filtrer les créneaux selon la durée du soin
+  const creneauxDisponibles = useCallback(() => {
+    const dureeHeures = Math.ceil(soinDuree / 60)
+    const matin = CRENEAUX_MATIN.filter((h) => h + dureeHeures <= 12)
+    const apresMidi = CRENEAUX_APRES_MIDI.filter((h) => h + dureeHeures <= 18)
+    return { matin, apresMidi }
+  }, [soinDuree])
 
   const fetchDisponibilites = useCallback(
     async (date: string) => {
@@ -110,6 +130,14 @@ export default function CalendrierRDV({
     return d < todayStart
   }
 
+  function isToday(day: number): boolean {
+    return (
+      currentYear === today.getFullYear() &&
+      currentMonth === today.getMonth() &&
+      day === today.getDate()
+    )
+  }
+
   function isPrevDisabled(): boolean {
     return (
       currentYear === today.getFullYear() && currentMonth <= today.getMonth()
@@ -118,30 +146,32 @@ export default function CalendrierRDV({
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth)
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth)
+  const { matin, apresMidi } = creneauxDisponibles()
+  const totalCreneaux = matin.length + apresMidi.length
+  const creneauxLibres = totalCreneaux - heuresReservees.filter(
+    (h) => matin.includes(h) || apresMidi.includes(h)
+  ).length
 
   return (
     <div className="space-y-6">
       {/* Calendrier mensuel */}
-      <div
-        className="rounded-xl border border-gray-200 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-        style={{ borderRadius: "12px" }}
-      >
+      <div className="border border-border-brand bg-white p-4 sm:p-5">
         {/* Header mois */}
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={prevMonth}
             disabled={isPrevDisabled()}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200 hover:bg-primary-light disabled:opacity-30"
+            className="flex h-10 w-10 items-center justify-center transition-colors duration-200 hover:bg-primary-light disabled:opacity-30"
             aria-label="Mois précédent"
           >
             <ChevronLeft size={18} />
           </button>
-          <h3 className="font-heading text-lg font-semibold text-gray-800">
+          <h3 className="font-display text-lg font-light text-text-main">
             {MOIS[currentMonth]} {currentYear}
           </h3>
           <button
             onClick={nextMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200 hover:bg-primary-light"
+            className="flex h-10 w-10 items-center justify-center transition-colors duration-200 hover:bg-primary-light"
             aria-label="Mois suivant"
           >
             <ChevronRight size={18} />
@@ -153,16 +183,15 @@ export default function CalendrierRDV({
           {JOURS.map((jour) => (
             <div
               key={jour}
-              className="py-1 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+              className="py-1.5 text-center font-body text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.1em] text-text-muted-brand"
             >
               {jour}
             </div>
           ))}
         </div>
 
-        {/* Grille jours */}
+        {/* Grille jours — taille tactile 44px min */}
         <div className="grid grid-cols-7 gap-1">
-          {/* Cases vides avant le premier jour */}
           {Array.from({ length: firstDay }, (_, i) => (
             <div key={`empty-${i}`} />
           ))}
@@ -172,6 +201,7 @@ export default function CalendrierRDV({
             const dateStr = formatDateISO(currentYear, currentMonth, day)
             const past = isDatePast(day)
             const isSelected = selectedDate === dateStr
+            const todayDay = isToday(day)
             const isSunday =
               new Date(currentYear, currentMonth, day).getDay() === 0
 
@@ -180,13 +210,16 @@ export default function CalendrierRDV({
                 key={day}
                 disabled={past || isSunday}
                 onClick={() => onSelectDate(dateStr)}
-                className={`flex h-9 w-full items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex h-11 w-full items-center justify-center font-body text-[13px] sm:text-sm font-medium transition-all duration-200 ${
                   isSelected
-                    ? "bg-primary-brand text-white shadow-sm"
-                    : past || isSunday
-                      ? "cursor-not-allowed text-gray-200"
-                      : "text-gray-800 hover:bg-primary-light hover:text-primary-brand"
+                    ? "bg-primary-brand text-white"
+                    : todayDay
+                      ? "border border-gold bg-gold-light text-gold-dark"
+                      : past || isSunday
+                        ? "cursor-not-allowed text-text-muted-brand/30"
+                        : "text-text-main hover:bg-primary-light hover:text-primary-brand"
                 }`}
+                aria-label={`${day} ${MOIS[currentMonth]} ${currentYear}${isSunday ? " (fermé)" : ""}`}
               >
                 {day}
               </button>
@@ -197,42 +230,135 @@ export default function CalendrierRDV({
 
       {/* Créneaux horaires */}
       {selectedDate && (
-        <div
-          className="rounded-xl border border-gray-200 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-          style={{ borderRadius: "12px" }}
-        >
-          <h3 className="mb-4 font-heading text-base font-semibold text-gray-800">
-            Créneaux disponibles
-          </h3>
+        <div className="border border-border-brand bg-white p-4 sm:p-5">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-display text-base font-light text-text-main">
+                {formatDateHumaine(selectedDate)}
+              </h3>
+              <div className="mt-1 flex items-center gap-3">
+                <span className="flex items-center gap-1.5 font-body text-[11px] text-text-muted-brand">
+                  <Clock size={12} />
+                  Durée : {soinDuree} min
+                </span>
+                {!loadingCreneaux && (
+                  <span className="font-body text-[11px] text-primary-brand">
+                    {creneauxLibres} créneau{creneauxLibres > 1 ? "x" : ""} disponible{creneauxLibres > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
           {loadingCreneaux ? (
             <div className="flex items-center justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-brand border-t-transparent" />
+              <div className="h-6 w-6 animate-spin border-2 border-primary-brand border-t-transparent" />
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
-              {CRENEAUX.map((heure) => {
-                const reserve = heuresReservees.includes(heure)
-                const isSelected = selectedHeure === heure
-                const heureStr = `${String(heure).padStart(2, "0")}:00`
+            <div className="space-y-5">
+              {/* Matin */}
+              {matin.length > 0 && (
+                <div>
+                  <p className="mb-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-muted-brand">
+                    Matin
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {matin.map((heure) => {
+                      const reserve = heuresReservees.includes(heure)
+                      const isSelected = selectedHeure === heure
+                      const heureStr = `${String(heure).padStart(2, "0")}:00`
+                      const finMin = (heure * 60 + soinDuree)
+                      const finH = Math.floor(finMin / 60)
+                      const finM = finMin % 60
+                      const finStr = `${String(finH).padStart(2, "0")}:${String(finM).padStart(2, "0")}`
 
-                return (
-                  <button
-                    key={heure}
-                    disabled={reserve}
-                    onClick={() => onSelectHeure(heure)}
-                    className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                      isSelected
-                        ? "border-primary-brand bg-primary-brand text-white"
-                        : reserve
-                          ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-200 line-through"
-                          : "border-gray-200 bg-white text-gray-800 hover:border-primary-brand hover:text-primary-brand"
-                    }`}
-                  >
-                    {heureStr}
-                  </button>
-                )
-              })}
+                      return (
+                        <button
+                          key={heure}
+                          disabled={reserve}
+                          onClick={() => onSelectHeure(heure)}
+                          className={`flex flex-col items-center gap-0.5 border px-3 py-3 font-body transition-all duration-200 ${
+                            isSelected
+                              ? "border-primary-brand bg-primary-brand text-white"
+                              : reserve
+                                ? "cursor-not-allowed border-border-brand bg-bg-page text-text-muted-brand/40 line-through"
+                                : "border-border-brand bg-white text-text-main hover:border-primary-brand hover:text-primary-brand"
+                          }`}
+                          aria-label={`Créneau de ${heureStr} à ${finStr}${reserve ? " — réservé" : ""}`}
+                        >
+                          <span className="text-[14px] font-medium">{heureStr}</span>
+                          <span className={`text-[10px] ${isSelected ? "text-white/70" : "text-text-muted-brand"}`}>
+                            → {finStr}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Pause déjeuner */}
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-border-brand" />
+                <span className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-[0.12em] text-text-muted-brand">
+                  <Coffee size={12} className="text-gold" />
+                  Pause 12h — 14h
+                </span>
+                <div className="h-px flex-1 bg-border-brand" />
+              </div>
+
+              {/* Après-midi */}
+              {apresMidi.length > 0 && (
+                <div>
+                  <p className="mb-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-muted-brand">
+                    Après-midi
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {apresMidi.map((heure) => {
+                      const reserve = heuresReservees.includes(heure)
+                      const isSelected = selectedHeure === heure
+                      const heureStr = `${String(heure).padStart(2, "0")}:00`
+                      const finMin = (heure * 60 + soinDuree)
+                      const finH = Math.floor(finMin / 60)
+                      const finM = finMin % 60
+                      const finStr = `${String(finH).padStart(2, "0")}:${String(finM).padStart(2, "0")}`
+
+                      return (
+                        <button
+                          key={heure}
+                          disabled={reserve}
+                          onClick={() => onSelectHeure(heure)}
+                          className={`flex flex-col items-center gap-0.5 border px-3 py-3 font-body transition-all duration-200 ${
+                            isSelected
+                              ? "border-primary-brand bg-primary-brand text-white"
+                              : reserve
+                                ? "cursor-not-allowed border-border-brand bg-bg-page text-text-muted-brand/40 line-through"
+                                : "border-border-brand bg-white text-text-main hover:border-primary-brand hover:text-primary-brand"
+                          }`}
+                          aria-label={`Créneau de ${heureStr} à ${finStr}${reserve ? " — réservé" : ""}`}
+                        >
+                          <span className="text-[14px] font-medium">{heureStr}</span>
+                          <span className={`text-[10px] ${isSelected ? "text-white/70" : "text-text-muted-brand"}`}>
+                            → {finStr}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Aucun créneau */}
+              {creneauxLibres === 0 && (
+                <div className="py-6 text-center">
+                  <p className="font-body text-[14px] text-text-muted-brand">
+                    Aucun créneau disponible ce jour.
+                  </p>
+                  <p className="mt-1 font-body text-[12px] text-text-muted-brand">
+                    Essayez un autre jour ou contactez-nous.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

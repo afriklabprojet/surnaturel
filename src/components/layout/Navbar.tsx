@@ -244,8 +244,28 @@ export default function Navbar() {
       {/* Mobile full-screen menu */}
         {mobileMenuOpen && (
           <div
-            className="fixed inset-0 top-18 z-40 animate-slide-in-right overflow-y-auto bg-white px-6 pb-10 pt-8 lg:hidden"
+            className="fixed inset-0 top-18 z-40 animate-slide-in-right overflow-y-auto bg-white px-6 pb-10 pt-6 lg:hidden"
           >
+          {/* Raccourcis rapides */}
+          <div className="flex gap-2 mb-6 pb-6 border-b border-border-brand">
+            <Link
+              href="/prise-rdv"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex-1 flex items-center justify-center gap-2 bg-primary-brand px-4 py-3 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-white"
+            >
+              <Sparkles size={14} />
+              Réserver un soin
+            </Link>
+            <Link
+              href="/boutique"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex-1 flex items-center justify-center gap-2 border border-gold bg-gold-light px-4 py-3 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-gold"
+            >
+              <ShoppingCart size={14} />
+              Boutique
+            </Link>
+          </div>
+
           <ul className="space-y-0">
             {NAVIGATION.map((item, i) => (
               <li key={item.label} className={i > 0 ? "border-t border-border-brand" : ""}>
