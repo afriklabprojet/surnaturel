@@ -1,6 +1,7 @@
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
-import { Clock, Tag, Check, ArrowLeft, Gift } from "lucide-react"
+import { Clock, Tag, Check, ArrowLeft, Gift, ChevronRight } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
 import { getIcon } from "@/lib/icon-map"
@@ -69,71 +70,104 @@ export default async function PageDetailSoin({ params }: PageProps) {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative h-[35vh] min-h-64 w-full overflow-hidden lg:h-[40vh]">
-        {/* Fond gradient multicouche */}
-        <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/90 to-primary-dark" />
-        {/* Orbes décoratives */}
-        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-gold/15 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        {/* Icône centrée */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <SoinIcon size={140} className="text-white opacity-[0.06]" />
-        </div>
-        {/* Overlay gradient bas */}
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/50 via-black/20 to-transparent" />
-        {/* Motif lignes */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(255,255,255,0.1) 80px, rgba(255,255,255,0.1) 81px)" }} />
-
-        {/* Badge catégorie */}
-        <div className="absolute left-6 top-6 lg:left-10 lg:top-10">
-          <span className="inline-flex items-center gap-2 bg-gold/90 backdrop-blur-sm px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-white shadow-lg">
-            <Tag size={11} />
-            {soin.categorie.replace(/_/g, " ")}
-          </span>
-        </div>
-
-        {/* Badge soin si présent */}
-        {soin.badge && (
-          <div className="absolute right-6 top-6 lg:right-10 lg:top-10">
-            <span className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-sm px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-primary-brand shadow-lg">
-              <Gift size={11} />
-              {soin.badge}
-            </span>
-          </div>
+      {/* Hero Section — Design raffiné */}
+      <section className="relative w-full overflow-hidden bg-primary-dark">
+        {/* Fond — image ou gradient */}
+        {soin.imageUrl ? (
+          <>
+            <Image
+              src={soin.imageUrl}
+              alt={soin.nom}
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-b from-primary-dark/70 via-primary-dark/50 to-primary-dark/90" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/85 to-primary-dark" />
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(184,151,42,0.4) 1px, transparent 0)", backgroundSize: "48px 48px" }} />
+          </>
         )}
 
-        {/* Titre + infos */}
-        <div className="absolute inset-x-0 bottom-0 px-6 pb-12 lg:px-10 lg:pb-16">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-3 h-px w-16 bg-gold" />
-            <h1 className="font-display text-[36px] font-light text-white sm:text-[44px] lg:text-[56px] drop-shadow-lg">
-              {soin.nom}
-            </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              <span className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 font-body text-[12px] text-white">
-                <Clock size={13} className="text-gold" />
-                {soin.duree} min
-              </span>
-              <span className="flex items-center gap-2 bg-gold/20 backdrop-blur-sm px-3 py-1.5 font-body text-[13px] font-medium text-white">
-                {formatPrix(soin.prix)}
-              </span>
+        {/* Accents décoratifs */}
+        <div className="absolute -right-40 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-gold/8 blur-[120px]" />
+        <div className="absolute -left-20 bottom-0 h-60 w-60 rounded-full bg-white/5 blur-[80px]" />
+
+        {/* Ligne dorée en haut */}
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-gold/60 to-transparent" />
+
+        {/* Overlay gradient bas */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-primary-dark/80 to-transparent" />
+
+        {/* Contenu du hero */}
+        <div className="relative mx-auto max-w-7xl px-6 pb-14 pt-10 lg:px-10 lg:pb-16 lg:pt-12">
+          {/* Fil d'Ariane */}
+          <nav className="mb-10 flex items-center gap-2 font-body text-[11px] text-white/50 lg:mb-14">
+            <Link href="/" className="transition-colors hover:text-white/80">Accueil</Link>
+            <ChevronRight size={10} className="text-gold/50" />
+            <Link href="/soins" className="transition-colors hover:text-white/80">Soins &amp; Services</Link>
+            <ChevronRight size={10} className="text-gold/50" />
+            <span className="text-white/80">{soin.nom}</span>
+          </nav>
+
+          {/* Layout deux colonnes */}
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            {/* Colonne gauche — titre */}
+            <div className="max-w-2xl">
+              {/* Badges */}
+              <div className="mb-5 flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 border border-gold/40 bg-gold/10 backdrop-blur-sm px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.18em] text-gold">
+                  <Tag size={10} />
+                  {soin.categorie.replace(/_/g, " ")}
+                </span>
+                {soin.badge && (
+                  <span className="inline-flex items-center gap-2 border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.18em] text-white">
+                    <Gift size={10} />
+                    {soin.badge}
+                  </span>
+                )}
+              </div>
+
+              {/* Accent doré */}
+              <div className="mb-4 flex items-center gap-3">
+                <div className="h-px w-10 bg-gold/60" />
+                <div className="h-1.5 w-1.5 bg-gold/60" />
+              </div>
+
+              <h1 className="font-display text-[32px] font-light leading-[1.1] text-white sm:text-[42px] lg:text-[52px]">
+                {soin.nom}
+              </h1>
+
+              <p className="mt-4 max-w-lg font-body text-[14px] font-light leading-relaxed text-white/60">
+                {soin.description}
+              </p>
+            </div>
+
+            {/* Colonne droite — infos clés */}
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-3 border border-white/15 bg-white/5 backdrop-blur-sm px-5 py-3">
+                <Clock size={16} className="text-gold" />
+                <div>
+                  <span className="block font-body text-[10px] uppercase tracking-widest text-white/40">Durée</span>
+                  <span className="font-display text-[20px] font-light text-white">{soin.duree} <span className="text-[14px] text-white/60">min</span></span>
+                </div>
+              </div>
+              <div className="h-10 w-px bg-gold/30" />
+              <div className="flex items-center gap-3 border border-gold/30 bg-gold/10 backdrop-blur-sm px-5 py-3">
+                <div>
+                  <span className="block font-body text-[10px] uppercase tracking-widest text-gold/60">Prix</span>
+                  <span className="font-display text-[20px] font-light text-gold">{formatPrix(soin.prix)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Fil d'Ariane */}
-      <div className="border-b border-border-brand bg-white px-6 py-3 lg:px-10">
-        <div className="mx-auto flex max-w-7xl items-center gap-2 font-body text-[12px] text-text-muted-brand">
-          <Link href="/soins" className="flex items-center gap-1 transition-colors duration-300 hover:text-primary-brand">
-            <ArrowLeft size={13} />
-            Soins &amp; Services
-          </Link>
-          <span>/</span>
-          <span className="font-medium text-text-main">{soin.nom}</span>
-        </div>
-      </div>
+        {/* Ligne dorée en bas */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-gold/40 to-transparent" />
+      </section>
 
       {/* Corps — 2 colonnes */}
       <section className="bg-bg-page px-6 py-16 lg:px-10 lg:py-20">

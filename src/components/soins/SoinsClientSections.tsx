@@ -94,21 +94,26 @@ interface HeroSoinsProps {
 
 export function HeroSoins({ nombreSoins, heroIcones }: HeroSoinsProps) {
   return (
-    <section className="relative overflow-hidden bg-linear-to-br from-primary-brand via-primary-brand/95 to-primary-dark px-6 py-16 sm:py-20 lg:px-10">
-      {/* Décorations de fond */}
-      <div className="absolute inset-0 opacity-[0.07]">
-        <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-gold blur-3xl" />
-        <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-white blur-3xl" />
-        <div className="absolute right-1/4 top-1/2 h-64 w-64 rounded-full bg-gold blur-2xl" />
-      </div>
-      {/* Motif lignes */}
+    <section className="relative overflow-hidden bg-primary-dark px-6 py-20 sm:py-24 lg:px-10">
+      {/* Fond gradient sophistiqué */}
+      <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/85 to-primary-dark" />
+
+      {/* Motif points subtil */}
       <div
-        className="absolute inset-0 opacity-5"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(255,255,255,0.1) 60px, rgba(255,255,255,0.1) 61px)",
+            "radial-gradient(circle at 1px 1px, rgba(184,151,42,0.4) 1px, transparent 0)",
+          backgroundSize: "48px 48px",
         }}
       />
+
+      {/* Accents lumineux */}
+      <div className="absolute -right-40 top-0 h-100 w-100 rounded-full bg-gold/10 blur-[120px]" />
+      <div className="absolute -left-20 bottom-0 h-60 w-60 rounded-full bg-white/5 blur-[100px]" />
+
+      {/* Ligne dorée en haut */}
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-gold/50 to-transparent" />
 
       <motion.div
         variants={fadeInUp}
@@ -116,31 +121,47 @@ export function HeroSoins({ nombreSoins, heroIcones }: HeroSoinsProps) {
         animate="animate"
         className="relative mx-auto max-w-4xl text-center"
       >
-        <span className="inline-block bg-gold/20 px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/30">
+        {/* Tag doré */}
+        <span className="inline-flex items-center gap-3 font-body text-[10px] uppercase tracking-[0.25em] text-gold/80">
+          <span className="h-px w-8 bg-gold/40" />
           Notre expertise
+          <span className="h-px w-8 bg-gold/40" />
         </span>
-        <h1 className="mt-6 font-display text-4xl font-light text-white sm:text-5xl lg:text-6xl">
+
+        <h1 className="mt-6 font-display text-4xl font-light text-white sm:text-5xl lg:text-6xl leading-[1.1]">
           Nos Soins &amp; <em className="text-gold italic">Services</em>
         </h1>
-        <p className="mx-auto mt-5 max-w-xl font-body text-[15px] font-light leading-relaxed text-white/75">
+
+        <p className="mx-auto mt-6 max-w-xl font-body text-[14px] font-light leading-[1.8] text-white/60">
           Découvrez notre gamme complète de soins pour votre beauté, votre
           bien-être et votre santé. {nombreSoins} soins experts à votre service.
         </p>
-        <div className="mt-8 flex items-center justify-center gap-6">
+
+        {/* Icônes de catégories */}
+        <div className="mt-10 flex items-center justify-center gap-6">
           {heroIcones.map((ic, idx) => (
             <div key={ic.label} className="flex items-center gap-2">
-              {idx > 0 && <div className="h-6 w-px bg-white/15 mr-4" />}
-              <div className="flex h-10 w-10 items-center justify-center border border-gold/40 bg-gold/10">
+              {idx > 0 && <div className="h-6 w-px bg-white/10 mr-4" />}
+              <div className="flex h-11 w-11 items-center justify-center border border-gold/30 bg-gold/10">
                 <span className="text-[18px]">{ic.emoji}</span>
               </div>
-              <span className="font-body text-[11px] text-white/60 uppercase tracking-wider">
+              <span className="font-body text-[11px] text-white/50 uppercase tracking-wider">
                 {ic.label}
               </span>
             </div>
           ))}
         </div>
-        <div className="mx-auto mt-8 h-px w-20 bg-gold/40" />
+
+        {/* Accent doré central */}
+        <div className="mx-auto mt-10 flex items-center justify-center gap-3">
+          <div className="h-px w-12 bg-gold/30" />
+          <div className="h-1.5 w-1.5 bg-gold/50" />
+          <div className="h-px w-12 bg-gold/30" />
+        </div>
       </motion.div>
+
+      {/* Ligne dorée en bas */}
+      <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-gold/30 to-transparent" />
     </section>
   )
 }
