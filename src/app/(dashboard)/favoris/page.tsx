@@ -84,7 +84,7 @@ export default function FavorisPage() {
   }
 
   const formatPrix = (prix: number) =>
-    prix.toLocaleString("fr-FR") + " FCFA"
+    prix.toLocaleString("fr") + " FCFA"
 
   if (loading) {
     return (

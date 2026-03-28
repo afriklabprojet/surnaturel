@@ -276,7 +276,7 @@ export default function PageAdminFidelite() {
                 <div key={h.id} className="flex items-center justify-between px-3 py-2 border border-border-brand">
                   <div>
                     <p className="font-body text-[13px] text-text-main">{h.raison}</p>
-                    <p className="font-body text-[11px] text-text-muted-brand">{TYPE_LABELS[h.type] || h.type} · {new Date(h.createdAt).toLocaleDateString("fr-FR")}</p>
+                    <p className="font-body text-[11px] text-text-muted-brand">{TYPE_LABELS[h.type] || h.type} · {new Date(h.createdAt).toLocaleDateString("fr")}</p>
                   </div>
                   <span className={`font-body text-[14px] font-semibold ${h.points >= 0 ? "text-emerald-600" : "text-red-500"}`}>
                     {h.points >= 0 ? "+" : ""}{h.points}

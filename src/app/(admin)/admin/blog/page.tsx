@@ -71,7 +71,7 @@ export default function AdminBlogPage() {
                   <tr key={article.id} className="border-t border-border-brand hover:bg-bg-page transition-colors">
                     <td className="px-4 py-3 font-medium text-text-main">{article.titre}</td>
                     <td className="px-4 py-3 text-gray-500">
-                      {new Date(article.createdAt).toLocaleDateString("fr-FR")}
+                      {new Date(article.createdAt).toLocaleDateString("fr")}
                     </td>
                     <td className="px-4 py-3">
                       <span className={cn("px-2 py-0.5 text-xs font-medium", article.publie ? "bg-primary-brand/10 text-primary-brand" : "bg-gray-100 text-gray-500")}>

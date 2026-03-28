@@ -3,7 +3,11 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import type { FaqItem } from "@/lib/soins-data"
+
+interface FaqItem {
+  question: string
+  reponse: string
+}
 
 interface FaqSectionProps {
   faqs: FaqItem[]

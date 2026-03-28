@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -16,26 +16,53 @@ import {
 import { formatPrix } from "@/lib/utils"
 import { useCart } from "@/lib/cart-context"
 
-// ─── Méthodes de paiement Jeko Africa ────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────
 
-const METHODES = [
-  { id: "wave", label: "Wave", color: "#1A9BF4" },
-  { id: "orange", label: "Orange Money", color: "#FF6600" },
-  { id: "mtn", label: "MTN MoMo", color: "#FFC000" },
-  { id: "moov", label: "Moov Money", color: "#0066CC" },
-  { id: "djamo", label: "Djamo", color: "#6C47FF" },
-] as const
-
-type MethodeId = typeof METHODES[number]["id"]
+interface Methode {
+  id: string
+  label: string
+  color: string
+}
 
 // ─── Component ───────────────────────────────────────────────────
 
 export default function PageCheckout() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const codePromo = searchParams.get("promo") || undefined
   const { items, totalPrix } = useCart()
-  const [methode, setMethode] = useState<MethodeId | null>(null)
+  const [methodes, setMethodes] = useState<Methode[]>([])
+  const [methode, setMethode] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [erreur, setErreur] = useState("")
+  const [promoReduction, setPromoReduction] = useState(0)
+  const [promoPourcentage, setPromoPourcentage] = useState(0)
+
+  const totalFinal = promoReduction > 0 ? totalPrix - promoReduction : totalPrix
+
+  useEffect(() => {
+    fetch("/api/config/methodes_paiement")
+      .then(r => r.json())
+      .then(d => setMethodes(d.valeur || []))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!codePromo) return
+    fetch("/api/boutique/promo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: codePromo }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.pourcentage) {
+          setPromoPourcentage(d.pourcentage)
+          setPromoReduction(Math.round(totalPrix * d.pourcentage / 100))
+        }
+      })
+      .catch(() => {})
+  }, [codePromo, totalPrix])
 
   if (items.length === 0) {
     return (
@@ -73,6 +100,7 @@ export default function PageCheckout() {
             produitId: i.id,
             quantite: i.quantite,
           })),
+          codePromo,
         }),
       })
 
@@ -85,13 +113,12 @@ export default function PageCheckout() {
 
       const { commandeId }: { commandeId: string } = await commandeRes.json()
 
-      // 2. Initier le paiement Jeko
+      // 2. Initier le paiement Jeko (montant lu depuis la base côté serveur)
       const paiementRes = await fetch("/api/paiement/initier", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           commandeId,
-          montant: totalPrix,
           methode,
         }),
       })
@@ -144,7 +171,7 @@ export default function PageCheckout() {
 
             {/* Grille méthodes */}
             <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
-              {METHODES.map((m) => (
+              {methodes.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => setMethode(m.id)}
@@ -197,7 +224,7 @@ export default function PageCheckout() {
                 </>
               ) : (
                 <>
-                  Payer {formatPrix(totalPrix)} F CFA
+                  Payer {formatPrix(totalFinal)} F CFA
                   <ArrowRight size={14} />
                 </>
               )}
@@ -258,6 +285,16 @@ export default function PageCheckout() {
                 {formatPrix(totalPrix)}
               </span>
             </div>
+            {promoReduction > 0 && (
+              <div className="mt-2 flex items-center justify-between">
+                <span className="font-body text-[12px] text-primary-brand">
+                  Promo −{promoPourcentage}%
+                </span>
+                <span className="font-body text-[12px] font-medium text-primary-brand">
+                  −{formatPrix(promoReduction)}
+                </span>
+              </div>
+            )}
             <div className="mt-2 flex items-center justify-between">
               <span className="font-body text-[12px] text-text-muted-brand">Livraison</span>
               <span className="font-body text-[12px] text-primary-brand">Gratuite</span>
@@ -270,7 +307,7 @@ export default function PageCheckout() {
                   Total
                 </span>
                 <span className="font-display text-[24px] font-normal text-primary-brand">
-                  {formatPrix(totalPrix)}
+                  {formatPrix(totalFinal)}
                 </span>
               </div>
             </div>

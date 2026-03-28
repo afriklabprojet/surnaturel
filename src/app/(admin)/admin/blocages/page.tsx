@@ -124,7 +124,7 @@ export default function PageAdminBlocages() {
                       </div>
                     </td>
                     <td className="px-4 py-3 font-body text-[12px] text-text-muted-brand">
-                      {new Date(b.createdAt).toLocaleDateString("fr-FR")}
+                      {new Date(b.createdAt).toLocaleDateString("fr")}
                     </td>
                     <td className="px-4 py-3">
                       <button

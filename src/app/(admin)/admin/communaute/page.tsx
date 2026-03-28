@@ -276,7 +276,7 @@ export default function PageAdminCommunaute() {
                           {STATUT_LABELS[sig.statut]?.label}
                         </span>
                         <span className="font-body text-[11px] text-text-muted-brand">
-                          {new Date(sig.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                          {new Date(sig.createdAt).toLocaleDateString("fr", { day: "numeric", month: "short", year: "numeric" })}
                         </span>
                       </div>
 

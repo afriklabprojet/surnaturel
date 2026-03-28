@@ -66,10 +66,10 @@ function formatHeure(dateStr: string): string {
   const oneDay = 86400000
 
   if (diff < oneDay && date.getDate() === now.getDate()) {
-    return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+    return date.toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })
   }
   if (diff < 2 * oneDay) return "Hier"
-  return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })
+  return date.toLocaleDateString("fr", { day: "2-digit", month: "2-digit" })
 }
 
 function formatDateSeparator(dateStr: string): string {
@@ -80,7 +80,7 @@ function formatDateSeparator(dateStr: string): string {
 
   if (diff < oneDay && date.getDate() === now.getDate()) return "Aujourd\u2019hui"
   if (diff < 2 * oneDay) return "Hier"
-  return date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+  return date.toLocaleDateString("fr", { weekday: "long", day: "numeric", month: "long" })
 }
 
 // ── Composant principal ─────────────────────────────────────────
@@ -463,7 +463,7 @@ function ChatMedical({
                         Confidentiel
                       </span>
                       <span className="font-body text-[10px] text-text-muted-brand">
-                        {new Date(msg.createdAt).toLocaleTimeString("fr-FR", {
+                        {new Date(msg.createdAt).toLocaleTimeString("fr", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}

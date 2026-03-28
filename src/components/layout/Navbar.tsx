@@ -25,7 +25,7 @@ import { useI18n } from "@/lib/i18n"
 
 const MiniCart = dynamic(() => import("@/components/boutique/MiniCart"), { ssr: false })
 const ThemeToggle = dynamic(() => import("@/components/layout/ThemeToggle"), { ssr: false })
-const LangSwitch = dynamic(() => import("@/components/layout/LangSwitch"), { ssr: false })
+const SearchBar = dynamic(() => import("@/components/layout/SearchBar"), { ssr: false })
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   Flame, Sparkles, Zap, Smile, Baby, Wand2, Lock, ClipboardList, MessageCircle,
@@ -173,7 +173,7 @@ export default function Navbar() {
 
         {/* Right actions (desktop) */}
         <div className="hidden items-center gap-3 lg:flex shrink-0 ml-2">
-          <LangSwitch />
+          <SearchBar />
           <ThemeToggle />
           <button
             onClick={() => setMiniCartOpen(true)}
@@ -217,7 +217,7 @@ export default function Navbar() {
 
         {/* Mobile: cart + theme + hamburger */}
         <div className="flex items-center gap-2 lg:hidden">
-          <LangSwitch />
+          <SearchBar />
           <ThemeToggle />
           <button
             onClick={() => setMiniCartOpen(true)}

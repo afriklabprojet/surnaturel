@@ -6,6 +6,7 @@ import { z } from "zod/v4"
 const produitSchema = z.object({
   nom: z.string().min(1),
   description: z.string().min(1),
+  descriptionLongue: z.string().nullable().optional(),
   prix: z.number().min(0),
   stock: z.number().int().min(0),
   categorie: z.string().min(1),
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
     data: {
       nom: result.data.nom,
       description: result.data.description,
+      descriptionLongue: result.data.descriptionLongue ?? null,
       prix: result.data.prix,
       stock: result.data.stock,
       categorie: result.data.categorie,

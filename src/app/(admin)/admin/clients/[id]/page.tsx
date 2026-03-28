@@ -6,6 +6,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Calendar, ShoppingBag, TrendingUp, Star, MessageCircle, UserX, Brain, AlertTriangle, Clock } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
+import { useConfirm } from "@/components/ui/confirm-dialog"
+import { toast } from "sonner"
 
 interface ResumeIA {
   resume: string
@@ -69,6 +71,7 @@ interface ClientDetail {
 export default function AdminClientDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const confirm = useConfirm()
   const [client, setClient] = useState<ClientDetail | null>(null)
   const [resume, setResume] = useState<ResumeIA | null>(null)
   const [loading, setLoading] = useState(true)
@@ -92,14 +95,20 @@ export default function AdminClientDetailPage() {
   }
 
   const handleDeactivate = async () => {
-    if (!confirm("Désactiver ce compte client ? Cette action est réversible.")) return
+    const confirmed = await confirm({
+      title: "Désactiver le compte",
+      description: "Désactiver ce compte client ? Cette action est réversible.",
+      confirmLabel: "Désactiver",
+      variant: "warning",
+    })
+    if (!confirmed) return
     const res = await fetch(`/api/admin/clients/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "CLIENT" }),
     })
     if (res.ok) {
-      alert("Compte mis à jour.")
+      toast.success("Compte mis à jour")
       router.refresh()
     }
   }
@@ -178,7 +187,7 @@ export default function AdminClientDetailPage() {
           </div>
           <div>
             <span className="text-[11px] uppercase tracking-widest text-gray-500">Inscrit le</span>
-            <p className="text-text-main mt-0.5">{new Date(client.createdAt).toLocaleDateString("fr-FR")}</p>
+            <p className="text-text-main mt-0.5">{new Date(client.createdAt).toLocaleDateString("fr")}</p>
           </div>
         </div>
       </div>
@@ -229,7 +238,7 @@ export default function AdminClientDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <MiniStat icon={TrendingUp} label="Présence" value={`${resume.stats.tauxPresence}%`} />
               <MiniStat icon={Calendar} label="Fréquence" value={`${resume.stats.frequenceMensuelle}/mois`} />
-              <MiniStat icon={ShoppingBag} label="Panier moyen" value={`${resume.stats.panierMoyen.toLocaleString("fr-FR")} F`} />
+              <MiniStat icon={ShoppingBag} label="Panier moyen" value={`${resume.stats.panierMoyen.toLocaleString("fr")} F`} />
               <MiniStat icon={Clock} label="Dernière visite" value={resume.stats.joursSanVisite !== null ? `${resume.stats.joursSanVisite}j` : "—"} />
             </div>
             {resume.soinsPreferes.length > 0 && (
@@ -280,7 +289,7 @@ export default function AdminClientDetailPage() {
                 <tr key={r.id} className="border-b border-border-brand last:border-0">
                   <td className="py-2.5 text-text-main">{r.soin}</td>
                   <td className="py-2.5 text-gray-500">
-                    {new Date(r.dateHeure).toLocaleDateString("fr-FR")}
+                    {new Date(r.dateHeure).toLocaleDateString("fr")}
                   </td>
                   <td className="py-2.5 text-text-main">{formatPrix(r.prix)}</td>
                   <td className="py-2.5">
@@ -313,7 +322,7 @@ export default function AdminClientDetailPage() {
               {client.commandes.map((c) => (
                 <tr key={c.id} className="border-b border-border-brand last:border-0">
                   <td className="py-2.5 text-gray-500">
-                    {new Date(c.createdAt).toLocaleDateString("fr-FR")}
+                    {new Date(c.createdAt).toLocaleDateString("fr")}
                   </td>
                   <td className="py-2.5 text-text-main">{formatPrix(c.total)}</td>
                   <td className="py-2.5">

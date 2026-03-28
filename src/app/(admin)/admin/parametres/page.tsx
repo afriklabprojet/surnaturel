@@ -309,7 +309,7 @@ export default function AdminParametresPage() {
               <tbody>
                 {logs.map((log) => (
                   <tr key={log.id} className="border-t border-border-brand">
-                    <td className="px-4 py-2.5 text-gray-500">{new Date(log.date).toLocaleString("fr-FR")}</td>
+                    <td className="px-4 py-2.5 text-gray-500">{new Date(log.date).toLocaleString("fr")}</td>
                     <td className="px-4 py-2.5 text-text-main">{log.user}</td>
                     <td className="px-4 py-2.5 text-gray-500">{log.action}</td>
                   </tr>

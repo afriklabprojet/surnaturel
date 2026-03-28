@@ -231,7 +231,7 @@ export default function DossierMedical() {
 
               <p className="font-body text-[11px] text-text-muted-brand">
                 Mise à jour le{" "}
-                {new Date(dossier.updatedAt).toLocaleDateString("fr-FR", {
+                {new Date(dossier.updatedAt).toLocaleDateString("fr", {
                   day: "numeric",
                   month: "long",
                   year: "numeric",

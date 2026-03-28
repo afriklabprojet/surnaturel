@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { fadeInUp, staggerContainer, staggerItem, progressBar } from "@/lib/animations"
-import { Star, Lock, Unlock, Gift, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
+import { Star, Lock, Unlock, Gift, TrendingUp, TrendingDown, Loader2, ShoppingBag, Percent, Sparkles, Package } from "lucide-react"
 import { BtnArrow } from "@/components/ui/buttons"
+import { toast } from "sonner"
 
 interface Palier {
   points: number
@@ -32,17 +33,60 @@ interface FideliteData {
   historique: HistoriqueItem[]
 }
 
+interface Recompense {
+  id: string
+  nom: string
+  description: string
+  pointsRequis: number
+  type: "REDUCTION" | "SOIN_GRATUIT" | "PRODUIT" | "EXPERIENCE" | "AUTRE"
+  valeur: number | null
+  imageUrl: string | null
+  stock: number | null
+  disponible: boolean
+  accessible: boolean
+  pointsManquants: number
+}
+
+interface EchangeEnCours {
+  id: string
+  codeUnique: string
+  statut: string
+  dateExpiration: string | null
+  recompense: Recompense
+}
+
+const TYPE_ICONS: Record<string, typeof Gift> = {
+  REDUCTION: Percent,
+  SOIN_GRATUIT: Sparkles,
+  PRODUIT: Package,
+  EXPERIENCE: Star,
+  AUTRE: Gift,
+}
+
 export default function FidelitePage() {
   const [data, setData] = useState<FideliteData | null>(null)
+  const [recompenses, setRecompenses] = useState<Recompense[]>([])
+  const [echangesEnCours, setEchangesEnCours] = useState<EchangeEnCours[]>([])
   const [loading, setLoading] = useState(true)
   const [utilisant, setUtilisant] = useState<number | null>(null)
+  const [echangeant, setEchangeant] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch("/api/fidelite")
-      if (res.ok) {
-        const json = await res.json()
+      const [fideliteRes, recompensesRes] = await Promise.all([
+        fetch("/api/fidelite"),
+        fetch("/api/fidelite/recompenses"),
+      ])
+      
+      if (fideliteRes.ok) {
+        const json = await fideliteRes.json()
         setData(json)
+      }
+      
+      if (recompensesRes.ok) {
+        const json = await recompensesRes.json()
+        setRecompenses(json.recompenses || [])
+        setEchangesEnCours(json.echangesEnCours || [])
       }
     } catch {
       // silently fail
@@ -76,6 +120,32 @@ export default function FidelitePage() {
       // silently fail
     } finally {
       setUtilisant(null)
+    }
+  }
+
+  async function echangerRecompense(recompense: Recompense) {
+    if (!data || data.points < recompense.pointsRequis || !recompense.disponible) return
+    setEchangeant(recompense.id)
+
+    try {
+      const res = await fetch("/api/fidelite/recompenses/echanger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recompenseId: recompense.id }),
+      })
+
+      const json = await res.json()
+
+      if (res.ok) {
+        toast.success(json.message || "Récompense obtenue !")
+        fetchData()
+      } else {
+        toast.error(json.error || "Erreur lors de l'échange")
+      }
+    } catch {
+      toast.error("Erreur réseau")
+    } finally {
+      setEchangeant(null)
     }
   }
 
@@ -113,7 +183,7 @@ export default function FidelitePage() {
           Vos points fidélité
         </p>
         <p className="mt-2 font-display text-[56px] font-light leading-none text-gold">
-          {data.points.toLocaleString("fr-FR")}
+          {data.points.toLocaleString("fr")}
         </p>
         <p className="mt-1 font-body text-[12px] uppercase tracking-widest text-text-muted-brand">
           points
@@ -191,7 +261,7 @@ export default function FidelitePage() {
                     )}
                   </div>
                   <span className="font-body text-[11px] font-medium text-gold">
-                    {palier.points.toLocaleString("fr-FR")} pts
+                    {palier.points.toLocaleString("fr")} pts
                   </span>
                 </div>
 
@@ -220,6 +290,127 @@ export default function FidelitePage() {
           })}
         </div>
       </motion.section>
+
+      {/* Catalogue de récompenses */}
+      {recompenses.length > 0 && (
+        <motion.section variants={staggerItem}>
+          <h2 className="mb-4 font-display text-[22px] font-light text-text-main">
+            <ShoppingBag className="mr-2 inline-block h-5 w-5 text-gold" />
+            Catalogue de récompenses
+          </h2>
+          
+          {/* Échanges en cours */}
+          {echangesEnCours.length > 0 && (
+            <div className="mb-6 border border-gold/30 bg-gold/5 p-4">
+              <p className="mb-3 font-body text-[12px] font-medium uppercase tracking-widest text-gold">
+                Vos récompenses actives
+              </p>
+              <div className="space-y-2">
+                {echangesEnCours.map((e) => (
+                  <div key={e.id} className="flex items-center justify-between bg-white p-3">
+                    <div>
+                      <p className="font-body text-[14px] font-medium text-text-main">
+                        {e.recompense.nom}
+                      </p>
+                      <p className="font-body text-[12px] text-text-muted-brand">
+                        Code: <span className="font-mono font-medium text-primary-brand">{e.codeUnique}</span>
+                      </p>
+                    </div>
+                    {e.dateExpiration && (
+                      <p className="font-body text-[11px] text-text-muted-brand">
+                        Expire le {new Date(e.dateExpiration).toLocaleDateString("fr")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recompenses.map((r) => {
+              const TypeIcon = TYPE_ICONS[r.type] || Gift
+              const estEchange = echangeant === r.id
+
+              return (
+                <motion.div
+                  key={r.id}
+                  variants={staggerItem}
+                  className={`border transition-all ${
+                    r.accessible && r.disponible
+                      ? "border-primary-brand bg-white hover:shadow-md"
+                      : "border-border-brand bg-bg-page opacity-70"
+                  }`}
+                >
+                  {/* Image ou icône */}
+                  <div className="relative aspect-[2/1] overflow-hidden bg-primary-light/20">
+                    {r.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.imageUrl}
+                        alt={r.nom}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <TypeIcon className="h-12 w-12 text-primary-brand/30" />
+                      </div>
+                    )}
+                    {/* Badge en rupture */}
+                    {!r.disponible && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                        <span className="font-body text-[12px] font-medium text-white">
+                          Rupture de stock
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="font-display text-[16px] font-medium text-text-main line-clamp-1">
+                      {r.nom}
+                    </h3>
+                    <p className="mt-1 line-clamp-2 font-body text-[12px] text-text-muted-brand">
+                      {r.description}
+                    </p>
+
+                    <div className="mt-4 flex items-end justify-between">
+                      <div>
+                        <p className="font-display text-[24px] font-medium text-gold">
+                          {r.pointsRequis.toLocaleString("fr")}
+                        </p>
+                        <p className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">
+                          points
+                        </p>
+                      </div>
+
+                      {r.accessible && r.disponible ? (
+                        <button
+                          onClick={() => echangerRecompense(r)}
+                          disabled={estEchange}
+                          className="bg-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-wider text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+                        >
+                          {estEchange ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            "Échanger"
+                          )}
+                        </button>
+                      ) : (
+                        <p className="font-body text-[11px] text-text-muted-brand">
+                          {!r.disponible
+                            ? "Indisponible"
+                            : `${r.pointsManquants.toLocaleString("fr")} pts manquants`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </motion.section>
+      )}
 
       {/* Comment ça marche */}
       <motion.section
@@ -316,7 +507,7 @@ export default function FidelitePage() {
                     className="border-b border-border-brand last:border-b-0"
                   >
                     <td className="px-4 py-3 font-body text-[12px] text-text-muted-brand">
-                      {new Date(item.createdAt).toLocaleDateString("fr-FR", {
+                      {new Date(item.createdAt).toLocaleDateString("fr", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",

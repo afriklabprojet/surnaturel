@@ -20,22 +20,44 @@ export default function PagePanier() {
   const { items, totalPrix, totalArticles, updateQuantity, removeItem } = useCart()
   const [codePromo, setCodePromo] = useState("")
   const [promoApplique, setPromoApplique] = useState(false)
+  const [promoCode, setPromoCode] = useState("")
+  const [promoPourcentage, setPromoPourcentage] = useState(0)
   const [promoErreur, setPromoErreur] = useState("")
+  const [promoLoading, setPromoLoading] = useState(false)
 
   // Livraison gratuite
   const livraison = 0
 
-  function handleAppliquerPromo() {
-    if (codePromo.toUpperCase() === "BIENVENUE10") {
-      setPromoApplique(true)
-      setPromoErreur("")
-    } else {
-      setPromoErreur("Code promo invalide")
+  async function handleAppliquerPromo() {
+    if (!codePromo.trim()) return
+    setPromoLoading(true)
+    setPromoErreur("")
+    try {
+      const res = await fetch("/api/boutique/promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: codePromo.trim() }),
+      })
+      const data = await res.json()
+      if (data.valide) {
+        setPromoApplique(true)
+        setPromoCode(data.code)
+        setPromoPourcentage(data.pourcentage)
+        setPromoErreur("")
+      } else {
+        setPromoErreur(data.error || "Code promo invalide")
+        setPromoApplique(false)
+        setPromoPourcentage(0)
+      }
+    } catch {
+      setPromoErreur("Impossible de vérifier le code promo.")
       setPromoApplique(false)
+    } finally {
+      setPromoLoading(false)
     }
   }
 
-  const reduction = promoApplique ? Math.round(totalPrix * 0.1) : 0
+  const reduction = promoApplique ? Math.round(totalPrix * (promoPourcentage / 100)) : 0
   const totalFinal = totalPrix - reduction + livraison
 
   if (items.length === 0) {
@@ -203,7 +225,7 @@ export default function PagePanier() {
               </div>
               {promoApplique && (
                 <div className="flex items-center justify-between text-primary-brand">
-                  <span className="font-body text-[12px]">Réduction (10%)</span>
+                  <span className="font-body text-[12px]">Réduction ({promoPourcentage}%)</span>
                   <span className="font-display text-[16px]">-{formatPrix(reduction)}</span>
                 </div>
               )}
@@ -224,9 +246,10 @@ export default function PagePanier() {
                 />
                 <button
                   onClick={handleAppliquerPromo}
-                  className="px-4 py-2 border border-primary-brand font-body text-[10px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
+                  disabled={promoLoading || !codePromo.trim()}
+                  className="px-4 py-2 border border-primary-brand font-body text-[10px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Appliquer
+                  {promoLoading ? "…" : "Appliquer"}
                 </button>
               </div>
               {promoErreur && (
@@ -234,7 +257,7 @@ export default function PagePanier() {
               )}
               {promoApplique && (
                 <p className="mt-2 font-body text-[11px] text-primary-brand">
-                  Code BIENVENUE10 appliqué !
+                  Code {promoCode} appliqué !
                 </p>
               )}
             </div>
@@ -254,7 +277,7 @@ export default function PagePanier() {
 
             {/* Bouton commander */}
             <Link
-              href="/checkout"
+              href={promoCode ? `/checkout?promo=${encodeURIComponent(promoCode)}` : "/checkout"}
               className="mt-6 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
             >
               Commander

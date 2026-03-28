@@ -95,13 +95,13 @@ function formatHeure(dateStr: string): string {
   const oneDay = 86400000
 
   if (diff < oneDay && date.getDate() === now.getDate()) {
-    return date.toLocaleTimeString("fr-FR", {
+    return date.toLocaleTimeString("fr", {
       hour: "2-digit",
       minute: "2-digit",
     })
   }
   if (diff < 2 * oneDay) return "Hier"
-  return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })
+  return date.toLocaleDateString("fr", { day: "2-digit", month: "2-digit" })
 }
 
 // ─── Component ───────────────────────────────────────────────────
@@ -294,7 +294,7 @@ function NouvelleConversationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[480px] border border-border-brand bg-white shadow-xl">
+      <div className="w-full max-w-120 border border-border-brand bg-white shadow-xl">
         {/* Header modale */}
         <div className="flex items-center justify-between border-b border-border-brand px-6 py-4">
           <h3 className="font-display text-[22px] font-normal text-text-main">

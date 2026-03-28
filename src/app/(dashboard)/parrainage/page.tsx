@@ -422,7 +422,7 @@ export default function ParrainagePage() {
                     <td className="hidden px-4 py-3 sm:table-cell">
                       <span className="font-body text-[12px] text-text-muted-brand">
                         {new Date(parrainage.filleul.createdAt).toLocaleDateString(
-                          "fr-FR",
+                          "fr",
                           {
                             day: "2-digit",
                             month: "short",

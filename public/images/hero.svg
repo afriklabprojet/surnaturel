@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F5E3"/>
+      <stop offset="100%" style="stop-color:#FAFAF7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="960" fill="url(#bg)"/>
+  <text x="50%" y="42%" text-anchor="middle" font-family="Georgia,serif" font-size="72" fill="#B8972A" opacity="0.6">✿</text>
+  <text x="50%" y="58%" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="300" fill="#2D7A1F" opacity="0.5">Le Surnaturel de Dieu</text>
+  <text x="50%" y="70%" text-anchor="middle" font-family="sans-serif" font-size="26" fill="#8A8A8A" opacity="0.6">Institut de bien-être — Abidjan</text>
+</svg>

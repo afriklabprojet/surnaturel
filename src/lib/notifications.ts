@@ -63,7 +63,7 @@ export async function creerNotification(params: CreerNotificationParams) {
 
 // Notifications automatiques pour différents événements
 export async function notifierRDVConfirme(userId: string, soinNom: string, dateHeure: Date) {
-  const dateFormatee = dateHeure.toLocaleDateString("fr-FR", {
+  const dateFormatee = dateHeure.toLocaleDateString("fr", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -95,7 +95,7 @@ export async function notifierCommandePayee(userId: string, montant: number) {
     userId,
     type: "COMMANDE_PAYEE",
     titre: "Commande confirmée !",
-    message: `Votre commande de ${montant.toLocaleString("fr-FR")} FCFA est en cours de préparation`,
+    message: `Votre commande de ${montant.toLocaleString("fr")} FCFA est en cours de préparation`,
     lien: "/mes-commandes",
   })
 }

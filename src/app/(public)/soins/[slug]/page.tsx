@@ -2,18 +2,13 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Clock, Tag, Check, ArrowLeft, Gift } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
-import { SOINS_DATA, getSoinBySlug, BIENFAITS_SOINS, ETAPES_SOINS } from "@/lib/soins-data"
+import { prisma } from "@/lib/prisma"
+import { getIcon } from "@/lib/icon-map"
 import SectionTag from "@/components/ui/SectionTag"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
 import StarRating from "@/components/soins/StarRating"
 import SoinAvis from "@/components/soins/SoinAvis"
 import type { Metadata } from "next"
-
-// ─── Génération des slugs statiques ──────────────────────────────
-
-export function generateStaticParams(): { slug: string }[] {
-  return SOINS_DATA.map((soin) => ({ slug: soin.slug }))
-}
 
 // ─── Métadonnées dynamiques ──────────────────────────────────────
 
@@ -25,7 +20,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const soin = getSoinBySlug(slug)
+  const soin = await prisma.soin.findUnique({ where: { slug }, select: { nom: true, description: true } })
   if (!soin) return { title: "Soin introuvable" }
 
   return {
@@ -38,36 +33,62 @@ export async function generateMetadata({
 
 export default async function PageDetailSoin({ params }: PageProps) {
   const { slug } = await params
-  const soin = getSoinBySlug(slug)
+  const soin = await prisma.soin.findUnique({ where: { slug } })
 
-  if (!soin) {
+  if (!soin || !soin.actif) {
     notFound()
   }
 
-  const bienfaits = BIENFAITS_SOINS[slug] || []
-  const etapes = ETAPES_SOINS[slug] || []
-  const autresSoins = SOINS_DATA.filter(
-    (s) => s.slug !== slug && s.categorie === soin.categorie
-  ).slice(0, 3)
-  
-  const soinsSimilaires = autresSoins.length >= 3 
-    ? autresSoins 
-    : SOINS_DATA.filter((s) => s.slug !== slug).slice(0, 3)
+  const etapes = (soin.etapes as Array<{ titre: string; description: string }>) || []
+  const bienfaits = soin.bienfaits || []
+
+  // Charger le bandeau promo
+  const promoConfig = await prisma.appConfig.findUnique({ where: { cle: "bandeau_promo" } })
+  const promo: { actif: boolean; texte: string; code: string; detail: string } | null =
+    promoConfig ? JSON.parse(promoConfig.valeur) : null
+
+  // Soins similaires
+  const similaires = await prisma.soin.findMany({
+    where: { categorie: soin.categorie, slug: { not: slug }, actif: true },
+    take: 3,
+    orderBy: { ordre: "asc" },
+  })
+
+  const soinsSimilaires = similaires.length >= 3
+    ? similaires
+    : [
+        ...similaires,
+        ...(await prisma.soin.findMany({
+          where: { slug: { notIn: [slug, ...similaires.map(s => s.slug)] }, actif: true },
+          take: 3 - similaires.length,
+          orderBy: { ordre: "asc" },
+        })),
+      ]
+
+  const SoinIcon = getIcon(soin.icon)
 
   return (
     <>
       {/* Hero Section */}
       <section className="relative h-[50vh] min-h-100 w-full overflow-hidden lg:h-[60vh]">
-        <div className="absolute inset-0 bg-linear-to-br from-primary-light via-bg-page to-gold-light">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <soin.icon size={200} className="text-gold opacity-10" />
-          </div>
+        {/* Fond gradient multicouche */}
+        <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/90 to-primary-dark" />
+        {/* Orbes décoratives */}
+        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-gold/15 blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        {/* Icône centrée */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <SoinIcon size={220} className="text-white opacity-[0.06]" />
         </div>
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-primary-brand/80 to-transparent" />
+        {/* Overlay gradient bas */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/50 via-black/20 to-transparent" />
+        {/* Motif lignes */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(255,255,255,0.1) 80px, rgba(255,255,255,0.1) 81px)" }} />
 
         {/* Badge catégorie */}
         <div className="absolute left-6 top-6 lg:left-10 lg:top-10">
-          <span className="inline-flex items-center bg-gold px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-white">
+          <span className="inline-flex items-center gap-2 bg-gold/90 backdrop-blur-sm px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-white shadow-lg">
+            <Tag size={11} />
             {soin.categorie.replace(/_/g, " ")}
           </span>
         </div>
@@ -75,25 +96,28 @@ export default async function PageDetailSoin({ params }: PageProps) {
         {/* Badge soin si présent */}
         {soin.badge && (
           <div className="absolute right-6 top-6 lg:right-10 lg:top-10">
-            <span className="inline-flex items-center bg-white/90 px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-primary-brand">
+            <span className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-sm px-4 py-2 font-body text-[10px] uppercase tracking-[0.15em] text-primary-brand shadow-lg">
+              <Gift size={11} />
               {soin.badge}
             </span>
           </div>
         )}
 
-        {/* Titre */}
+        {/* Titre + infos */}
         <div className="absolute inset-x-0 bottom-0 px-6 pb-12 lg:px-10 lg:pb-16">
           <div className="mx-auto max-w-7xl">
-            <h1 className="font-display text-[36px] font-light text-white sm:text-[44px] lg:text-[52px]">
+            <div className="mb-3 h-px w-16 bg-gold" />
+            <h1 className="font-display text-[36px] font-light text-white sm:text-[44px] lg:text-[56px] drop-shadow-lg">
               {soin.nom}
             </h1>
-            <div className="mt-3 flex items-center gap-4 font-body text-[13px] text-white/80">
-              <span className="flex items-center gap-1.5">
-                <Clock size={14} />
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <span className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 font-body text-[12px] text-white">
+                <Clock size={13} className="text-gold" />
                 {soin.duree} min
               </span>
-              <span>·</span>
-              <span className="font-medium text-white">{formatPrix(soin.prix)}</span>
+              <span className="flex items-center gap-2 bg-gold/20 backdrop-blur-sm px-3 py-1.5 font-body text-[13px] font-medium text-white">
+                {formatPrix(soin.prix)}
+              </span>
             </div>
           </div>
         </div>
@@ -199,12 +223,14 @@ export default async function PageDetailSoin({ params }: PageProps) {
               </div>
 
               {/* Code promo rappel */}
+              {promo?.actif && (
               <div className="mt-4 border border-dashed border-gold/40 bg-gold/5 p-3 text-center">
                 <p className="font-body text-[11px] text-gold">
-                  Code <span className="font-semibold tracking-widest">BIENVENUE10</span>
+                  Code <span className="font-semibold tracking-widest">{promo.code}</span>
                 </p>
-                <p className="font-body text-[10px] text-text-muted-brand">−10% sur votre 1er soin</p>
+                <p className="font-body text-[10px] text-text-muted-brand">{promo.texte}</p>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -231,10 +257,12 @@ export default async function PageDetailSoin({ params }: PageProps) {
             Vous aimerez <em className="text-primary-brand">aussi</em>
           </h2>
           <div className="mt-12 grid gap-px border border-border-brand bg-border-brand sm:grid-cols-2 lg:grid-cols-3">
-            {soinsSimilaires.map((autre) => (
+            {soinsSimilaires.map((autre) => {
+              const AutreIcon = getIcon(autre.icon)
+              return (
               <div key={autre.slug} className="group flex flex-col bg-white transition-colors duration-300 hover:bg-bg-page">
                 <div className="relative flex h-40 items-center justify-center overflow-hidden bg-linear-to-br from-primary-light to-bg-page">
-                  <autre.icon size={36} className="text-gold opacity-30 transition-transform duration-500 group-hover:scale-110" />
+                  <AutreIcon size={36} className="text-gold opacity-30 transition-transform duration-500 group-hover:scale-110" />
                   {autre.badge && (
                     <span className="absolute left-0 top-3 bg-gold px-2 py-0.5 font-body text-[9px] uppercase tracking-[0.12em] text-white">
                       {autre.badge}
@@ -253,7 +281,8 @@ export default async function PageDetailSoin({ params }: PageProps) {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

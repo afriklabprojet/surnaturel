@@ -242,7 +242,7 @@ interface FacturePDFProps {
 
 export default function FacturePDF({ data }: FacturePDFProps) {
   const formatPrix = (prix: number) =>
-    prix.toLocaleString("fr-FR") + " FCFA"
+    prix.toLocaleString("fr") + " FCFA"
 
   return (
     <Document>

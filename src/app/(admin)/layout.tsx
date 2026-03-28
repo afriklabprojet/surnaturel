@@ -24,16 +24,37 @@ import {
   Ban,
   Stethoscope,
   BarChart3,
+  Package,
+  UserCircle,
+  HelpCircle,
+  Tag,
+  Award,
+  ImageIcon,
+  PlayCircle,
+  Wrench,
+  Percent,
+  Mail,
+  Heart,
 } from "lucide-react"
 import { useState } from "react"
+import { ConfirmProvider } from "@/components/ui/confirm-dialog"
 
 const navItems = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
+  { href: "/admin/sage-femme", label: "Espace Sage-Femme", icon: Heart },
   { href: "/admin/rdv", label: "Rendez-vous", icon: Calendar },
   { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/soins", label: "Soins", icon: Sparkles },
+  { href: "/admin/forfaits", label: "Forfaits", icon: Package },
+  { href: "/admin/equipe", label: "Équipe", icon: UserCircle },
+  { href: "/admin/faq", label: "FAQ", icon: HelpCircle },
+  { href: "/admin/categories", label: "Catégories", icon: Tag },
   { href: "/admin/boutique", label: "Boutique", icon: ShoppingBag },
+  { href: "/admin/promo", label: "Codes Promo", icon: Percent },
+  { href: "/admin/galerie", label: "Galerie Avant/Après", icon: ImageIcon },
+  { href: "/admin/videos", label: "Témoignages Vidéo", icon: PlayCircle },
   { href: "/admin/blog", label: "Blog", icon: BookOpen },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/messages", label: "Messages", icon: MessageCircle },
   { href: "/admin/communaute", label: "Communauté", icon: UsersRound },
   { href: "/admin/avis", label: "Avis", icon: Star },
@@ -42,20 +63,32 @@ const navItems = [
   { href: "/admin/verification", label: "Vérification", icon: BadgeCheck },
   { href: "/admin/parrainages", label: "Parrainages", icon: Gift },
   { href: "/admin/fidelite", label: "Fidélité", icon: Coins },
+  { href: "/admin/recompenses", label: "Récompenses", icon: Award },
   { href: "/admin/blocages", label: "Blocages", icon: Ban },
   { href: "/admin/professionnels", label: "Professionnels", icon: Stethoscope },
   { href: "/admin/rapports", label: "Rapports", icon: BarChart3 },
+  { href: "/admin/configuration", label: "Configuration", icon: Wrench },
   { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ]
 
 const pageTitles: Record<string, string> = {
   "/admin": "Tableau de bord",
+  "/admin/sage-femme": "Espace Sage-Femme",
   "/admin/rdv": "Rendez-vous",
   "/admin/clients": "Clients",
   "/admin/soins": "Soins",
+  "/admin/forfaits": "Forfaits",
+  "/admin/equipe": "Équipe",
+  "/admin/faq": "FAQ",
+  "/admin/categories": "Catégories",
+  "/admin/configuration": "Configuration",
   "/admin/boutique": "Boutique",
+  "/admin/promo": "Codes Promo",
+  "/admin/galerie": "Galerie Avant/Après",
+  "/admin/videos": "Témoignages Vidéo",
   "/admin/commandes": "Commandes",
   "/admin/blog": "Blog",
+  "/admin/newsletter": "Newsletter",
   "/admin/messages": "Messages",
   "/admin/communaute": "Communauté",
   "/admin/avis": "Avis",
@@ -64,6 +97,7 @@ const pageTitles: Record<string, string> = {
   "/admin/verification": "Vérification",
   "/admin/parrainages": "Parrainages",
   "/admin/fidelite": "Fidélité",
+  "/admin/recompenses": "Récompenses",
   "/admin/blocages": "Blocages",
   "/admin/professionnels": "Professionnels",
   "/admin/rapports": "Rapports",
@@ -98,6 +132,7 @@ export default function AdminLayout({
     : ""
 
   return (
+    <ConfirmProvider>
     <div className="flex h-screen bg-bg-page">
       {/* Overlay mobile */}
       {sidebarOpen && (
@@ -203,5 +238,6 @@ export default function AdminLayout({
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
+    </ConfirmProvider>
   )
 }

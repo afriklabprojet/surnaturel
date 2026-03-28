@@ -134,5 +134,61 @@ export async function GET(req: NextRequest) {
     return csvResponse(`avis-${now}.csv`, rows.join("\n"))
   }
 
-  return NextResponse.json({ error: "Type d'export invalide. Utilisez: clients, commandes, rdv, avis" }, { status: 400 })
+  if (type === "professionnels") {
+    const pros = await prisma.user.findMany({
+      where: { role: { in: ["SAGE_FEMME", "ADMIN", "ACCOMPAGNATEUR_MEDICAL"] } },
+      include: {
+        profilDetail: true,
+        _count: { select: { rendezVous: true } },
+      },
+      orderBy: { nom: "asc" },
+    })
+
+    const rows = [
+      "Prénom,Nom,Email,Téléphone,Rôle,Vérification,Spécialité,N° Ordre,Jours dispo,Horaires,Langues,RDV total,Inscription",
+      ...pros.map((p) =>
+        [
+          escapeCsv(p.prenom),
+          escapeCsv(p.nom),
+          escapeCsv(p.email),
+          escapeCsv(p.telephone),
+          p.role,
+          p.verificationStatus,
+          escapeCsv(p.profilDetail?.specialite),
+          escapeCsv(p.profilDetail?.numeroOrdre),
+          escapeCsv(p.profilDetail?.joursDisponibilite?.join("; ")),
+          escapeCsv(p.profilDetail?.horairesDisponibilite),
+          escapeCsv(p.profilDetail?.languesConsultation?.join("; ")),
+          p._count.rendezVous,
+          p.createdAt.toISOString().split("T")[0],
+        ].join(",")
+      ),
+    ]
+    return csvResponse(`professionnels-${now}.csv`, rows.join("\n"))
+  }
+
+  if (type === "groupes") {
+    const groupes = await prisma.groupe.findMany({
+      include: { _count: { select: { membres: true, posts: true, evenements: true } } },
+      orderBy: { createdAt: "desc" },
+    })
+    const rows = [
+      "Nom,Slug,Visibilité,Description,Membres,Posts,Événements,Création",
+      ...groupes.map((g) =>
+        [
+          escapeCsv(g.nom),
+          g.slug,
+          g.visibilite,
+          escapeCsv(g.description),
+          g._count.membres,
+          g._count.posts,
+          g._count.evenements,
+          g.createdAt.toISOString().split("T")[0],
+        ].join(",")
+      ),
+    ]
+    return csvResponse(`groupes-${now}.csv`, rows.join("\n"))
+  }
+
+  return NextResponse.json({ error: "Type d'export invalide. Utilisez: clients, commandes, rdv, avis, professionnels, groupes" }, { status: 400 })
 }

@@ -6,13 +6,15 @@ import { z } from "zod/v4"
 const soinSchema = z.object({
   nom: z.string().min(1),
   description: z.string().min(1),
+  descriptionLongue: z.string().nullable().optional(),
   prix: z.number().min(0),
   duree: z.number().int().min(1),
-  categorie: z.enum([
-    "HAMMAM", "GOMMAGE", "AMINCISSANT", "VISAGE",
-    "POST_ACCOUCHEMENT", "CONSEIL_ESTHETIQUE", "SAGE_FEMME",
-  ]),
+  categorie: z.enum(["HAMMAM", "GOMMAGE", "AMINCISSANT", "VISAGE", "POST_ACCOUCHEMENT", "CONSEIL_ESTHETIQUE", "SAGE_FEMME"]),
   imageUrl: z.string().url().nullable().optional(),
+  icon: z.string().nullable().optional(),
+  badge: z.string().nullable().optional(),
+  etapes: z.array(z.object({ titre: z.string(), description: z.string() })).nullable().optional(),
+  ordre: z.number().int().optional(),
 })
 
 export async function GET() {
@@ -50,10 +52,15 @@ export async function POST(req: Request) {
       nom: result.data.nom,
       slug,
       description: result.data.description,
+      descriptionLongue: result.data.descriptionLongue ?? null,
       prix: result.data.prix,
       duree: result.data.duree,
       categorie: result.data.categorie,
       imageUrl: result.data.imageUrl ?? null,
+      icon: result.data.icon ?? null,
+      badge: result.data.badge ?? null,
+      etapes: result.data.etapes ?? undefined,
+      ordre: result.data.ordre ?? 0,
     },
   })
 

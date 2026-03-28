@@ -42,13 +42,28 @@ export default function PageAvisRDV() {
   }, [status, router])
 
   useEffect(() => {
-    // En production, vérifier que le RDV est TERMINE et appartient au user
-    // Mock data pour la démo
-    setRdvData({
-      soin: "Hammam traditionnel",
-      date: new Date("2024-03-20T14:30:00"),
-    })
-  }, [params.rdvId])
+    // Charger les données du RDV depuis l'API
+    async function loadRdv() {
+      try {
+        const res = await fetch(`/api/rdv/${params.rdvId}`)
+        if (res.ok) {
+          const data = await res.json()
+          setRdvData({
+            soin: data.rdv.soin.nom,
+            date: new Date(data.rdv.dateHeure),
+          })
+        } else {
+          // RDV non trouvé ou non autorisé
+          router.push("/mes-rdv")
+        }
+      } catch {
+        router.push("/mes-rdv")
+      }
+    }
+    if (session?.user?.id && params.rdvId) {
+      loadRdv()
+    }
+  }, [params.rdvId, session?.user?.id, router])
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -74,8 +89,20 @@ export default function PageAvisRDV() {
     setLoading(true)
 
     try {
-      // En production : POST vers /api/avis
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const res = await fetch("/api/avis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rdvId: params.rdvId,
+          note,
+          commentaire: commentaire.trim() || null,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Erreur lors de l'envoi")
+      }
 
       setSubmitted(true)
       setShowConfetti(true)

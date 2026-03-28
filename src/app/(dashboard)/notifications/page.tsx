@@ -23,6 +23,7 @@ import {
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import type { NotifType } from "@/generated/prisma/client"
+import { PushNotificationToggle } from "@/components/ui/push-notification-toggle"
 
 interface Notification {
   id: string
@@ -228,6 +229,9 @@ export default function PageNotifications() {
           ))}
         </div>
       </div>
+
+      {/* Push Notifications */}
+      <PushNotificationToggle />
 
       {/* Liste */}
       {notifsFiltrees.length === 0 ? (

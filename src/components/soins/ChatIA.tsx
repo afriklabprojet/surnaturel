@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Bot, Send, X, Sparkles } from "lucide-react"
 import Link from "next/link"
+import { formatPrix } from "@/lib/utils"
 
 interface Message {
   role: "bot" | "user"
@@ -10,74 +11,56 @@ interface Message {
   soins?: { slug: string; nom: string; prix: number }[]
 }
 
-const QUESTIONS = [
-  {
-    id: "objectif",
-    question: "Quel est votre objectif principal ?",
-    options: [
-      { label: "Détente & relaxation", value: "detente" },
-      { label: "Beauté du visage", value: "visage" },
-      { label: "Minceur & silhouette", value: "minceur" },
-      { label: "Soins post-accouchement", value: "maman" },
-      { label: "Consultation médicale", value: "medical" },
-      { label: "Découvrir l'institut", value: "decouvrir" },
-    ],
-  },
-  {
-    id: "budget",
-    question: "Quel est votre budget ?",
-    options: [
-      { label: "Moins de 10 000 F", value: "petit" },
-      { label: "10 000 – 20 000 F", value: "moyen" },
-      { label: "20 000 F et plus", value: "grand" },
-      { label: "Pas de limite", value: "illimite" },
-    ],
-  },
-  {
-    id: "temps",
-    question: "Combien de temps avez-vous ?",
-    options: [
-      { label: "30 min – 1h", value: "court" },
-      { label: "1h – 2h", value: "moyen" },
-      { label: "Demi-journée", value: "long" },
-    ],
-  },
-]
+interface QuestionOption {
+  label: string
+  value: string
+}
 
-const SOINS_DB: { slug: string; nom: string; prix: number; categories: string[]; dureeMax: number }[] = [
-  { slug: "hammam-royal", nom: "Hammam Royal", prix: 8000, categories: ["detente", "decouvrir"], dureeMax: 60 },
-  { slug: "hammam-duo", nom: "Hammam Duo", prix: 15000, categories: ["detente", "decouvrir"], dureeMax: 90 },
-  { slug: "gommage-corps-luxe", nom: "Gommage Corps Luxe", prix: 12000, categories: ["detente", "minceur", "decouvrir"], dureeMax: 90 },
-  { slug: "gommage-visage-eclat", nom: "Gommage Visage Éclat", prix: 8000, categories: ["visage", "decouvrir"], dureeMax: 45 },
-  { slug: "soin-amincissant-expert", nom: "Soin Amincissant Expert", prix: 15000, categories: ["minceur"], dureeMax: 90 },
-  { slug: "soin-visage-eclat", nom: "Soin Visage Éclat", prix: 12000, categories: ["visage"], dureeMax: 60 },
-  { slug: "programme-post-accouchement", nom: "Programme Post-Accouchement", prix: 25000, categories: ["maman"], dureeMax: 120 },
-  { slug: "consultation-sage-femme", nom: "Consultation Sage-Femme", prix: 10000, categories: ["medical", "maman"], dureeMax: 60 },
-  { slug: "conseil-esthetique", nom: "Conseil Esthétique", prix: 5000, categories: ["visage", "decouvrir"], dureeMax: 30 },
-]
+interface Question {
+  id: string
+  question: string
+  options: QuestionOption[]
+}
 
-function recommend(answers: Record<string, string>) {
-  let results = SOINS_DB.filter((s) => s.categories.includes(answers.objectif))
+interface SoinChat {
+  slug: string
+  nom: string
+  prix: number
+  categorie: string
+  duree: number
+}
+
+const CATEGORIE_MAP: Record<string, string[]> = {
+  detente: ["HAMMAM"],
+  visage: ["GOMMAGE", "VISAGE"],
+  minceur: ["AMINCISSANT", "GOMMAGE"],
+  maman: ["POST_ACCOUCHEMENT", "SAGE_FEMME"],
+  medical: ["SAGE_FEMME"],
+  decouvrir: ["HAMMAM", "GOMMAGE", "CONSEIL_ESTHETIQUE"],
+}
+
+function recommend(answers: Record<string, string>, soins: SoinChat[]) {
+  const cats = CATEGORIE_MAP[answers.objectif] || []
+  let results = soins.filter((s) => cats.includes(s.categorie))
 
   if (answers.budget === "petit") results = results.filter((s) => s.prix < 10000)
   else if (answers.budget === "moyen") results = results.filter((s) => s.prix <= 20000)
 
-  if (answers.temps === "court") results = results.filter((s) => s.dureeMax <= 60)
-  else if (answers.temps === "moyen") results = results.filter((s) => s.dureeMax <= 120)
+  if (answers.temps === "court") results = results.filter((s) => s.duree <= 60)
+  else if (answers.temps === "moyen") results = results.filter((s) => s.duree <= 120)
 
-  if (results.length === 0) results = SOINS_DB.filter((s) => s.categories.includes(answers.objectif)).slice(0, 2)
+  if (results.length === 0) results = soins.filter((s) => cats.includes(s.categorie)).slice(0, 2)
   return results.slice(0, 3)
 }
-
-function formatPrix(prix: number) { return new Intl.NumberFormat("fr-FR").format(prix) + " F CFA" }
 
 export default function ChatIA() {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [soinsData, setSoinsData] = useState<SoinChat[]>([])
+  const [questions, setQuestions] = useState<Question[]>([])
   const [messages, setMessages] = useState<Message[]>([
     { role: "bot", text: "Bonjour ! 🌿 Je suis votre assistante bien-être. Je vais vous recommander les soins idéaux pour vous." },
-    { role: "bot", text: QUESTIONS[0].question },
   ])
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -85,19 +68,36 @@ export default function ChatIA() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  // Charger soins + questions depuis la BDD
+  useEffect(() => {
+    if (!open) return
+    Promise.all([
+      fetch("/api/soins").then(r => r.json()).then(d => d.soins || []),
+      fetch("/api/config/questions_chat_ia").then(r => r.json()).then(d => d.valeur || []).catch(() => []),
+    ]).then(([soins, q]) => {
+      setSoinsData(soins.map((s: Record<string, unknown>) => ({ slug: s.slug, nom: s.nom, prix: s.prix, categorie: s.categorie, duree: s.duree })))
+      if (q.length > 0) {
+        setQuestions(q)
+        if (messages.length <= 1) {
+          setMessages(prev => [...prev, { role: "bot", text: q[0].question }])
+        }
+      }
+    }).catch(() => {})
+  }, [open])
+
   function handleOption(value: string, label: string) {
-    const q = QUESTIONS[step]
+    const q = questions[step]
     const newAnswers = { ...answers, [q.id]: value }
     setAnswers(newAnswers)
 
     const newMessages: Message[] = [...messages, { role: "user", text: label }]
 
-    if (step < QUESTIONS.length - 1) {
-      const next = QUESTIONS[step + 1]
+    if (step < questions.length - 1) {
+      const next = questions[step + 1]
       newMessages.push({ role: "bot", text: next.question })
       setStep(step + 1)
     } else {
-      const reco = recommend(newAnswers)
+      const reco = recommend(newAnswers, soinsData)
       if (reco.length > 0) {
         newMessages.push({
           role: "bot",
@@ -117,12 +117,11 @@ export default function ChatIA() {
     setStep(0)
     setAnswers({})
     setMessages([
-      { role: "bot", text: "Recommençons ! 🌿 Quel est votre objectif principal ?" },
-    ])
+      { role: "bot", text: "Recommençons ! 🌿 Quel est votre objectif principal ?" },      ...(questions.length > 0 ? [{ role: "bot" as const, text: questions[0].question }] : []),    ])
   }
 
-  const currentQ = step < QUESTIONS.length ? QUESTIONS[step] : null
-  const isDone = step >= QUESTIONS.length - 1 && Object.keys(answers).length >= QUESTIONS.length
+  const currentQ = step < questions.length ? questions[step] : null
+  const isDone = step >= questions.length - 1 && Object.keys(answers).length >= questions.length
 
   return (
     <>

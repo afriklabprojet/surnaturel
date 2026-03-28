@@ -79,7 +79,7 @@ interface FenetreChatProps {
 }
 
 function formatHeureMessage(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString("fr-FR", {
+  return new Date(dateStr).toLocaleTimeString("fr", {
     hour: "2-digit",
     minute: "2-digit",
   })
@@ -93,7 +93,7 @@ function formatDateSeparator(dateStr: string): string {
 
   if (diff < oneDay && date.getDate() === now.getDate()) return "Aujourd\u2019hui"
   if (diff < 2 * oneDay) return "Hier"
-  return date.toLocaleDateString("fr-FR", {
+  return date.toLocaleDateString("fr", {
     weekday: "long",
     day: "numeric",
     month: "long",

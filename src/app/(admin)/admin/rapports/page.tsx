@@ -110,7 +110,7 @@ export default function PageAdminRapports() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KPICard icon={Users} label="Clients" value={rapport.clients.total} sub={`${rapport.clients.nouveaux} nouveaux`} />
             <KPICard icon={Calendar} label="RDV" value={rapport.rdv.total} />
-            <KPICard icon={ShoppingBag} label="Commandes" value={rapport.commandes.total} sub={`${rapport.commandes.ca.toLocaleString("fr-FR")} FCFA`} />
+            <KPICard icon={ShoppingBag} label="Commandes" value={rapport.commandes.total} sub={`${rapport.commandes.ca.toLocaleString("fr")} FCFA`} />
             <KPICard icon={Star} label="Avis" value={rapport.avis.total} sub={`Moyenne : ${rapport.avis.moyenne}/5`} />
             <KPICard icon={Gift} label="Parrainages" value={rapport.parrainages.total} />
             <KPICard icon={Coins} label="Points fidélité" value={rapport.fidelite.totalPoints} sub="distribués" />
@@ -129,7 +129,7 @@ export default function PageAdminRapports() {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-brand)" />
                     <XAxis dataKey="mois" tick={{ fontSize: 11, fontFamily: "var(--font-body)" }} stroke="var(--color-text-muted-brand)" />
                     <YAxis tick={{ fontSize: 11, fontFamily: "var(--font-body)" }} stroke="var(--color-text-muted-brand)" />
-                    <Tooltip contentStyle={{ border: "1px solid var(--color-border-brand)", borderRadius: 0, fontFamily: "var(--font-body)", fontSize: 12 }} formatter={(v: unknown) => [`${Number(v).toLocaleString("fr-FR")} F`, "CA"]} />
+                    <Tooltip contentStyle={{ border: "1px solid var(--color-border-brand)", borderRadius: 0, fontFamily: "var(--font-body)", fontSize: 12 }} formatter={(v: unknown) => [`${Number(v).toLocaleString("fr")} F`, "CA"]} />
                     <Line type="monotone" dataKey="ca" stroke="var(--color-primary-brand)" strokeWidth={2} name="CA" dot={{ fill: "var(--color-primary-brand)", r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -223,7 +223,7 @@ function KPICard({ icon: Icon, label, value, sub }: { icon: React.ElementType; l
         <Icon size={16} className="text-primary-brand" />
         <span className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">{label}</span>
       </div>
-      <p className="font-display text-[28px] font-light text-text-main">{value.toLocaleString("fr-FR")}</p>
+      <p className="font-display text-[28px] font-light text-text-main">{value.toLocaleString("fr")}</p>
       {sub && <p className="font-body text-[12px] text-text-muted-brand mt-1">{sub}</p>}
     </div>
   )

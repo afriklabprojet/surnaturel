@@ -131,7 +131,7 @@ export async function crediterCommande(userId: string, montant: number) {
     return ajouterPoints(
       userId,
       points,
-      `Commande de ${montant.toLocaleString("fr-FR")} FCFA`,
+      `Commande de ${montant.toLocaleString("fr")} FCFA`,
       "GAIN_COMMANDE"
     )
   }

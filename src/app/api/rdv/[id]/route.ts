@@ -3,6 +3,43 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { notifierRDVAnnule } from "@/lib/notifications"
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  }
+
+  const { id } = await params
+
+  const rdv = await prisma.rendezVous.findUnique({
+    where: { id },
+    include: { soin: { select: { nom: true, duree: true, prix: true } } },
+  })
+
+  if (!rdv) {
+    return NextResponse.json({ error: "Rendez-vous introuvable." }, { status: 404 })
+  }
+
+  if (rdv.userId !== session.user.id && session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Accès refusé." }, { status: 403 })
+  }
+
+  return NextResponse.json({
+    rdv: {
+      id: rdv.id,
+      soin: rdv.soin.nom,
+      date: rdv.dateHeure,
+      duree: rdv.soin.duree,
+      prix: rdv.soin.prix,
+      statut: rdv.statut,
+      notes: rdv.notes,
+    },
+  })
+}
+
 export async function PATCH(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }

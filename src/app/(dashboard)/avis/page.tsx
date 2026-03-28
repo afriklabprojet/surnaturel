@@ -260,7 +260,7 @@ export default function AvisPage() {
                       <div className="mt-1 flex items-center gap-1 text-text-muted-brand">
                         <Calendar size={12} />
                         <span className="font-body text-[11px]">
-                          {new Date(rdv.date).toLocaleDateString("fr-FR", {
+                          {new Date(rdv.date).toLocaleDateString("fr", {
                             day: "2-digit",
                             month: "long",
                             year: "numeric",
@@ -464,7 +464,7 @@ export default function AvisPage() {
 
                     <p className="mt-3 font-body text-[11px] text-text-muted-brand">
                       Publié le{" "}
-                      {new Date(a.createdAt).toLocaleDateString("fr-FR", {
+                      {new Date(a.createdAt).toLocaleDateString("fr", {
                         day: "2-digit",
                         month: "long",
                         year: "numeric",

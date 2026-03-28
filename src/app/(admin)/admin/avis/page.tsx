@@ -171,7 +171,7 @@ export default function PageAdminAvis() {
                     </span>
                   </div>
                   <p className="font-body text-[11px] text-text-muted-brand mb-2">
-                    {a.soin} — {new Date(a.dateRdv).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                    {a.soin} — {new Date(a.dateRdv).toLocaleDateString("fr", { day: "numeric", month: "long", year: "numeric" })}
                   </p>
                   {a.commentaire && (
                     <p className="font-body text-[13px] text-text-mid leading-relaxed">{a.commentaire}</p>

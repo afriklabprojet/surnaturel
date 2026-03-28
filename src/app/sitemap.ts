@@ -1,6 +1,5 @@
 import { MetadataRoute } from "next"
 import { prisma } from "@/lib/prisma"
-import { SOINS_DATA } from "@/lib/soins-data"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://lesurnatureldedieu.ci"
 
@@ -70,7 +69,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // Pages dynamiques — Soins
-  const soinPages: MetadataRoute.Sitemap = SOINS_DATA.map((soin) => ({
+  const soins = await prisma.soin.findMany({
+    where: { actif: true },
+    select: { slug: true },
+  })
+  const soinPages: MetadataRoute.Sitemap = soins.map((soin) => ({
     url: `${BASE_URL}/soins/${soin.slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

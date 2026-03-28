@@ -461,3 +461,411 @@ export async function envoyerEmailResetMotDePasse(params: {
     `,
   })
 }
+
+// ─── Email invitation à laisser un avis après RDV terminé ────────
+export async function envoyerEmailInvitationAvis(params: {
+  destinataire: string
+  prenom: string
+  soin: string
+  rdvId: string
+}) {
+  const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+  return resend.emails.send({
+    from: FROM,
+    to: params.destinataire,
+    subject: "Comment s'est passé votre soin ? — Le Surnaturel de Dieu",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
+        <div style="background:#B8972A;padding:24px;border-radius:8px 8px 0 0;">
+          <h1 style="color:#fff;margin:0;font-size:20px;">
+            ⭐ Votre avis compte pour nous !
+          </h1>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;
+          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
+          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Nous espérons que votre soin <strong>${params.soin}</strong> vous a apporté
+             bien-être et sérénité.</p>
+          <p>Votre avis nous aide à améliorer nos services et guide d'autres clientes dans leur choix.
+             Cela ne prend que 30 secondes !</p>
+          
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${appUrl}/avis/${params.rdvId}"
+               style="display:inline-block;background:#2D7A1F;color:#fff;
+               padding:14px 32px;border-radius:8px;text-decoration:none;
+               font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">
+              Donner mon avis
+            </a>
+          </div>
+
+          <div style="background:#E8F5E3;padding:16px;border-radius:8px;margin-top:16px;">
+            <p style="margin:0;font-size:14px;color:#2D7A1F;">
+              🎁 <strong>Bonus :</strong> Chaque avis publié vous rapporte 
+              <strong>50 points de fidélité</strong> !
+            </p>
+          </div>
+
+          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
+            Merci de votre confiance.<br/>
+            L'équipe du Surnaturel de Dieu
+          </p>
+        </div>
+      </div>
+    `,
+  })
+}
+
+// Types pour la newsletter
+interface ArticleBlog {
+  titre: string
+  extrait: string
+  slug: string
+  imageUrl?: string
+}
+
+interface SoinPopulaire {
+  nom: string
+  description: string
+  slug: string
+}
+
+interface NewsletterContent {
+  articles?: ArticleBlog[]
+  soinsPopulaires?: SoinPopulaire[]
+  codePromo?: {
+    code: string
+    reduction: string
+    dateExpiration: string
+  }
+  messagePersonnalise?: string
+}
+
+export async function envoyerEmailNewsletter(
+  email: string,
+  prenom: string,
+  contenu: NewsletterContent
+): Promise<void> {
+  const { articles = [], soinsPopulaires = [], codePromo, messagePersonnalise } = contenu
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.ci"
+  
+  const articlesHtml = articles.length > 0 ? `
+    <div style="margin-top:24px;">
+      <h2 style="font-family:'Cormorant Garamond',serif;color:#2D7A1F;font-size:20px;margin-bottom:16px;">
+        📰 Nos derniers articles
+      </h2>
+      ${articles.map(article => `
+        <div style="background:#FAFAFA;padding:16px;border-radius:8px;margin-bottom:12px;">
+          ${article.imageUrl ? `<img src="${article.imageUrl}" alt="${article.titre}" style="width:100%;max-height:150px;object-fit:cover;border-radius:6px;margin-bottom:12px;" />` : ''}
+          <h3 style="margin:0 0 8px 0;font-size:16px;color:#111827;">${article.titre}</h3>
+          <p style="margin:0 0 12px 0;font-size:14px;color:#6B7280;">${article.extrait}</p>
+          <a href="${BASE_URL}/blog/${article.slug}" style="color:#2D7A1F;font-size:14px;text-decoration:none;">
+            Lire la suite →
+          </a>
+        </div>
+      `).join('')}
+    </div>
+  ` : ''
+
+  const soinsHtml = soinsPopulaires.length > 0 ? `
+    <div style="margin-top:24px;">
+      <h2 style="font-family:'Cormorant Garamond',serif;color:#2D7A1F;font-size:20px;margin-bottom:16px;">
+        ✨ Soins populaires du moment
+      </h2>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;">
+        ${soinsPopulaires.map(soin => `
+          <div style="flex:1;min-width:200px;background:#E8F5E3;padding:16px;border-radius:8px;">
+            <h3 style="margin:0 0 8px 0;font-size:15px;color:#2D7A1F;">${soin.nom}</h3>
+            <p style="margin:0 0 12px 0;font-size:13px;color:#374151;">${soin.description}</p>
+            <a href="${BASE_URL}/prise-rdv?soin=${soin.slug}" style="background:#2D7A1F;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;display:inline-block;">
+              Réserver
+            </a>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : ''
+
+  const promoHtml = codePromo ? `
+    <div style="margin-top:24px;background:linear-gradient(135deg,#B8972A 0%,#D4AF37 100%);padding:20px;border-radius:12px;text-align:center;">
+      <p style="margin:0 0 8px 0;font-size:14px;color:#fff;opacity:0.9;">Offre exclusive newsletter</p>
+      <p style="margin:0 0 12px 0;font-size:24px;font-weight:bold;color:#fff;">${codePromo.reduction}</p>
+      <div style="background:#fff;padding:12px 24px;border-radius:8px;display:inline-block;">
+        <span style="font-family:monospace;font-size:18px;color:#B8972A;font-weight:bold;">${codePromo.code}</span>
+      </div>
+      <p style="margin:12px 0 0 0;font-size:12px;color:#fff;opacity:0.8;">Valable jusqu'au ${codePromo.dateExpiration}</p>
+    </div>
+  ` : ''
+
+  const messageHtml = messagePersonnalise ? `
+    <div style="margin-top:24px;padding:16px;border-left:4px solid #B8972A;background:#FFFEF7;">
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${messagePersonnalise}</p>
+    </div>
+  ` : ''
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: '🌿 Les actualités du Surnaturel de Dieu',
+    html: `
+      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:#2D7A1F;padding:24px;text-align:center;">
+          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
+            🌿 Le Surnaturel de Dieu
+          </h1>
+          <p style="color:#fff;opacity:0.9;margin:8px 0 0 0;font-size:14px;">
+            Votre newsletter bien-être
+          </p>
+        </div>
+
+        <div style="padding:32px 24px;">
+          <p style="font-size:16px;color:#374151;line-height:1.6;">
+            Bonjour ${prenom || 'cher(e) client(e)'} 👋
+          </p>
+          <p style="font-size:14px;color:#6B7280;line-height:1.6;">
+            Retrouvez toutes les actualités de notre institut et nos conseils bien-être.
+          </p>
+
+          ${messageHtml}
+          ${articlesHtml}
+          ${soinsHtml}
+          ${promoHtml}
+
+          <div style="margin-top:32px;text-align:center;">
+            <a href="${BASE_URL}/prise-rdv" style="background:#2D7A1F;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:15px;display:inline-block;">
+              Prendre rendez-vous
+            </a>
+          </div>
+
+          <div style="margin-top:32px;padding-top:24px;border-top:1px solid #E5E7EB;text-align:center;">
+            <p style="color:#9CA3AF;font-size:12px;margin:0;">
+              Vous recevez cet email car vous êtes inscrit(e) à notre newsletter.
+            </p>
+            <p style="margin:8px 0 0 0;">
+              <a href="${BASE_URL}/profil?tab=notifications" style="color:#6B7280;font-size:12px;text-decoration:underline;">
+                Se désabonner
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+  })
+}
+
+// ─── Séquence d'onboarding (4 emails) ────────────────────────────
+
+interface OnboardingEmailParams {
+  destinataire: string
+  prenom: string
+  step: number // 0-3
+}
+
+const ONBOARDING_EMAILS = [
+  // Step 0: Email de bienvenue (envoyé à l'inscription)
+  {
+    subject: "Bienvenue chez Le Surnaturel de Dieu — Votre bien-être commence ici",
+    getHtml: (prenom: string, baseUrl: string) => `
+      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:#2D7A1F;padding:32px 24px;text-align:center;">
+          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:32px;">
+            🌿 Bienvenue, ${prenom} !
+          </h1>
+        </div>
+        <div style="padding:32px 24px;">
+          <p style="font-size:16px;color:#374151;line-height:1.8;">
+            Nous sommes ravis de vous accueillir dans notre institut de bien-être à Abidjan.
+          </p>
+          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
+            Chez <strong style="color:#2D7A1F;">Le Surnaturel de Dieu</strong>, nous croyons que chaque 
+            femme mérite de prendre soin d'elle. Notre équipe de professionnelles passionnées 
+            est là pour vous accompagner dans votre parcours bien-être.
+          </p>
+          
+          <div style="background:#E8F5E3;padding:20px;border-radius:8px;margin:24px 0;">
+            <h2 style="font-size:18px;color:#2D7A1F;margin:0 0 12px 0;">
+              🎁 Votre cadeau de bienvenue
+            </h2>
+            <p style="font-size:14px;color:#374151;margin:0;">
+              Profitez de <strong>10% de réduction</strong> sur votre premier soin avec le code :
+            </p>
+            <div style="background:#fff;padding:12px 20px;border-radius:6px;text-align:center;margin-top:12px;">
+              <span style="font-family:monospace;font-size:20px;color:#B8972A;font-weight:bold;">BIENVENUE10</span>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:32px;">
+            <a href="${baseUrl}/soins" style="background:#2D7A1F;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
+              Découvrir nos soins
+            </a>
+          </div>
+        </div>
+      </div>
+    `,
+  },
+  // Step 1: Découverte des soins (J+2)
+  {
+    subject: "Découvrez nos soins signature — Hammam, Gommage & Plus",
+    getHtml: (prenom: string, baseUrl: string) => `
+      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:#2D7A1F;padding:32px 24px;text-align:center;">
+          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
+            ✨ Nos soins d'exception
+          </h1>
+        </div>
+        <div style="padding:32px 24px;">
+          <p style="font-size:16px;color:#374151;line-height:1.8;">
+            Bonjour ${prenom},
+          </p>
+          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
+            Avez-vous eu l'occasion de parcourir notre carte de soins ? Voici nos 
+            prestations les plus appréciées de nos clientes :
+          </p>
+          
+          <div style="margin:24px 0;">
+            <div style="border-bottom:1px solid #E8E4DC;padding:16px 0;">
+              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">🔥 Hammam Royal</h3>
+              <p style="color:#6B7280;font-size:14px;margin:0;">
+                Une expérience de purification totale inspirée des traditions orientales.
+              </p>
+            </div>
+            <div style="border-bottom:1px solid #E8E4DC;padding:16px 0;">
+              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">✨ Gommage Corps Luxe</h3>
+              <p style="color:#6B7280;font-size:14px;margin:0;">
+                Exfoliation douce aux actifs naturels pour une peau soyeuse.
+              </p>
+            </div>
+            <div style="border-bottom:1px solid #E8E4DC;padding:16px 0;">
+              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">🌸 Soin Visage Éclat</h3>
+              <p style="color:#6B7280;font-size:14px;margin:0;">
+                Un soin complet pour révéler la luminosité de votre teint.
+              </p>
+            </div>
+            <div style="padding:16px 0;">
+              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">👶 Post-Accouchement</h3>
+              <p style="color:#6B7280;font-size:14px;margin:0;">
+                Un accompagnement dédié aux jeunes mamans pour retrouver forme et sérénité.
+              </p>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:32px;">
+            <a href="${baseUrl}/prise-rdv" style="background:#2D7A1F;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
+              Réserver mon soin
+            </a>
+          </div>
+        </div>
+      </div>
+    `,
+  },
+  // Step 2: Boutique (J+5)
+  {
+    subject: "Notre boutique en ligne — Prolongez votre bien-être chez vous",
+    getHtml: (prenom: string, baseUrl: string) => `
+      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:#B8972A;padding:32px 24px;text-align:center;">
+          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
+            🛍️ Notre boutique
+          </h1>
+        </div>
+        <div style="padding:32px 24px;">
+          <p style="font-size:16px;color:#374151;line-height:1.8;">
+            ${prenom}, savez-vous que vous pouvez prolonger votre expérience bien-être chez vous ?
+          </p>
+          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
+            Notre boutique en ligne regroupe les meilleurs produits sélectionnés par nos 
+            expertes pour prendre soin de vous au quotidien.
+          </p>
+          
+          <div style="background:#FFFEF7;border:1px solid #E8E4DC;padding:20px;margin:24px 0;">
+            <h3 style="color:#B8972A;margin:0 0 16px 0;font-size:16px;">Nos catégories :</h3>
+            <ul style="margin:0;padding-left:20px;color:#374151;font-size:14px;line-height:2;">
+              <li><strong>Soins du corps</strong> — Huiles, laits, gommages...</li>
+              <li><strong>Soins du visage</strong> — Sérums, masques, crèmes...</li>
+              <li><strong>Bien-être & santé</strong> — Compléments, tisanes...</li>
+            </ul>
+          </div>
+
+          <p style="font-size:14px;color:#2D7A1F;font-style:italic;text-align:center;">
+            💳 Paiement sécurisé par Mobile Money (Wave, Orange Money, MTN, Moov)
+          </p>
+
+          <div style="text-align:center;margin-top:32px;">
+            <a href="${baseUrl}/boutique" style="background:#B8972A;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
+              Visiter la boutique
+            </a>
+          </div>
+        </div>
+      </div>
+    `,
+  },
+  // Step 3: Communauté (J+7)
+  {
+    subject: "Rejoignez notre communauté de femmes inspirantes",
+    getHtml: (prenom: string, baseUrl: string) => `
+      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:#2D7A1F;padding:32px 24px;text-align:center;">
+          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
+            👭 Notre communauté
+          </h1>
+        </div>
+        <div style="padding:32px 24px;">
+          <p style="font-size:16px;color:#374151;line-height:1.8;">
+            ${prenom}, Le Surnaturel de Dieu c'est bien plus qu'un institut...
+          </p>
+          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
+            C'est une communauté de femmes qui partagent les mêmes valeurs : 
+            prendre soin de soi, s'entraider et s'inspirer mutuellement.
+          </p>
+          
+          <div style="background:#E8F5E3;padding:20px;border-radius:8px;margin:24px 0;">
+            <h3 style="color:#2D7A1F;margin:0 0 12px 0;font-size:16px;">
+              Ce que vous pouvez faire dans notre espace communautaire :
+            </h3>
+            <ul style="margin:0;padding-left:20px;color:#374151;font-size:14px;line-height:2;">
+              <li>Partager vos expériences et conseils</li>
+              <li>Échanger avec d'autres clientes</li>
+              <li>Participer à des événements exclusifs</li>
+              <li>Accéder à des contenus bien-être réservés aux membres</li>
+            </ul>
+          </div>
+
+          <div style="background:#FFFEF7;padding:20px;border-left:4px solid #B8972A;margin:24px 0;">
+            <p style="font-size:14px;color:#374151;margin:0;">
+              <strong style="color:#B8972A;">Programme de fidélité :</strong><br/>
+              Gagnez des points à chaque réservation, achat ou avis déposé. 
+              Échangez-les contre des réductions ou des soins gratuits !
+            </p>
+          </div>
+
+          <div style="text-align:center;margin-top:32px;">
+            <a href="${baseUrl}/communaute" style="background:#2D7A1F;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
+              Rejoindre la communauté
+            </a>
+          </div>
+
+          <p style="font-size:13px;color:#9CA3AF;text-align:center;margin-top:32px;">
+            Merci de faire partie de l'aventure Le Surnaturel de Dieu. 💚<br/>
+            À très bientôt !
+          </p>
+        </div>
+      </div>
+    `,
+  },
+]
+
+export async function envoyerEmailOnboarding({ destinataire, prenom, step }: OnboardingEmailParams) {
+  const baseUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+  const emailConfig = ONBOARDING_EMAILS[step]
+
+  if (!emailConfig) {
+    throw new Error(`Étape d'onboarding invalide: ${step}`)
+  }
+
+  return resend.emails.send({
+    from: FROM,
+    to: destinataire,
+    subject: emailConfig.subject,
+    html: emailConfig.getHtml(prenom, baseUrl),
+  })
+}
+

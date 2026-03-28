@@ -3,16 +3,25 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { formatPrix } from "@/lib/utils"
-import { getSoinBySlug, type Forfait } from "@/lib/soins-data"
+import { getIcon } from "@/lib/icon-map"
 import { staggerItem, cardHover } from "@/lib/animations"
 
+export interface ForfaitDB {
+  slug: string
+  nom: string
+  description: string
+  prixTotal: number
+  prixForfait: number
+  economie: number
+  badge?: string | null
+  soins: Array<{ slug: string; nom: string; duree: number; icon?: string | null; prix: number }>
+}
+
 interface ForfaitCardProps {
-  forfait: Forfait
+  forfait: ForfaitDB
 }
 
 export default function ForfaitCard({ forfait }: ForfaitCardProps) {
-  const soinsDetails = forfait.soins.map((slug) => getSoinBySlug(slug)).filter(Boolean)
-
   return (
     <motion.div
       variants={staggerItem}
@@ -40,15 +49,16 @@ export default function ForfaitCard({ forfait }: ForfaitCardProps) {
           Soins inclus
         </p>
         <ul className="mt-3 space-y-2">
-          {soinsDetails.map((soin) =>
-            soin ? (
+          {forfait.soins.map((soin) => {
+            const Icon = getIcon(soin.icon)
+            return (
               <li key={soin.slug} className="flex items-center gap-2 font-body text-[13px] text-text-mid">
-                <soin.icon size={14} className="shrink-0 text-primary-brand" />
+                <Icon size={14} className="shrink-0 text-primary-brand" />
                 <span>{soin.nom}</span>
                 <span className="ml-auto text-[11px] text-text-muted-brand">{soin.duree} min</span>
               </li>
-            ) : null
-          )}
+            )
+          })}
         </ul>
       </div>
 

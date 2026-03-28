@@ -39,7 +39,7 @@ function Avatar({ user, size = 28 }: { user: { prenom: string; nom: string; phot
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
+  return new Date(dateStr).toLocaleDateString("fr", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -52,7 +52,7 @@ function formatDateShort(dateStr: string) {
   const d = new Date(dateStr)
   return {
     jour: d.getDate().toString(),
-    mois: d.toLocaleDateString("fr-FR", { month: "short" }).toUpperCase(),
+    mois: d.toLocaleDateString("fr", { month: "short" }).toUpperCase(),
   }
 }
 

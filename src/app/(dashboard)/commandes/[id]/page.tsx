@@ -90,7 +90,7 @@ export default function PageDetailCommande() {
   const statutIndex = TIMELINE_STEPS.findIndex((s) => s.statut === commande.statut)
 
   const formatDateFr = (d: string) =>
-    new Intl.DateTimeFormat("fr-FR", {
+    new Intl.DateTimeFormat("fr", {
       day: "numeric",
       month: "long",
       year: "numeric",

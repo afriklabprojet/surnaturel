@@ -143,7 +143,7 @@ export default function PageQRCodeRDV() {
 
             {/* Heure */}
             <p className="mt-2 font-body text-[16px] text-text-mid">
-              {rdv.date.toLocaleTimeString("fr-FR", {
+              {rdv.date.toLocaleTimeString("fr", {
                 hour: "2-digit",
                 minute: "2-digit",
               })}

@@ -12,6 +12,7 @@ const ligneSchema = z.object({
 
 const commandeSchema = z.object({
   items: z.array(ligneSchema).min(1),
+  codePromo: z.string().max(50).optional(),
 })
 
 export async function POST(request: Request) {
@@ -38,9 +39,28 @@ export async function POST(request: Request) {
     )
   }
 
-  const { items } = result.data
+  const { items, codePromo } = result.data
 
   try {
+    // Validate promo code server-side if provided
+    let promoReduction = 0
+    let promoCodeValide: string | null = null
+
+    if (codePromo) {
+      const config = await prisma.appConfig.findUnique({
+        where: { cle: "bandeau_promo" },
+      })
+      if (config) {
+        const promo: { actif: boolean; code: string; texte: string } =
+          JSON.parse(config.valeur)
+        if (promo.actif && codePromo.toUpperCase() === promo.code.toUpperCase()) {
+          const match = promo.texte.match(/(\d+)%/)
+          promoReduction = match ? parseInt(match[1], 10) : 0
+          promoCodeValide = promo.code
+        }
+      }
+    }
+
     const commande = await prisma.$transaction(async (tx) => {
       // Fetch all products and validate stock
       const produitIds = items.map((i) => i.produitId)
@@ -74,6 +94,10 @@ export async function POST(request: Request) {
         total += prix * item.quantite
       }
 
+      // Apply promo reduction
+      const reduction = promoReduction > 0 ? Math.round(total * promoReduction / 100) : 0
+      const totalFinal = total - reduction
+
       // Decrement stock
       for (const item of items) {
         await tx.produit.update({
@@ -86,7 +110,9 @@ export async function POST(request: Request) {
       return tx.commande.create({
         data: {
           userId: session.user!.id!,
-          total,
+          total: totalFinal,
+          codePromo: promoCodeValide,
+          reduction,
           lignes: { create: lignes },
         },
         include: {

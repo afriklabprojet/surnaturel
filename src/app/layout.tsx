@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Toaster } from "sonner";
 import { CartProvider } from "@/lib/cart-context";
 import { I18nProvider } from "@/lib/i18n";
 import SessionWrapper from "@/components/providers/SessionWrapper";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -62,13 +64,9 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})()`,
-          }}
-        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2D7A1F" />
         <script
@@ -80,7 +78,7 @@ export default function RootLayout({
               name: "Le Surnaturel de Dieu",
               description: "Institut de bien-être holistique à Abidjan — Hammam, gommage, soins du visage, post-accouchement, sage-femme et boutique de produits naturels.",
               url: APP_URL,
-              telephone: "+22507XXXXXXXX",
+              telephone: "+2250778520699",
               email: "contact@surnatureldedieu.ci",
               address: {
                 "@type": "PostalAddress",
@@ -118,12 +116,16 @@ export default function RootLayout({
                   { "@type": "Offer", itemOffered: { "@type": "Service", name: "Sage-femme", description: "Consultations sage-femme personnalisées" } },
                 ],
               },
-              sameAs: [],
+              sameAs: [
+                "https://www.facebook.com/surnatureldedieu",
+                "https://www.instagram.com/surnatureldedieu",
+              ],
             }),
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main">
+      <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main dark:bg-slate-900 dark:text-slate-100">
+        <ThemeProvider>
         <SessionWrapper>
           <I18nProvider>
             <CartProvider>
@@ -131,6 +133,22 @@ export default function RootLayout({
             </CartProvider>
           </I18nProvider>
         </SessionWrapper>
+        </ThemeProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            classNames: {
+              toast: "font-body",
+              title: "font-body text-[13px]",
+              description: "font-body text-[12px] text-text-mid",
+              success: "bg-primary-light border-primary-brand text-primary-brand",
+              error: "bg-red-50 border-danger text-danger",
+            },
+            style: {
+              border: "1px solid var(--color-border)",
+            },
+          }}
+        />
         <Analytics />
         <SpeedInsights />
         <script

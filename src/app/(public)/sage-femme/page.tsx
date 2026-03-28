@@ -13,6 +13,8 @@ import {
   Stethoscope,
 } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
+import { prisma } from "@/lib/prisma"
+import { getIcon } from "@/lib/icon-map"
 import { MotionSection, MotionStagger, MotionItem } from "@/components/ui/MotionWrapper"
 import { fadeInUp, fadeInLeft, fadeInRight } from "@/lib/animations"
 import FaqAccordion from "./FaqAccordion"
@@ -23,94 +25,53 @@ export const metadata: Metadata = {
     "Consultations avec Ama Kouassi, sage-femme diplômée d'État : suivi de grossesse, préparation à l'accouchement, rééducation post-natale et conseils personnalisés à Abidjan.",
 }
 
-const SPECIALITES = [
-  "Suivi de grossesse",
-  "Préparation à l'accouchement",
-  "Rééducation post-natale",
-  "Consultations gynécologiques",
-  "Planification familiale",
-]
+export default async function PageSageFemme() {
+  // Charger dynamiquement depuis la DB
+  const [specialitesConfig, prestationsConfig, faqData, bioConfig, telConfig] = await Promise.all([
+    prisma.appConfig.findUnique({ where: { cle: "specialites_sage_femme" } }),
+    prisma.appConfig.findUnique({ where: { cle: "prestations_sage_femme" } }),
+    prisma.faq.findMany({ where: { categorie: "sage-femme" }, orderBy: { ordre: "asc" } }),
+    prisma.appConfig.findUnique({ where: { cle: "bio_sage_femme" } }),
+    prisma.appConfig.findUnique({ where: { cle: "telephone_contact" } }),
+  ])
 
-const PRESTATIONS = [
-  {
-    icon: Heart,
-    titre: "Suivi de grossesse",
-    description:
-      "Accompagnement personnalisé tout au long de votre grossesse avec des consultations régulières et un suivi attentif.",
-    prix: 20000,
-    duree: 60,
-  },
-  {
-    icon: Baby,
-    titre: "Préparation à l'accouchement",
-    description:
-      "Séances individuelles ou en couple pour vous préparer physiquement et émotionnellement à l'arrivée de bébé.",
-    prix: 15000,
-    duree: 90,
-  },
-  {
-    icon: Shield,
-    titre: "Rééducation post-natale",
-    description:
-      "Programme de récupération après l'accouchement : rééducation périnéale, soins du corps et soutien psychologique.",
-    prix: 25000,
-    duree: 75,
-  },
-  {
-    icon: Star,
-    titre: "Conseil allaitement",
-    description:
-      "Accompagnement et conseils pratiques pour un allaitement serein, confortable et adapté à votre rythme.",
-    prix: 10000,
-    duree: 45,
-  },
-]
-
-const FAQ = [
-  {
-    question: "À partir de quand dois-je consulter une sage-femme ?",
-    reponse:
-      "Idéalement dès le début de votre grossesse, à partir de la 6ᵉ semaine. Mais il n'est jamais trop tard pour bénéficier d'un accompagnement professionnel. Nos consultations s'adaptent à chaque trimestre.",
-  },
-  {
-    question: "Les consultations sont-elles confidentielles ?",
-    reponse:
-      "Absolument. Toutes les informations partagées lors des consultations sont strictement confidentielles. Ama Kouassi respecte le secret professionnel médical et vos données sont protégées.",
-  },
-  {
-    question: "Proposez-vous un suivi après l'accouchement ?",
-    reponse:
-      "Oui, nous proposons un programme complet de rééducation post-natale qui inclut la rééducation périnéale, un accompagnement à l'allaitement et un suivi du bien-être émotionnel de la jeune maman.",
-  },
-  {
-    question: "Peut-on venir en couple pour les séances de préparation ?",
-    reponse:
-      "Bien sûr ! La préparation à l'accouchement en couple est vivement encouragée. Cela permet au partenaire de comprendre les étapes de l'accouchement et de savoir comment accompagner la future maman.",
-  },
-  {
-    question: "Comment prendre rendez-vous avec la sage-femme ?",
-    reponse:
-      "Vous pouvez réserver directement en ligne via notre page de prise de rendez-vous, ou nous contacter par téléphone au +225 07 09 00 00 00. Nous vous répondrons dans les meilleurs délais.",
-  },
-]
-
-export default function PageSageFemme() {
+  const SPECIALITES: string[] = specialitesConfig ? JSON.parse(specialitesConfig.valeur) : []
+  const PRESTATIONS: Array<{ icon: string; titre: string; description: string; prix: number; duree: number }> =
+    prestationsConfig ? JSON.parse(prestationsConfig.valeur) : []
+  const FAQ = faqData.map(f => ({ question: f.question, reponse: f.reponse }))
+  const bio: { nom: string; titre: string; paragraphes: string[] } = bioConfig
+    ? JSON.parse(bioConfig.valeur)
+    : { nom: "Ama Kouassi", titre: "Sage-femme dipl\u00f4m\u00e9e d'\u00c9tat", paragraphes: [] }
+  const telephone: string = telConfig ? JSON.parse(telConfig.valeur) : "+225 07 09 00 00 00"
   return (
     <>
       {/* Hero */}
-      <section className="bg-primary-brand px-4 py-20 sm:px-6 lg:px-8">
-        <MotionSection variants={fadeInUp} trigger="animate" className="mx-auto max-w-4xl text-center">
-          <span className="font-body text-[11px] uppercase tracking-[0.2em] text-gold">
+      <section className="relative overflow-hidden bg-linear-to-br from-primary-brand via-primary-brand/95 to-primary-dark px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
+        {/* Décorations */}
+        <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gold/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute left-1/2 top-1/3 h-52 w-52 -translate-x-1/2 rounded-full bg-gold/8 blur-2xl" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 70px, rgba(255,255,255,0.1) 70px, rgba(255,255,255,0.1) 71px)" }} />
+
+        <MotionSection variants={fadeInUp} trigger="animate" className="relative mx-auto max-w-4xl text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-gold/30 bg-gold/10">
+            <Heart size={28} className="text-gold" />
+          </div>
+          <span className="inline-block bg-gold/20 px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/30">
             Accompagnement maternel
           </span>
-          <h1 className="mt-4 font-display text-[44px] font-light text-white md:text-[52px]">
-            Notre <em className="italic">sage-femme</em>
+          <h1 className="mt-6 font-display text-[44px] font-light text-white md:text-[56px]">
+            Notre <em className="italic text-gold">sage-femme</em>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl font-body text-[15px] font-light leading-relaxed text-white/80">
+          <p className="mx-auto mt-5 max-w-2xl font-body text-[15px] font-light leading-relaxed text-white/75">
             Un accompagnement bienveillant et professionnel tout au long de votre
             parcours maternel, de la grossesse au post-partum.
           </p>
-          <div className="mx-auto mt-6 h-px w-16 bg-gold" />
+          <div className="mx-auto mt-8 flex items-center justify-center gap-4">
+            <div className="h-px w-12 bg-gold/40" />
+            <span className="font-body text-[10px] uppercase tracking-[0.15em] text-gold/60">{bio.nom} \u00b7 {bio.titre}</span>
+            <div className="h-px w-12 bg-gold/40" />
+          </div>
         </MotionSection>
       </section>
 
@@ -124,7 +85,7 @@ export default function PageSageFemme() {
           >
             <div className="text-center">
               <Stethoscope size={64} className="mx-auto text-primary-brand/30" />
-              <p className="mt-3 font-body text-[12px] text-text-muted-brand">Photo Ama Kouassi</p>
+              <p className="mt-3 font-body text-[12px] text-text-muted-brand">Photo {bio.nom}</p>
             </div>
           </MotionSection>
 
@@ -134,30 +95,16 @@ export default function PageSageFemme() {
               Votre accompagnante
             </span>
             <h2 className="mt-2 font-display text-[32px] font-light text-text-main">
-              Ama Kouassi
+              {bio.nom}
             </h2>
             <p className="mt-1 font-body text-[13px] font-medium text-primary-brand">
-              Sage-femme diplômée d&apos;État
+              {bio.titre}
             </p>
             <div className="mt-2 h-px w-12 bg-gold" />
             <div className="mt-6 space-y-4 font-body text-[14px] leading-relaxed text-text-mid">
-              <p>
-                Avec plus de 10 ans d&apos;expérience dans l&apos;accompagnement des
-                femmes, Ama Kouassi est la sage-femme de confiance du Surnaturel de
-                Dieu. Diplômée d&apos;État, elle met son expertise au service du
-                bien-être maternel avec douceur et professionnalisme.
-              </p>
-              <p>
-                Spécialisée dans le suivi physiologique de la grossesse, la
-                préparation à l&apos;accouchement et la rééducation post-natale,
-                elle accompagne chaque femme avec une écoute attentive et des
-                conseils adaptés à sa situation unique.
-              </p>
-              <p>
-                Chaque consultation est un moment d&apos;échange privilégié pour
-                répondre à toutes vos questions et vous accompagner en toute
-                confiance vers la maternité.
-              </p>
+              {bio.paragraphes.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
@@ -192,7 +139,7 @@ export default function PageSageFemme() {
 
           <MotionStagger className="grid gap-6 sm:grid-cols-2">
             {PRESTATIONS.map((p) => {
-              const Icon = p.icon
+              const Icon = getIcon(p.icon)
               return (
                 <MotionItem
                   key={p.titre}
@@ -252,7 +199,7 @@ export default function PageSageFemme() {
             Prenez <em className="italic">rendez-vous</em>
           </h2>
           <p className="mx-auto mt-4 max-w-lg font-body text-[14px] text-white/80">
-            Réservez votre consultation avec Ama Kouassi directement en
+            Réservez votre consultation avec {bio.nom} directement en
             ligne ou contactez-nous par téléphone.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -264,7 +211,7 @@ export default function PageSageFemme() {
               <ArrowRight size={14} />
             </Link>
             <a
-              href="tel:+2250709000000"
+              href={`tel:${telephone.replace(/\s/g, "")}`}
               className="flex items-center gap-2 border border-white/40 px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-white/10"
             >
               <Phone size={14} />

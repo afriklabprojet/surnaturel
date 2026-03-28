@@ -6,13 +6,15 @@ import { z } from "zod/v4"
 const patchSchema = z.object({
   nom: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
+  descriptionLongue: z.string().nullable().optional(),
   prix: z.number().min(0).optional(),
   duree: z.number().int().min(1).optional(),
-  categorie: z.enum([
-    "HAMMAM", "GOMMAGE", "AMINCISSANT", "VISAGE",
-    "POST_ACCOUCHEMENT", "CONSEIL_ESTHETIQUE", "SAGE_FEMME",
-  ]).optional(),
+  categorie: z.string().min(1).optional(),
   imageUrl: z.string().url().nullable().optional(),
+  icon: z.string().nullable().optional(),
+  badge: z.string().nullable().optional(),
+  etapes: z.array(z.object({ titre: z.string(), description: z.string() })).nullable().optional(),
+  ordre: z.number().int().optional(),
   actif: z.boolean().optional(),
 })
 

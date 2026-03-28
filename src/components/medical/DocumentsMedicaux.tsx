@@ -289,7 +289,7 @@ export default function DocumentsMedicaux() {
                     </span>
                     {doc.taille && <span>{formatSize(doc.taille)}</span>}
                     <span>
-                      {new Date(doc.createdAt).toLocaleDateString("fr-FR", {
+                      {new Date(doc.createdAt).toLocaleDateString("fr", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",

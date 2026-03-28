@@ -88,7 +88,7 @@ export default function AdminLoginForm({ stats }: Props) {
   return (
     <div className="flex min-h-screen">
       {/* ── Colonne gauche — fond sombre ── */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[520px] flex-col justify-between bg-admin-panel-deep px-10 py-10">
+      <div className="hidden lg:flex lg:w-120 xl:w-130 flex-col justify-between bg-admin-panel-deep px-10 py-10">
         <div className="space-y-8">
           {/* Logo */}
           <div className="space-y-1">
@@ -101,7 +101,7 @@ export default function AdminLoginForm({ stats }: Props) {
           </div>
 
           {/* Trait or */}
-          <div className="w-[28px] h-px bg-gold" />
+          <div className="w-7 h-px bg-gold" />
 
           {/* Badge pill */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[rgba(184,151,42,0.3)] rounded-full">
@@ -157,7 +157,7 @@ export default function AdminLoginForm({ stats }: Props) {
 
       {/* ── Colonne droite — formulaire ── */}
       <div className="flex-1 flex items-center justify-center bg-bg-page px-6 py-10">
-        <div className="w-full max-w-[400px] space-y-8">
+        <div className="w-full max-w-100 space-y-8">
           {/* Tag or */}
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-gold" />

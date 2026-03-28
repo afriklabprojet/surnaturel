@@ -25,13 +25,13 @@ export default function QRCodeRDV({ rdv, isOpen, onClose }: QRCodeRDVProps) {
   const qrValue = `${process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.com"}/admin/rdv/scan/${rdv.id}`
 
   const dateObj = new Date(rdv.date)
-  const dateFormatted = dateObj.toLocaleDateString("fr-FR", {
+  const dateFormatted = dateObj.toLocaleDateString("fr", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   })
-  const heureFormatted = dateObj.toLocaleTimeString("fr-FR", {
+  const heureFormatted = dateObj.toLocaleTimeString("fr", {
     hour: "2-digit",
     minute: "2-digit",
   })

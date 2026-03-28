@@ -65,6 +65,8 @@ async function main() {
   // ─── Soins ─────────────────────────────────────────────────
 
   // Supprimer les soins existants pour re-seed proprement
+  await prisma.forfaitSoin.deleteMany({})
+  await prisma.forfait.deleteMany({})
   await prisma.avis.deleteMany({})
   await prisma.favori.deleteMany({})
   await prisma.rendezVous.deleteMany({})
@@ -75,98 +77,134 @@ async function main() {
       nom: "Hammam Royal",
       slug: "hammam-royal",
       description: "Plongez dans une expérience de purification ancestrale. Notre hammam vous enveloppe dans une vapeur douce et parfumée, ouvrant les pores pour éliminer les impuretés en profondeur.",
-      deroulement: "1. Accueil et préparation (10 min)\n2. Séance hammam vapeur (30 min)\n3. Gommage doux au gant kessa (15 min)\n4. Rinçage et relaxation (5 min)",
-      bienfaits: [
-        "Élimination des toxines",
-        "Peau purifiée et éclatante",
-        "Détente musculaire profonde",
-        "Amélioration de la circulation",
-        "Préparation idéale aux soins",
+      descriptionLongue: "Plongez dans une expérience de purification ancestrale. Notre hammam vous enveloppe dans une vapeur douce et parfumée, ouvrant les pores pour éliminer les impuretés en profondeur. La chaleur progressive détend vos muscles, libère les tensions accumulées et prépare votre peau à recevoir les soins suivants. Un rituel millénaire revisité dans un cadre de sérénité absolue, idéal pour se ressourcer et retrouver un bien-être total.",
+      bienfaits: ["Élimination des toxines", "Peau purifiée et éclatante", "Détente musculaire profonde", "Amélioration de la circulation", "Préparation idéale aux soins", "Réduction du stress"],
+      etapes: [
+        { titre: "Accueil & préparation", description: "Vous êtes accueillie dans notre espace de détente. Nous vous remettons votre tenue et vous présentons le déroulement du soin." },
+        { titre: "Séance hammam vapeur", description: "Installation dans notre hammam traditionnel. La chaleur douce et humide ouvre progressivement vos pores et détend vos muscles." },
+        { titre: "Gommage doux au gant kessa", description: "Exfoliation délicate avec le gant traditionnel kessa pour éliminer les cellules mortes et purifier la peau." },
+        { titre: "Rinçage et relaxation", description: "Rinçage à l'eau tiède suivi d'un moment de repos dans notre espace détente, enveloppée dans un peignoir douillet." },
       ],
-      prix: 8000,
-      duree: 60,
-      categorie: "HAMMAM" as const,
-      actif: true,
+      prix: 8000, duree: 60, categorie: "HAMMAM" as const, icon: "Flame", badge: "Populaire", ordre: 1, actif: true,
+    },
+    {
+      nom: "Hammam Duo",
+      slug: "hammam-duo",
+      description: "Partagez un moment de bien-être à deux dans notre hammam privé. Idéal en couple ou entre amies.",
+      descriptionLongue: "Partagez un moment de bien-être à deux dans notre hammam privé. Cette expérience exclusive vous invite à vivre ensemble un rituel de purification dans une atmosphère intime et luxueuse. Vapeur parfumée, gommage traditionnel et thé à la menthe : un moment de complicité inoubliable. Parfait pour les couples, les mères et filles, ou les meilleures amies.",
+      bienfaits: ["Expérience à deux exclusive", "Purification de la peau", "Détente musculaire partagée", "Moment de complicité unique", "Élimination des toxines", "Bien-être émotionnel"],
+      etapes: [
+        { titre: "Accueil du duo", description: "Accueil chaleureux pour vous deux dans notre espace VIP. Présentation du déroulé et installation dans le hammam privé." },
+        { titre: "Séance hammam privé", description: "Profitez ensemble de la vapeur parfumée dans notre hammam privé, un moment de détente et de complicité." },
+        { titre: "Gommage mutuel ou assisté", description: "Gommage au gant kessa, réalisé par nos esthéticiennes ou en autonomie pour un moment ludique à deux." },
+        { titre: "Thé à la menthe & détente", description: "Moment de pause avec thé à la menthe traditionnel et pâtisseries dans notre salon de repos privatif." },
+      ],
+      prix: 14000, duree: 75, categorie: "HAMMAM" as const, icon: "Heart", badge: "Nouveau", ordre: 2, actif: true,
     },
     {
       nom: "Gommage Corps Luxe",
       slug: "gommage-corps-luxe",
-      description: "Un rituel d'exfoliation luxueux qui révèle la peau douce et lumineuse qui sommeille en vous. Notre mélange exclusif d'huiles précieuses et de sucres naturels transforme votre peau en soie.",
-      bienfaits: [
-        "Exfoliation en profondeur",
-        "Peau satinée et lumineuse",
-        "Stimulation de la régénération",
-        "Hydratation intense",
-        "Relaxation totale",
+      description: "Un rituel d'exfoliation luxueux qui révèle la peau douce et lumineuse qui sommeille en vous.",
+      descriptionLongue: "Un rituel d'exfoliation luxueux qui révèle la peau douce et lumineuse qui sommeille en vous. Notre mélange exclusif d'huiles précieuses et de sucres naturels transforme votre peau en soie. L'exfoliation élimine les cellules mortes, stimule le renouvellement cellulaire et laisse la peau incroyablement satinée.",
+      bienfaits: ["Exfoliation en profondeur", "Peau satinée et lumineuse", "Stimulation de la régénération", "Hydratation intense", "Relaxation totale", "Unification du teint"],
+      etapes: [
+        { titre: "Préparation de la peau", description: "Votre peau est nettoyée et légèrement humidifiée pour préparer l'exfoliation." },
+        { titre: "Application du gommage", description: "Application de notre mélange exclusif d'huiles précieuses et de sucres naturels, avec des mouvements circulaires doux." },
+        { titre: "Massage exfoliant", description: "Massage progressif pour éliminer les cellules mortes et stimuler la microcirculation." },
+        { titre: "Rinçage", description: "Rinçage abondant à l'eau tiède pour éliminer tous les résidus." },
+        { titre: "Hydratation", description: "Application d'une huile ou crème hydratante pour protéger et nourrir votre nouvelle peau." },
       ],
-      prix: 12000,
-      duree: 45,
-      categorie: "GOMMAGE" as const,
-      actif: true,
+      prix: 12000, duree: 45, categorie: "GOMMAGE" as const, icon: "Sparkles", ordre: 3, actif: true,
+    },
+    {
+      nom: "Gommage Visage Éclat",
+      slug: "gommage-visage-eclat",
+      description: "Offrez à votre visage un éclat incomparable grâce à notre gommage doux aux actifs naturels.",
+      descriptionLongue: "Offrez à votre visage un éclat incomparable grâce à notre gommage doux aux actifs naturels. Ce soin d'exfoliation faciale utilise des micro-grains naturels pour éliminer en douceur les cellules mortes, affiner le grain de peau et réveiller la luminosité de votre teint.",
+      bienfaits: ["Grain de peau affiné", "Teint lumineux et frais", "Élimination des cellules mortes", "Hydratation en profondeur", "Préparation aux soins quotidiens", "Anti-oxydant naturel"],
+      etapes: [
+        { titre: "Nettoyage du visage", description: "Démaquillage doux et nettoyage du visage pour préparer la peau à l'exfoliation." },
+        { titre: "Application du gommage", description: "Application délicate de micro-grains naturels enrichis en vitamines sur l'ensemble du visage." },
+        { titre: "Massage circulaire", description: "Mouvements circulaires doux pour activer la microcirculation et éliminer les cellules mortes." },
+        { titre: "Masque apaisant", description: "Application d'un masque hydratant et apaisant pour calmer la peau après l'exfoliation." },
+        { titre: "Soin final", description: "Application d'un sérum et d'une crème hydratante adaptés à votre type de peau." },
+      ],
+      prix: 8000, duree: 30, categorie: "GOMMAGE" as const, icon: "Leaf", badge: "Nouveau", ordre: 4, actif: true,
     },
     {
       nom: "Soin Amincissant Expert",
       slug: "soin-amincissant-expert",
-      description: "Notre protocole amincissant combine des techniques de pointe pour sculpter votre silhouette et retrouver confiance en votre corps.",
-      bienfaits: [
-        "Réduction des zones rebelles",
-        "Drainage lymphatique",
-        "Raffermissement de la peau",
-        "Réduction de la cellulite",
-        "Silhouette affinée",
+      description: "Notre protocole amincissant combine des techniques de pointe pour sculpter votre silhouette.",
+      descriptionLongue: "Notre protocole amincissant combine des techniques de pointe pour sculpter votre silhouette et retrouver confiance en votre corps. Ce soin tonifie, draine et raffermit la peau, tout en améliorant la circulation sanguine et lymphatique. Des résultats visibles dès les premières séances.",
+      bienfaits: ["Réduction des zones rebelles", "Drainage lymphatique", "Raffermissement de la peau", "Réduction de la cellulite", "Tonification des tissus", "Silhouette affinée"],
+      etapes: [
+        { titre: "Diagnostic corporel", description: "Évaluation des zones à traiter et détermination du protocole personnalisé." },
+        { titre: "Application des actifs", description: "Pose de produits amincissants ciblés sur les zones identifiées." },
+        { titre: "Modelage drainant", description: "Techniques de massage spécifiques pour activer la circulation et le drainage lymphatique." },
+        { titre: "Enveloppement", description: "Enveloppement dans un film technique pour optimiser l'action des actifs." },
+        { titre: "Finalisation", description: "Application d'une crème raffermissante et conseils pour prolonger les effets à domicile." },
       ],
-      prix: 20000,
-      duree: 90,
-      categorie: "AMINCISSANT" as const,
-      actif: true,
+      prix: 20000, duree: 90, categorie: "AMINCISSANT" as const, icon: "Zap", ordre: 5, actif: true,
     },
     {
       nom: "Soin Visage Éclat",
       slug: "soin-visage-eclat",
-      description: "Révélez l'éclat naturel de votre peau grâce à notre soin visage personnalisé. Adapté à tous les types de peau, ce soin combine nettoyage profond, hydratation et luminosité.",
-      bienfaits: [
-        "Nettoyage en profondeur",
-        "Hydratation intense",
-        "Éclat du teint retrouvé",
-        "Réduction des imperfections",
-        "Peau revitalisée",
+      description: "Révélez l'éclat naturel de votre peau grâce à notre soin visage personnalisé.",
+      descriptionLongue: "Révélez l'éclat naturel de votre peau grâce à notre soin visage personnalisé. Adapté à tous les types de peau, ce soin combine nettoyage profond, hydratation et luminosité. Un véritable moment de bien-être pour retrouver un teint lumineux et une peau revitalisée.",
+      bienfaits: ["Nettoyage en profondeur", "Hydratation intense", "Éclat du teint retrouvé", "Réduction des imperfections", "Anti-âge naturel", "Peau revitalisée"],
+      etapes: [
+        { titre: "Démaquillage", description: "Nettoyage doux et complet du visage pour éliminer maquillage et impuretés." },
+        { titre: "Diagnostic peau", description: "Analyse de votre type de peau pour adapter les produits et techniques utilisés." },
+        { titre: "Exfoliation", description: "Gommage doux adapté pour préparer la peau à recevoir les soins actifs." },
+        { titre: "Soin ciblé", description: "Application de sérums et masques adaptés à vos besoins spécifiques." },
+        { titre: "Massage facial", description: "Massage relaxant et liftant pour stimuler la circulation et détendre les traits." },
+        { titre: "Hydratation finale", description: "Application d'une crème de jour ou de nuit selon l'heure du soin." },
       ],
-      prix: 15000,
-      duree: 60,
-      categorie: "VISAGE" as const,
-      actif: true,
+      prix: 15000, duree: 60, categorie: "VISAGE" as const, icon: "Smile", ordre: 6, actif: true,
     },
     {
       nom: "Programme Post-Accouchement",
       slug: "programme-post-accouchement",
-      description: "Retrouvez votre vitalité après l'accouchement grâce à notre programme complet. Conçu par Marie Jeanne, ce programme accompagne les jeunes mamans dans leur renaissance physique et émotionnelle.",
-      bienfaits: [
-        "Récupération post-partum",
-        "Raffermissement abdominal",
-        "Réduction des tensions",
-        "Moment de détente pour les mamans",
-        "Reconnexion avec son corps",
+      description: "Retrouvez votre vitalité après l'accouchement grâce à notre programme complet.",
+      descriptionLongue: "Retrouvez votre vitalité après l'accouchement grâce à notre programme complet. Conçu par Marie Jeanne, ce programme accompagne les jeunes mamans dans leur renaissance physique et émotionnelle. Il combine des soins du corps relaxants, des techniques de raffermissement abdominal et des moments de détente profonde.",
+      bienfaits: ["Récupération post-partum", "Raffermissement abdominal", "Réduction des tensions", "Moment de détente pour les mamans", "Amélioration de l'énergie", "Reconnexion avec son corps"],
+      etapes: [
+        { titre: "Entretien personnalisé", description: "Discussion sur vos besoins spécifiques et les zones à privilégier après l'accouchement." },
+        { titre: "Relaxation", description: "Moment de détente pour libérer les tensions accumulées pendant la grossesse et l'accouchement." },
+        { titre: "Soin du corps", description: "Massage doux de l'ensemble du corps, particulièrement adapté aux jeunes mamans." },
+        { titre: "Soin ciblé abdominal", description: "Techniques douces pour accompagner le retour de l'élasticité de la zone abdominale." },
+        { titre: "Moment de pause", description: "Temps de repos et d'échange de conseils pour prendre soin de vous au quotidien." },
       ],
-      prix: 25000,
-      duree: 90,
-      categorie: "POST_ACCOUCHEMENT" as const,
-      actif: true,
+      prix: 25000, duree: 90, categorie: "POST_ACCOUCHEMENT" as const, icon: "Baby", ordre: 7, actif: true,
+    },
+    {
+      nom: "Consultation Sage-Femme",
+      slug: "consultation-sage-femme",
+      description: "Un accompagnement médical bienveillant pour chaque étape de votre maternité.",
+      descriptionLongue: "Un accompagnement médical bienveillant pour chaque étape de votre maternité. Notre sage-femme diplômée vous accompagne dans le suivi de grossesse, la préparation à l'accouchement, et les soins post-partum. Un espace d'écoute et de conseils personnalisés.",
+      bienfaits: ["Suivi de grossesse personnalisé", "Préparation à l'accouchement", "Accompagnement post-partum", "Conseils allaitement", "Écoute bienveillante", "Suivi médical de qualité"],
+      etapes: [
+        { titre: "Accueil et écoute", description: "Un moment d'échange bienveillant pour comprendre vos besoins et vos attentes." },
+        { titre: "Examen et suivi", description: "Examen médical adapté à votre stade de grossesse ou post-partum." },
+        { titre: "Conseils personnalisés", description: "Recommandations sur l'alimentation, l'activité physique et la préparation à la naissance." },
+        { titre: "Planification du suivi", description: "Mise en place d'un calendrier de suivi adapté et réponse à toutes vos questions." },
+      ],
+      prix: 15000, duree: 60, categorie: "SAGE_FEMME" as const, icon: "Stethoscope", ordre: 8, actif: true,
     },
     {
       nom: "Conseil Esthétique Personnalisé",
       slug: "conseil-esthetique",
-      description: "Un accompagnement sur-mesure pour révéler votre beauté naturelle au quotidien. Marie Jeanne partage son expertise pour créer votre routine beauté idéale.",
-      bienfaits: [
-        "Diagnostic personnalisé",
-        "Routine sur mesure",
-        "Conseils d'experts",
-        "Recommandations produits adaptées",
-        "Suivi personnalisé",
+      description: "Un accompagnement sur-mesure pour révéler votre beauté naturelle au quotidien.",
+      descriptionLongue: "Un accompagnement sur-mesure pour révéler votre beauté naturelle au quotidien. Marie Jeanne partage son expertise pour créer votre routine beauté idéale. Nous analysons votre type de peau, vos habitudes et vos objectifs pour vous proposer des recommandations personnalisées.",
+      bienfaits: ["Diagnostic personnalisé", "Routine sur mesure", "Conseils d'experts", "Recommandations produits adaptées", "Suivi personnalisé", "Économies sur les achats inutiles"],
+      etapes: [
+        { titre: "Accueil et questionnaire", description: "Discussion sur vos habitudes actuelles, vos préoccupations et vos objectifs beauté." },
+        { titre: "Analyse de peau", description: "Diagnostic complet de votre type de peau à l'aide de techniques d'observation professionnelles." },
+        { titre: "Recommandations", description: "Présentation de la routine adaptée et des produits conseillés pour votre profil." },
+        { titre: "Démonstration", description: "Application des produits recommandés pour vous montrer les bons gestes." },
+        { titre: "Synthèse écrite", description: "Remise d'un document récapitulatif de votre routine personnalisée à suivre chez vous." },
       ],
-      prix: 10000,
-      duree: 45,
-      categorie: "CONSEIL_ESTHETIQUE" as const,
-      actif: true,
+      prix: 10000, duree: 45, categorie: "CONSEIL_ESTHETIQUE" as const, icon: "Wand2", ordre: 9, actif: true,
     },
   ]
 
@@ -175,7 +213,7 @@ async function main() {
     const soin = await prisma.soin.create({ data })
     soins.push(soin)
   }
-  console.log("✅ 6 soins créés")
+  console.log("✅ 9 soins créés")
 
   // ─── Produits ──────────────────────────────────────────────
   await prisma.ligneCommande.deleteMany({})
@@ -183,16 +221,15 @@ async function main() {
   await prisma.produit.deleteMany({})
 
   const produitsData = [
-    { nom: "Savon Noir du Maroc", description: "Savon noir authentique pour gommage, riche en vitamine E.", prix: 3500, stock: 50, categorie: "Gommage" },
-    { nom: "Huile d'Argan Bio", description: "Huile d'argan pure pressée à froid pour cheveux et peau.", prix: 8000, stock: 30, categorie: "Huiles" },
-    { nom: "Beurre de Karité Brut", description: "Beurre de karité non raffiné du Burkina Faso, 100% naturel.", prix: 5000, stock: 45, categorie: "Soins corps" },
-    { nom: "Gant de Crin", description: "Gant exfoliant traditionnel pour hammam et gommage.", prix: 2000, stock: 100, categorie: "Accessoires" },
-    { nom: "Crème Hydratante Aloé Vera", description: "Crème hydratante légère à l'aloé vera pour tous types de peau.", prix: 6500, stock: 25, categorie: "Soins visage" },
-    { nom: "Huile de Coco Vierge", description: "Huile de coco extra vierge pour cheveux, corps et cuisine.", prix: 4500, stock: 40, categorie: "Huiles" },
-    { nom: "Masque à l'Argile Verte", description: "Masque purifiant à l'argile verte pour peau grasse et mixte.", prix: 3000, stock: 35, categorie: "Soins visage" },
-    { nom: "Sérum Anti-Taches", description: "Sérum concentré aux acides de fruits pour estomper les taches.", prix: 12000, stock: 20, categorie: "Soins visage" },
-    { nom: "Gel Douche Monoï", description: "Gel douche parfumé au monoï de Tahiti pour une peau satinée.", prix: 4000, stock: 60, categorie: "Soins corps" },
-    { nom: "Coffret Bien-Être", description: "Coffret cadeau : savon noir, huile d'argan, beurre de karité et gant.", prix: 18000, stock: 15, categorie: "Coffrets" },
+    { nom: "Beurre de karité pur", description: "Beurre de karité 100% naturel, récolté artisanalement. Hydrate, nourrit et protège la peau en profondeur.", descriptionLongue: "Notre beurre de karité pur est issu d'une récolte artisanale en Côte d'Ivoire. Riche en vitamines A, D, E et F, il nourrit intensément la peau. Convient à toutes les peaux, y compris les plus sensibles.", prix: 5000, stock: 25, categorie: "Corps", imageUrl: "/images/produits/beurre-karite.jpg" },
+    { nom: "Huile de coco vierge", description: "Huile de coco pressée à froid, multi-usage pour le corps et les cheveux.", descriptionLongue: "Huile de coco vierge pressée à froid, préservant toutes ses propriétés nutritives. Idéale comme soin capillaire, huile corporelle ou démaquillant naturel. Format 250ml.", prix: 8000, stock: 18, categorie: "Corps", imageUrl: "/images/produits/huile-coco.jpg" },
+    { nom: "Savon noir africain", description: "Savon noir traditionnel à base de cendres végétales et de beurre de karité. Purifiant et exfoliant.", descriptionLongue: "Le savon noir africain est fabriqué selon une recette ancestrale à base de cendres de plantes locales et de beurre de karité. Il nettoie en profondeur, exfolie délicatement et aide à unifier le teint. Format 200g.", prix: 3500, stock: 40, categorie: "Corps", imageUrl: "/images/produits/savon-noir.jpg" },
+    { nom: "Sérum éclat au curcuma", description: "Sérum visage à base de curcuma et vitamine C. Illumine le teint et réduit les taches pigmentaires.", descriptionLongue: "Ce sérum éclat combine les propriétés anti-oxydantes du curcuma et de la vitamine C pour un teint lumineux et unifié. Texture légère et non grasse. Format 30ml.", prix: 12000, stock: 3, categorie: "Visage", imageUrl: "/images/produits/serum-curcuma.jpg" },
+    { nom: "Crème hydratante à l'aloe vera", description: "Crème visage à l'aloe vera bio. Hydrate, apaise et régénère la peau au quotidien.", descriptionLongue: "Notre crème hydratante combine le pouvoir apaisant de l'aloe vera bio avec des huiles végétales nourrissantes. Convient à tous les types de peau. Format 50ml.", prix: 9500, stock: 12, categorie: "Visage", imageUrl: "/images/produits/creme-aloe.jpg" },
+    { nom: "Masque purifiant à l'argile", description: "Masque à l'argile verte et au charbon actif. Purifie les pores et matifie la peau.", descriptionLongue: "Ce masque purifiant associe l'argile verte au charbon actif qui capte les impuretés en profondeur. Appliqué 1 à 2 fois par semaine. Format 100ml.", prix: 7000, stock: 2, categorie: "Visage", imageUrl: "/images/produits/masque-argile.jpg" },
+    { nom: "Infusion détox bien-être", description: "Mélange de plantes africaines : kinkeliba, bissap et gingembre. Favorise la digestion.", descriptionLongue: "Notre infusion détox est composée d'un mélange de kinkeliba, de fleurs de bissap et de gingembre frais séché. 20 sachets par boîte.", prix: 6500, stock: 30, categorie: "Bien-être & Santé", imageUrl: "/images/produits/infusion-detox.jpg" },
+    { nom: "Huile essentielle de citronnelle", description: "Huile essentielle de citronnelle bio. Assainit l'air et favorise la relaxation.", descriptionLongue: "Huile essentielle de citronnelle 100% pure et bio, obtenue par distillation à la vapeur d'eau. Multi-usage. Format flacon 15ml.", prix: 4500, stock: 22, categorie: "Bien-être & Santé", imageUrl: "/images/produits/he-citronnelle.jpg" },
+    { nom: "Kit post-accouchement naturel", description: "Coffret de soins naturels pour les jeunes mamans : beurre de karité, huile de massage et infusion.", descriptionLongue: "Ce kit a été spécialement conçu pour les jeunes mamans en période de post-partum. Tous les produits sont 100% naturels et sans danger pour l'allaitement.", prix: 18000, stock: 8, categorie: "Bien-être & Santé", imageUrl: "/images/produits/kit-post-accouchement.jpg" },
   ]
 
   for (const data of produitsData) {
@@ -399,6 +436,189 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
     })
   }
   console.log("✅ 12 clientes + 12 avis publiés créés")
+
+  // ─── Forfaits ──────────────────────────────────────────────
+  await prisma.forfaitSoin.deleteMany({})
+  await prisma.forfait.deleteMany({})
+
+  const soinsBySlug = Object.fromEntries(soins.map(s => [s.slug, s]))
+
+  const forfaitsData = [
+    { slug: "rituel-purete", nom: "Rituel Pureté", description: "L'alliance parfaite du hammam et du gommage pour une peau entièrement renouvelée.", prixTotal: 20000, prixForfait: 17000, economie: 3000, badge: "Le + populaire", ordre: 1, soinSlugs: ["hammam-royal", "gommage-corps-luxe"] },
+    { slug: "parcours-eclat-total", nom: "Parcours Éclat Total", description: "Du visage au corps, retrouvez une peau éclatante et lumineuse de la tête aux pieds.", prixTotal: 35000, prixForfait: 29000, economie: 6000, ordre: 2, soinSlugs: ["gommage-visage-eclat", "soin-visage-eclat", "gommage-corps-luxe"] },
+    { slug: "renaissance-maman", nom: "Renaissance Maman", description: "Un programme complet pour les jeunes mamans : accompagnement sage-femme et programme post-accouchement.", prixTotal: 40000, prixForfait: 34000, economie: 6000, badge: "Idéal mamans", ordre: 3, soinSlugs: ["consultation-sage-femme", "programme-post-accouchement"] },
+  ]
+
+  for (const { soinSlugs, ...data } of forfaitsData) {
+    const forfait = await prisma.forfait.create({ data })
+    for (const slug of soinSlugs) {
+      if (soinsBySlug[slug]) {
+        await prisma.forfaitSoin.create({ data: { forfaitId: forfait.id, soinId: soinsBySlug[slug].id } })
+      }
+    }
+  }
+  console.log("✅ 3 forfaits créés")
+
+  // ─── Équipe ────────────────────────────────────────────────
+  await prisma.membreEquipe.deleteMany({})
+
+  const equipeData = [
+    { nom: "Marie Jeanne", role: "Fondatrice & Directrice", description: "Passionnée par le bien-être holistique, Marie Jeanne a fondé Le Surnaturel de Dieu avec la vision d'offrir des soins d'exception accessibles à toutes.", ordre: 1 },
+    { nom: "Ama Kouassi", role: "Sage-femme diplômée d'État", description: "Forte de plus de 10 ans d'expérience, Ama accompagne les femmes à chaque étape de leur vie avec professionnalisme et bienveillance.", ordre: 2 },
+    { nom: "Awa Diallo", role: "Esthéticienne spécialisée", description: "Experte en soins du corps et du visage, Awa maîtrise les techniques traditionnelles et modernes pour sublimer chaque cliente.", ordre: 3 },
+    { nom: "Fatou Bamba", role: "Accompagnatrice médicale", description: "Formée en accompagnement médical, elle apporte un suivi personnalisé et confidentiel aux clientes ayant des besoins spécifiques.", ordre: 4 },
+  ]
+
+  for (const data of equipeData) {
+    await prisma.membreEquipe.create({ data })
+  }
+  console.log("✅ 4 membres d'équipe créés")
+
+  // ─── FAQ ───────────────────────────────────────────────────
+  await prisma.faq.deleteMany({})
+
+  const faqData = [
+    { question: "Comment se déroule un premier rendez-vous ?", reponse: "Lors de votre premier rendez-vous, nous prenons le temps d'un échange approfondi pour comprendre vos besoins. Un diagnostic de peau est réalisé, puis nous vous proposons le soin le mieux adapté. Prévoyez 10 minutes supplémentaires pour cet accueil.", categorie: "soins", ordre: 1 },
+    { question: "Puis-je offrir un soin en cadeau ?", reponse: "Absolument ! Chaque soin peut être offert sous forme de carte cadeau. Cliquez sur « Offrir ce soin » sur la page du soin de votre choix. La carte cadeau est envoyée par email au destinataire avec un message personnalisé.", categorie: "soins", ordre: 2 },
+    { question: "Quels sont les modes de paiement acceptés ?", reponse: "Nous acceptons les paiements par mobile money (Orange Money, MTN Money) via Jeko Africa, ainsi que le paiement sur place. Le paiement en ligne est sécurisé et un reçu vous est envoyé par email.", categorie: "soins", ordre: 3 },
+    { question: "Est-ce que les soins conviennent aux femmes enceintes ?", reponse: "Certains soins sont adaptés aux femmes enceintes, comme la consultation sage-femme et le conseil esthétique. Pour les autres soins, nous adaptons nos protocoles selon le stade de la grossesse.", categorie: "soins", ordre: 4 },
+    { question: "Combien de séances faut-il pour voir des résultats ?", reponse: "Les résultats varient selon le type de soin. Un hammam ou gommage offre des résultats immédiats. Pour les soins amincissants, nous recommandons un programme de 5 à 8 séances.", categorie: "soins", ordre: 5 },
+    { question: "Quelle est votre politique d'annulation ?", reponse: "Vous pouvez annuler ou reporter votre rendez-vous sans frais jusqu'à 24h avant. Au-delà, des frais d'annulation de 50% peuvent s'appliquer.", categorie: "soins", ordre: 6 },
+    { question: "À partir de quand dois-je consulter une sage-femme ?", reponse: "Idéalement dès le début de votre grossesse, à partir de 6-8 semaines d'aménorrhée. Un suivi précoce permet d'assurer le bon déroulement de votre grossesse.", categorie: "sage-femme", ordre: 1 },
+    { question: "La consultation sage-femme est-elle confidentielle ?", reponse: "Absolument. Toutes les informations partagées lors de la consultation sont protégées par le secret médical et chiffrées dans notre système.", categorie: "sage-femme", ordre: 2 },
+    { question: "Proposez-vous un suivi post-partum ?", reponse: "Oui, notre sage-femme Ama Kouassi propose un suivi post-partum complet : rééducation périnéale, conseils d'allaitement, et accompagnement émotionnel.", categorie: "sage-femme", ordre: 3 },
+    { question: "Peut-on venir avec son bébé ?", reponse: "Bien sûr ! Nos locaux sont adaptés pour accueillir les jeunes mamans avec leurs bébés. Un espace change et allaitement est mis à votre disposition.", categorie: "sage-femme", ordre: 4 },
+    { question: "La sage-femme se déplace-t-elle à domicile ?", reponse: "Pour certains soins post-nataux, des visites à domicile peuvent être organisées. Contactez-nous pour en discuter et vérifier la disponibilité.", categorie: "sage-femme", ordre: 5 },
+  ]
+
+  for (const data of faqData) {
+    await prisma.faq.create({ data })
+  }
+  console.log("✅ 11 FAQ créées")
+
+  // ─── Configuration ─────────────────────────────────────────
+  await prisma.appConfig.deleteMany({})
+
+  const configData = [
+    { cle: "methodes_paiement", valeur: JSON.stringify([
+      { id: "wave", label: "Wave", color: "#1A9BF4" },
+      { id: "orange", label: "Orange Money", color: "#FF6600" },
+      { id: "mtn", label: "MTN MoMo", color: "#FFC000" },
+      { id: "moov", label: "Moov Money", color: "#0066CC" },
+      { id: "djamo", label: "Djamo", color: "#6C47FF" },
+    ]) },
+    { cle: "categories_produit", valeur: JSON.stringify([
+      { value: "all", label: "Tous les produits" },
+      { value: "Corps", label: "Corps" },
+      { value: "Visage", label: "Visage" },
+      { value: "Bien-être & Santé", label: "Bien-être & Santé" },
+    ]) },
+    { cle: "valeurs", valeur: JSON.stringify([
+      { icon: "Heart", titre: "Bienveillance", description: "Chaque cliente est accueillie avec chaleur et respect. Nous croyons que le bien-être commence par une écoute attentive." },
+      { icon: "Lock", titre: "Confidentialité", description: "Vos données personnelles et médicales sont protégées par un chiffrement de niveau bancaire. Votre intimité est notre priorité." },
+      { icon: "Award", titre: "Excellence", description: "Nous utilisons des produits naturels de qualité et des techniques éprouvées. Nos professionnelles sont formées aux standards les plus exigeants." },
+      { icon: "Users", titre: "Inclusivité", description: "Notre centre est ouvert à toutes, sans distinction. Nous adaptons nos soins aux besoins spécifiques de chaque femme." },
+    ]) },
+    { cle: "avantages", valeur: JSON.stringify([
+      { icon: "Shield", titre: "Produits naturels certifiés", description: "Nous utilisons exclusivement des produits naturels et certifiés, respectueux de votre peau et de l'environnement." },
+      { icon: "Award", titre: "Expertise reconnue", description: "Marie Jeanne et son équipe cumulent plus de 10 ans d'expérience dans les soins esthétiques et le bien-être." },
+      { icon: "Clock", titre: "Horaires flexibles", description: "Du lundi au samedi, avec des créneaux en soirée pour s'adapter à votre emploi du temps chargé." },
+      { icon: "Users", titre: "Approche personnalisée", description: "Chaque soin est adapté à vos besoins spécifiques. Aucun protocole générique, que du sur-mesure." },
+      { icon: "Star", titre: "Programme fidélité", description: "Cumulez des points à chaque visite et bénéficiez de soins gratuits grâce à notre programme de fidélité." },
+      { icon: "Heart", titre: "Cadre luxueux & apaisant", description: "Un institut pensé comme un cocon de sérénité, où chaque détail est conçu pour votre confort." },
+    ]) },
+    { cle: "specialites_sage_femme", valeur: JSON.stringify([
+      "Suivi de grossesse",
+      "Préparation à l'accouchement",
+      "Rééducation post-natale",
+      "Consultations gynécologiques",
+      "Planification familiale",
+    ]) },
+    { cle: "prestations_sage_femme", valeur: JSON.stringify([
+      { icon: "Baby", titre: "Suivi de grossesse", description: "Accompagnement personnalisé mois par mois, de la première consultation au jour J.", prix: 15000, duree: 45 },
+      { icon: "Heart", titre: "Préparation accouchement", description: "Exercices, respiration et techniques pour vivre sereinement votre accouchement.", prix: 25000, duree: 60 },
+      { icon: "Stethoscope", titre: "Consultation post-natale", description: "Bilan de santé complet pour la maman et le bébé dans les semaines suivant la naissance.", prix: 10000, duree: 30 },
+      { icon: "Shield", titre: "Conseil allaitement", description: "Accompagnement et conseils pratiques pour un allaitement serein et réussi.", prix: 10000, duree: 30 },
+    ]) },
+    { cle: "bandeau_promo", valeur: JSON.stringify({
+      actif: true,
+      texte: "−10% sur votre 1er soin",
+      code: "BIENVENUE10",
+      detail: "Offre valable sur tous les soins",
+    }) },
+    { cle: "telephone_contact", valeur: JSON.stringify("+225 07 09 00 00 00") },
+    { cle: "adresse_institut", valeur: JSON.stringify("Cocody, Riviera Palmeraie, Abidjan") },
+    { cle: "bio_sage_femme", valeur: JSON.stringify({
+      nom: "Ama Kouassi",
+      titre: "Sage-femme diplômée d'État",
+      experience: "10 ans",
+      paragraphes: [
+        "Avec plus de 10 ans d'expérience dans l'accompagnement des femmes, Ama Kouassi est la sage-femme de confiance du Surnaturel de Dieu. Diplômée d'État, elle met son expertise au service du bien-être maternel avec douceur et professionnalisme.",
+        "Spécialisée dans le suivi physiologique de la grossesse, la préparation à l'accouchement et la rééducation post-natale, elle accompagne chaque femme avec une écoute attentive et des conseils adaptés à sa situation unique.",
+        "Chaque consultation est un moment d'échange privilégié pour répondre à toutes vos questions et vous accompagner en toute confiance vers la maternité.",
+      ],
+    }) },
+    { cle: "categories_soins", valeur: JSON.stringify([
+      { label: "Tous", value: "TOUS" },
+      { label: "Hammam", value: "HAMMAM" },
+      { label: "Gommage", value: "GOMMAGE" },
+      { label: "Amincissant", value: "AMINCISSANT" },
+      { label: "Visage", value: "VISAGE" },
+      { label: "Post-accouchement", value: "POST_ACCOUCHEMENT" },
+      { label: "Sage-femme", value: "SAGE_FEMME" },
+      { label: "Conseil", value: "CONSEIL_ESTHETIQUE" },
+    ]) },
+    { cle: "hero_soins_icones", valeur: JSON.stringify([
+      { emoji: "🧖", label: "Hammam" },
+      { emoji: "✨", label: "Gommage" },
+      { emoji: "💆", label: "Visage" },
+    ]) },
+    { cle: "questions_chat_ia", valeur: JSON.stringify([
+      {
+        id: "objectif",
+        question: "Quel est votre objectif principal ?",
+        options: [
+          { label: "Détente & relaxation", value: "detente" },
+          { label: "Beauté du visage", value: "visage" },
+          { label: "Minceur & silhouette", value: "minceur" },
+          { label: "Soins post-accouchement", value: "maman" },
+          { label: "Consultation médicale", value: "medical" },
+          { label: "Découvrir l'institut", value: "decouvrir" },
+        ],
+      },
+      {
+        id: "budget",
+        question: "Quel est votre budget ?",
+        options: [
+          { label: "Moins de 10 000 F", value: "petit" },
+          { label: "10 000 – 20 000 F", value: "moyen" },
+          { label: "20 000 F et plus", value: "grand" },
+          { label: "Pas de limite", value: "illimite" },
+        ],
+      },
+      {
+        id: "temps",
+        question: "Combien de temps avez-vous ?",
+        options: [
+          { label: "30 min – 1h", value: "court" },
+          { label: "1h – 2h", value: "moyen" },
+          { label: "Demi-journée", value: "long" },
+        ],
+      },
+    ]) },
+    { cle: "categories_faq", valeur: JSON.stringify([
+      { label: "Soins", value: "soins" },
+      { label: "Sage-femme", value: "sage-femme" },
+      { label: "Général", value: "general" },
+      { label: "Boutique", value: "boutique" },
+      { label: "Rendez-vous", value: "rdv" },
+    ]) },
+  ]
+
+  for (const data of configData) {
+    await prisma.appConfig.create({ data })
+  }
+  console.log("✅ Configuration créée")
 
   console.log("\n🎉 Seed terminé avec succès !")
   console.log("─────────────────────────────────────")

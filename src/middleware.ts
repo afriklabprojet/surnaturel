@@ -4,7 +4,7 @@ import { createRateLimiter } from "@/lib/rate-limit"
 
 /* ━━━━━━━━━━ Rate Limiters ━━━━━━━━━━ */
 
-const authLimiter = createRateLimiter({ limit: 5, windowMs: 15 * 60 * 1000 })   // 5 req / 15 min
+const authLimiter = createRateLimiter({ limit: 20, windowMs: 15 * 60 * 1000 })   // 20 req / 15 min
 const contactLimiter = createRateLimiter({ limit: 3, windowMs: 60 * 60 * 1000 }) // 3 req / 1 h
 const paiementLimiter = createRateLimiter({ limit: 10, windowMs: 60 * 60 * 1000 }) // 10 req / 1 h
 
@@ -46,7 +46,9 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   /* ── Rate limiting (avant toute logique auth) ── */
-  const rule = rateLimitRules.find((r) => r.test(pathname))
+  // Exempter les GET auth (session, csrf, providers) — ne limiter que les POST (tentatives de login)
+  const isAuthGet = pathname.startsWith("/api/auth/") && req.method === "GET"
+  const rule = isAuthGet ? undefined : rateLimitRules.find((r) => r.test(pathname))
   if (rule) {
     const ip = getClientIp(req)
     const result = rule.limiter(ip)

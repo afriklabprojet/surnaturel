@@ -4,7 +4,6 @@ import Link from "next/link"
 import {
   Facebook,
   Instagram,
-  Twitter,
   MapPin,
   Phone,
   Mail,
@@ -51,25 +50,22 @@ export default function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-4">
               <a
-                href="#"
+                href="https://www.facebook.com/surnatureldedieu"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook"
                 className="flex h-9 w-9 items-center justify-center text-white/40 transition-colors duration-300 hover:text-gold"
               >
                 <Facebook size={18} />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/surnatureldedieu"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="flex h-9 w-9 items-center justify-center text-white/40 transition-colors duration-300 hover:text-gold"
               >
                 <Instagram size={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="flex h-9 w-9 items-center justify-center text-white/40 transition-colors duration-300 hover:text-gold"
-              >
-                <Twitter size={18} />
               </a>
             </div>
           </div>
@@ -126,7 +122,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <Phone size={16} className="mt-0.5 shrink-0 text-gold" />
-                <span className="font-body text-[12px] text-white/55">+225 00 00 00 00</span>
+                <a href="tel:+2250778520699" className="font-body text-[12px] text-white/55 hover:text-gold transition-colors duration-300">+225 07 78 52 06 99</a>
               </li>
               <li className="flex items-start gap-3">
                 <Mail size={16} className="mt-0.5 shrink-0 text-gold" />
@@ -148,13 +144,13 @@ export default function Footer() {
           </p>
           <div className="flex gap-6">
             <Link
-              href="#"
+              href="/mentions-legales"
               className="font-body text-[11px] text-white/40 transition-colors duration-300 hover:text-gold"
             >
               Mentions légales
             </Link>
             <Link
-              href="#"
+              href="/politique-confidentialite"
               className="font-body text-[11px] text-white/40 transition-colors duration-300 hover:text-gold"
             >
               Politique de confidentialité

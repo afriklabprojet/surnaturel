@@ -112,7 +112,7 @@ export default async function CommunautePage() {
                       {post.auteur.prenom} {post.auteur.nom?.charAt(0)}.
                     </span>
                     <span className="font-body text-[11px] text-text-muted-brand">
-                      {new Date(post.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                      {new Date(post.createdAt).toLocaleDateString("fr", { day: "numeric", month: "short" })}
                     </span>
                   </div>
                   <p className="font-body text-[14px] font-light text-text-mid line-clamp-2">
@@ -140,7 +140,7 @@ export default async function CommunautePage() {
               {events.map((ev) => (
                 <div key={ev.id} className="border border-border-brand border-t-2 border-t-gold p-5">
                   <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-gold">
-                    {new Date(ev.dateDebut).toLocaleDateString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(ev.dateDebut).toLocaleDateString("fr", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
                   </p>
                   <h3 className="mt-2 font-display text-[18px] text-text-main">{ev.titre}</h3>
                   {ev.lieu && (

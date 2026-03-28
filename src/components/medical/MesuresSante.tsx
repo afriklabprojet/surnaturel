@@ -86,7 +86,7 @@ export default function MesuresSante() {
     return mesures
       .filter((m) => m.type === type)
       .map((m) => ({
-        date: new Date(m.createdAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }),
+        date: new Date(m.createdAt).toLocaleDateString("fr", { day: "2-digit", month: "short" }),
         valeur: parseFloat(m.valeur.replace(",", ".")),
       }))
       .reverse()
@@ -377,7 +377,7 @@ export default function MesuresSante() {
                   )}
                 </div>
                 <span className="shrink-0 font-body text-[11px] text-text-muted-brand">
-                  {new Date(m.createdAt).toLocaleDateString("fr-FR", {
+                  {new Date(m.createdAt).toLocaleDateString("fr", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

@@ -1,8 +1,9 @@
 import { Metadata } from "next"
-import { Heart, Lock, Award, Users } from "lucide-react"
 import { BtnSerif, BtnTextLine } from "@/components/ui/buttons"
 import { MotionSection, MotionStagger, MotionItem } from "@/components/ui/MotionWrapper"
 import { fadeInUp, fadeInLeft, fadeInRight, staggerContainer, staggerItem, cardHover } from "@/lib/animations"
+import { prisma } from "@/lib/prisma"
+import { getIcon } from "@/lib/icon-map"
 
 export const metadata: Metadata = {
   title: "À propos | Le Surnaturel de Dieu — Institut de bien-être à Abidjan",
@@ -10,61 +11,14 @@ export const metadata: Metadata = {
     "Fondé en 2015 par Marie Jeanne, Le Surnaturel de Dieu est un institut de bien-être dédié aux femmes d'Abidjan. Découvrez notre histoire, notre équipe et nos valeurs.",
 }
 
-const EQUIPE = [
-  {
-    nom: "Marie Jeanne",
-    role: "Fondatrice & Directrice",
-    description:
-      "Passionnée par le bien-être holistique, Marie Jeanne a fondé Le Surnaturel de Dieu avec la vision d'offrir des soins d'exception accessibles à toutes.",
-  },
-  {
-    nom: "Ama Kouassi",
-    role: "Sage-femme diplômée d'État",
-    description:
-      "Forte de plus de 10 ans d'expérience, Ama accompagne les femmes à chaque étape de leur vie avec professionnalisme et bienveillance.",
-  },
-  {
-    nom: "Awa Diallo",
-    role: "Esthéticienne spécialisée",
-    description:
-      "Experte en soins du corps et du visage, Awa maîtrise les techniques traditionnelles et modernes pour sublimer chaque cliente.",
-  },
-  {
-    nom: "Fatou Bamba",
-    role: "Accompagnatrice médicale",
-    description:
-      "Formée en accompagnement médical, elle apporte un suivi personnalisé et confidentiel aux clientes ayant des besoins spécifiques.",
-  },
-]
+export default async function PageAPropos() {
+  const [equipe, valeursConfig] = await Promise.all([
+    prisma.membreEquipe.findMany({ orderBy: { ordre: "asc" } }),
+    prisma.appConfig.findUnique({ where: { cle: "valeurs" } }),
+  ])
 
-const VALEURS = [
-  {
-    icon: Heart,
-    titre: "Bienveillance",
-    description:
-      "Chaque cliente est accueillie avec chaleur et respect. Nous croyons que le bien-être commence par une écoute attentive.",
-  },
-  {
-    icon: Lock,
-    titre: "Confidentialité",
-    description:
-      "Vos données personnelles et médicales sont protégées par un chiffrement de niveau bancaire. Votre intimité est notre priorité.",
-  },
-  {
-    icon: Award,
-    titre: "Excellence",
-    description:
-      "Nous utilisons des produits naturels de qualité et des techniques éprouvées. Nos professionnelles sont formées aux standards les plus exigeants.",
-  },
-  {
-    icon: Users,
-    titre: "Inclusivité",
-    description:
-      "Notre centre est ouvert à toutes, sans distinction. Nous adaptons nos soins aux besoins spécifiques de chaque femme.",
-  },
-]
-
-export default function PageAPropos() {
+  const VALEURS: Array<{ icon: string; titre: string; description: string }> =
+    valeursConfig ? JSON.parse(valeursConfig.valeur) : []
   return (
     <div className="bg-bg-page">
       {/* Hero */}
@@ -87,10 +41,12 @@ export default function PageAPropos() {
       {/* Fondatrice */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          <MotionSection variants={fadeInLeft} className="flex h-80 items-center justify-center bg-gradient-to-br from-primary-light to-bg-page border border-border-brand">
-            <span className="font-display text-[24px] font-light text-primary-brand/30">
-              Photo Marie Jeanne
-            </span>
+          <MotionSection variants={fadeInLeft} className="relative h-80 overflow-hidden border border-border-brand">
+            <img
+              src="/images/fondatrice.jpg"
+              alt="Marie Jeanne — Fondatrice du Surnaturel de Dieu"
+              className="h-full w-full object-cover"
+            />
           </MotionSection>
           <MotionSection variants={fadeInRight}>
             <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
@@ -146,7 +102,7 @@ export default function PageAPropos() {
 
           <MotionStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {VALEURS.map((valeur) => {
-              const Icon = valeur.icon
+              const Icon = getIcon(valeur.icon)
               return (
                 <MotionItem
                   key={valeur.titre}
@@ -190,7 +146,7 @@ export default function PageAPropos() {
         </div>
 
         <MotionStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {EQUIPE.map((membre) => {
+          {equipe.map((membre) => {
             const initiales = membre.nom
               .split(" ")
               .map((n) => n[0])

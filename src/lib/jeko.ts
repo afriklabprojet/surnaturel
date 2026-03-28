@@ -26,6 +26,15 @@ export async function creerPaiement(params: {
 }): Promise<{ redirectUrl: string; paiementId: string }> {
   const reference = `CMD-${params.commandeId}-${Date.now()}`
 
+  // Déterminer les URLs de retour selon le type (commande ou RDV)
+  const isRDV = params.commandeId.startsWith("c") && !params.commandeId.includes("CMD")
+  const successUrl = isRDV
+    ? `${process.env.NEXTAUTH_URL}/api/rdv/acompte/confirmer?reference=${encodeURIComponent(reference)}&rdv=${encodeURIComponent(params.commandeId)}`
+    : `${process.env.NEXTAUTH_URL}/commandes/succes?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`
+  const errorUrl = isRDV
+    ? `${process.env.NEXTAUTH_URL}/mes-rdv?erreur=paiement&rdv=${encodeURIComponent(params.commandeId)}`
+    : `${process.env.NEXTAUTH_URL}/commandes/erreur?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`
+
   const body = {
     storeId: params.storeId,
     amountCents: params.montantFCFA * 100,
@@ -35,8 +44,8 @@ export async function creerPaiement(params: {
       type: "redirect",
       data: {
         paymentMethod: params.methodePaiement,
-        successUrl: `${process.env.NEXTAUTH_URL}/commandes/succes?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`,
-        errorUrl: `${process.env.NEXTAUTH_URL}/commandes/erreur?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`,
+        successUrl,
+        errorUrl,
       },
     },
   }

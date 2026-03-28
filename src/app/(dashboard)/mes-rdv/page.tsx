@@ -118,7 +118,7 @@ export default function PageMesRDV() {
         >
           {filtered.map((rdv) => {
             const dateRDV = new Date(rdv.dateHeure)
-            const heure = dateRDV.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Abidjan" })
+            const heure = dateRDV.toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Abidjan" })
             const peutAnnuler =
               rdv.statut === "EN_ATTENTE" &&
               dateRDV.getTime() > now.getTime() + 24 * 60 * 60 * 1000

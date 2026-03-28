@@ -51,7 +51,7 @@ const STATUT_CONFIG = {
 } as const
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString("fr-FR", {
+  return date.toLocaleDateString("fr", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -140,10 +140,10 @@ export default function MesConsultations() {
                 {/* Date bloc */}
                 <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center bg-primary-light">
                   <span className="font-display text-[16px] font-light text-primary-brand">
-                    {date.toLocaleDateString("fr-FR", { day: "2-digit" })}
+                    {date.toLocaleDateString("fr", { day: "2-digit" })}
                   </span>
                   <span className="font-body text-[9px] uppercase tracking-widest text-primary-brand">
-                    {date.toLocaleDateString("fr-FR", { month: "short" })}
+                    {date.toLocaleDateString("fr", { month: "short" })}
                   </span>
                 </div>
 
@@ -162,7 +162,7 @@ export default function MesConsultations() {
                   <p className="mt-1 font-body text-[12px] font-light text-text-muted-brand">
                     {formatDate(date)}
                     {" à "}
-                    {date.toLocaleTimeString("fr-FR", {
+                    {date.toLocaleTimeString("fr", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}

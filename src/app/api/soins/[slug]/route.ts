@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { SOINS_DATA, getSoinBySlug, BIENFAITS_SOINS, ETAPES_SOINS } from "@/lib/soins-data"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(
@@ -9,102 +8,66 @@ export async function GET(
   try {
     const { slug } = await params
 
-    // Récupérer le soin depuis les données mockées
-    const soinMock = getSoinBySlug(slug)
-    if (!soinMock) {
+    const soin = await prisma.soin.findUnique({
+      where: { slug },
+    })
+
+    if (!soin || !soin.actif) {
       return NextResponse.json({ error: "Soin non trouvé" }, { status: 404 })
     }
 
-    // Essayer de récupérer les avis depuis la base de données
-    let avis: Array<{
-      id: string
-      note: number
-      commentaire: string | null
-      createdAt: Date
-      user: { prenom: string; nom: string }
-    }> = []
-    let noteMoyenne = 0
+    // Avis publiés
+    const avis = await prisma.avis.findMany({
+      where: { soinId: soin.id, publie: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        note: true,
+        commentaire: true,
+        createdAt: true,
+        user: { select: { prenom: true, nom: true } },
+      },
+    })
 
-    try {
-      // Trouver le soin en base qui correspond au slug
-      const soinDB = await prisma.soin.findFirst({
-        where: {
-          nom: { contains: soinMock.nom, mode: "insensitive" },
-        },
-      })
-
-      if (soinDB) {
-        avis = await prisma.avis.findMany({
-          where: {
-            soinId: soinDB.id,
-            publie: true,
-          },
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          select: {
-            id: true,
-            note: true,
-            commentaire: true,
-            createdAt: true,
-            user: {
-              select: {
-                prenom: true,
-                nom: true,
-              },
-            },
-          },
-        })
-
-        if (avis.length > 0) {
-          noteMoyenne = avis.reduce((acc, a) => acc + a.note, 0) / avis.length
-        }
-      }
-    } catch {
-      // Si DB non disponible, continuer sans avis
-    }
+    const noteMoyenne = avis.length > 0
+      ? avis.reduce((acc, a) => acc + a.note, 0) / avis.length
+      : 0
 
     // Soins similaires (même catégorie)
-    const similaires = SOINS_DATA.filter(
-      (s) => s.categorie === soinMock.categorie && s.slug !== slug
-    )
-      .slice(0, 3)
-      .map((s) => ({
-        slug: s.slug,
-        nom: s.nom,
-        description: s.description,
-        prix: s.prix,
-        duree: s.duree,
-        categorie: s.categorie,
-      }))
+    const similaires = await prisma.soin.findMany({
+      where: { categorie: soin.categorie, slug: { not: slug }, actif: true },
+      take: 3,
+      orderBy: { ordre: "asc" },
+      select: { slug: true, nom: true, description: true, prix: true, duree: true, categorie: true, icon: true },
+    })
 
-    // Si pas assez de soins similaires, compléter avec d'autres
-    const autresSoins =
-      similaires.length < 3
-        ? SOINS_DATA.filter((s) => s.slug !== slug && !similaires.find((sim) => sim.slug === s.slug))
-            .slice(0, 3 - similaires.length)
-            .map((s) => ({
-              slug: s.slug,
-              nom: s.nom,
-              description: s.description,
-              prix: s.prix,
-              duree: s.duree,
-              categorie: s.categorie,
-            }))
-        : []
+    // Compléter si pas assez
+    const autresSoins = similaires.length < 3
+      ? await prisma.soin.findMany({
+          where: { slug: { notIn: [slug, ...similaires.map(s => s.slug)] }, actif: true },
+          take: 3 - similaires.length,
+          orderBy: { ordre: "asc" },
+          select: { slug: true, nom: true, description: true, prix: true, duree: true, categorie: true, icon: true },
+        })
+      : []
 
     return NextResponse.json({
       soin: {
-        slug: soinMock.slug,
-        nom: soinMock.nom,
-        description: soinMock.description,
-        descriptionLongue: soinMock.descriptionLongue,
-        prix: soinMock.prix,
-        duree: soinMock.duree,
-        categorie: soinMock.categorie,
-        bienfaits: BIENFAITS_SOINS[slug] || [],
-        etapes: ETAPES_SOINS[slug] || [],
+        slug: soin.slug,
+        nom: soin.nom,
+        description: soin.description,
+        descriptionLongue: soin.descriptionLongue,
+        prix: soin.prix,
+        duree: soin.duree,
+        categorie: soin.categorie,
+        icon: soin.icon,
+        badge: soin.badge,
+        imageUrl: soin.imageUrl,
+        bienfaits: soin.bienfaits,
+        etapes: soin.etapes || [],
       },
-      avis: avis.map((a) => ({
+      avis: avis.map(a => ({
         id: a.id,
         note: a.note,
         commentaire: a.commentaire,
@@ -117,9 +80,6 @@ export async function GET(
     })
   } catch (error) {
     console.error("Erreur API soin:", error)
-    return NextResponse.json(
-      { error: "Erreur lors de la récupération du soin" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Erreur lors de la récupération du soin" }, { status: 500 })
   }
 }

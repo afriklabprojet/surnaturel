@@ -128,7 +128,7 @@ export default function AdminCommandesPage() {
                       </td>
                       <td className="px-4 py-3 text-text-main font-medium">{formatPrix(cmd.total)}</td>
                       <td className="px-4 py-3 text-gray-500">
-                        {new Date(cmd.createdAt).toLocaleDateString("fr-FR")}
+                        {new Date(cmd.createdAt).toLocaleDateString("fr")}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 text-xs font-medium ${statutColors[cmd.statut] || ""}`}>

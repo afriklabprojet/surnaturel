@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 
   // Envoyer l'email de confirmation
   try {
-    const heureFormatee = dateRDV.toLocaleTimeString("fr-FR", {
+    const heureFormatee = dateRDV.toLocaleTimeString("fr", {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Africa/Abidjan",

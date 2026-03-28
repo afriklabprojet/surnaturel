@@ -75,7 +75,7 @@ function timeAgo(dateStr: string) {
   if (hours < 24) return `${hours}h`
   const days = Math.floor(hours / 24)
   if (days < 7) return `${days}j`
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
+  return new Date(dateStr).toLocaleDateString("fr", { day: "numeric", month: "short" })
 }
 
 export default function PageProfil({ params }: { params: Promise<{ id: string }> }) {
@@ -234,7 +234,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
             )}
             <span className="font-body text-[11px] text-text-muted-brand flex items-center gap-1">
               <Calendar size={12} />
-              Membre depuis {new Date(profil.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+              Membre depuis {new Date(profil.createdAt).toLocaleDateString("fr", { month: "long", year: "numeric" })}
             </span>
             {profil.statutProfil === "PRO_SANTE" && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-primary-light font-body text-[9px] font-medium text-primary-brand uppercase tracking-wider rounded-full">
@@ -366,7 +366,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
                 <Calendar size={13} className="text-text-muted-brand shrink-0" />
                 <span className="font-body text-[12px] text-text-muted-brand">Membre depuis</span>
                 <span className="font-body text-[13px] text-text-main ml-auto">
-                  {new Date(profil.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+                  {new Date(profil.createdAt).toLocaleDateString("fr", { month: "long", year: "numeric" })}
                 </span>
               </div>
               {d?.languesParlees && d.languesParlees.length > 0 && (

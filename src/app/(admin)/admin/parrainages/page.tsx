@@ -168,7 +168,7 @@ export default function PageAdminParrainages() {
                         <code className="font-mono text-[12px] text-text-mid bg-bg-page px-1.5 py-0.5">{p.code}</code>
                       </td>
                       <td className="px-4 py-3 font-body text-[12px] text-text-muted-brand">
-                        {new Date(p.createdAt).toLocaleDateString("fr-FR")}
+                        {new Date(p.createdAt).toLocaleDateString("fr")}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-[10px] uppercase tracking-widest ${s.bg} ${s.text}`}>

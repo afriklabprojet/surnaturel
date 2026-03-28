@@ -27,24 +27,12 @@ export default function SoinAvis({ soinSlug }: SoinAvisProps) {
         const res = await fetch(`/api/soins/${soinSlug}`)
         if (res.ok) {
           const data = await res.json()
-          if (data.avis && data.avis.length > 0) {
-            setAvis(data.avis)
-            setNoteMoyenne(data.noteMoyenne)
-            return
-          }
+          setAvis(data.avis || [])
+          setNoteMoyenne(data.noteMoyenne || 0)
         }
       } catch {
-        // Fallback vers les avis mock
+        // Erreur réseau, on laisse vide
       }
-
-      // Fallback mock si pas d'avis en DB
-      setAvis([
-        { id: "1", note: 5, commentaire: "Une expérience exceptionnelle ! L'équipe est aux petits soins.", nom: "Aminata K.", date: new Date("2024-02-15").toISOString() },
-        { id: "2", note: 5, commentaire: "Moment de détente absolue. Les produits sont de qualité.", nom: "Fatou D.", date: new Date("2024-01-28").toISOString() },
-        { id: "3", note: 4, commentaire: "Très satisfaite du résultat. Ma peau n'a jamais été aussi douce.", nom: "Marie L.", date: new Date("2024-01-10").toISOString() },
-      ])
-      setNoteMoyenne(4.7)
-      setLoading(false)
     }
 
     fetchAvis().finally(() => setLoading(false))
@@ -68,6 +56,14 @@ export default function SoinAvis({ soinSlug }: SoinAvisProps) {
           </div>
         ))}
       </div>
+    )
+  }
+
+  if (avis.length === 0) {
+    return (
+      <p className="text-center font-body text-[14px] text-text-muted-brand">
+        Aucun avis pour le moment. Soyez la première à donner votre avis !
+      </p>
     )
   }
 

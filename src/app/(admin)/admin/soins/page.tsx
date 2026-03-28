@@ -16,27 +16,13 @@ interface Soin {
   actif: boolean
 }
 
-const categories = [
-  "HAMMAM", "GOMMAGE", "AMINCISSANT", "VISAGE",
-  "POST_ACCOUCHEMENT", "CONSEIL_ESTHETIQUE", "SAGE_FEMME",
-]
-
-const categorieLabels: Record<string, string> = {
-  HAMMAM: "Hammam",
-  GOMMAGE: "Gommage",
-  AMINCISSANT: "Amincissant",
-  VISAGE: "Visage",
-  POST_ACCOUCHEMENT: "Post-accouchement",
-  CONSEIL_ESTHETIQUE: "Conseil esthétique",
-  SAGE_FEMME: "Sage-femme",
-}
-
 const emptyForm = {
-  nom: "", description: "", prix: "", duree: "", categorie: "HAMMAM", imageUrl: "",
+  nom: "", description: "", prix: "", duree: "", categorie: "", imageUrl: "",
 }
 
 export default function AdminSoinsPage() {
   const [soins, setSoins] = useState<Soin[]>([])
+  const [categories, setCategories] = useState<{ label: string; value: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
@@ -48,13 +34,29 @@ export default function AdminSoinsPage() {
 
   const fetchSoins = async () => {
     setLoading(true)
-    const res = await fetch("/api/admin/soins")
-    const data = await res.json()
-    setSoins(data.soins)
+    const [soinsRes, catRes] = await Promise.all([
+      fetch("/api/admin/soins"),
+      fetch("/api/config/categories_soins"),
+    ])
+    const soinsData = await soinsRes.json()
+    setSoins(soinsData.soins)
+    if (catRes.ok) {
+      const catData = await catRes.json()
+      try {
+        const parsed = typeof catData.valeur === "string" ? JSON.parse(catData.valeur) : catData.valeur
+        const cats = Array.isArray(parsed) ? parsed.filter((c: { value: string }) => c.value !== "TOUS") : []
+        setCategories(cats)
+      } catch { /* keep empty */ }
+    }
     setLoading(false)
   }
 
   useEffect(() => { fetchSoins() }, [])
+
+  const getCategorieLabel = (value: string) => {
+    const cat = categories.find((c) => c.value === value)
+    return cat?.label || value
+  }
 
   const openNew = () => {
     setEditing(null)
@@ -167,7 +169,7 @@ export default function AdminSoinsPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-base text-text-main">{soin.nom}</h3>
                   <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body">
-                    {categorieLabels[soin.categorie] || soin.categorie}
+                    {getCategorieLabel(soin.categorie)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 line-clamp-2 font-body">{soin.description}</p>
@@ -222,7 +224,8 @@ export default function AdminSoinsPage() {
               <div>
                 <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
                 <select required value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand">
-                  {categories.map((c) => <option key={c} value={c}>{categorieLabels[c]}</option>)}
+                  <option value="">Sélectionner…</option>
+                  {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               <div>

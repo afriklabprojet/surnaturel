@@ -20,7 +20,7 @@ export function formatPrix(montant: number): string {
  * Formate une date en français
  */
 export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("fr-FR", {
+  return new Intl.DateTimeFormat("fr", {
     weekday: "long",
     year: "numeric",
     month: "long",

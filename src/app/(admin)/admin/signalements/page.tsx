@@ -116,7 +116,7 @@ export default function AdminSignalements() {
                     <p className="font-body text-[12px] text-text-mid mb-2">{s.description}</p>
                   )}
                   <div className="font-body text-[11px] text-text-muted-brand">
-                    Par {s.auteur.prenom} {s.auteur.nom} · {new Date(s.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    Par {s.auteur.prenom} {s.auteur.nom} · {new Date(s.createdAt).toLocaleDateString("fr", { day: "numeric", month: "short", year: "numeric" })}
                   </div>
 
                   {/* Contenu signalé */}

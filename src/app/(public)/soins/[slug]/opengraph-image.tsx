@@ -1,5 +1,4 @@
 import { ImageResponse } from "next/og"
-import { SOINS_DATA } from "@/lib/soins-data"
 
 export const runtime = "edge"
 export const alt = "Soin — Le Surnaturel de Dieu"
@@ -8,9 +7,21 @@ export const contentType = "image/png"
 
 export default async function OGImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const soin = SOINS_DATA.find((s) => s.slug === slug)
-  const titre = soin?.nom ?? "Soin"
-  const desc = soin?.description?.slice(0, 120) ?? "Institut de Bien-Être à Abidjan"
+
+  let titre = "Soin"
+  let desc = "Institut de Bien-Être à Abidjan"
+
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lesurnatureldedieu.ci"
+    const res = await fetch(`${baseUrl}/api/soins/${slug}`)
+    if (res.ok) {
+      const data = await res.json()
+      titre = data.soin?.nom ?? titre
+      desc = data.soin?.description?.slice(0, 120) ?? desc
+    }
+  } catch {
+    // Fallback to defaults
+  }
 
   return new ImageResponse(
     (

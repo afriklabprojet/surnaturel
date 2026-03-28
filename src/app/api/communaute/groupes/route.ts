@@ -18,6 +18,7 @@ const groupeSchema = z.object({
   imageUrl: z.string().url().optional(),
   visibilite: z.enum(["PUBLIC", "PRIVE", "SECRET"]).optional(),
   regles: z.string().max(2000).optional(),
+  categorie: z.enum(["SANTE", "BIEN_ETRE", "SPORT", "EDUCATION", "BUSINESS", "FAMILLE", "CULTURE", "SPIRITUALITE", "AUTRE"]).optional(),
   questions: z.array(z.object({ texte: z.string().min(5).max(300) })).max(3).optional(),
 })
 

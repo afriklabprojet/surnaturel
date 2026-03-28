@@ -270,7 +270,7 @@ export default function PageProfil() {
           {/* Membre depuis */}
           <p className="mt-2 font-body text-[11px] text-gold">
             {memberSince
-              ? `Membre depuis ${memberSince.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}`
+              ? `Membre depuis ${memberSince.toLocaleDateString("fr", { month: "long", year: "numeric" })}`
               : ""}
           </p>
 

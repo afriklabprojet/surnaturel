@@ -19,7 +19,7 @@ interface EvenementItem {
 }
 
 function formatDateFr(iso: string) {
-  return new Date(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  return new Date(iso).toLocaleDateString("fr", { weekday: "short", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
 }
 
 export default function PageAdminEvenements() {
@@ -164,7 +164,7 @@ export default function PageAdminEvenements() {
                 {/* Date badge */}
                 <div className="shrink-0 w-14 text-center border border-border-brand p-1.5">
                   <p className="font-display text-[20px] text-primary-brand leading-none">{new Date(e.dateDebut).getDate()}</p>
-                  <p className="font-body text-[9px] uppercase tracking-widest text-text-muted-brand">{new Date(e.dateDebut).toLocaleDateString("fr-FR", { month: "short" })}</p>
+                  <p className="font-body text-[9px] uppercase tracking-widest text-text-muted-brand">{new Date(e.dateDebut).toLocaleDateString("fr", { month: "short" })}</p>
                 </div>
 
                 <div className="flex-1 min-w-0">

@@ -3,11 +3,14 @@
 import { useEffect, useState, useRef } from "react"
 import { Plus, Pencil, Trash2, ImageIcon, Upload } from "lucide-react"
 import { formatPrix, cn } from "@/lib/utils"
+import { useConfirm } from "@/components/ui/confirm-dialog"
+import { toast } from "sonner"
 
 interface Produit {
   id: string
   nom: string
   description: string
+  descriptionLongue: string | null
   prix: number
   stock: number
   imageUrl: string | null
@@ -15,7 +18,7 @@ interface Produit {
   actif: boolean
 }
 
-const emptyForm = { nom: "", description: "", prix: "", stock: "", categorie: "", imageUrl: "", actif: true }
+const emptyForm = { nom: "", description: "", descriptionLongue: "", prix: "", stock: "", categorie: "", imageUrl: "", actif: true }
 
 export default function AdminBoutiquePage() {
   const [produits, setProduits] = useState<Produit[]>([])
@@ -27,6 +30,7 @@ export default function AdminBoutiquePage() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
   const fileRef = useRef<HTMLInputElement>(null)
+  const confirm = useConfirm()
 
   const fetchProduits = async () => {
     setLoading(true)
@@ -42,7 +46,7 @@ export default function AdminBoutiquePage() {
 
   const openEdit = (p: Produit) => {
     setEditing(p.id)
-    setForm({ nom: p.nom, description: p.description, prix: String(p.prix), stock: String(p.stock), categorie: p.categorie, imageUrl: p.imageUrl || "", actif: p.actif })
+    setForm({ nom: p.nom, description: p.description, descriptionLongue: p.descriptionLongue || "", prix: String(p.prix), stock: String(p.stock), categorie: p.categorie, imageUrl: p.imageUrl || "", actif: p.actif })
     setError("")
     setModalOpen(true)
   }
@@ -65,17 +69,25 @@ export default function AdminBoutiquePage() {
     e.preventDefault()
     setSaving(true)
     setError("")
-    const body = { nom: form.nom, description: form.description, prix: Number(form.prix), stock: Number(form.stock), categorie: form.categorie, imageUrl: form.imageUrl || null, actif: form.actif }
+    const body = { nom: form.nom, description: form.description, descriptionLongue: form.descriptionLongue || null, prix: Number(form.prix), stock: Number(form.stock), categorie: form.categorie, imageUrl: form.imageUrl || null, actif: form.actif }
     const url = editing ? `/api/admin/produits/${editing}` : "/api/admin/produits"
     const method = editing ? "PATCH" : "POST"
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
     if (!res.ok) { const d = await res.json(); setError(d.error || "Erreur"); setSaving(false); return }
+    toast.success(editing ? "Produit mis à jour" : "Produit créé")
     setModalOpen(false); fetchProduits(); setSaving(false)
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer ce produit ?")) return
+    const confirmed = await confirm({
+      title: "Supprimer le produit",
+      description: "Cette action est irréversible. Le produit sera définitivement supprimé.",
+      confirmLabel: "Supprimer",
+      variant: "danger",
+    })
+    if (!confirmed) return
     await fetch(`/api/admin/produits/${id}`, { method: "DELETE" })
+    toast.success("Produit supprimé")
     fetchProduits()
   }
 
@@ -178,6 +190,10 @@ export default function AdminBoutiquePage() {
               <div>
                 <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
                 <textarea required rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
+              </div>
+              <div>
+                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Description longue</label>
+                <textarea rows={4} value={form.descriptionLongue} onChange={(e) => setForm({ ...form, descriptionLongue: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="Description détaillée pour la page produit (optionnel)" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

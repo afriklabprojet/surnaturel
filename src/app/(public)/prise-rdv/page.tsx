@@ -12,11 +12,25 @@ import {
   ArrowLeft,
   ArrowRight,
   Stethoscope,
+  Phone,
+  CreditCard,
+  Shield,
 } from "lucide-react"
-import { SOINS_DATA, type SoinMock } from "@/lib/soins-data"
 import { formatPrix, formatDate } from "@/lib/utils"
+import { getIcon } from "@/lib/icon-map"
 import CalendrierRDV from "@/components/rdv/CalendrierRDV"
 import SectionTag from "@/components/ui/SectionTag"
+
+interface SoinItem {
+  slug: string
+  nom: string
+  description: string
+  prix: number
+  duree: number
+  categorie: string
+  icon?: string | null
+  badge?: string | null
+}
 
 export default function PagePriseRDV() {
   return (
@@ -32,32 +46,51 @@ function PriseRDVContent() {
 
   // État du stepper
   const [etape, setEtape] = useState(1)
-  const [soinSelectionne, setSoinSelectionne] = useState<SoinMock | null>(null)
+  const [soinsData, setSoinsData] = useState<SoinItem[]>([])
+  const [soinSelectionne, setSoinSelectionne] = useState<SoinItem | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedHeure, setSelectedHeure] = useState<number | null>(null)
   const [notes, setNotes] = useState("")
   const [loading, setLoading] = useState(false)
   const [erreur, setErreur] = useState("")
+  // Étape 4 : acompte
+  const [rdvId, setRdvId] = useState<string | null>(null)
+  const [telephone, setTelephone] = useState("")
+  const [methode, setMethode] = useState<string | null>(null)
+  const [methodes, setMethodes] = useState<{ id: string; label: string; color: string }[]>([])
+  const [loadingPaiement, setLoadingPaiement] = useState(false)
 
-  // Pré-sélection via ?soin=
+  const MONTANT_ACOMPTE = 2000 // 2 000 F CFA
+
+  // Charger les soins depuis l'API
   useEffect(() => {
-    const soinParam = searchParams.get("soin")
-    if (soinParam) {
-      const found = SOINS_DATA.find((s) => s.slug === soinParam)
-      if (found) {
-        setSoinSelectionne(found)
-        setEtape(2)
-      }
-    }
+    fetch("/api/soins")
+      .then(r => r.json())
+      .then(d => {
+        const soins = d.soins || []
+        setSoinsData(soins)
+
+        // Pré-sélection via ?soin=
+        const soinParam = searchParams.get("soin")
+        if (soinParam) {
+          const found = soins.find((s: SoinItem) => s.slug === soinParam)
+          if (found) {
+            setSoinSelectionne(found)
+            setEtape(2)
+          }
+        }
+      })
+      .catch(() => {})
   }, [searchParams])
 
   const etapes = [
     { numero: 1, label: "Choisir un soin" },
     { numero: 2, label: "Date & Heure" },
     { numero: 3, label: "Confirmation" },
+    { numero: 4, label: "Acompte" },
   ]
 
-  function handleSelectSoin(soin: SoinMock) {
+  function handleSelectSoin(soin: SoinItem) {
     setSoinSelectionne(soin)
     setSelectedDate(null)
     setSelectedHeure(null)
@@ -90,7 +123,17 @@ function PriseRDVContent() {
       })
 
       if (res.status === 201) {
-        router.push("/mes-rdv?nouveau=ok")
+        const data: { rdvId: string } = await res.json()
+        setRdvId(data.rdvId)
+        // Charger les méthodes de paiement pour l'étape acompte
+        try {
+          const mRes = await fetch("/api/config/methodes_paiement")
+          const mData = await mRes.json()
+          setMethodes(mData.valeur || [])
+        } catch {
+          // Continuer même sans méthodes
+        }
+        setEtape(4)
         return
       }
 
@@ -108,18 +151,68 @@ function PriseRDVContent() {
     }
   }
 
+  async function handlePayerAcompte() {
+    if (!rdvId || !methode) return
+    setErreur("")
+    setLoadingPaiement(true)
+
+    try {
+      const res = await fetch("/api/rdv/acompte", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rdvId,
+          montant: MONTANT_ACOMPTE,
+          methode,
+          telephone: telephone || undefined,
+        }),
+      })
+
+      if (res.ok) {
+        const data: { redirectUrl: string } = await res.json()
+        window.location.href = data.redirectUrl
+        return
+      }
+
+      const data: { error?: string } = await res.json()
+      setErreur(data.error ?? "Erreur lors du paiement.")
+    } catch {
+      setErreur("Impossible de contacter le serveur.")
+    } finally {
+      setLoadingPaiement(false)
+    }
+  }
+
+  function handleSkipAcompte() {
+    router.push("/mes-rdv?nouveau=ok")
+  }
+
   return (
-    <section className="mx-auto max-w-4xl px-6 py-16 sm:py-20 lg:px-10">
-      {/* En-tête */}
-      <div className="mb-14 text-center">
-        <SectionTag>Réservation</SectionTag>
-        <h1 className="mt-4 font-display text-4xl font-light text-text-main sm:text-5xl">
-          Prendre <em className="text-primary-brand">rendez-vous</em>
+    <>
+    {/* Hero */}
+    <section className="relative overflow-hidden bg-linear-to-br from-primary-brand via-primary-brand/95 to-primary-dark px-6 py-20 sm:py-24 lg:px-10">
+      <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gold/10 blur-3xl" />
+      <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
+      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(255,255,255,0.1) 60px, rgba(255,255,255,0.1) 61px)" }} />
+      <div className="relative mx-auto max-w-4xl text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center border border-gold/30 bg-gold/10">
+          <Calendar size={24} className="text-gold" />
+        </div>
+        <span className="inline-block bg-gold/20 px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/30">
+          Réservation
+        </span>
+        <h1 className="mt-6 font-display text-4xl font-light text-white sm:text-5xl lg:text-6xl">
+          Prendre <em className="text-gold italic">rendez-vous</em>
         </h1>
-        <p className="mt-4 font-body text-sm leading-relaxed text-text-mid">
+        <p className="mt-5 font-body text-[15px] font-light leading-relaxed text-white/75">
           Réservez votre soin en 3 étapes simples
         </p>
+        <div className="mx-auto mt-6 h-px w-16 bg-gold/40" />
       </div>
+    </section>
+
+    <section className="mx-auto max-w-4xl px-6 py-16 sm:py-20 lg:px-10">
+      <div className="mb-14" />
 
       {/* Stepper */}
       <div className="mb-12">
@@ -169,8 +262,8 @@ function PriseRDVContent() {
             Sélectionnez votre soin
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {SOINS_DATA.map((soin) => {
-              const Icon = soin.icon
+            {soinsData.map((soin) => {
+              const Icon = getIcon(soin.icon)
               const isSelected = soinSelectionne?.slug === soin.slug
               return (
                 <button
@@ -382,6 +475,145 @@ function PriseRDVContent() {
           </div>
         </div>
       )}
+
+      {/* ─── Étape 4 : Paiement acompte ──────────────────────────── */}
+      {etape === 4 && soinSelectionne && rdvId && (
+        <div>
+          <div className="mb-6 flex items-center gap-3 border border-primary-light bg-primary-light/30 px-5 py-4">
+            <CheckCircle size={20} className="shrink-0 text-primary-brand" />
+            <div>
+              <p className="font-body text-sm font-medium text-primary-brand">
+                Rendez-vous créé avec succès !
+              </p>
+              <p className="font-body text-[12px] text-text-mid">
+                Sécurisez votre créneau en payant un acompte de {formatPrix(MONTANT_ACOMPTE)}.
+              </p>
+            </div>
+          </div>
+
+          <h2 className="mb-2 font-display text-2xl font-light text-text-main">
+            Garantir votre rendez-vous
+          </h2>
+          <p className="mb-6 font-body text-sm text-text-muted-brand">
+            Un acompte de <span className="font-medium text-gold">{formatPrix(MONTANT_ACOMPTE)}</span> est
+            recommandé pour confirmer définitivement votre créneau.
+            Le reste ({formatPrix(soinSelectionne.prix - MONTANT_ACOMPTE)}) sera à régler sur place.
+          </p>
+
+          {/* Avantages acompte */}
+          <div className="mb-8 grid gap-3 sm:grid-cols-3">
+            <div className="flex items-start gap-3 border border-border-brand bg-white p-4">
+              <Shield size={18} className="mt-0.5 shrink-0 text-gold" />
+              <div>
+                <p className="font-body text-[12px] font-medium text-text-main">Créneau garanti</p>
+                <p className="font-body text-[11px] text-text-muted-brand">Votre place est réservée</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 border border-border-brand bg-white p-4">
+              <CreditCard size={18} className="mt-0.5 shrink-0 text-gold" />
+              <div>
+                <p className="font-body text-[12px] font-medium text-text-main">Paiement sécurisé</p>
+                <p className="font-body text-[11px] text-text-muted-brand">Via Mobile Money</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 border border-border-brand bg-white p-4">
+              <Phone size={18} className="mt-0.5 shrink-0 text-gold" />
+              <div>
+                <p className="font-body text-[12px] font-medium text-text-main">Rappel SMS</p>
+                <p className="font-body text-[11px] text-text-muted-brand">La veille de votre RDV</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Téléphone pour rappel SMS */}
+          <div className="mb-6">
+            <label
+              htmlFor="telephone"
+              className="mb-1.5 block font-body text-[12px] font-medium text-text-main"
+            >
+              Numéro de téléphone <span className="font-normal text-text-muted-brand">(pour le rappel SMS)</span>
+            </label>
+            <input
+              id="telephone"
+              type="tel"
+              value={telephone}
+              onChange={(e) => setTelephone(e.target.value)}
+              placeholder="07 XX XX XX XX"
+              className="w-full border border-border-brand bg-white px-4 py-3 font-body text-sm text-text-main outline-none transition-colors duration-300 placeholder:text-text-muted-brand/60 focus:border-gold"
+            />
+            <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+              Vous recevrez un SMS de rappel la veille de votre rendez-vous.
+            </p>
+          </div>
+
+          {/* Méthodes de paiement */}
+          <div className="mb-6">
+            <p className="mb-3 font-body text-[12px] font-medium text-text-main">
+              Choisissez votre moyen de paiement
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {methodes.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setMethode(m.id)}
+                  className={`flex items-center justify-center gap-2 border-2 px-4 py-3 font-body text-[12px] font-medium transition-all duration-300 ${
+                    methode === m.id
+                      ? "border-gold bg-gold-light/30 text-gold"
+                      : "border-border-brand bg-white text-text-mid hover:border-gold/40"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Récap montant */}
+          <div className="mb-6 border border-border-brand bg-white p-5">
+            <div className="flex items-center justify-between">
+              <span className="font-body text-sm text-text-mid">Acompte à payer</span>
+              <span className="font-display text-2xl font-light text-gold">
+                {formatPrix(MONTANT_ACOMPTE)}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center justify-between border-t border-border-brand pt-2">
+              <span className="font-body text-[12px] text-text-muted-brand">Reste à régler sur place</span>
+              <span className="font-body text-sm text-text-mid">
+                {formatPrix(soinSelectionne.prix - MONTANT_ACOMPTE)}
+              </span>
+            </div>
+          </div>
+
+          {erreur && (
+            <div className="mb-4 flex items-center gap-2 border border-red-200 bg-red-50 px-4 py-3 font-body text-[12px] text-danger">
+              <AlertCircle size={14} className="shrink-0" />
+              {erreur}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <button
+              onClick={handleSkipAcompte}
+              className="font-body text-[11px] text-text-muted-brand underline transition-colors duration-300 hover:text-text-mid"
+            >
+              Continuer sans acompte
+            </button>
+            <button
+              onClick={handlePayerAcompte}
+              disabled={!methode || loadingPaiement}
+              className="flex items-center gap-2 bg-gold px-7 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loadingPaiement ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <CreditCard size={16} />
+              )}
+              {loadingPaiement ? "Paiement en cours…" : `Payer ${formatPrix(MONTANT_ACOMPTE)}`}
+            </button>
+          </div>
+        </div>
+      )}
     </section>
+    </>
   )
 }

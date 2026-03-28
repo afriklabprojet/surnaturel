@@ -500,7 +500,7 @@ export default function PageCommunaute() {
       <div className="flex h-[calc(100vh-200px)] overflow-hidden border-b border-border-brand bg-white">
         {/* Colonne gauche — 280px fixe : Liste des conversations */}
         <div
-          className={`w-full border-r border-border-brand md:w-[280px] md:shrink-0 ${
+          className={`w-full border-r border-border-brand md:w-70 md:shrink-0 ${
             showChat ? "hidden md:flex md:flex-col" : "flex flex-col"
           }`}
         >

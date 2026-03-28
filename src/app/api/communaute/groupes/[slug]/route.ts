@@ -18,10 +18,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
     where: { slug },
     include: {
       membres: {
-        where: { approuve: true },
+        where: { approuve: true, banni: false },
         include: {
           user: {
-            select: { id: true, nom: true, prenom: true, pseudo: true, photoUrl: true },
+            select: { id: true, nom: true, prenom: true, pseudo: true, photoUrl: true, verificationStatus: true },
           },
         },
         orderBy: { createdAt: "asc" },
@@ -32,7 +32,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
         take: 5,
       },
       questions: { orderBy: { ordre: "asc" }, select: { id: true, texte: true, ordre: true } },
-      _count: { select: { membres: { where: { approuve: true } }, posts: true } },
+      reglesGroupe: { orderBy: { ordre: "asc" } },
+      _count: { select: { membres: { where: { approuve: true, banni: false } }, posts: true, sondages: true, evenements: true } },
     },
   })
 
@@ -50,27 +51,40 @@ export async function GET(_req: NextRequest, { params }: Params) {
   let pendingCount = 0
   if (membership && ["ADMIN", "MODERATEUR"].includes(membership.role)) {
     pendingCount = await prisma.membreGroupe.count({
-      where: { groupeId: groupe.id, approuve: false },
+      where: { groupeId: groupe.id, approuve: false, banni: false },
     })
   }
 
   // Vérifier également l'adhésion non-approuvée
   let isPending = false
+  let isBanned = false
   if (!membership) {
     const pendingMembership = await prisma.membreGroupe.findUnique({
       where: { groupeId_userId: { groupeId: groupe.id, userId: session.user.id } },
     })
-    isPending = !!pendingMembership && !pendingMembership.approuve
+    isPending = !!pendingMembership && !pendingMembership.approuve && !pendingMembership.banni
+    isBanned = !!pendingMembership && pendingMembership.banni
+  }
+
+  // Compter les membres bannis (admin/modérateur)
+  let bannedCount = 0
+  if (membership && ["ADMIN", "MODERATEUR"].includes(membership.role)) {
+    bannedCount = await prisma.membreGroupe.count({
+      where: { groupeId: groupe.id, banni: true },
+    })
   }
 
   return NextResponse.json({
     ...groupe,
     isMember: !!membership,
     isPending,
+    isBanned,
     myRole: membership?.role ?? null,
+    myBadge: membership?.badge ?? null,
     membresCount: groupe._count.membres,
     postsCount: groupe._count.posts,
     pendingCount,
+    bannedCount,
   })
 }
 

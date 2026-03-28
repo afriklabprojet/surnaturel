@@ -25,6 +25,9 @@ import {
   Pin,
   PinOff,
   AtSign,
+  Copy,
+  Share2,
+  Check,
 } from "lucide-react"
 import { getPusherClient, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import StoriesBandeau from "@/components/stories/StoriesBandeau"
@@ -122,7 +125,7 @@ function timeAgo(dateStr: string) {
   if (hours < 24) return `${hours}h`
   const days = Math.floor(hours / 24)
   if (days < 7) return `${days}j`
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
+  return new Date(dateStr).toLocaleDateString("fr", {
     day: "numeric",
     month: "short",
   })
@@ -754,6 +757,9 @@ function CartePost({
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
   const [allComments, setAllComments] = useState<CommentaireData[]>(post.commentaires)
   const [commentsLoaded, setCommentsLoaded] = useState(false)
   const [loadingComments, setLoadingComments] = useState(false)
@@ -776,6 +782,14 @@ function CartePost({
     if (showMenu) document.addEventListener("mousedown", handleClick)
     return () => document.removeEventListener("mousedown", handleClick)
   }, [showMenu])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(e.target as Node)) setShowShareMenu(false)
+    }
+    if (showShareMenu) document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [showShareMenu])
 
   async function loadAllComments() {
     if (commentsLoaded || loadingComments) return
@@ -1003,10 +1017,45 @@ function CartePost({
           <MessageCircle size={16} />
           Commenter
         </button>
-        <button onClick={() => onShare(post)} className="flex-1 flex items-center justify-center gap-2 py-2.5 font-body text-[12px] font-medium text-text-muted-brand hover:text-primary-brand transition-colors border-l border-border-brand">
-          <Repeat2 size={16} />
-          Partager
-        </button>
+        <div className="relative flex-1 border-l border-border-brand" ref={shareMenuRef}>
+          <button onClick={() => setShowShareMenu(!showShareMenu)} className="w-full flex items-center justify-center gap-2 py-2.5 font-body text-[12px] font-medium text-text-muted-brand hover:text-primary-brand transition-colors">
+            <Repeat2 size={16} />
+            Partager
+          </button>
+          {showShareMenu && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white border border-border-brand shadow-lg z-50 min-w-45">
+              <button
+                onClick={() => {
+                  onShare(post)
+                  setShowShareMenu(false)
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 font-body text-[12px] text-text-main hover:bg-bg-page transition-colors"
+              >
+                <Repeat2 size={14} />
+                Repartager
+              </button>
+              <button
+                onClick={async () => {
+                  const url = `${window.location.origin}/communaute?post=${post.id}`
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({ title: "Publication", text: post.contenu.slice(0, 100), url })
+                    } catch { /* user cancelled */ }
+                  } else {
+                    await navigator.clipboard.writeText(url)
+                    setLinkCopied(true)
+                    setTimeout(() => setLinkCopied(false), 2000)
+                  }
+                  setShowShareMenu(false)
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 font-body text-[12px] text-text-main hover:bg-bg-page transition-colors border-t border-border-brand"
+              >
+                {linkCopied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+                {linkCopied ? "Lien copié !" : "Copier le lien"}
+              </button>
+            </div>
+          )}
+        </div>
         <button onClick={() => onToggleSave(post.id)} className={`flex items-center justify-center gap-2 px-4 py-2.5 font-body text-[12px] font-medium transition-colors border-l border-border-brand ${post.saved ? "text-gold" : "text-text-muted-brand hover:text-gold"}`}>
           {post.saved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
         </button>

@@ -143,14 +143,14 @@ export default function PageDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <Loader2 className="w-8 h-8 animate-spin text-primary-brand" />
       </div>
     )
   }
 
   const prenom = session?.user?.prenom || "Client"
-  const today = new Date().toLocaleDateString("fr-FR", {
+  const today = new Date().toLocaleDateString("fr", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -190,7 +190,7 @@ export default function PageDashboard() {
               </p>
               <p className="mt-1 font-body text-[13px] text-gold">
                 {formatDate(new Date(stats.prochainRdv.dateHeure))} à{" "}
-                {new Date(stats.prochainRdv.dateHeure).toLocaleTimeString("fr-FR", {
+                {new Date(stats.prochainRdv.dateHeure).toLocaleTimeString("fr", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -317,7 +317,7 @@ export default function PageDashboard() {
                       {formatDate(new Date(rdv.dateHeure))}
                     </span>
                     <span className="font-body text-[12px] text-gold">
-                      {new Date(rdv.dateHeure).toLocaleTimeString("fr-FR", {
+                      {new Date(rdv.dateHeure).toLocaleTimeString("fr", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}

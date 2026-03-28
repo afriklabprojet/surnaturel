@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, FormEvent } from "react"
+import { useState, useEffect, useCallback, useRef, FormEvent } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -16,6 +16,8 @@ import {
   FileText,
   HelpCircle,
   Trash2,
+  ImagePlus,
+  ScrollText,
 } from "lucide-react"
 
 interface GroupeData {
@@ -81,10 +83,14 @@ export default function PageGroupes() {
     fetchGroupes(tab, search)
   }
 
-  function handleCreated() {
+  function handleCreated(slug?: string) {
     setShowCreate(false)
-    fetchGroupes("joined")
-    setTab("joined")
+    if (slug) {
+      router.push(`/communaute/groupes/${slug}`)
+    } else {
+      fetchGroupes("joined")
+      setTab("joined")
+    }
   }
 
   const visIcon = (v: string) => {
@@ -198,13 +204,52 @@ export default function PageGroupes() {
 
 /* ━━━━━━━━━━ Modal Création ━━━━━━━━━━ */
 
-function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCreated: (slug?: string) => void }) {
   const [nom, setNom] = useState("")
   const [description, setDescription] = useState("")
   const [visibilite, setVisibilite] = useState("PUBLIC")
+  const [regles, setRegles] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [questions, setQuestions] = useState<string[]>([])
+
+  // Image upload
+  const [imageUrl, setImageUrl] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [imagePreview, setImagePreview] = useState("")
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function uploadImage(file: File) {
+    const maxSize = 5 * 1024 * 1024 // 5 Mo
+    if (file.size > maxSize) {
+      setError("L'image ne doit pas dépasser 5 Mo")
+      return
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Seules les images sont acceptées")
+      return
+    }
+
+    setUploading(true)
+    setError("")
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "surnaturel_upload")
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: "POST", body: formData }
+      )
+      if (!res.ok) throw new Error("Échec upload")
+      const data = await res.json()
+      setImageUrl(data.secure_url)
+      setImagePreview(data.secure_url)
+    } catch {
+      setError("Erreur lors de l'upload de l'image")
+    }
+    setUploading(false)
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -219,13 +264,16 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
           nom: nom.trim(),
           description: description.trim() || undefined,
           visibilite,
+          regles: regles.trim() || undefined,
+          imageUrl: imageUrl || undefined,
           ...(visibilite !== "PUBLIC" && questions.filter(q => q.trim()).length > 0
             ? { questions: questions.filter(q => q.trim()).map(q => ({ texte: q.trim() })) }
             : {}),
         }),
       })
       if (res.ok) {
-        onCreated()
+        const data = await res.json()
+        onCreated(data.slug)
       } else {
         const data = await res.json()
         setError(data.error || "Erreur lors de la création")
@@ -238,29 +286,73 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white border border-border-brand shadow-xl p-6">
+      <div className="relative w-full max-w-md bg-white border border-border-brand shadow-xl p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-[20px] font-light text-text-main">Créer un groupe</h2>
           <button onClick={onClose} className="p-1 text-text-muted-brand hover:text-text-mid transition-colors"><X size={18} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Image du groupe */}
+          <div>
+            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Image du groupe</label>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f) }}
+            />
+            {imagePreview ? (
+              <div className="relative">
+                <img src={imagePreview} alt="" className="w-full h-32 object-cover border border-border-brand" />
+                <button
+                  type="button"
+                  onClick={() => { setImageUrl(""); setImagePreview(""); if (fileRef.current) fileRef.current.value = "" }}
+                  className="absolute top-2 right-2 p-1 bg-white/80 border border-border-brand hover:bg-red-50 transition-colors"
+                >
+                  <X size={14} className="text-red-500" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="w-full h-28 border border-dashed border-border-brand bg-bg-page flex flex-col items-center justify-center gap-1 hover:border-gold transition-colors disabled:opacity-50"
+              >
+                {uploading ? (
+                  <Loader2 size={20} className="animate-spin text-gold" />
+                ) : (
+                  <>
+                    <ImagePlus size={20} className="text-text-muted-brand" />
+                    <span className="font-body text-[10px] text-text-muted-brand">Cliquez pour ajouter une image (max 5 Mo)</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Nom */}
           <div>
             <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Nom du groupe</label>
             <input value={nom} onChange={(e) => setNom(e.target.value)} maxLength={100} className="w-full border border-border-brand bg-bg-page px-3 py-2.5 font-body text-[13px] text-text-main focus:border-gold focus:outline-none transition-colors" />
           </div>
 
+          {/* Description */}
           <div>
             <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Description</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={1000} className="w-full resize-none border border-border-brand bg-bg-page px-3 py-2.5 font-body text-[12px] text-text-main focus:border-gold focus:outline-none transition-colors" />
           </div>
 
+          {/* Visibilité */}
           <div>
             <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Visibilité</label>
             <div className="flex gap-2">
               {[
                 { value: "PUBLIC", label: "Public", icon: Globe },
                 { value: "PRIVE", label: "Privé", icon: Lock },
+                { value: "SECRET", label: "Secret", icon: EyeOff },
               ].map((opt) => {
                 const Icon = opt.icon
                 return (
@@ -278,12 +370,30 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
                 )
               })}
             </div>
+            {visibilite === "SECRET" && (
+              <p className="font-body text-[10px] text-text-muted-brand mt-1">Visible uniquement par les membres. Inaccessible en recherche.</p>
+            )}
+          </div>
+
+          {/* Règles */}
+          <div>
+            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 flex items-center gap-1">
+              <ScrollText size={12} />Règles du groupe
+            </label>
+            <textarea
+              value={regles}
+              onChange={(e) => setRegles(e.target.value)}
+              rows={3}
+              maxLength={2000}
+              placeholder="Définissez les règles de votre communauté…"
+              className="w-full resize-none border border-border-brand bg-bg-page px-3 py-2.5 font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none transition-colors"
+            />
           </div>
 
           {/* Questions d'adhésion (privé / secret uniquement) */}
           {visibilite !== "PUBLIC" && (
             <div>
-              <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1.5 flex items-center gap-1 block">
+              <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1.5 flex items-center gap-1">
                 <HelpCircle size={12} />Questions d&apos;adhésion (max 3)
               </label>
               <p className="font-body text-[10px] text-text-muted-brand mb-2">Les nouveaux membres devront répondre avant de rejoindre le groupe</p>
@@ -315,7 +425,7 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
 
           <button
             type="submit"
-            disabled={!nom.trim() || loading}
+            disabled={!nom.trim() || loading || uploading}
             className="w-full flex items-center justify-center gap-2 bg-primary-brand py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}

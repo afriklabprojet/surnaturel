@@ -213,7 +213,7 @@ function AdminMessagesContent() {
                     >
                       <p className="whitespace-pre-wrap">{msg.contenu}</p>
                       <p className={cn("text-[10px] mt-1", isMe ? "text-white/70" : "text-gray-500")}>
-                        {new Date(msg.createdAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(msg.createdAt).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                   </div>

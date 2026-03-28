@@ -2,14 +2,45 @@
 
 import type { Variants, Transition } from "framer-motion"
 
-// Transition par défaut élégante
-export const transitionElegante: Transition = {
-  duration: 0.4,
-  ease: [0.25, 0.1, 0.25, 1], // cubic-bezier élégant
+// ─── Reduced‑motion : désactive les mouvements si l'OS le demande ─
+const isReducedMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+const instant: Transition = { duration: 0.01 }
+
+// Helper — quand reduced motion est actif, on neutralise les transforms
+// pour que tout apparaisse instantanément (opacity seule suffit).
+function rm<T extends Variants>(v: T): T {
+  if (!isReducedMotion) return v
+  const patched = { ...v } as Record<string, unknown>
+  for (const key of Object.keys(patched)) {
+    const val = patched[key]
+    if (typeof val === "object" && val !== null) {
+      const o = { ...val } as Record<string, unknown>
+      // Neutralise transforms
+      if ("y" in o) o.y = 0
+      if ("x" in o) o.x = 0
+      if ("scale" in o) o.scale = 1
+      if ("rotate" in o) o.rotate = 0
+      // Accélère transitions
+      if ("transition" in o) o.transition = instant
+      patched[key] = o
+    }
+  }
+  return patched as T
 }
 
+// Transition par défaut élégante
+export const transitionElegante: Transition = isReducedMotion
+  ? instant
+  : {
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1], // cubic-bezier élégant
+    }
+
 // Fade in avec montée subtile
-export const fadeInUp: Variants = {
+export const fadeInUp: Variants = rm({
   initial: { opacity: 0, y: 20 },
   animate: { 
     opacity: 1, 
@@ -21,10 +52,10 @@ export const fadeInUp: Variants = {
     y: 10,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Fade in simple
-export const fadeIn: Variants = {
+export const fadeIn: Variants = rm({
   initial: { opacity: 0 },
   animate: { 
     opacity: 1,
@@ -34,10 +65,10 @@ export const fadeIn: Variants = {
     opacity: 0,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Slide depuis la droite (pour dropdowns, sidebars)
-export const slideInRight: Variants = {
+export const slideInRight: Variants = rm({
   initial: { opacity: 0, x: 20 },
   animate: { 
     opacity: 1, 
@@ -49,10 +80,10 @@ export const slideInRight: Variants = {
     x: 10,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Slide depuis le bas (pour modales)
-export const slideInBottom: Variants = {
+export const slideInBottom: Variants = rm({
   initial: { opacity: 0, y: 30 },
   animate: { 
     opacity: 1, 
@@ -64,10 +95,10 @@ export const slideInBottom: Variants = {
     y: 20,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Effet scale (pour modales, QR code)
-export const scaleIn: Variants = {
+export const scaleIn: Variants = rm({
   initial: { opacity: 0, scale: 0.95 },
   animate: { 
     opacity: 1, 
@@ -79,55 +110,61 @@ export const scaleIn: Variants = {
     scale: 0.98,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Container avec stagger pour listes
-export const staggerContainer: Variants = {
-  initial: {},
-  animate: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+export const staggerContainer: Variants = isReducedMotion
+  ? { initial: {}, animate: {} }
+  : {
+      initial: {},
+      animate: {
+        transition: {
+          staggerChildren: 0.08,
+          delayChildren: 0.1,
+        }
+      }
     }
-  }
-}
 
 // Item pour stagger
-export const staggerItem: Variants = {
+export const staggerItem: Variants = rm({
   initial: { opacity: 0, y: 15 },
   animate: { 
     opacity: 1, 
     y: 0,
     transition: transitionElegante
   }
-}
+})
 
 // Hover pour cartes (subtil et élégant)
-export const cardHover = {
-  whileHover: { 
-    y: -3,
-    transition: { duration: 0.25, ease: "easeOut" as const }
-  },
-  whileTap: { 
-    scale: 0.99,
-    transition: { duration: 0.1 }
-  }
-}
+export const cardHover = isReducedMotion
+  ? { whileHover: {}, whileTap: {} }
+  : {
+      whileHover: { 
+        y: -3,
+        transition: { duration: 0.25, ease: "easeOut" as const }
+      },
+      whileTap: { 
+        scale: 0.99,
+        transition: { duration: 0.1 }
+      }
+    }
 
 // Hover pour boutons
-export const buttonHover = {
-  whileHover: { 
-    scale: 1.02,
-    transition: { duration: 0.2 }
-  },
-  whileTap: { 
-    scale: 0.98,
-    transition: { duration: 0.1 }
-  }
-}
+export const buttonHover = isReducedMotion
+  ? { whileHover: {}, whileTap: {} }
+  : {
+      whileHover: { 
+        scale: 1.02,
+        transition: { duration: 0.2 }
+      },
+      whileTap: { 
+        scale: 0.98,
+        transition: { duration: 0.1 }
+      }
+    }
 
 // Animation pulse pour favoris (cœur)
-export const heartPulse: Variants = {
+export const heartPulse: Variants = rm({
   initial: { scale: 1 },
   animate: { 
     scale: [1, 1.3, 1],
@@ -137,10 +174,10 @@ export const heartPulse: Variants = {
       ease: "easeOut"
     }
   }
-}
+})
 
 // Animation notification badge
-export const notificationBadge: Variants = {
+export const notificationBadge: Variants = rm({
   initial: { scale: 0, opacity: 0 },
   animate: { 
     scale: 1, 
@@ -156,38 +193,32 @@ export const notificationBadge: Variants = {
     opacity: 0,
     transition: { duration: 0.15 }
   }
-}
+})
 
 // Animation progress bar (utilise custom prop pour la largeur dynamique)
 export const progressBar: Variants = {
   initial: { width: "0%" },
   animate: (pourcentage: number) => ({
     width: `${pourcentage}%`,
-    transition: { 
-      duration: 0.8, 
-      ease: [0.33, 1, 0.68, 1],
-      delay: 0.2
-    }
-  })
+    transition: isReducedMotion
+      ? instant
+      : { duration: 0.8, ease: [0.33, 1, 0.68, 1], delay: 0.2 },
+  }),
 }
 
 // Animation skeleton shimmer
-export const shimmer: Variants = {
-  initial: { 
-    backgroundPosition: "-200% 0" 
-  },
-  animate: { 
-    backgroundPosition: "200% 0",
-    transition: {
-      repeat: Infinity,
-      duration: 1.5,
-      ease: "linear"
+export const shimmer: Variants = isReducedMotion
+  ? { initial: {}, animate: {} }
+  : {
+      initial: { backgroundPosition: "-200% 0" },
+      animate: {
+        backgroundPosition: "200% 0",
+        transition: { repeat: Infinity, duration: 1.5, ease: "linear" },
+      },
     }
-  }
-}
 
 // Overlay modal fade
-export const overlayFade: Variants = {
+export const overlayFade: Variants = rm({
   initial: { opacity: 0 },
   animate: { 
     opacity: 1,
@@ -197,10 +228,10 @@ export const overlayFade: Variants = {
     opacity: 0,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Animation étoiles (avis)
-export const starPop = (delay: number): Variants => ({
+export const starPop = (delay: number): Variants => rm({
   initial: { scale: 0, rotate: -30 },
   animate: { 
     scale: 1, 
@@ -215,36 +246,36 @@ export const starPop = (delay: number): Variants => ({
 })
 
 // Animation tab indicator
-export const tabIndicator: Variants = {
+export const tabIndicator: Variants = rm({
   initial: { opacity: 0 },
   animate: { 
     opacity: 1,
     transition: { duration: 0.2 }
   }
-}
+})
 
 // Fade in depuis la gauche
-export const fadeInLeft: Variants = {
+export const fadeInLeft: Variants = rm({
   initial: { opacity: 0, x: -24 },
   animate: {
     opacity: 1,
     x: 0,
     transition: { duration: 0.45, ease: "easeOut" },
   },
-}
+})
 
 // Fade in depuis la droite
-export const fadeInRight: Variants = {
+export const fadeInRight: Variants = rm({
   initial: { opacity: 0, x: 24 },
   animate: {
     opacity: 1,
     x: 0,
     transition: { duration: 0.45, ease: "easeOut" },
   },
-}
+})
 
 // Pulse pour badges stock faible
-export const pulseAnimation: Variants = {
+export const pulseAnimation: Variants = rm({
   initial: {},
   animate: {
     scale: [1, 1.05, 1],
@@ -254,4 +285,4 @@ export const pulseAnimation: Variants = {
       ease: "easeInOut",
     },
   },
-}
+})

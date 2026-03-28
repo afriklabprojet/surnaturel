@@ -224,7 +224,7 @@ export default function AdminDashboard() {
                     <td className="py-2.5 text-text-main font-body text-[13px]">{rdv.client}</td>
                     <td className="py-2.5 text-text-mid font-body text-[13px]">{rdv.soin}</td>
                     <td className="py-2.5 text-text-mid font-body text-[13px]">
-                      {new Date(rdv.dateHeure).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
+                      {new Date(rdv.dateHeure).toLocaleDateString("fr", { day: "2-digit", month: "short" })}
                     </td>
                     <td className="py-2.5">
                       <span className={`inline-block px-2 py-0.5 text-[10px] font-medium font-body uppercase tracking-wider ${statutColors[rdv.statut] || ""}`}>

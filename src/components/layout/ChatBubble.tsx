@@ -39,7 +39,7 @@ function MiniAvatar({ user, size = 32 }: { user: { prenom: string; nom: string; 
 }
 
 function formatHeure(dateStr: string) {
-  return new Date(dateStr).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+  return new Date(dateStr).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })
 }
 
 export default function ChatBubble() {

@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import Notifications from "@/components/layout/Notifications"
 import ChatBubble from "@/components/layout/ChatBubble"
+import { ConfirmProvider } from "@/components/ui/confirm-dialog"
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Mon espace", icon: LayoutDashboard },
@@ -226,6 +227,7 @@ export default function DashboardLayout({
   )
 
   return (
+    <ConfirmProvider>
     <div className="flex min-h-screen bg-bg-page">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-border-brand">
@@ -308,5 +310,6 @@ export default function DashboardLayout({
 
       <ChatBubble />
     </div>
+    </ConfirmProvider>
   )
 }

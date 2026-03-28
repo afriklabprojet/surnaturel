@@ -53,6 +53,35 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json(updated)
   }
 
+  // Masquer/Afficher un post (admin/modérateur groupe uniquement)
+  if (body.masque !== undefined) {
+    if (!isAdmin && !isGroupeAdmin) {
+      return NextResponse.json({ error: "Seuls les admins/modérateurs peuvent masquer un post" }, { status: 403 })
+    }
+    const updated = await prisma.post.update({
+      where: { id },
+      data: { masque: Boolean(body.masque) },
+      include: { auteur: { select: auteurSelect } },
+    })
+
+    // Journal de modération
+    if (post.groupeId) {
+      try {
+        await prisma.journalModeration.create({
+          data: {
+            groupeId: post.groupeId,
+            moderateurId: session.user.id,
+            action: body.masque ? "MASQUER_POST" : "AFFICHER_POST",
+            ciblePostId: id,
+            cibleUserId: post.auteurId,
+          },
+        })
+      } catch { /* journal optionnel */ }
+    }
+
+    return NextResponse.json(updated)
+  }
+
   return NextResponse.json({ error: "Action non reconnue" }, { status: 400 })
 }
 

@@ -242,9 +242,9 @@ export default function AdminRDVPage() {
                       </td>
                       <td className="px-4 py-3 text-text-main font-body text-[13px]">{rdv.soin}</td>
                       <td className="px-4 py-3 text-text-mid font-body text-[13px]">
-                        {new Date(rdv.dateHeure).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
+                        {new Date(rdv.dateHeure).toLocaleDateString("fr", { day: "2-digit", month: "short", year: "numeric" })}
                         {" "}
-                        {new Date(rdv.dateHeure).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(rdv.dateHeure).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 text-[10px] font-medium font-body uppercase tracking-wider ${statutColors[rdv.statut] || ""}`}>

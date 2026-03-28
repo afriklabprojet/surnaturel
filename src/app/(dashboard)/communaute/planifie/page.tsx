@@ -246,7 +246,7 @@ export default function PagePublicationsPlanifiees() {
                   <div className="flex items-center gap-3 pt-2 border-t border-border-brand">
                     <span className="font-body text-[10px] text-gold flex items-center gap-1">
                       <Clock size={11} />
-                      {new Date(post.scheduledAt).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(post.scheduledAt).toLocaleDateString("fr", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </span>
                     {post.groupe && (
                       <span className="font-body text-[10px] text-primary-brand flex items-center gap-1">

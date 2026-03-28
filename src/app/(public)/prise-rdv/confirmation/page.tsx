@@ -15,26 +15,66 @@ function ConfirmationContent() {
   const rdvId = searchParams.get("rdv")
   const [showQR, setShowQR] = useState(false)
   const [showConfetti, setShowConfetti] = useState(true)
-
-  // Mock RDV data - en production, fetch depuis l'API
-  const rdvData = {
-    id: rdvId || "rdv-demo",
-    soin: "Hammam traditionnel",
-    date: new Date("2024-03-25T14:30:00"),
-    duree: 60,
-    prix: 15000,
-    adresse: "Cocody, Riviera Palmeraie, Abidjan",
-  }
+  const [rdvData, setRdvData] = useState<{
+    id: string
+    soin: string
+    date: Date
+    duree: number
+    prix: number
+    adresse: string
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const timer = setTimeout(() => setShowConfetti(false), 3000)
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    async function loadRdv() {
+      if (!rdvId) { setLoading(false); return }
+      try {
+        const [rdvRes, adresseRes] = await Promise.all([
+          fetch(`/api/rdv/${rdvId}`),
+          fetch("/api/config/adresse_institut"),
+        ])
+        if (rdvRes.ok) {
+          const data = await rdvRes.json()
+          const adresseData = adresseRes.ok ? await adresseRes.json() : null
+          setRdvData({
+            id: data.rdv.id,
+            soin: data.rdv.soin,
+            date: new Date(data.rdv.date),
+            duree: data.rdv.duree,
+            prix: data.rdv.prix,
+            adresse: adresseData?.valeur || "Abidjan",
+          })
+        }
+      } catch { /* fallback */ }
+      setLoading(false)
+    }
+    loadRdv()
+  }, [rdvId])
+
   return (
     <div className="relative min-h-screen bg-bg-page">
+      {/* Loading */}
+      {loading && (
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin border-2 border-gold border-t-transparent" />
+        </div>
+      )}
+
+      {!loading && !rdvData && (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
+          <Calendar size={48} className="text-text-muted-brand" />
+          <p className="font-body text-[14px] text-text-muted-brand">Rendez-vous introuvable ou non autorisé.</p>
+          <BtnArrow href="/prise-rdv">Prendre un rendez-vous</BtnArrow>
+        </div>
+      )}
+
       {/* Confettis animation */}
-      {showConfetti && (
+      {!loading && rdvData && showConfetti && (
         <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
           {[...Array(50)].map((_, i) => (
             <motion.div
@@ -60,6 +100,7 @@ function ConfirmationContent() {
         </div>
       )}
 
+      {!loading && rdvData && (
       <section className="px-6 py-16 lg:px-10 lg:py-24">
         <motion.div
           className="mx-auto max-w-2xl text-center"
@@ -130,7 +171,7 @@ function ConfirmationContent() {
               <div className="flex items-center gap-2">
                 <Clock size={18} className="text-gold" />
                 <span className="font-display text-[18px] font-light text-gold">
-                  {rdvData.date.toLocaleTimeString("fr-FR", {
+                  {rdvData.date.toLocaleTimeString("fr", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -199,9 +240,10 @@ function ConfirmationContent() {
           </motion.p>
         </motion.div>
       </section>
+      )}
 
       {/* Modal QR Code */}
-      {showQR && (
+      {rdvData && showQR && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setShowQR(false)}

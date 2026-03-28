@@ -4,14 +4,27 @@ import { Clock, Gift } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { formatPrix } from "@/lib/utils"
-import type { SoinMock } from "@/lib/soins-data"
+import { getIcon } from "@/lib/icon-map"
 import { staggerItem, cardHover } from "@/lib/animations"
 
+export interface SoinDB {
+  slug: string
+  nom: string
+  description: string
+  prix: number
+  duree: number
+  categorie: string
+  icon?: string | null
+  badge?: string | null
+  imageUrl?: string | null
+}
+
 interface SoinCardProps {
-  soin: SoinMock
+  soin: SoinDB
 }
 
 export default function SoinCard({ soin }: SoinCardProps) {
+  const Icon = getIcon(soin.icon)
   return (
     <motion.div
       variants={staggerItem}
@@ -20,7 +33,7 @@ export default function SoinCard({ soin }: SoinCardProps) {
     >
       {/* Image / Gradient hero */}
       <div className="relative flex h-52 items-center justify-center overflow-hidden bg-gradient-to-br from-primary-light via-bg-page to-gold-light">
-        <soin.icon size={44} className="text-gold opacity-30 transition-transform duration-500 group-hover:scale-110" />
+        <Icon size={44} className="text-gold opacity-30 transition-transform duration-500 group-hover:scale-110" />
         {soin.badge && (
           <span className="absolute left-0 top-4 bg-gold px-3 py-1 font-body text-[10px] uppercase tracking-[0.15em] text-white">
             {soin.badge}

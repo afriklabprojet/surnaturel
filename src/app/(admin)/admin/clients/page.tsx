@@ -121,7 +121,7 @@ export default function AdminClientsPage() {
                     <td className="px-4 py-3 text-text-main">{client._count.rendezVous}</td>
                     <td className="px-4 py-3 text-text-main">{client._count.commandes}</td>
                     <td className="px-4 py-3 text-gray-500">
-                      {new Date(client.createdAt).toLocaleDateString("fr-FR")}
+                      {new Date(client.createdAt).toLocaleDateString("fr")}
                     </td>
                     <td className="px-4 py-3">
                       <Link

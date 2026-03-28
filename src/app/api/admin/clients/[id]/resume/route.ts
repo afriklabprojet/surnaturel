@@ -124,7 +124,7 @@ export async function GET(
 
   if (client.commandes.length > 0) {
     paragraphes.push(
-      `Achats : ${client.commandes.length} commande(s) pour un total de ${totalDepense.toLocaleString("fr-FR")} FCFA (panier moyen : ${panierMoyen.toLocaleString("fr-FR")} FCFA).`
+      `Achats : ${client.commandes.length} commande(s) pour un total de ${totalDepense.toLocaleString("fr")} FCFA (panier moyen : ${panierMoyen.toLocaleString("fr")} FCFA).`
     )
   }
 

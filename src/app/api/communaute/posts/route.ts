@@ -153,6 +153,17 @@ export async function POST(req: NextRequest) {
     if (!membre) {
       return NextResponse.json({ error: "Vous n'êtes pas membre de ce groupe" }, { status: 403 })
     }
+    // Vérifier si le membre est muté
+    if (membre.mutedUntil && new Date(membre.mutedUntil) > new Date()) {
+      return NextResponse.json({ error: "Vous êtes temporairement en sourdine dans ce groupe" }, { status: 403 })
+    }
+    // Vérifier mots bloqués
+    const motsBloques = await prisma.motBloque.findMany({ where: { groupeId }, select: { mot: true, action: true } })
+    const contenuLower = contenu.toLowerCase()
+    const motTrouve = motsBloques.find(m => contenuLower.includes(m.mot))
+    if (motTrouve && motTrouve.action === "supprimer") {
+      return NextResponse.json({ error: "Votre message contient un mot interdit" }, { status: 400 })
+    }
   }
 
   // Vérifier le post original si c'est un partage
@@ -165,12 +176,29 @@ export async function POST(req: NextRequest) {
 
   const format = rest.format || (rest.videoUrl ? "VIDEO" : rest.images?.length || rest.imageUrl ? "IMAGE" : rest.lienUrl ? "LIEN" : rest.documentUrl ? "DOCUMENT" : "TEXTE")
 
+  // Déterminer le statut du post (modération pré-publication)
+  let postStatus: "PUBLIE" | "EN_ATTENTE_MODERATION" = "PUBLIE"
+  if (groupeId) {
+    const groupe = await prisma.groupe.findUnique({ where: { id: groupeId }, select: { approvalRequired: true } })
+    if (groupe?.approvalRequired) {
+      const membreRole = await prisma.membreGroupe.findUnique({
+        where: { groupeId_userId: { groupeId, userId: session.user.id } },
+        select: { role: true },
+      })
+      // Les admins et modérateurs publient directement
+      if (membreRole && !["ADMIN", "MODERATEUR"].includes(membreRole.role)) {
+        postStatus = "EN_ATTENTE_MODERATION"
+      }
+    }
+  }
+
   const post = await prisma.post.create({
     data: {
       contenu,
       hashtags,
       format,
       groupeId,
+      status: postStatus,
       auteurId: session.user.id,
       imageUrl: rest.imageUrl,
       images: rest.images || [],

@@ -157,3 +157,124 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   return NextResponse.json(commentaire, { status: 201 })
 }
+
+// PATCH — Masquer/afficher un commentaire (admin/modérateur)
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const session = await auth()
+  if (!session?.user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+
+  const { id: postId } = await params
+  const body = await req.json()
+  const { commentaireId, masque } = body
+
+  if (!commentaireId || masque === undefined) {
+    return NextResponse.json({ error: "commentaireId et masque requis" }, { status: 400 })
+  }
+
+  const commentaire = await prisma.commentaire.findUnique({
+    where: { id: commentaireId },
+    select: { id: true, postId: true, auteurId: true },
+  })
+  if (!commentaire || commentaire.postId !== postId) {
+    return NextResponse.json({ error: "Commentaire introuvable" }, { status: 404 })
+  }
+
+  // Vérifier les permissions
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { groupeId: true },
+  })
+
+  let canModerate = session.user.role === "ADMIN"
+  if (post?.groupeId && !canModerate) {
+    const membre = await prisma.membreGroupe.findUnique({
+      where: { groupeId_userId: { groupeId: post.groupeId, userId: session.user.id } },
+    })
+    canModerate = membre?.role === "ADMIN" || membre?.role === "MODERATEUR"
+  }
+
+  if (!canModerate) {
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  }
+
+  const updated = await prisma.commentaire.update({
+    where: { id: commentaireId },
+    data: { masque: Boolean(masque) },
+    include: { auteur: { select: auteurSelect } },
+  })
+
+  // Journal de modération
+  if (post?.groupeId) {
+    try {
+      await prisma.journalModeration.create({
+        data: {
+          groupeId: post.groupeId,
+          moderateurId: session.user.id,
+          action: masque ? "MASQUER_COMMENTAIRE" : "AFFICHER_COMMENTAIRE",
+          cibleCommentId: commentaireId,
+          cibleUserId: commentaire.auteurId,
+        },
+      })
+    } catch { /* journal optionnel */ }
+  }
+
+  return NextResponse.json(updated)
+}
+
+// DELETE — Supprimer un commentaire (auteur, admin ou modérateur)
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const session = await auth()
+  if (!session?.user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+
+  const { id: postId } = await params
+  const { searchParams } = new URL(req.url)
+  const commentaireId = searchParams.get("commentaireId")
+  if (!commentaireId) return NextResponse.json({ error: "commentaireId requis" }, { status: 400 })
+
+  const commentaire = await prisma.commentaire.findUnique({
+    where: { id: commentaireId },
+    select: { id: true, postId: true, auteurId: true, contenu: true },
+  })
+  if (!commentaire || commentaire.postId !== postId) {
+    return NextResponse.json({ error: "Commentaire introuvable" }, { status: 404 })
+  }
+
+  // L'auteur peut supprimer son propre commentaire
+  const isAuteur = commentaire.auteurId === session.user.id
+  const isSiteAdmin = session.user.role === "ADMIN"
+
+  let isGroupeMod = false
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { groupeId: true },
+  })
+  if (post?.groupeId) {
+    const membre = await prisma.membreGroupe.findUnique({
+      where: { groupeId_userId: { groupeId: post.groupeId, userId: session.user.id } },
+    })
+    isGroupeMod = membre?.role === "ADMIN" || membre?.role === "MODERATEUR"
+  }
+
+  if (!isAuteur && !isSiteAdmin && !isGroupeMod) {
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
+  }
+
+  await prisma.commentaire.delete({ where: { id: commentaireId } })
+
+  // Journal de modération si supprimé par un modérateur (pas l'auteur)
+  if (!isAuteur && post?.groupeId) {
+    try {
+      await prisma.journalModeration.create({
+        data: {
+          groupeId: post.groupeId,
+          moderateurId: session.user.id,
+          action: "SUPPRIMER_COMMENTAIRE",
+          cibleUserId: commentaire.auteurId,
+          details: `Commentaire supprimé : "${commentaire.contenu.slice(0, 100)}"`,
+        },
+      })
+    } catch { /* journal optionnel */ }
+  }
+
+  return NextResponse.json({ success: true })
+}

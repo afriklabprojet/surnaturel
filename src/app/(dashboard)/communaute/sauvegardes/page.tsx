@@ -31,7 +31,7 @@ function timeAgo(dateStr: string) {
   if (hours < 24) return `${hours}h`
   const days = Math.floor(hours / 24)
   if (days < 7) return `${days}j`
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
+  return new Date(dateStr).toLocaleDateString("fr", { day: "numeric", month: "short" })
 }
 
 export default function PageSauvegardes() {
