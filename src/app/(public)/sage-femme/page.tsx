@@ -46,31 +46,86 @@ export default async function PageSageFemme() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-linear-to-br from-primary-brand via-primary-brand/95 to-primary-dark px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
-        {/* Décorations */}
-        <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gold/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
-        <div className="absolute left-1/2 top-1/3 h-52 w-52 -translate-x-1/2 rounded-full bg-gold/8 blur-2xl" />
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 70px, rgba(255,255,255,0.1) 70px, rgba(255,255,255,0.1) 71px)" }} />
+      <section className="relative overflow-hidden bg-primary-dark px-6 py-24 sm:py-28 lg:px-10">
+        {/* Fond gradient sophistiqué */}
+        <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/85 to-primary-dark" />
 
-        <MotionSection variants={fadeInUp} trigger="animate" className="relative mx-auto max-w-4xl text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-gold/30 bg-gold/10">
-            <Heart size={28} className="text-gold" />
-          </div>
-          <span className="inline-block bg-gold/20 px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/30">
-            Accompagnement maternel
-          </span>
-          <h1 className="mt-6 font-display text-[44px] font-light text-white md:text-[56px]">
-            Notre <em className="italic text-gold">sage-femme</em>
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl font-body text-[15px] font-light leading-relaxed text-white/75">
-            Un accompagnement bienveillant et professionnel tout au long de votre
-            parcours maternel, de la grossesse au post-partum.
-          </p>
-          <div className="mx-auto mt-8 flex items-center justify-center gap-4">
-            <div className="h-px w-12 bg-gold/40" />
-            <span className="font-body text-[10px] uppercase tracking-[0.15em] text-gold/60">{bio.nom} \u00b7 {bio.titre}</span>
-            <div className="h-px w-12 bg-gold/40" />
+        {/* Motif points subtil */}
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(184,151,42,0.4) 1px, transparent 0)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+
+        {/* Accents lumineux */}
+        <div className="absolute -right-40 top-0 h-100 w-100 rounded-full bg-gold/10 blur-[120px]" />
+        <div className="absolute -left-20 bottom-0 h-60 w-60 rounded-full bg-white/5 blur-[100px]" />
+        <div className="absolute left-1/2 top-1/3 h-40 w-40 -translate-x-1/2 rounded-full bg-gold/8 blur-[80px]" />
+
+        {/* Lignes dorées */}
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-gold/50 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-gold/30 to-transparent" />
+
+        <MotionSection variants={fadeInUp} trigger="animate" className="relative mx-auto max-w-4xl">
+          {/* Layout deux colonnes sur desktop */}
+          <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-16">
+            {/* Colonne gauche — icône décorative */}
+            <div className="flex shrink-0 flex-col items-center gap-4">
+              <div className="flex h-20 w-20 items-center justify-center border border-gold/30 bg-gold/10">
+                <Heart size={32} className="text-gold" />
+              </div>
+              <div className="hidden h-16 w-px bg-linear-to-b from-gold/40 to-transparent lg:block" />
+            </div>
+
+            {/* Colonne droite — contenu */}
+            <div className="text-center lg:text-left">
+              {/* Tag */}
+              <span className="inline-flex items-center gap-3 font-body text-[10px] uppercase tracking-[0.25em] text-gold/80">
+                <span className="h-px w-8 bg-gold/40" />
+                Accompagnement maternel
+                <span className="h-px w-8 bg-gold/40 lg:hidden" />
+              </span>
+
+              <h1 className="mt-5 font-display text-[40px] font-light leading-[1.1] text-white sm:text-[48px] lg:text-[56px]">
+                Notre <em className="italic text-gold">sage-femme</em>
+              </h1>
+
+              <p className="mx-auto mt-5 max-w-xl font-body text-[14px] font-light leading-[1.8] text-white/60 lg:mx-0">
+                Un accompagnement bienveillant et professionnel tout au long de votre
+                parcours maternel, de la grossesse au post-partum.
+              </p>
+
+              {/* Praticienne */}
+              <div className="mt-8 flex items-center justify-center gap-4 lg:justify-start">
+                <div className="flex h-12 w-12 items-center justify-center border border-white/15 bg-white/5">
+                  <Stethoscope size={20} className="text-gold" />
+                </div>
+                <div>
+                  <p className="font-display text-[18px] font-light text-white">{bio.nom}</p>
+                  <p className="font-body text-[11px] uppercase tracking-widest text-gold/60">{bio.titre}</p>
+                </div>
+              </div>
+
+              {/* CTA rapides */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+                <Link
+                  href="/prise-rdv?soin=consultation-sage-femme"
+                  className="flex items-center gap-2 bg-gold px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-gold/90"
+                >
+                  <Calendar size={14} />
+                  Prendre rendez-vous
+                </Link>
+                <a
+                  href={`tel:${telephone.replace(/\s/g, "")}`}
+                  className="flex items-center gap-2 border border-white/20 bg-white/5 backdrop-blur-sm px-5 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white/80 transition-colors hover:bg-white/10"
+                >
+                  <Phone size={14} />
+                  Appeler
+                </a>
+              </div>
+            </div>
           </div>
         </MotionSection>
       </section>
