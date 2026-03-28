@@ -46,7 +46,7 @@ export default async function PageSageFemme() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary-dark px-6 py-24 sm:py-28 lg:px-10">
+      <section className="relative overflow-hidden bg-primary-dark px-6 py-14 sm:py-16 lg:px-10">
         {/* Fond gradient sophistiqué */}
         <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/85 to-primary-dark" />
 
