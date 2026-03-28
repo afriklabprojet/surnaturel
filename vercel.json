@@ -38,7 +38,7 @@
     },
     {
       "path": "/api/cron/publication-planifiee",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     }
   ]
 }
