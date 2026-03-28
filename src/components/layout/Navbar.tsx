@@ -49,7 +49,6 @@ const NAVIGATION: NavItem[] = [
       { label: "Soin amincissant", href: "/soins/soin-amincissant-expert", icon: "Zap" },
       { label: "Soin du visage", href: "/soins/soin-visage-eclat", icon: "Smile" },
       { label: "Post-accouchement", href: "/soins/programme-post-accouchement", icon: "Baby" },
-      { label: "Sage-femme", href: "/soins/consultation-sage-femme", icon: "Baby" },
       { label: "Conseil esthétique", href: "/soins/conseil-esthetique", icon: "Wand2" },
     ],
   },

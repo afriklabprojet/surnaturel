@@ -204,7 +204,7 @@ export default async function PageSageFemme() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/prise-rdv?soin=programme-post-accouchement"
+              href="/prise-rdv?soin=consultation-sage-femme"
               className="flex items-center gap-2 bg-white px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors hover:bg-primary-light"
             >
               Réserver en ligne

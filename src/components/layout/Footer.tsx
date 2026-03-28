@@ -27,6 +27,7 @@ const LIENS_SOINS = [
   { label: "Soin du visage", href: "/soins/soin-visage-eclat" },
   { label: "Post-accouchement", href: "/soins/programme-post-accouchement" },
   { label: "Conseil esthétique", href: "/soins/conseil-esthetique" },
+  { label: "Sage-femme", href: "/sage-femme" },
 ] as const
 
 export default function Footer() {
