@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Bot, Send, X, Sparkles } from "lucide-react"
+import { Bot, Send, X, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { formatPrix } from "@/lib/utils"
 
@@ -129,10 +129,10 @@ export default function ChatIA() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gold text-white shadow-lg transition-transform hover:scale-105"
+          className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-brand text-white shadow-lg transition-transform hover:scale-105"
           aria-label="Ouvrir l'assistant bien-être"
         >
-          <Sparkles size={24} />
+          <MessageCircle size={24} />
         </button>
       )}
 
