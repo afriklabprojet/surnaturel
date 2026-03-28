@@ -41,10 +41,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Commande introuvable" }, { status: 404 })
   }
 
+  // Idempotence : ignorer les webhooks déjà traités
+  if (commande.webhookTraite) {
+    return NextResponse.json({ ok: true, alreadyProcessed: true })
+  }
+
   if (status === "success") {
     await prisma.commande.update({
       where: { id: commandeId },
-      data: { statut: "PAYEE", paiementId: paymentRequestId },
+      data: { statut: "PAYEE", paiementId: paymentRequestId, webhookTraite: true },
     })
 
     // Reçu de paiement détaillé
@@ -70,7 +75,7 @@ export async function POST(req: NextRequest) {
   } else if (status === "error") {
     await prisma.commande.update({
       where: { id: commandeId },
-      data: { statut: "ANNULEE", paiementId: paymentRequestId },
+      data: { statut: "ANNULEE", paiementId: paymentRequestId, webhookTraite: true },
     })
 
     capturePaymentError(

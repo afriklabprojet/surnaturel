@@ -233,6 +233,10 @@ export default function InscriptionForm() {
                 Compte créé avec succès !
               </p>
               <p className="mt-1 font-body text-[11px] text-primary-brand/70">
+                Un email de vérification vous a été envoyé.
+                Vérifiez votre boîte de réception pour activer votre compte.
+              </p>
+              <p className="mt-2 font-body text-[11px] text-text-muted-brand">
                 Redirection vers la connexion...
               </p>
             </div>

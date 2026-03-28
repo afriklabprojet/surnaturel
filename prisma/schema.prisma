@@ -131,6 +131,10 @@ model User {
   // ─── Reset mot de passe
   resetToken           String?          @unique
   resetTokenExpiry     DateTime?
+  // ─── Vérification email
+  emailVerifie         Boolean          @default(false)
+  emailVerifToken      String?          @unique
+  emailVerifExpiry     DateTime?
   // ─── Onboarding email sequence
   onboardingStep       Int              @default(0) // 0=welcome, 1=soins, 2=boutique, 3=communauté
   lastOnboardingEmail  DateTime?
@@ -251,16 +255,17 @@ model AvisProduit {
 }
 
 model Commande {
-  id         String         @id @default(cuid())
-  userId     String
-  total      Float
-  codePromo  String?
-  reduction  Float          @default(0)
-  statut     StatutCommande @default(EN_ATTENTE)
-  paiementId String?
-  user       User           @relation(fields: [userId], references: [id])
-  lignes     LigneCommande[]
-  createdAt  DateTime       @default(now())
+  id              String         @id @default(cuid())
+  userId          String
+  total           Float
+  codePromo       String?
+  reduction       Float          @default(0)
+  statut          StatutCommande @default(EN_ATTENTE)
+  paiementId      String?
+  webhookTraite   Boolean        @default(false)
+  user            User           @relation(fields: [userId], references: [id])
+  lignes          LigneCommande[]
+  createdAt       DateTime       @default(now())
 }
 
 model LigneCommande {

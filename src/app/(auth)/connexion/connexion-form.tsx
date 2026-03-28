@@ -25,18 +25,39 @@ export default function ConnexionForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const inscriptionOk = searchParams.get("inscription") === "ok"
+  const verification = searchParams.get("verification")
   const [erreur, setErreur] = useState("")
+  const [emailNonVerifie, setEmailNonVerifie] = useState(false)
+  const [emailPourRenvoi, setEmailPourRenvoi] = useState("")
+  const [renvoiEnCours, setRenvoiEnCours] = useState(false)
+  const [renvoiOk, setRenvoiOk] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    watch,
   } = useForm<ConnexionData>({
     resolver: zodResolver(schemaConnexion),
   })
 
+  async function renvoyerVerification() {
+    setRenvoiEnCours(true)
+    setRenvoiOk(false)
+    try {
+      await fetch("/api/auth/renvoyer-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailPourRenvoi }),
+      })
+      setRenvoiOk(true)
+    } catch { /* ignore */ }
+    setRenvoiEnCours(false)
+  }
+
   async function onSubmit(data: ConnexionData) {
     setErreur("")
+    setEmailNonVerifie(false)
     try {
       const result = await signIn("credentials", {
         email: data.email,
@@ -44,7 +65,12 @@ export default function ConnexionForm() {
         redirect: false,
       })
       if (result?.error) {
-        setErreur("Email ou mot de passe incorrect")
+        if (result.error.includes("EMAIL_NON_VERIFIE")) {
+          setEmailNonVerifie(true)
+          setEmailPourRenvoi(data.email)
+        } else {
+          setErreur("Email ou mot de passe incorrect")
+        }
       } else {
         router.push("/dashboard")
         router.refresh()
@@ -154,7 +180,46 @@ export default function ConnexionForm() {
           {/* Succès inscription */}
           {inscriptionOk && (
             <div className="mt-6 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-3 font-body text-[11px] text-primary-brand">
-              Votre compte a été créé avec succès. Connectez-vous !
+              Compte créé ! Vérifiez votre email pour activer votre compte.
+            </div>
+          )}
+
+          {/* Statut vérification email */}
+          {verification === "ok" && (
+            <div className="mt-6 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-3 font-body text-[11px] text-primary-brand">
+              Email vérifié avec succès ! Vous pouvez maintenant vous connecter.
+            </div>
+          )}
+          {verification === "expired" && (
+            <div className="mt-6 border-l-2 border-gold bg-gold-light/50 px-4 py-3 font-body text-[11px] text-text-mid">
+              Le lien de vérification a expiré. Connectez-vous pour recevoir un nouveau lien.
+            </div>
+          )}
+          {verification === "invalid" && (
+            <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-[11px] text-danger-deep">
+              Lien de vérification invalide ou déjà utilisé.
+            </div>
+          )}
+
+          {/* Email non vérifié */}
+          {emailNonVerifie && (
+            <div className="mt-6 border-l-2 border-gold bg-gold-light/50 px-4 py-3">
+              <p className="font-body text-[11px] text-text-mid">
+                Votre adresse email n&apos;a pas encore été vérifiée.
+                Consultez votre boîte de réception.
+              </p>
+              <button
+                type="button"
+                onClick={renvoyerVerification}
+                disabled={renvoiEnCours || renvoiOk}
+                className="mt-2 font-body text-[11px] font-medium text-primary-brand underline transition-colors hover:text-primary-dark disabled:opacity-50 disabled:no-underline"
+              >
+                {renvoiOk
+                  ? "Email envoyé !"
+                  : renvoiEnCours
+                    ? "Envoi en cours..."
+                    : "Renvoyer l\u2019email de vérification"}
+              </button>
             </div>
           )}
 

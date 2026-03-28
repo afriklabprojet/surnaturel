@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailInscription } from "@/lib/email"
 
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
+  const emailVerifToken = crypto.randomBytes(32).toString("hex")
+  const emailVerifExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
 
   await prisma.user.create({
     data: {
@@ -51,14 +54,20 @@ export async function POST(request: Request) {
       email,
       telephone: telephone ?? null,
       passwordHash,
+      emailVerifToken,
+      emailVerifExpiry,
     },
   })
 
-  // Email de bienvenue (non bloquant)
-  envoyerEmailInscription({ destinataire: email, prenom }).catch(() => null)
+  // Email de vérification (non bloquant)
+  envoyerEmailInscription({
+    destinataire: email,
+    prenom,
+    tokenVerification: emailVerifToken,
+  }).catch(() => null)
 
   return NextResponse.json(
-    { message: "Compte créé avec succès." },
+    { message: "Compte créé. Vérifiez votre boîte email pour activer votre compte." },
     { status: 201 }
   )
 }

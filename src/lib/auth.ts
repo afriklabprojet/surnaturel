@@ -55,6 +55,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
+        // Bloquer la connexion si email non vérifié
+        if (!user.emailVerifie) {
+          throw new Error("EMAIL_NON_VERIFIE")
+        }
+
         return {
           id: user.id,
           email: user.email,

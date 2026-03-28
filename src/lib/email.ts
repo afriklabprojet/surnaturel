@@ -59,30 +59,36 @@ export async function envoyerEmailConfirmationRDV(params: {
 export async function envoyerEmailInscription(params: {
   destinataire: string
   prenom: string
+  tokenVerification: string
 }) {
+  const lienVerification = `${process.env.NEXTAUTH_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
   return resend.emails.send({
     from: FROM,
     to: params.destinataire,
-    subject: "Bienvenue au Surnaturel de Dieu !",
+    subject: "Confirmez votre email — Le Surnaturel de Dieu",
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
         <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
           <h1 style="color:#fff;margin:0;font-size:20px;">
-            Bienvenue !
+            Confirmez votre adresse email
           </h1>
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
           <p>Bonjour <strong>${params.prenom}</strong>,</p>
-          <p>Votre compte a été créé avec succès.</p>
-          <p>Vous pouvez dès maintenant réserver vos soins,
-             découvrir notre boutique et rejoindre notre communauté.</p>
-          <a href="${process.env.NEXTAUTH_URL}/soins"
+          <p>Bienvenue au <strong>Surnaturel de Dieu</strong> !</p>
+          <p>Pour activer votre compte, veuillez confirmer votre adresse
+             email en cliquant sur le bouton ci-dessous :</p>
+          <a href="${lienVerification}"
              style="display:inline-block;background:#2D7A1F;color:#fff;
              padding:12px 24px;border-radius:8px;text-decoration:none;
              margin-top:16px;">
-            Découvrir nos soins
+            Confirmer mon email
           </a>
+          <p style="color:#6B7280;font-size:12px;margin-top:20px;">
+            Ce lien est valable 24 heures. Si vous n'avez pas créé de compte,
+            ignorez cet email.
+          </p>
         </div>
       </div>
     `,
