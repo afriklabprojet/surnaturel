@@ -94,7 +94,7 @@ interface HeroSoinsProps {
 
 export function HeroSoins({ nombreSoins, heroIcones }: HeroSoinsProps) {
   return (
-    <section className="relative overflow-hidden bg-linear-to-br from-primary-brand via-primary-brand/95 to-primary-dark px-6 py-24 sm:py-32 lg:px-10">
+    <section className="relative overflow-hidden bg-linear-to-br from-primary-brand via-primary-brand/95 to-primary-dark px-6 py-16 sm:py-20 lg:px-10">
       {/* Décorations de fond */}
       <div className="absolute inset-0 opacity-[0.07]">
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-gold blur-3xl" />

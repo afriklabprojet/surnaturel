@@ -70,7 +70,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative h-[50vh] min-h-100 w-full overflow-hidden lg:h-[60vh]">
+      <section className="relative h-[35vh] min-h-64 w-full overflow-hidden lg:h-[40vh]">
         {/* Fond gradient multicouche */}
         <div className="absolute inset-0 bg-linear-to-br from-primary-brand via-primary-brand/90 to-primary-dark" />
         {/* Orbes décoratives */}
@@ -78,7 +78,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
         <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         {/* Icône centrée */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <SoinIcon size={220} className="text-white opacity-[0.06]" />
+          <SoinIcon size={140} className="text-white opacity-[0.06]" />
         </div>
         {/* Overlay gradient bas */}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/50 via-black/20 to-transparent" />
