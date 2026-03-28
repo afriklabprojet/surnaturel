@@ -20,7 +20,7 @@ export default function MentionsLegales() {
             Fondatrice : Marie Jeanne<br />
             Adresse : Cocody, Riviera Palmeraie — Abidjan, Côte d&apos;Ivoire<br />
             Téléphone : <a href="tel:+2250778520699" className="text-primary-brand hover:underline">+225 07 78 52 06 99</a><br />
-            Email : <a href="mailto:contact@surnatureldedieu.ci" className="text-primary-brand hover:underline">contact@surnatureldedieu.ci</a>
+            Email : <a href="mailto:contact@surnatureldedieu.com" className="text-primary-brand hover:underline">contact@surnatureldedieu.com</a>
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export default function MentionsLegales() {
             de vos demandes. Conformément à la loi ivoirienne n°2013-450 relative à la protection
             des données à caractère personnel, vous disposez d&apos;un droit d&apos;accès, de
             rectification et de suppression de vos données. Pour exercer ce droit, contactez-nous
-            à : <a href="mailto:contact@surnatureldedieu.ci" className="text-primary-brand hover:underline">contact@surnatureldedieu.ci</a>.
+            à : <a href="mailto:contact@surnatureldedieu.com" className="text-primary-brand hover:underline">contact@surnatureldedieu.com</a>.
           </p>
         </div>
 

@@ -79,7 +79,7 @@ export default function RootLayout({
               description: "Institut de bien-être holistique à Abidjan — Hammam, gommage, soins du visage, post-accouchement, sage-femme et boutique de produits naturels.",
               url: APP_URL,
               telephone: "+2250778520699",
-              email: "contact@surnatureldedieu.ci",
+              email: "contact@surnatureldedieu.com",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "Cocody, Riviera Palmeraie",

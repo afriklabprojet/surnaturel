@@ -96,11 +96,11 @@ function ErreurContent() {
                 +225 07 00 00 00 00 (WhatsApp)
               </a>
               <a
-                href="mailto:support@lesurnatureldedieu.ci"
+                href="mailto:support@lesurnatureldedieu.com"
                 className="flex items-center justify-center gap-2 font-body text-[13px] text-primary-brand transition-colors hover:text-primary-dark"
               >
                 <Mail size={16} />
-                support@lesurnatureldedieu.ci
+                support@lesurnatureldedieu.com
               </a>
             </div>
           </motion.div>

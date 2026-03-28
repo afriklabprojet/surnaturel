@@ -230,10 +230,10 @@ npx tsx prisma/create-admins.ts
 
 ## Étape 5 — Configurer un nom de domaine personnalisé (optionnel)
 
-Si vous avez acheté un domaine (exemple : `lesurnatureldedieu.ci`) :
+Si vous avez acheté un domaine (exemple : `lesurnatureldedieu.com`) :
 
 1. Sur Vercel : **Settings > Domains**
-2. Tapez votre domaine : `lesurnatureldedieu.ci`
+2. Tapez votre domaine : `lesurnatureldedieu.com`
 3. Cliquez **"Add"**
 4. Vercel vous donne des **enregistrements DNS** à configurer :
    - Typiquement : un enregistrement `CNAME` pointant vers
@@ -244,9 +244,9 @@ Si vous avez acheté un domaine (exemple : `lesurnatureldedieu.ci`) :
 
 **N'oubliez pas** de mettre à jour ces variables sur Vercel :
 
-- `NEXTAUTH_URL` → `https://lesurnatureldedieu.ci`
-- `NEXT_PUBLIC_APP_URL` → `https://lesurnatureldedieu.ci`
-- `NEXT_PUBLIC_SITE_URL` → `https://lesurnatureldedieu.ci`
+- `NEXTAUTH_URL` → `https://lesurnatureldedieu.com`
+- `NEXT_PUBLIC_APP_URL` → `https://lesurnatureldedieu.com`
+- `NEXT_PUBLIC_SITE_URL` → `https://lesurnatureldedieu.com`
 
 Puis redéployez.
 

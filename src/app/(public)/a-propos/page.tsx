@@ -130,7 +130,7 @@ export default async function PageAPropos() {
         </div>
       </section>
 
-      {/* Équipe */}
+      {/* Photo d'équipe */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-4">
@@ -143,7 +143,18 @@ export default async function PageAPropos() {
           <h2 className="font-display text-[32px] font-light text-text-main">
             Notre <em className="italic text-primary-brand">équipe</em>
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl font-body text-[14px] leading-relaxed text-text-mid">
+            Des professionnelles passionnées, formées et dévouées à votre bien-être.
+          </p>
         </div>
+
+        <MotionSection variants={fadeInUp} className="mb-16 overflow-hidden border border-border-brand">
+          <img
+            src="/images/equipe.jpg"
+            alt="L'équipe de l'Institut de Bien-Être Le Surnaturel de Dieu à Abidjan"
+            className="h-auto w-full object-cover"
+          />
+        </MotionSection>
 
         <MotionStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {equipe.map((membre) => {
@@ -158,11 +169,21 @@ export default async function PageAPropos() {
                 key={membre.nom}
                 className="border border-border-brand bg-white p-6 text-center hover:border-gold transition-colors"
               >
-                <div className="mx-auto flex h-20 w-20 items-center justify-center bg-primary-brand">
-                  <span className="font-display text-[22px] font-light text-white">
-                    {initiales}
-                  </span>
-                </div>
+                {membre.photoUrl ? (
+                  <div className="mx-auto h-20 w-20 overflow-hidden rounded-full border border-border-brand">
+                    <img
+                      src={membre.photoUrl}
+                      alt={`${membre.nom} — ${membre.role} au Surnaturel de Dieu`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center bg-primary-brand">
+                    <span className="font-display text-[22px] font-light text-white">
+                      {initiales}
+                    </span>
+                  </div>
+                )}
                 <h3 className="mt-4 font-display text-[18px] text-text-main">
                   {membre.nom}
                 </h3>

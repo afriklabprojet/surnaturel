@@ -546,7 +546,7 @@ export async function envoyerEmailNewsletter(
   contenu: NewsletterContent
 ): Promise<void> {
   const { articles = [], soinsPopulaires = [], codePromo, messagePersonnalise } = contenu
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.ci"
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.com"
   
   const articlesHtml = articles.length > 0 ? `
     <div style="margin-top:24px;">

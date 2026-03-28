@@ -12,7 +12,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
   let desc = "Institut de Bien-Être à Abidjan"
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lesurnatureldedieu.ci"
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lesurnatureldedieu.com"
     const res = await fetch(`${baseUrl}/api/soins/${slug}`)
     if (res.ok) {
       const data = await res.json()

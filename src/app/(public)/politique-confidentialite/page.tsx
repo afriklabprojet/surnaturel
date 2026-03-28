@@ -123,8 +123,8 @@ export default function PolitiqueConfidentialite() {
           </ul>
           <p className="mt-3">
             Pour exercer ces droits, contactez-nous à :
-            <a href="mailto:contact@surnatureldedieu.ci" className="ml-1 text-primary-brand hover:underline">
-              contact@surnatureldedieu.ci
+            <a href="mailto:contact@surnatureldedieu.com" className="ml-1 text-primary-brand hover:underline">
+              contact@surnatureldedieu.com
             </a>
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function PolitiqueConfidentialite() {
           </h2>
           <p>
             Pour toute question relative à cette politique, vous pouvez nous contacter :<br />
-            Email : <a href="mailto:contact@surnatureldedieu.ci" className="text-primary-brand hover:underline">contact@surnatureldedieu.ci</a><br />
+            Email : <a href="mailto:contact@surnatureldedieu.com" className="text-primary-brand hover:underline">contact@surnatureldedieu.com</a><br />
             Téléphone : <a href="tel:+2250778520699" className="text-primary-brand hover:underline">+225 07 78 52 06 99</a><br />
             Adresse : Cocody, Riviera Palmeraie — Abidjan, Côte d&apos;Ivoire
           </p>

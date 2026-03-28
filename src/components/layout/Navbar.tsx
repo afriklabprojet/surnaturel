@@ -36,6 +36,7 @@ interface NavItem { label: string; href: string; badge?: string; requiresAuth?: 
 
 const NAVIGATION: NavItem[] = [
   { label: "Accueil", href: "/" },
+  { label: "À propos", href: "/a-propos" },
   {
     label: "Soins & Services",
     href: "/soins",

@@ -16,6 +16,7 @@ const LIENS_RAPIDES = [
   { label: "Boutique", href: "/boutique" },
   { label: "Sage-femme", href: "/sage-femme" },
   { label: "Blog", href: "/blog" },
+  { label: "À propos", href: "/a-propos" },
   { label: "Contact", href: "/contact" },
 ] as const
 
@@ -127,7 +128,7 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <Mail size={16} className="mt-0.5 shrink-0 text-gold" />
                 <span className="font-body text-[12px] text-white/55">
-                  contact@surnatureldedieu.ci
+                  contact@surnatureldedieu.com
                 </span>
               </li>
             </ul>
