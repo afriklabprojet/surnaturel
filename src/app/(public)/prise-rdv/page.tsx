@@ -22,6 +22,7 @@ import CalendrierRDV from "@/components/rdv/CalendrierRDV"
 import SectionTag from "@/components/ui/SectionTag"
 
 interface SoinItem {
+  id: string
   slug: string
   nom: string
   description: string
