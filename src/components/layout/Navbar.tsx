@@ -90,11 +90,11 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border-brand bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
-      <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-6 lg:px-10">
+      <nav className="flex h-[72px] items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         {/* Logo */}
-        <Link href="/" className="mr-6 xl:mr-8 shrink-0 transition-opacity duration-300 hover:opacity-80">
+        <Link href="/" className="shrink-0 transition-opacity duration-300 hover:opacity-80">
           <div className="hidden sm:block">
-            <p className="font-display text-lg lg:text-xl font-light leading-tight text-text-main whitespace-nowrap">
+            <p className="font-display text-lg font-light leading-tight text-text-main whitespace-nowrap">
               Le Surnaturel de Dieu
             </p>
             <p className="font-body text-[9px] font-medium uppercase tracking-[0.2em] text-gold">
@@ -106,8 +106,8 @@ export default function Navbar() {
           </p>
         </Link>
 
-        {/* Navigation desktop */}
-        <ul className="hidden items-center gap-0 lg:flex">
+        {/* Navigation desktop — centré dans l'espace restant */}
+        <ul className="hidden items-center justify-center flex-1 gap-0 lg:flex mx-4">
           {NAVIGATION.map((item) => (
             <li
               key={item.label}
@@ -118,7 +118,7 @@ export default function Navbar() {
               {item.children ? (
                 <>
                   <button
-                    className="group flex items-center gap-1 px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                    className="group flex items-center gap-1 px-2 lg:px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.06em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
                     aria-expanded={openDropdown === item.label}
                     aria-haspopup="true"
                   >
@@ -154,7 +154,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href={item.href}
-                  className="group flex items-center gap-2 px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                  className="group flex items-center gap-1.5 px-2 lg:px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.06em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
                 >
                   <span className="relative">
                     {item.label}
@@ -172,7 +172,7 @@ export default function Navbar() {
         </ul>
 
         {/* Right actions (desktop) */}
-        <div className="hidden items-center gap-2 lg:flex shrink-0 ml-1">
+        <div className="hidden items-center gap-1.5 xl:gap-2 lg:flex shrink-0">
           <SearchBar />
           <ThemeToggle />
           <button
@@ -190,7 +190,7 @@ export default function Navbar() {
           {user ? (
             <Link
               href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
-              className="inline-flex items-center gap-2 border border-primary-brand bg-transparent px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 border border-primary-brand bg-transparent px-3 py-2 font-body text-[10px] font-medium uppercase tracking-[0.1em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
             >
               {user.photoUrl ? (
                 <img src={user.photoUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
@@ -202,14 +202,14 @@ export default function Navbar() {
           ) : (
             <Link
               href="/connexion"
-              className="inline-flex items-center justify-center border border-primary-brand bg-transparent px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
+              className="inline-flex items-center justify-center border border-primary-brand bg-transparent px-3 py-2 font-body text-[10px] font-medium uppercase tracking-[0.1em] text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
             >
               {t.nav.connexion}
             </Link>
           )}
           <Link
             href="/prise-rdv"
-            className="inline-flex items-center justify-center bg-primary-brand px-4 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.12em] text-white transition-colors duration-300 hover:bg-primary-dark whitespace-nowrap"
+            className="inline-flex items-center justify-center bg-primary-brand px-3 py-2 font-body text-[10px] font-medium uppercase tracking-[0.1em] text-white transition-colors duration-300 hover:bg-primary-dark whitespace-nowrap"
           >
             {t.nav.prendreRdv}
           </Link>
