@@ -90,9 +90,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border-brand bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80">
-      <nav className="mx-auto flex h-18 max-w-360 items-center justify-between px-4 lg:px-6 xl:px-8">
+      <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-6 lg:px-10">
         {/* Logo */}
-        <Link href="/" className="mr-8 xl:mr-12 shrink-0 transition-opacity duration-300 hover:opacity-80">
+        <Link href="/" className="mr-6 xl:mr-8 shrink-0 transition-opacity duration-300 hover:opacity-80">
           <div className="hidden sm:block">
             <p className="font-display text-lg lg:text-xl font-light leading-tight text-text-main whitespace-nowrap">
               Le Surnaturel de Dieu
@@ -107,7 +107,7 @@ export default function Navbar() {
         </Link>
 
         {/* Navigation desktop */}
-        <ul className="hidden items-center gap-1 xl:gap-2 lg:flex">
+        <ul className="hidden items-center gap-0 lg:flex">
           {NAVIGATION.map((item) => (
             <li
               key={item.label}
@@ -118,7 +118,7 @@ export default function Navbar() {
               {item.children ? (
                 <>
                   <button
-                    className="group flex items-center gap-1.5 px-3 xl:px-4 py-2 font-body text-[11px] xl:text-[12px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                    className="group flex items-center gap-1 px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
                     aria-expanded={openDropdown === item.label}
                     aria-haspopup="true"
                   >
@@ -154,7 +154,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href={item.href}
-                  className="group flex items-center gap-2 px-3 xl:px-4 py-2 font-body text-[11px] xl:text-[12px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
+                  className="group flex items-center gap-2 px-2.5 xl:px-3 py-2 font-body text-[10px] xl:text-[11px] font-medium uppercase tracking-[0.08em] text-text-mid transition-colors duration-300 hover:text-text-main whitespace-nowrap"
                 >
                   <span className="relative">
                     {item.label}
@@ -172,7 +172,7 @@ export default function Navbar() {
         </ul>
 
         {/* Right actions (desktop) */}
-        <div className="hidden items-center gap-3 lg:flex shrink-0 ml-2">
+        <div className="hidden items-center gap-2 lg:flex shrink-0 ml-1">
           <SearchBar />
           <ThemeToggle />
           <button
@@ -244,7 +244,7 @@ export default function Navbar() {
       {/* Mobile full-screen menu */}
         {mobileMenuOpen && (
           <div
-            className="fixed inset-0 top-18 z-40 animate-slide-in-right overflow-y-auto bg-white px-6 pb-10 pt-6 lg:hidden"
+            className="fixed inset-0 top-[72px] z-40 animate-slide-in-right overflow-y-auto bg-white px-6 pb-10 pt-6 lg:hidden"
           >
           {/* Raccourcis rapides */}
           <div className="flex gap-2 mb-6 pb-6 border-b border-border-brand">
