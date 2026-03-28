@@ -116,7 +116,7 @@ function PriseRDVContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          soinId: soinSelectionne.slug,
+          soinId: soinSelectionne.id,
           dateHeure,
           notes: notes || undefined,
         }),
