@@ -18,6 +18,7 @@ on:
           - "seed-config"
           - "creer-admins"
           - "creer-admin-surnaturel"
+          - "tester-resend"
           - "restart-pm2"
           - "logs-pm2"
           - "status-pm2"
@@ -99,6 +100,26 @@ jobs:
                 echo "▶ Création du compte admin principal…"
                 npx tsx prisma/create-admin-surnaturel.ts
                 echo "✅ Compte admin@surnatureldedieu.com créé / mis à jour"
+                ;;
+
+              # ── Tester Resend (envoyer un email de test) ───────────────────
+              tester-resend)
+                echo "▶ Test Resend…"
+                node -e "
+                  const { Resend } = require('resend');
+                  require('dotenv').config({ path: '.env.production' });
+                  const key = process.env.RESEND_API_KEY;
+                  if (!key) { console.error('❌ RESEND_API_KEY non défini'); process.exit(1); }
+                  const r = new Resend(key);
+                  r.emails.send({
+                    from: 'Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>',
+                    to: 'infos@lesurnatureldedieu.com',
+                    subject: '[TEST] Resend fonctionne',
+                    html: '<p>Test envoyé depuis le workflow maintenance.</p>',
+                  }).then(res => { console.log('✅ Résultat Resend:', JSON.stringify(res)); })
+                    .catch(err => { console.error('❌ Erreur Resend:', err?.message, err?.statusCode); process.exit(1); });
+                "
+                echo "✅ Test Resend terminé"
                 ;;
 
               # ── Redémarrer PM2 ────────────────────────────────────────────
