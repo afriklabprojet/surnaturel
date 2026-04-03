@@ -23,6 +23,8 @@ function e(s: string): string {
 }
 
 async function getFrom(): Promise<string> {
+  // Priorité : variable d'env RESEND_FROM_EMAIL (domaine vérifié dans Resend)
+  if (process.env.RESEND_FROM_EMAIL) return process.env.RESEND_FROM_EMAIL
   const { nomCentre, emailRdv } = await getConfig()
   return `${nomCentre} <${emailRdv}>`
 }
@@ -84,7 +86,7 @@ export async function envoyerEmailInscription(params: {
   prenom: string
   tokenVerification: string
 }) {
-  const lienVerification = `${process.env.NEXTAUTH_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
+  const lienVerification = `${SITE_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
   return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
