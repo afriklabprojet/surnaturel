@@ -14,6 +14,8 @@ interface RDV {
   dateHeure: string
   statut: string
   notes: string | null
+  acomptePaye: boolean
+  montantAcompte: number | null
 }
 
 interface SoinOption {
@@ -247,6 +249,16 @@ export default function AdminRDVPage() {
                     <span className="text-text-muted-brand">Prix</span>
                     <span className="text-gold font-medium">{formatPrix(rdv.prix)}</span>
                   </div>
+                  {rdv.statut === "EN_ATTENTE" && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-text-muted-brand">Acompte</span>
+                      <span className={`text-xs font-medium ${rdv.acomptePaye ? "text-green-600" : "text-yellow-600"}`}>
+                        {rdv.acomptePaye
+                          ? `Payé${rdv.montantAcompte ? ` (${formatPrix(rdv.montantAcompte)})` : ""}`
+                          : "En attente"}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -347,6 +359,13 @@ export default function AdminRDVPage() {
                           <span className={`px-2 py-0.5 text-xs font-medium font-body uppercase tracking-wider ${statutColors[rdv.statut] || ""}`}>
                             {statutLabels[rdv.statut] || rdv.statut}
                           </span>
+                          {rdv.statut === "EN_ATTENTE" && (
+                            <div className={`mt-1 text-xs font-body ${rdv.acomptePaye ? "text-green-600" : "text-yellow-600"}`}>
+                              {rdv.acomptePaye
+                                ? `Acompte payé${rdv.montantAcompte ? ` (${formatPrix(rdv.montantAcompte)})` : ""}`
+                                : "Acompte en attente"}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">

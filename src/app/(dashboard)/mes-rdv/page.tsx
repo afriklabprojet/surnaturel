@@ -22,6 +22,8 @@ interface RDV {
   dateHeure: string
   statut: "EN_ATTENTE" | "CONFIRME" | "ANNULE" | "TERMINE"
   notes: string | null
+  acomptePaye: boolean
+  montantAcompte: number | null
   soin: { nom: string; duree: number; prix: number; categorie: string }
 }
 
@@ -131,6 +133,19 @@ export default function PageMesRDV() {
                     >
                       {badge?.label}
                     </span>
+                    {rdv.statut === "EN_ATTENTE" && (
+                      <span
+                        className="px-2 py-0.5 font-body text-xs"
+                        style={{
+                          backgroundColor: rdv.acomptePaye ? "#F0FDF4" : "#FFFBEB",
+                          color: rdv.acomptePaye ? "#166534" : "#92400E",
+                        }}
+                      >
+                        {rdv.acomptePaye
+                          ? `Acompte payé${rdv.montantAcompte ? ` (${formatPrix(rdv.montantAcompte)})` : ""}`
+                          : "Acompte en attente"}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 font-body text-[12px] text-text-muted-brand">
                     <span className="flex items-center gap-1">

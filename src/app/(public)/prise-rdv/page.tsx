@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { toast } from "sonner"
 import {
   CheckCircle,
   Clock,
@@ -55,10 +54,8 @@ function PriseRDVContent() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedHeure, setSelectedHeure] = useState<number | null>(null)
   const [notes, setNotes] = useState("")
-  const [loading, setLoading] = useState(false)
   const [erreur, setErreur] = useState("")
   // Étape 4 : acompte
-  const [rdvId, setRdvId] = useState<string | null>(null)
   const [telephone, setTelephone] = useState("")
   const [methode, setMethode] = useState<string | null>(null)
   const [methodes, setMethodes] = useState<{ id: string; label: string; color: string }[]>([])
@@ -151,15 +148,12 @@ function PriseRDVContent() {
     }
 
     setErreur("")
-    setLoading(true)
     try {
       const mRes = await fetch("/api/config/methodes_paiement")
       const mData = await mRes.json()
       setMethodes(mData.valeur || [])
     } catch {
       // Continuer même sans méthodes
-    } finally {
-      setLoading(false)
     }
     setEtape(4)
   }
@@ -200,33 +194,6 @@ function PriseRDVContent() {
     }
   }
 
-  async function handleReserverSansAcompte() {
-    if (!soinSelectionne || !selectedDate || selectedHeure === null) return
-    setErreur("")
-    setLoading(true)
-    const dateHeure = `${selectedDate}T${String(selectedHeure).padStart(2, "0")}:00:00.000Z`
-    try {
-      const res = await fetch("/api/rdv", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          soinId: soinSelectionne.id,
-          dateHeure,
-          notes: notes || undefined,
-        }),
-      })
-      if (res.status === 201) {
-        toast.success("Rendez-vous réservé avec succès !")
-        router.push("/mes-rdv?nouveau=ok")
-        return
-      }
-      const data: { error?: string } = await res.json()
-      setErreur(data.error ?? "Une erreur est survenue.")
-    } catch {
-      setErreur("Impossible de contacter le serveur.")
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -560,15 +527,15 @@ function PriseRDVContent() {
             {authStatus !== "unauthenticated" && (
               <button
                 onClick={handleConfirmer}
-                disabled={loading || authStatus === "loading"}
+                disabled={authStatus === "loading"}
                 className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-60"
               >
-                {loading || authStatus === "loading" ? (
+                {authStatus === "loading" ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <CreditCard size={16} />
                 )}
-                {loading ? "Chargement…" : "Procéder au paiement"}
+                Procéder au paiement
               </button>
             )}
           </div>
@@ -678,14 +645,7 @@ function PriseRDVContent() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              onClick={handleReserverSansAcompte}
-              disabled={loading}
-              className="font-body text-xs text-text-muted-brand underline transition-colors duration-300 hover:text-text-mid disabled:opacity-50"
-            >
-              {loading ? "Réservation en cours…" : "Réserver sans payer l'acompte"}
-            </button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <button
               onClick={handlePayerAcompte}
               disabled={!methode || loadingPaiement}

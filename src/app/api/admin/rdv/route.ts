@@ -70,6 +70,8 @@ export async function GET(req: NextRequest) {
       dateHeure: r.dateHeure.toISOString(),
       statut: r.statut,
       notes: r.notes,
+      acomptePaye: r.acomptePaye,
+      montantAcompte: r.montantAcompte,
     })),
     total,
   })
