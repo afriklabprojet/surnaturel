@@ -125,13 +125,7 @@ jobs:
               # ── Vérifier la connexion à la base de données ────────────────
               verifier-db)
                 echo "▶ Vérification base de données…"
-                npx prisma db execute --stdin <<'SQL'
-                  SELECT
-                    (SELECT COUNT(*) FROM "User")          AS utilisateurs,
-                    (SELECT COUNT(*) FROM "RendezVous")    AS rendez_vous,
-                    (SELECT COUNT(*) FROM "Produit")       AS produits,
-                    (SELECT COUNT(*) FROM "Commande")      AS commandes;
-SQL
+                npx prisma db execute --stdin < <(echo 'SELECT (SELECT COUNT(*) FROM "User") AS utilisateurs, (SELECT COUNT(*) FROM "RendezVous") AS rendez_vous, (SELECT COUNT(*) FROM "Produit") AS produits, (SELECT COUNT(*) FROM "Commande") AS commandes;')
                 echo "✅ Base de données accessible"
                 ;;
 
