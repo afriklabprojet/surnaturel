@@ -8,14 +8,9 @@ import { prisma } from "@/lib/prisma"
 import { formatDate } from "@/lib/utils"
 import { BtnSerif, BtnUnderline } from "@/components/ui/buttons"
 
-// Génération statique de toutes les pages articles
-export async function generateStaticParams() {
-  const articles = await prisma.article.findMany({
-    where: { publie: true },
-    select: { slug: true },
-  })
-  return articles.map((a) => ({ slug: a.slug }))
-}
+// Les articles sont rendus à la demande (SSR) — pas de génération statique
+// pour éviter de requêter la base de données pendant le build CI/CD
+export const dynamic = "force-dynamic"
 
 // Calcul automatique du temps de lecture (~200 mots/min en français)
 function tempsLectureCalcule(contenu: string): number {
