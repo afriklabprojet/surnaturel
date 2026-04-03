@@ -24,6 +24,24 @@ const configEntries = [
   { cle: "horaires", valeur: JSON.stringify("Lun — Ven : 08h00 — 18h00\nSam : 09h00 — 16h00\nDim : Fermé") },
   { cle: "facebook_url", valeur: JSON.stringify("https://www.facebook.com/surnatureldedieu") },
   { cle: "instagram_url", valeur: JSON.stringify("https://www.instagram.com/surnatureldedieu") },
+  // ── Réservation ──────────────────────────────────────────────────────
+  { cle: "booking_montant_acompte", valeur: JSON.stringify(2000) },
+  { cle: "booking_creneaux_matin", valeur: JSON.stringify([8, 9, 10, 11, 12]) },
+  { cle: "booking_creneaux_apres_midi", valeur: JSON.stringify([13, 14, 15, 16, 17, 18]) },
+  // ── Paiement ─────────────────────────────────────────────────────────
+  { cle: "methodes_paiement", valeur: JSON.stringify([
+    { id: "wave", label: "Wave", logo: "/logos/wave.png" },
+    { id: "orange", label: "Orange Money", logo: "/logos/orange-money.png" },
+    { id: "mtn", label: "MTN MoMo", logo: "/logos/mtn.png" },
+    { id: "moov", label: "Moov Money", logo: "/logos/moov.png" },
+    { id: "djamo", label: "Djamo", logo: "/logos/djamo.png" },
+  ]) },
+  // ── Catégories ───────────────────────────────────────────────────────
+  { cle: "categories_soins", valeur: JSON.stringify(["Médecine douce", "Bien-être", "Beauté", "Relaxation"]) },
+  { cle: "categories_faq", valeur: JSON.stringify(["Général", "Soins", "Réservation", "Paiement"]) },
+  // ── Divers ───────────────────────────────────────────────────────────
+  { cle: "google_place_id", valeur: JSON.stringify("") },
+  { cle: "questions_chat_ia", valeur: JSON.stringify([]) },
 ]
 
 async function main() {
