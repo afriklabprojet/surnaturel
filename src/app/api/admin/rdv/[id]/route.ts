@@ -10,9 +10,10 @@ import { formatPrix } from "@/lib/utils"
 import { notifierRDVConfirme, notifierRDVAnnule } from "@/lib/notifications"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import { getResend } from "@/lib/email"
+import { BUSINESS_EMAIL, SITE_NAME } from "@/lib/site"
 import type { StatutRDV } from "@/generated/prisma/client"
 
-const FROM = "Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>"
+const FROM = `${SITE_NAME} <${BUSINESS_EMAIL}>`
 
 const patchSchema = z.object({
   statut: z.enum(["EN_ATTENTE", "CONFIRME", "ANNULE", "TERMINE"]),

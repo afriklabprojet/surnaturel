@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod/v4"
 import { getResend } from "@/lib/email"
+import { BUSINESS_EMAIL, SITE_NAME } from "@/lib/site"
 
 const contactSchema = z.object({
   nom: z.string().min(2).max(100),
@@ -30,8 +31,8 @@ export async function POST(req: NextRequest) {
 
   try {
     await getResend().emails.send({
-      from: "Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>",
-      to: "infos@lesurnatureldedieu.com",
+      from: `${SITE_NAME} <${BUSINESS_EMAIL}>`,
+      to: BUSINESS_EMAIL,
       replyTo: email,
       subject: `[Contact] ${sujet}`,
       html: `
