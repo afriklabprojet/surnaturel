@@ -13,7 +13,7 @@ import { Resend } from "resend"
 import type { StatutRDV } from "@/generated/prisma/client"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM = "Le Surnaturel de Dieu <rdv@surnatureldedieu.com>"
+const FROM = "Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>"
 
 const patchSchema = z.object({
   statut: z.enum(["EN_ATTENTE", "CONFIRME", "ANNULE", "TERMINE"]),

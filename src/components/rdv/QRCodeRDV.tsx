@@ -22,7 +22,7 @@ interface QRCodeRDVProps {
 export default function QRCodeRDV({ rdv, isOpen, onClose }: QRCodeRDVProps) {
   const [downloading, setDownloading] = useState(false)
 
-  const qrValue = `${process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.com"}/admin/rdv/scan/${rdv.id}`
+  const qrValue = `${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/admin/rdv/scan/${rdv.id}`
 
   const dateObj = new Date(rdv.date)
   const dateFormatted = dateObj.toLocaleDateString("fr", {

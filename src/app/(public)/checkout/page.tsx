@@ -542,7 +542,7 @@ export default function PageCheckout() {
             <div className="max-h-44 overflow-y-auto divide-y divide-border-brand px-5 py-3">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center justify-between py-2 font-body text-[13px]">
-                  <span className="truncate max-w-[200px] text-text-main">
+                  <span className="truncate max-w-50 text-text-main">
                     {item.quantite}× {item.nom}
                   </span>
                   <span className="ml-4 shrink-0 text-text-mid">

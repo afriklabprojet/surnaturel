@@ -82,7 +82,7 @@ export function creerPayloadPush(
   type: PushType,
   data: Record<string, string>
 ): PushPayload {
-  const baseUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+  const baseUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
 
   switch (type) {
     case PUSH_TYPES.RDV_RAPPEL:

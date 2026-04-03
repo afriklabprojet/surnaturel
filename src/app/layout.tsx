@@ -28,7 +28,7 @@ const jost = Jost({
   display: "swap",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://surnatureldedieu.com"
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lesurnatureldedieu.com"
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

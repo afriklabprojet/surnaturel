@@ -6,7 +6,7 @@
 // ─── Identité ────────────────────────────────────────────────────────────────
 export const SITE_NAME = "Le Surnaturel de Dieu"
 export const SITE_NAME_FULL = "Le Surnaturel de Dieu — Institut de Bien-Être"
-export const SITE_URL = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+export const SITE_URL = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
 export const BUSINESS_FOUNDING_YEAR = 2015
 
 // ─── Fondatrice ───────────────────────────────────────────────────────────────
@@ -27,9 +27,9 @@ export const BUSINESS_WHATSAPP_MESSAGE =
   "Bonjour, j'aimerais avoir des informations sur vos soins et services."
 
 /** Email principal */
-export const BUSINESS_EMAIL = "contact@surnatureldedieu.com"
+export const BUSINESS_EMAIL = "infos@lesurnatureldedieu.com"
 /** Email dédié aux rendez-vous */
-export const BUSINESS_EMAIL_RDV = "rdv@surnatureldedieu.com"
+export const BUSINESS_EMAIL_RDV = "infos@lesurnatureldedieu.com"
 
 // ─── Adresse ─────────────────────────────────────────────────────────────────
 export const BUSINESS_ADDRESS = "Cocody, Riviera Palmeraie"

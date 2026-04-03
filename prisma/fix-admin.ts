@@ -16,7 +16,7 @@ const prisma = new PrismaClient({ adapter })
 async function main() {
   // Check if admin exists
   const user = await prisma.user.findUnique({
-    where: { email: 'admin@surnatureldedieu.com' },
+    where: { email: 'admin@lesurnatureldedieu.com' },
     select: { id: true, email: true, nom: true, prenom: true, role: true, passwordHash: true },
   })
 
@@ -25,7 +25,7 @@ async function main() {
     const hash = await bcrypt.hash('Admin@2025', 12)
     const created = await prisma.user.create({
       data: {
-        email: 'admin@surnatureldedieu.com',
+        email: 'admin@lesurnatureldedieu.com',
         nom: 'Jeanne',
         prenom: 'Marie',
         role: 'ADMIN',
@@ -42,7 +42,7 @@ async function main() {
       console.log('🔄 Reset du mot de passe...')
       const newHash = await bcrypt.hash('Admin@2025', 12)
       await prisma.user.update({
-        where: { email: 'admin@surnatureldedieu.com' },
+        where: { email: 'admin@lesurnatureldedieu.com' },
         data: { passwordHash: newHash },
       })
       console.log('✅ Mot de passe réinitialisé à "Admin@2025"')

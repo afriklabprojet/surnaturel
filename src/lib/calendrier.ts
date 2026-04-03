@@ -56,7 +56,7 @@ export async function genererFichierICS(rdv: RDVCalendrier): Promise<string> {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${rdv.id}@surnatureldedieu.com`,
+    `UID:${rdv.id}@lesurnatureldedieu.com`,
     `DTSTAMP:${maintenant}`,
     `DTSTART:${debut}`,
     `DTEND:${fin}`,

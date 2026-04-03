@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
 
   try {
     await resend.emails.send({
-      from: "Le Surnaturel de Dieu <contact@surnatureldedieu.com>",
-      to: "contact@surnatureldedieu.com",
+      from: "Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>",
+      to: "infos@lesurnatureldedieu.com",
       replyTo: email,
       subject: `[Contact] ${sujet}`,
       html: `

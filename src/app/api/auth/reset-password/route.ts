@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       data: { resetToken: token, resetTokenExpiry: expiry },
     })
 
-    const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+    const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
     const lienReset = `${appUrl}/mot-de-passe-oublie?token=${token}`
 
     await envoyerEmailResetMotDePasse({

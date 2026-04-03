@@ -196,11 +196,7 @@ async function handleAbonnementCommunaute(
       }),
     ])
 
-    logger.info("Abonnement communauté activé", {
-      userId: abonnement.userId,
-      abonnementId,
-      expireAt: expireAt.toISOString(),
-    })
+    logger.info({ userId: abonnement.userId, abonnementId, expireAt: expireAt.toISOString() }, "Abonnement communauté activé")
   } else if (status === "error") {
     await prisma.paiementAbonnement.updateMany({
       where: { abonnementId, statut: "EN_ATTENTE" },

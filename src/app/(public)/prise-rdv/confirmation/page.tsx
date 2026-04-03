@@ -259,7 +259,7 @@ function ConfirmationContent() {
             </h3>
             <div className="mt-6">
               <QRCode
-                value={`${process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.com"}/admin/rdv/scan/${rdvData.id}`}
+                value={`${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/admin/rdv/scan/${rdvData.id}`}
                 size={220}
                 bgColor="var(--color-bg-card)"
                 fgColor="var(--color-text-main)"

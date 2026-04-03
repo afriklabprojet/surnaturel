@@ -101,11 +101,11 @@ function ErreurContent() {
                 {config.whatsappDisplay} (WhatsApp)
               </a>
               <a
-                href="mailto:support@lesurnatureldedieu.com"
+                href="mailto:infos@lesurnatureldedieu.com"
                 className="flex items-center justify-center gap-2 font-body text-[13px] text-primary-brand transition-colors hover:text-primary-dark"
               >
                 <Mail size={16} />
-                support@lesurnatureldedieu.com
+                infos@lesurnatureldedieu.com
               </a>
             </div>
           </motion.div>

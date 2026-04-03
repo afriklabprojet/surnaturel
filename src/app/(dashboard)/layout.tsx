@@ -263,7 +263,7 @@ export default function DashboardLayout({
       <ToastProvider>
     <div className="flex min-h-screen bg-bg-page">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-border-brand">
+      <aside className="hidden lg:flex lg:w-65 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-border-brand">
         {sidebarContent}
       </aside>
 
@@ -274,7 +274,7 @@ export default function DashboardLayout({
             className="absolute inset-0 bg-black/30"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-[280px] flex flex-col bg-white shadow-lg">
+          <aside className="absolute left-0 top-0 bottom-0 w-70 flex flex-col bg-white shadow-lg">
             <div className="flex items-center justify-end px-4 pt-3">
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -290,7 +290,7 @@ export default function DashboardLayout({
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-[260px] flex flex-col pb-16 lg:pb-0">
+      <div className="flex-1 lg:ml-65 flex flex-col pb-16 lg:pb-0">
         {/* Header */}
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border-brand bg-white px-5 py-4 lg:px-8">
           <div className="flex items-center gap-3">

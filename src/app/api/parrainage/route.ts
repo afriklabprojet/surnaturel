@@ -58,7 +58,7 @@ export async function GET() {
 
     return NextResponse.json({
       codeParrainage: user.codeParrainage,
-      lienParrainage: `${process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.com"}/inscription?parrain=${user.codeParrainage}`,
+      lienParrainage: `${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/inscription?parrain=${user.codeParrainage}`,
       parrainages,
       stats,
     })
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
       select: { codeParrainage: true, prenom: true, nom: true },
     })
 
-    const lien = `${process.env.NEXT_PUBLIC_APP_URL || "https://surnatureldedieu.com"}/inscription?parrain=${user?.codeParrainage}`
+    const lien = `${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/inscription?parrain=${user?.codeParrainage}`
 
     // Envoyer l'email d'invitation
     envoyerEmailInvitationParrainage({

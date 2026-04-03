@@ -22,10 +22,10 @@ async function main() {
   const clientHash = await bcrypt.hash("Client@2025", 12)
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@surnatureldedieu.com" },
+    where: { email: "admin@lesurnatureldedieu.com" },
     update: {},
     create: {
-      email: "admin@surnatureldedieu.com",
+      email: "admin@lesurnatureldedieu.com",
       passwordHash: adminHash,
       nom: "Jeanne",
       prenom: "Marie",
@@ -34,10 +34,10 @@ async function main() {
   })
 
   const sageFemme = await prisma.user.upsert({
-    where: { email: "sagefemme@surnatureldedieu.com" },
+    where: { email: "sagefemme@lesurnatureldedieu.com" },
     update: {},
     create: {
-      email: "sagefemme@surnatureldedieu.com",
+      email: "sagefemme@lesurnatureldedieu.com",
       passwordHash: sageFemmeHash,
       nom: "Kouassi",
       prenom: "Ama",
@@ -631,8 +631,8 @@ Avant de quitter la maison, choisissez un mot ou une phrase qui guidera votre jo
     { cle: "nom_centre", valeur: JSON.stringify("Le Surnaturel de Dieu") },
     { cle: "fondatrice", valeur: JSON.stringify("Marie Jeanne") },
     { cle: "annee_fondation", valeur: JSON.stringify(2015) },
-    { cle: "email_contact", valeur: JSON.stringify("contact@surnatureldedieu.com") },
-    { cle: "email_rdv", valeur: JSON.stringify("rdv@surnatureldedieu.com") },
+    { cle: "email_contact", valeur: JSON.stringify("infos@lesurnatureldedieu.com") },
+    { cle: "email_rdv", valeur: JSON.stringify("infos@lesurnatureldedieu.com") },
     { cle: "horaires", valeur: JSON.stringify("Lun — Ven : 08h00 — 18h00\nSam : 09h00 — 16h00\nDim : Fermé") },
     { cle: "facebook_url", valeur: JSON.stringify("https://www.facebook.com/surnatureldedieu") },
     { cle: "instagram_url", valeur: JSON.stringify("https://www.instagram.com/surnatureldedieu") },
@@ -753,8 +753,8 @@ Avant de quitter la maison, choisissez un mot ou une phrase qui guidera votre jo
 
   console.log("\n🎉 Seed terminé avec succès !")
   console.log("─────────────────────────────────────")
-  console.log("Admin:      admin@surnatureldedieu.com / Admin@2025")
-  console.log("Sage-femme: sagefemme@surnatureldedieu.com / SageFemme@2025")
+  console.log("Admin:      admin@lesurnatureldedieu.com / Admin@2025")
+  console.log("Sage-femme: sagefemme@lesurnatureldedieu.com / SageFemme@2025")
   console.log("Client:     client@test.com / Client@2025")
 }
 

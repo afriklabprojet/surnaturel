@@ -24,10 +24,10 @@ async function createAdmins() {
   const clientHash = await bcrypt.hash("Client@2025", 12)
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@surnatureldedieu.com" },
+    where: { email: "admin@lesurnatureldedieu.com" },
     update: { passwordHash: adminHash },
     create: {
-      email: "admin@surnatureldedieu.com",
+      email: "admin@lesurnatureldedieu.com",
       passwordHash: adminHash,
       nom: "Jeanne",
       prenom: "Marie",
@@ -37,10 +37,10 @@ async function createAdmins() {
   console.log(`✅ Admin: ${admin.email} (${admin.prenom} ${admin.nom})`)
 
   const sageFemme = await prisma.user.upsert({
-    where: { email: "sagefemme@surnatureldedieu.com" },
+    where: { email: "sagefemme@lesurnatureldedieu.com" },
     update: { passwordHash: sageFemmeHash },
     create: {
-      email: "sagefemme@surnatureldedieu.com",
+      email: "sagefemme@lesurnatureldedieu.com",
       passwordHash: sageFemmeHash,
       nom: "Kouassi",
       prenom: "Ama",
@@ -66,8 +66,8 @@ async function createAdmins() {
 
   console.log("\n🎉 Comptes créés avec succès !")
   console.log("─────────────────────────────────────")
-  console.log("Admin:      admin@surnatureldedieu.com / Admin@2025")
-  console.log("Sage-femme: sagefemme@surnatureldedieu.com / SageFemme@2025")
+  console.log("Admin:      admin@lesurnatureldedieu.com / Admin@2025")
+  console.log("Sage-femme: sagefemme@lesurnatureldedieu.com / SageFemme@2025")
   console.log("Client:     client@test.com / Client@2025")
 
   await prisma.$disconnect()
