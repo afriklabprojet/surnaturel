@@ -43,5 +43,8 @@ export const BUSINESS_LONGITUDE = -3.97
 export const SOCIAL_FACEBOOK = "https://www.facebook.com/surnatureldedieu"
 export const SOCIAL_INSTAGRAM = "https://www.instagram.com/surnatureldedieu"
 
+// ─── Domaine (pour identifiants ICS, liens internes) ─────────────────────────
+export const SITE_DOMAIN = "lesurnatureldedieu.com"
+
 // ─── Localisation ────────────────────────────────────────────────────────────
 export const TIMEZONE = "Africa/Abidjan"

@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { X, RefreshCcw, CreditCard, MessageCircle, Phone, Mail } from "lucide-react"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
+import { BUSINESS_EMAIL } from "@/lib/site"
 
 export default function PageErreur() {
   return (
@@ -101,11 +102,11 @@ function ErreurContent() {
                 {config.whatsappDisplay} (WhatsApp)
               </a>
               <a
-                href="mailto:infos@lesurnatureldedieu.com"
+                href={`mailto:${BUSINESS_EMAIL}`}
                 className="flex items-center justify-center gap-2 font-body text-[13px] text-primary-brand transition-colors hover:text-primary-dark"
               >
                 <Mail size={16} />
-                infos@lesurnatureldedieu.com
+                {BUSINESS_EMAIL}
               </a>
             </div>
           </motion.div>

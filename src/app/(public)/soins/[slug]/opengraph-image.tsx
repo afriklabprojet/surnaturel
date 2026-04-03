@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import { SITE_URL } from "@/lib/site"
 
 export const runtime = "edge"
 export const alt = "Soin — Le Surnaturel de Dieu"
@@ -12,7 +13,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
   let desc = "Institut de Bien-Être à Abidjan"
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lesurnatureldedieu.com"
+    const baseUrl = SITE_URL
     const res = await fetch(`${baseUrl}/api/soins/${slug}`)
     if (res.ok) {
       const data = await res.json()

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailResetMotDePasse } from "@/lib/email"
 import { captureAuthError } from "@/lib/sentry"
+import { SITE_URL } from "@/lib/site"
 
 // ─── POST : demander un reset (envoie un email) ─────────────────
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
       data: { resetToken: token, resetTokenExpiry: expiry },
     })
 
-    const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+    const appUrl = SITE_URL
     const lienReset = `${appUrl}/mot-de-passe-oublie?token=${token}`
 
     await envoyerEmailResetMotDePasse({

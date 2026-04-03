@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { randomBytes } from "crypto"
 import { envoyerEmailInvitationParrainage } from "@/lib/email"
+import { SITE_URL } from "@/lib/site"
 
 // GET - Récupérer les parrainages de l'utilisateur
 export async function GET() {
@@ -58,7 +59,7 @@ export async function GET() {
 
     return NextResponse.json({
       codeParrainage: user.codeParrainage,
-      lienParrainage: `${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/inscription?parrain=${user.codeParrainage}`,
+      lienParrainage: `${SITE_URL}/inscription?parrain=${user.codeParrainage}`,
       parrainages,
       stats,
     })
@@ -111,7 +112,7 @@ export async function POST(request: Request) {
       select: { codeParrainage: true, prenom: true, nom: true },
     })
 
-    const lien = `${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/inscription?parrain=${user?.codeParrainage}`
+    const lien = `${SITE_URL}/inscription?parrain=${user?.codeParrainage}`
 
     // Envoyer l'email d'invitation
     envoyerEmailInvitationParrainage({

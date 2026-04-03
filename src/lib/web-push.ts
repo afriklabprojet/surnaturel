@@ -2,6 +2,7 @@
 import webPush from "web-push"
 import { getConfig } from "@/lib/config"
 import { typedLogger as logger } from "@/lib/logger"
+import { SITE_URL } from "@/lib/site"
 
 // Configuration VAPID (Voluntary Application Server Identification)
 // Les clés doivent être générées avec: npx web-push generate-vapid-keys
@@ -83,7 +84,7 @@ export function creerPayloadPush(
   type: PushType,
   data: Record<string, string>
 ): PushPayload {
-  const baseUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const baseUrl = SITE_URL
 
   switch (type) {
     case PUSH_TYPES.RDV_RAPPEL:

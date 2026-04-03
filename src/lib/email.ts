@@ -1,5 +1,6 @@
 import { Resend } from "resend"
 import { getConfig } from "@/lib/config"
+import { SITE_URL } from "@/lib/site"
 
 let _resend: Resend | null = null
 export function getResend(): Resend {
@@ -122,7 +123,7 @@ export async function envoyerEmailMessageMedical(params: {
   prenomDestinataire: string
   prenomExpediteur: string
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
@@ -159,7 +160,7 @@ export async function envoyerEmailInvitationParrainage(params: {
   prenomParrain: string
   lienParrainage: string
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
@@ -201,7 +202,7 @@ export async function envoyerEmailRappelRDV(params: {
   date: string
   heure: string
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
@@ -257,7 +258,7 @@ export async function envoyerEmailCommandePayee(params: {
   reference?: string
   lignes?: { nom: string; quantite: number; prixUnitaire: number }[]
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   const ref = params.commandeId.slice(-8).toUpperCase()
   const date = new Date().toLocaleDateString("fr-CI", {
     day: "2-digit",
@@ -372,7 +373,7 @@ export async function envoyerEmailConfirmationCommande(params: {
   total: number
   lignes: { nom: string; quantite: number; prixUnitaire: number }[]
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   const ref = params.commandeId.slice(-8).toUpperCase()
 
   const totalFormate = new Intl.NumberFormat("fr-CI", {
@@ -497,7 +498,7 @@ export async function envoyerEmailInvitationAvis(params: {
   soin: string
   rdvId: string
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
@@ -574,7 +575,7 @@ export async function envoyerEmailNewsletter(
   contenu: NewsletterContent
 ): Promise<void> {
   const { articles = [], soinsPopulaires = [], codePromo, messagePersonnalise } = contenu
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"
+  const BASE_URL = SITE_URL
   
   const articlesHtml = articles.length > 0 ? `
     <div style="margin-top:24px;">
@@ -882,7 +883,7 @@ const ONBOARDING_EMAILS = [
 ]
 
 export async function envoyerEmailOnboarding({ destinataire, prenom, step }: OnboardingEmailParams) {
-  const baseUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const baseUrl = SITE_URL
   const emailConfig = ONBOARDING_EMAILS[step]
 
   if (!emailConfig) {
@@ -904,7 +905,7 @@ export async function envoyerEmailRenouvellementAbonnement(params: {
   montant: number
   prochainPaiement: string
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
   const montantFormate = new Intl.NumberFormat("fr-CI", {
     style: "currency",
     currency: "XOF",
@@ -966,7 +967,7 @@ export async function envoyerEmailReactivation(params: {
   derniersSoins: string[]
   pointsFidelite: number
 }) {
-  const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
+  const appUrl = SITE_URL
 
   const soinsHtml = params.derniersSoins.length > 0
     ? `<p>Vos derniers soins consultés :</p>

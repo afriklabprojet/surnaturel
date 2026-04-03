@@ -8,6 +8,7 @@ import { Calendar, Clock, MapPin, Check, Download, QrCode } from "lucide-react"
 import { formatPrix, formatDate } from "@/lib/utils"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
+import { SITE_URL } from "@/lib/site"
 import QRCode from "react-qr-code"
 
 const CONFETTI_ITEMS = [...Array(50)].map((_, i) => ({
@@ -255,7 +256,7 @@ function ConfirmationContent() {
             </h3>
             <div className="mt-6">
               <QRCode
-                value={`${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/admin/rdv/scan/${rdvData.id}`}
+                value={`${SITE_URL}/admin/rdv/scan/${rdvData.id}`}
                 size={220}
                 bgColor="var(--color-bg-card)"
                 fgColor="var(--color-text-main)"

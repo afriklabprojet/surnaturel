@@ -12,6 +12,7 @@ import PostHogProvider from "@/components/providers/PostHogProvider";
 import PwaInstallPrompt from "@/components/layout/PwaInstallPrompt";
 import { getConfig } from "@/lib/config";
 import { auth } from "@/lib/auth";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -28,7 +29,7 @@ const jost = Jost({
   display: "swap",
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lesurnatureldedieu.com"
+const APP_URL = SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

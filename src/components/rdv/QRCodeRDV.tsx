@@ -4,6 +4,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { fadeIn, fadeInUp } from "@/lib/animations"
 import { X, QrCode, Download, Calendar, Clock, Sparkles } from "lucide-react"
+import { SITE_URL } from "@/lib/site"
 import QRCode from "react-qr-code"
 
 interface QRCodeRDVProps {
@@ -22,7 +23,7 @@ interface QRCodeRDVProps {
 export default function QRCodeRDV({ rdv, isOpen, onClose }: QRCodeRDVProps) {
   const [downloading, setDownloading] = useState(false)
 
-  const qrValue = `${process.env.NEXT_PUBLIC_APP_URL || "https://lesurnatureldedieu.com"}/admin/rdv/scan/${rdv.id}`
+  const qrValue = `${SITE_URL}/admin/rdv/scan/${rdv.id}`
 
   const dateObj = new Date(rdv.date)
   const dateFormatted = dateObj.toLocaleDateString("fr", {

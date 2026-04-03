@@ -1,5 +1,6 @@
 // Génération de liens calendrier (Google Calendar, Apple Calendar .ics)
 import { getConfig } from "@/lib/config"
+import { SITE_DOMAIN } from "@/lib/site"
 
 interface RDVCalendrier {
   id: string
@@ -56,7 +57,7 @@ export async function genererFichierICS(rdv: RDVCalendrier): Promise<string> {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${rdv.id}@lesurnatureldedieu.com`,
+    `UID:${rdv.id}@${SITE_DOMAIN}`,
     `DTSTAMP:${maintenant}`,
     `DTSTART:${debut}`,
     `DTEND:${fin}`,
