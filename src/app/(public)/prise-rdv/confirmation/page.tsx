@@ -10,6 +10,13 @@ import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
 import QRCode from "react-qr-code"
 
+const CONFETTI_ITEMS = [...Array(50)].map((_, i) => ({
+  left: `${Math.random() * 100}%`,
+  color: i % 2 === 0 ? "var(--color-primary-brand)" : "var(--color-gold)",
+  rotateDir: Math.random() > 0.5 ? 1 : -1,
+  delay: Math.random() * 0.5,
+}))
+
 function ConfirmationContent() {
   const searchParams = useSearchParams()
   const rdvId = searchParams.get("rdv")
@@ -76,25 +83,14 @@ function ConfirmationContent() {
       {/* Confettis animation */}
       {!loading && rdvData && showConfetti && (
         <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-          {[...Array(50)].map((_, i) => (
+          {CONFETTI_ITEMS.map((c, i) => (
             <motion.div
               key={i}
               className="absolute h-3 w-3"
-              style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: i % 2 === 0 ? "var(--color-primary-brand)" : "var(--color-gold)",
-              }}
+              style={{ left: c.left, backgroundColor: c.color }}
               initial={{ y: -20, opacity: 1, rotate: 0 }}
-              animate={{
-                y: "100vh",
-                opacity: 0,
-                rotate: 360 * (Math.random() > 0.5 ? 1 : -1),
-              }}
-              transition={{
-                duration: 3,
-                delay: Math.random() * 0.5,
-                ease: "easeOut",
-              }}
+              animate={{ y: "100vh", opacity: 0, rotate: 360 * c.rotateDir }}
+              transition={{ duration: 3, delay: c.delay, ease: "easeOut" }}
             />
           ))}
         </div>

@@ -68,7 +68,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Hostinger Node.js — build autonome (inclut node_modules nécessaires dans .next/standalone)
   output: "standalone",
-  reactCompiler: true,
+  reactCompiler: {
+    // "none" = le compilateur saute silencieusement les composants
+    // qu'il ne peut pas optimiser au lieu de les signaler comme erreurs ESLint.
+    panicThreshold: "none",
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

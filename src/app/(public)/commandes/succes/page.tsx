@@ -10,6 +10,13 @@ import { useCart } from "@/lib/cart-context"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
 
+const CONFETTI_ITEMS = [...Array(50)].map((_, i) => ({
+  left: `${Math.random() * 100}%`,
+  color: i % 2 === 0 ? "var(--color-primary-brand)" : "var(--color-gold)",
+  rotateDir: Math.random() > 0.5 ? 1 : -1,
+  delay: Math.random() * 0.5,
+}))
+
 export default function PageSucces() {
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin border-2 border-gold border-t-transparent" /></div>}>
@@ -59,22 +66,21 @@ function SuccesContent() {
   const prenom = commandeData?.user?.prenom ?? ""
   const displayId = commandeData?.id ?? reference ?? commandeId ?? ""
 
+  const confettiItems = CONFETTI_ITEMS
+
   return (
     <div className="relative min-h-screen bg-bg-page">
       {/* Confettis animation */}
       {showConfetti && (
         <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-          {[...Array(50)].map((_, i) => (
+          {confettiItems.map((c, i) => (
             <motion.div
               key={i}
               className="absolute h-3 w-3"
-              style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: i % 2 === 0 ? "var(--color-primary-brand)" : "var(--color-gold)",
-              }}
+              style={{ left: c.left, backgroundColor: c.color }}
               initial={{ y: -20, opacity: 1, rotate: 0 }}
-              animate={{ y: "100vh", opacity: 0, rotate: 360 * (Math.random() > 0.5 ? 1 : -1) }}
-              transition={{ duration: 3, delay: Math.random() * 0.5, ease: "easeOut" }}
+              animate={{ y: "100vh", opacity: 0, rotate: 360 * c.rotateDir }}
+              transition={{ duration: 3, delay: c.delay, ease: "easeOut" }}
             />
           ))}
         </div>

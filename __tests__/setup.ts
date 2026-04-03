@@ -257,7 +257,10 @@ export function buildRequest(
       u.searchParams.set(k, v)
     }
   }
-  return new NextRequest(u.toString(), options)
+  // NextRequest ne tolère pas signal:null (contrairement à RequestInit standard)
+  const { signal, searchParams: _sp, ...rest } = options ?? {}
+  const init = signal != null ? { ...rest, signal } : rest
+  return new NextRequest(u.toString(), init)
 }
 
 export function buildJsonRequest(

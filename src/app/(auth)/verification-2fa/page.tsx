@@ -192,7 +192,7 @@ function TwoFAVerificationForm() {
 
         {/* Help text */}
         <p className="mt-6 text-center font-body text-[11px] text-text-muted-brand">
-          Vous n'avez plus accès à votre application d'authentification ?
+          Vous n&apos;avez plus accès à votre application d&apos;authentification ?
           <br />
           <Link href="/contact" className="text-primary-brand hover:underline">
             Contactez-nous

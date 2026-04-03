@@ -602,7 +602,7 @@ export default function PageModifierProfil() {
             {/* Centres d'intérêt */}
             <div className="space-y-1.5">
               <label className="font-body text-xs uppercase tracking-[0.18em] text-text-muted-brand flex items-center gap-1">
-                <Hash size={10} /> Centres d'intérêt
+                <Hash size={10} /> Centres d&apos;intérêt
               </label>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {centresInteret.map((ci) => (

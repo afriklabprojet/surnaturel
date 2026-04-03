@@ -134,7 +134,7 @@ export default function AdminConfigPage() {
         <div>
           <p className="font-body text-sm font-semibold text-amber-800">Zone technique — à manipuler avec précaution</p>
           <p className="font-body text-xs text-amber-700 mt-0.5">
-            Ces clés pilotent le comportement de l'application. Une valeur incorrecte peut provoquer des erreurs.
+            Ces clés pilotent le comportement de l&apos;application. Une valeur incorrecte peut provoquer des erreurs.
             Modifiez uniquement les clés que vous connaissez.
           </p>
         </div>

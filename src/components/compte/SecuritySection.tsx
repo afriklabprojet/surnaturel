@@ -284,7 +284,7 @@ export function SecuritySection() {
 
                 <div className="flex-1 space-y-4">
                   <p className="font-body text-[13px] text-text-mid">
-                    1. Scannez ce QR code avec votre application d'authentification (Google Authenticator, Authy, etc.)
+                    1. Scannez ce QR code avec votre application d&apos;authentification (Google Authenticator, Authy, etc.)
                   </p>
 
                   {/* Manual entry */}
@@ -343,7 +343,7 @@ export function SecuritySection() {
                 </div>
 
                 <p className="font-body text-[13px] text-text-mid mb-4">
-                  Conservez ces codes en lieu sûr. Chaque code ne peut être utilisé qu'une seule fois pour accéder à votre compte si vous perdez accès à votre application d'authentification.
+                  Conservez ces codes en lieu sûr. Chaque code ne peut être utilisé qu&apos;une seule fois pour accéder à votre compte si vous perdez accès à votre application d&apos;authentification.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 mb-4">

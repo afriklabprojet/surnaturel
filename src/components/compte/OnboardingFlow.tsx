@@ -242,7 +242,7 @@ export default function OnboardingFlow({ prenom, onDismiss }: OnboardingFlowProp
                 onClick={handleDismiss}
                 className="font-body text-[11px] text-text-muted-brand hover:text-text-mid transition-colors"
               >
-                Passer pour l'instant
+                Passer pour l&apos;instant
               </button>
             </div>
           )}
