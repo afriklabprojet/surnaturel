@@ -184,7 +184,7 @@ export default function AdminNewsletterPage() {
               <MousePointer className="h-6 w-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Taux d'ouverture</p>
+              <p className="text-sm text-gray-500">Taux d&apos;ouverture</p>
               <p className="text-2xl font-bold text-gray-900">{stats?.tauxOuverture || 0}%</p>
             </div>
           </div>

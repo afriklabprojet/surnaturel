@@ -21,7 +21,7 @@ async function main() {
   const sageFemmeHash = await bcrypt.hash("SageFemme@2025", 12)
   const clientHash = await bcrypt.hash("Client@2025", 12)
 
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: "admin@lesurnatureldedieu.com" },
     update: {},
     create: {
@@ -33,7 +33,7 @@ async function main() {
     },
   })
 
-  const sageFemme = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: "sagefemme@lesurnatureldedieu.com" },
     update: {},
     create: {

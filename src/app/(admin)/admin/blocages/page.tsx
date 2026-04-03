@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Search, Loader2, ChevronLeft, ChevronRight, Ban, ArrowRight, Unlock } from "lucide-react"
+import { Search, Loader2, ChevronLeft, ChevronRight, Ban, Unlock } from "lucide-react"
 
 interface BlocageItem {
   id: string

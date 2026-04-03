@@ -331,7 +331,7 @@ export default function AdminContenuPage() {
               {/* Chiffres */}
               <fieldset className={fieldsetCls}>
                 <legend className={legendCls}>Section Chiffres clés (libellés des statistiques)</legend>
-                <p className="font-body text-xs text-text-muted-brand">Clientes satisfaites et Soins disponibles sont calculés automatiquement. Seule l'année de fondation est modifiable.</p>
+                <p className="font-body text-xs text-text-muted-brand">Clientes satisfaites et Soins disponibles sont calculés automatiquement. Seule l&apos;année de fondation est modifiable.</p>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className={labelCls}>Libellé stat 1 (clientes)</label>
@@ -347,7 +347,7 @@ export default function AdminContenuPage() {
                   </div>
                 </div>
                 <div className="mt-4 max-w-xs">
-                  <label className={labelCls}>Année de fondation (pour le calcul des années d'expérience)</label>
+                  <label className={labelCls}>Année de fondation (pour le calcul des années d&apos;expérience)</label>
                   <input
                     type="number"
                     min={1900}
@@ -399,7 +399,7 @@ export default function AdminContenuPage() {
 
               {/* CTA */}
               <fieldset className={fieldsetCls}>
-                <legend className={legendCls}>Section CTA (appel à l'action finale)</legend>
+                <legend className={legendCls}>Section CTA (appel à l&apos;action finale)</legend>
                 <div>
                   <label className={labelCls}>Titre</label>
                   <input value={form.ctaTitre} onChange={(e) => set("ctaTitre", e.target.value)} className={inputCls} placeholder={DEFAULTS.ctaTitre} />

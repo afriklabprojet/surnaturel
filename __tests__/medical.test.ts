@@ -14,7 +14,8 @@ const clientSession = {
   },
 }
 
-const accompSession = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _accompSession = {
   user: {
     id: "usr_medic",
     email: "medic@example.com",
@@ -63,8 +64,8 @@ describe("Medical — Dossier médical", () => {
     expect(upsertCall.create.pathologie).not.toBe("Hypertension")
     expect(upsertCall.create.pathologie).toContain(":")
     expect(upsertCall.create.allergies).toContain(":")
-    // groupeSanguin is stored in cleartext
-    expect(upsertCall.create.groupeSanguin).toBe("A+")
+    // groupeSanguin is also encrypted
+    expect(upsertCall.create.groupeSanguin).toContain(":")
   })
 
   it("rejects access for SAGE_FEMME role (403)", async () => {

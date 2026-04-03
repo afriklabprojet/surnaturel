@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
 import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight, Download, CheckSquare, Square, X } from "lucide-react"
 
 interface AvisItem {
@@ -17,7 +18,7 @@ interface AvisItem {
 function Avatar({ user, size = 32 }: { user: { prenom: string; nom: string; photoUrl?: string | null }; size?: number }) {
   const initials = `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
   if (user.photoUrl) {
-    return <img src={user.photoUrl} alt="" className="rounded-full object-cover" style={{ width: size, height: size }} />
+    return <Image src={user.photoUrl} alt="" className="rounded-full object-cover" width={size} height={size} />
   }
   return (
     <div className="flex items-center justify-center rounded-full bg-primary-brand text-white font-body font-medium" style={{ width: size, height: size, fontSize: size * 0.34 }}>

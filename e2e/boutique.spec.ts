@@ -99,7 +99,7 @@ test.describe("Boutique → Panier → Checkout", () => {
 
     // Vérifier que le champ promo existe (même si panier vide)
     const promoInput = page.locator('input[placeholder*="promo" i], input[placeholder*="code" i]')
-    const promoVisible = await promoInput.isVisible({ timeout: 3_000 }).catch(() => false)
+    await promoInput.isVisible({ timeout: 3_000 }).catch(() => false)
 
     // Le champ promo peut être conditionnel (visible seulement avec articles)
     expect(true).toBeTruthy() // Soft assertion
@@ -124,7 +124,7 @@ test.describe("Boutique → Panier → Checkout", () => {
     // Si non redirigé, vérifier les méthodes de paiement
     if (page.url().includes("/checkout")) {
       const paymentMethods = page.getByText(/wave|orange|mtn|moov|djamo/i)
-      const hasPayments = await paymentMethods.first().isVisible({ timeout: 5_000 }).catch(() => false)
+      await paymentMethods.first().isVisible({ timeout: 5_000 }).catch(() => false)
 
       // Les méthodes peuvent être cachées si panier vide
       expect(true).toBeTruthy()
@@ -151,7 +151,7 @@ test.describe("Boutique → Panier → Checkout", () => {
     expect(count).toBeLessThanOrEqual(1)
   })
 
-  test("checkout — bouton payer ouvre la modale de confirmation", async ({ page, context }) => {
+  test("checkout — bouton payer ouvre la modale de confirmation", async ({ page }) => {
     // Setup: être authentifié avec un vrai cookie serait idéal; ici on teste juste
     // que la page checkout avec articles affiche le bon CTA
     await page.goto("/checkout")
@@ -165,7 +165,7 @@ test.describe("Boutique → Panier → Checkout", () => {
       await payBtn.click()
       // La modale de confirmation devrait s'ouvrir
       const modal = page.locator('[role="dialog"]')
-      const hasModal = await modal.isVisible({ timeout: 3_000 }).catch(() => false)
+      await modal.isVisible({ timeout: 3_000 }).catch(() => false)
       // Soft assertion — si le panier est vide la validation peut bloquer
       expect(true).toBeTruthy()
     }

@@ -1,4 +1,7 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
+
+// Use real rate-limit implementation for these tests
+vi.unmock("@/lib/rate-limit")
 
 // Test utility functions and validation logic used across the app
 describe("Utility functions", () => {

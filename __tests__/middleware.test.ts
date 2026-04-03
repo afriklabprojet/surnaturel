@@ -21,7 +21,7 @@ const { middleware, config } = await import("@/middleware")
 function createRequest(pathname: string, method = "GET") {
   const url = new URL(pathname, "http://localhost:3000")
   // Next.js NextURL has a clone() method — mock it
-  ;(url as any).clone = () => new URL(url.toString())
+  ;(url as unknown as { clone: () => URL }).clone = () => new URL(url.toString())
   return {
     method,
     nextUrl: url,

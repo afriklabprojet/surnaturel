@@ -488,7 +488,7 @@ export default function PageAdminPromo() {
                         Première commande uniquement
                       </span>
                       <p className="text-xs text-text-muted-brand">
-                        Valide uniquement pour les clients n'ayant jamais commandé
+                        Valide uniquement pour les clients n&apos;ayant jamais commandé
                       </p>
                     </div>
                   </label>
@@ -520,10 +520,10 @@ export default function PageAdminPromo() {
                     />
                     <div>
                       <span className="font-body text-[14px] text-text-main">
-                        Cumulable avec d'autres codes
+                        Cumulable avec d&apos;autres codes
                       </span>
                       <p className="text-xs text-text-muted-brand">
-                        Peut être combiné avec d'autres codes promo
+                        Peut être combiné avec d&apos;autres codes promo
                       </p>
                     </div>
                   </label>

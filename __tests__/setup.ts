@@ -57,6 +57,14 @@ export const prismaMock = {
     create: vi.fn(),
     findMany: vi.fn(),
     count: vi.fn(),
+    update: vi.fn(),
+  },
+  conversation: {
+    upsert: vi.fn(),
+    findUnique: vi.fn(),
+  },
+  appConfig: {
+    findUnique: vi.fn(),
   },
   blocage: { findMany: vi.fn() },
   membreGroupe: { findUnique: vi.fn() },
@@ -73,6 +81,7 @@ export const prismaMock = {
   $transaction: vi.fn((fn: (tx: typeof prismaMock) => Promise<unknown>) =>
     fn(prismaMock)
   ),
+  $executeRaw: vi.fn().mockResolvedValue(0),
 }
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
@@ -159,6 +168,23 @@ vi.mock("@/lib/jeko", () => ({
     redirectUrl: "https://pay.jeko.test/abc",
     paiementId: "pay_123",
   }),
+  verifierStatutPaiement: vi.fn().mockResolvedValue("success"),
+}))
+
+/* ───── Logger ────────────────────────────────────────────────────── */
+vi.mock("@/lib/logger", () => ({
+  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}))
+
+/* ───── Web Push ──────────────────────────────────────────────────── */
+vi.mock("@/lib/web-push", () => ({
+  envoyerPushNotification: vi.fn().mockResolvedValue(undefined),
+  isPushConfigured: () => false,
+}))
+
+/* ───── Rate Limit ────────────────────────────────────────────────── */
+vi.mock("@/lib/rate-limit", () => ({
+  createRateLimiter: () => vi.fn().mockResolvedValue({ allowed: true, retryAfterSeconds: 0, limit: 30 }),
 }))
 
 /* ───── bcryptjs (keep real for auth tests) ───────────────────────── */
