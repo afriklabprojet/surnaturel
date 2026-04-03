@@ -1,7 +1,14 @@
 import { Resend } from "resend"
 import { getConfig } from "@/lib/config"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let _resend: Resend | null = null
+function getResend(): Resend {
+  if (!_resend) {
+    if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not set")
+    _resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return _resend
+}
 
 /** Échappe les caractères HTML dangereux dans les données utilisateur.
  *  Empêche les injections HTML/XSS dans les emails transactionnels. */
@@ -27,7 +34,7 @@ export async function envoyerEmailConfirmationRDV(params: {
   heure: string
   prix: string
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Votre rendez-vous est confirmé — Le Surnaturel de Dieu",
@@ -77,7 +84,7 @@ export async function envoyerEmailInscription(params: {
   tokenVerification: string
 }) {
   const lienVerification = `${process.env.NEXTAUTH_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Confirmez votre email — Le Surnaturel de Dieu",
@@ -116,7 +123,7 @@ export async function envoyerEmailMessageMedical(params: {
   prenomExpediteur: string
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Nouveau message médical — Le Surnaturel de Dieu",
@@ -153,7 +160,7 @@ export async function envoyerEmailInvitationParrainage(params: {
   lienParrainage: string
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: `${e(params.prenomParrain)} vous invite au Surnaturel de Dieu`,
@@ -195,7 +202,7 @@ export async function envoyerEmailRappelRDV(params: {
   heure: string
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Rappel : votre rendez-vous demain — Le Surnaturel de Dieu",
@@ -301,7 +308,7 @@ export async function envoyerEmailCommandePayee(params: {
     ? `<tr style="background:#E8F5E3;"><td style="padding:10px;font-weight:600;">Réf. transaction</td><td style="padding:10px;font-family:monospace;">${params.reference}</td></tr>`
     : ""
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: `Reçu de paiement #${ref} — Le Surnaturel de Dieu`,
@@ -385,7 +392,7 @@ export async function envoyerEmailConfirmationCommande(params: {
     )
     .join("")
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: `Commande #${ref} enregistrée — Le Surnaturel de Dieu`,
@@ -439,7 +446,7 @@ export async function envoyerEmailResetMotDePasse(params: {
   prenom: string
   lienReset: string
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Réinitialisation de votre mot de passe — Le Surnaturel de Dieu",
@@ -491,7 +498,7 @@ export async function envoyerEmailInvitationAvis(params: {
   rdvId: string
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://lesurnatureldedieu.com"
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Comment s'est passé votre soin ? — Le Surnaturel de Dieu",
@@ -623,7 +630,7 @@ export async function envoyerEmailNewsletter(
     </div>
   ` : ''
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: await getFrom(),
     to: email,
     subject: '🌿 Les actualités du Surnaturel de Dieu',
@@ -882,7 +889,7 @@ export async function envoyerEmailOnboarding({ destinataire, prenom, step }: Onb
     throw new Error(`Étape d'onboarding invalide: ${step}`)
   }
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: destinataire,
     subject: emailConfig.subject,
@@ -904,7 +911,7 @@ export async function envoyerEmailRenouvellementAbonnement(params: {
     minimumFractionDigits: 0,
   }).format(params.montant)
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Renouvellement de votre abonnement — Le Surnaturel de Dieu",
@@ -972,7 +979,7 @@ export async function envoyerEmailReactivation(params: {
        </div>`
     : ""
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Vous nous manquez ! — Le Surnaturel de Dieu",
