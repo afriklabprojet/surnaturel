@@ -17,6 +17,7 @@ on:
           - "seed-produits"
           - "seed-config"
           - "creer-admins"
+          - "creer-admin-surnaturel"
           - "restart-pm2"
           - "logs-pm2"
           - "status-pm2"
@@ -91,6 +92,13 @@ jobs:
                 echo "▶ Création des admins…"
                 npx tsx prisma/create-admins.ts
                 echo "✅ Admins créés / mis à jour"
+                ;;
+
+              # ── Créer le compte admin@surnatureldedieu.com ────────────────
+              creer-admin-surnaturel)
+                echo "▶ Création du compte admin principal…"
+                npx tsx prisma/create-admin-surnaturel.ts
+                echo "✅ Compte admin@surnatureldedieu.com créé / mis à jour"
                 ;;
 
               # ── Redémarrer PM2 ────────────────────────────────────────────
