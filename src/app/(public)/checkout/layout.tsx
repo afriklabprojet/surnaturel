@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Paiement",
   description:
     "Finalisez votre commande et payez en toute sécurité via Mobile Money ou carte bancaire.",
+  alternates: { canonical: "/checkout" },
 }
 
 export default function CheckoutLayout({

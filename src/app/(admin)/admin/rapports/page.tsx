@@ -63,7 +63,7 @@ export default function PageAdminRapports() {
       {/* Filtres */}
       <div className="flex flex-wrap items-center gap-4">
         <div>
-          <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Début</label>
+          <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Début</label>
           <input
             type="date"
             value={debut}
@@ -72,7 +72,7 @@ export default function PageAdminRapports() {
           />
         </div>
         <div>
-          <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Fin</label>
+          <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Fin</label>
           <input
             type="date"
             value={fin}
@@ -84,14 +84,14 @@ export default function PageAdminRapports() {
           <button
             onClick={fetchRapport}
             disabled={loading}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <BarChart3 size={14} />} Générer
           </button>
           {rapport && (
             <button
               onClick={exportCSV}
-              className="flex items-center gap-1.5 px-4 py-2 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
             >
               <Download size={14} /> CSV
             </button>
@@ -221,7 +221,7 @@ function KPICard({ icon: Icon, label, value, sub }: { icon: React.ElementType; l
     <div className="bg-white border border-border-brand p-5">
       <div className="flex items-center gap-2 mb-2">
         <Icon size={16} className="text-primary-brand" />
-        <span className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">{label}</span>
+        <span className="font-body text-xs uppercase tracking-widest text-text-muted-brand">{label}</span>
       </div>
       <p className="font-display text-[28px] font-light text-text-main">{value.toLocaleString("fr")}</p>
       {sub && <p className="font-body text-[12px] text-text-muted-brand mt-1">{sub}</p>}

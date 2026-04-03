@@ -152,7 +152,7 @@ export default function AdminForfaitsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-display text-base text-text-main">{f.nom}</h3>
                     {f.badge && (
-                      <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-gold/10 text-gold font-body flex items-center gap-1">
+                      <span className="text-xs uppercase tracking-widest px-2 py-0.5 bg-gold/10 text-gold font-body flex items-center gap-1">
                         <Tag className="h-3 w-3" /> {f.badge}
                       </span>
                     )}
@@ -166,7 +166,7 @@ export default function AdminForfaitsPage() {
                   {f.soins.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {f.soins.map((s) => (
-                        <span key={s.id} className="text-[10px] px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body">{s.nom}</span>
+                        <span key={s.id} className="text-xs px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body">{s.nom}</span>
                       ))}
                     </div>
                   )}
@@ -198,39 +198,39 @@ export default function AdminForfaitsPage() {
             {error && <p className="text-sm text-red-600 mb-3 font-body">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
                 <input required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
                 <textarea required rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Prix total</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Prix total</label>
                   <input required type="number" min="0" value={form.prixTotal} onChange={(e) => setForm({ ...form, prixTotal: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Prix forfait</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Prix forfait</label>
                   <input required type="number" min="0" value={form.prixForfait} onChange={(e) => setForm({ ...form, prixForfait: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Économie</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Économie</label>
                   <input required type="number" min="0" value={form.economie} onChange={(e) => setForm({ ...form, economie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Badge</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Badge</label>
                   <input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="Ex: POPULAIRE" />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Ordre</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Ordre</label>
                   <input type="number" value={form.ordre} onChange={(e) => setForm({ ...form, ordre: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Soins inclus</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-2">Soins inclus</label>
                 <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-border-brand p-2">
                   {soinsDisponibles.map((s) => (
                     <label key={s.id} className="flex items-center gap-2 text-sm font-body cursor-pointer">

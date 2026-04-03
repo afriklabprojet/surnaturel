@@ -11,28 +11,52 @@ import {
   ArrowRight,
   ChevronDown,
   Stethoscope,
+  Award,
 } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
 import { getIcon } from "@/lib/icon-map"
+import { getConfig } from "@/lib/config"
 import { MotionSection, MotionStagger, MotionItem } from "@/components/ui/MotionWrapper"
 import { fadeInUp, fadeInLeft, fadeInRight } from "@/lib/animations"
+import { ImgAvecFallback } from "@/components/ui/ImgAvecFallback"
 import FaqAccordion from "./FaqAccordion"
 
 export const metadata: Metadata = {
   title: "Sage-Femme Ama Kouassi | Le Surnaturel de Dieu — Abidjan",
   description:
     "Consultations avec Ama Kouassi, sage-femme diplômée d'État : suivi de grossesse, préparation à l'accouchement, rééducation post-natale et conseils personnalisés à Abidjan.",
+  alternates: { canonical: "/sage-femme" },
 }
 
 export default async function PageSageFemme() {
+  const config = await getConfig()
   // Charger dynamiquement depuis la DB
-  const [specialitesConfig, prestationsConfig, faqData, bioConfig, telConfig] = await Promise.all([
+  const [specialitesConfig, prestationsConfig, faqData, bioConfig, telConfig, diplomesConfig, avisData] = await Promise.all([
     prisma.appConfig.findUnique({ where: { cle: "specialites_sage_femme" } }),
     prisma.appConfig.findUnique({ where: { cle: "prestations_sage_femme" } }),
     prisma.faq.findMany({ where: { categorie: "sage-femme" }, orderBy: { ordre: "asc" } }),
     prisma.appConfig.findUnique({ where: { cle: "bio_sage_femme" } }),
     prisma.appConfig.findUnique({ where: { cle: "telephone_contact" } }),
+    prisma.appConfig.findUnique({ where: { cle: "diplomes_sage_femme" } }),
+    prisma.avis.findMany({
+      where: {
+        publie: true,
+        note: { gte: 4 },
+        soin: {
+          OR: [
+            { categorie: { contains: "sage", mode: "insensitive" } },
+            { slug: { contains: "sage", mode: "insensitive" } },
+          ],
+        },
+      },
+      take: 3,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { prenom: true, nom: true } },
+        soin: { select: { nom: true } },
+      },
+    }),
   ])
 
   const SPECIALITES: string[] = specialitesConfig ? JSON.parse(specialitesConfig.valeur) : []
@@ -42,7 +66,15 @@ export default async function PageSageFemme() {
   const bio: { nom: string; titre: string; paragraphes: string[] } = bioConfig
     ? JSON.parse(bioConfig.valeur)
     : { nom: "Ama Kouassi", titre: "Sage-femme dipl\u00f4m\u00e9e d'\u00c9tat", paragraphes: [] }
-  const telephone: string = telConfig ? JSON.parse(telConfig.valeur) : "+225 07 09 00 00 00"
+  const telephone: string = telConfig ? JSON.parse(telConfig.valeur) : config.telephone
+  const DIPLOMES: string[] = diplomesConfig
+    ? JSON.parse(diplomesConfig.valeur)
+    : [
+        "Diplôme d’État de Sage-Femme — INFAS Abidjan",
+        "Formation en rééducation périnéale post-natale",
+        "Certificat en préparation à l’accouchement",
+      ]
+  const AVIS_SF = avisData
   return (
     <>
       {/* Hero */}
@@ -82,7 +114,7 @@ export default async function PageSageFemme() {
             {/* Colonne droite — contenu */}
             <div className="text-center lg:text-left">
               {/* Tag */}
-              <span className="inline-flex items-center gap-3 font-body text-[10px] uppercase tracking-[0.25em] text-gold/80">
+              <span className="inline-flex items-center gap-3 font-body text-xs uppercase tracking-[0.25em] text-gold/80">
                 <span className="h-px w-8 bg-gold/40" />
                 Accompagnement maternel
                 <span className="h-px w-8 bg-gold/40 lg:hidden" />
@@ -104,7 +136,7 @@ export default async function PageSageFemme() {
                 </div>
                 <div>
                   <p className="font-display text-[18px] font-light text-white">{bio.nom}</p>
-                  <p className="font-body text-[11px] uppercase tracking-widest text-gold/60">{bio.titre}</p>
+                  <p className="font-body text-xs uppercase tracking-widest text-gold/60">{bio.titre}</p>
                 </div>
               </div>
 
@@ -112,14 +144,14 @@ export default async function PageSageFemme() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
                 <Link
                   href="/prise-rdv?soin=consultation-sage-femme"
-                  className="flex items-center gap-2 bg-gold px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-gold/90"
+                  className="flex items-center gap-2 bg-gold px-6 py-3 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-gold/90"
                 >
                   <Calendar size={14} />
                   Prendre rendez-vous
                 </Link>
                 <a
                   href={`tel:${telephone.replace(/\s/g, "")}`}
-                  className="flex items-center gap-2 border border-white/20 bg-white/5 backdrop-blur-sm px-5 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white/80 transition-colors hover:bg-white/10"
+                  className="flex items-center gap-2 border border-white/20 bg-white/5 backdrop-blur-sm px-5 py-3 font-body text-xs font-medium uppercase tracking-[0.15em] text-white/80 transition-colors hover:bg-white/10"
                 >
                   <Phone size={14} />
                   Appeler
@@ -133,20 +165,28 @@ export default async function PageSageFemme() {
       {/* Présentation */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          {/* Photo placeholder */}
+          {/* Portrait */}
           <MotionSection
             variants={fadeInLeft}
-            className="flex aspect-[4/5] items-center justify-center bg-gradient-to-br from-primary-light to-bg-page border border-border-brand"
+            className="relative aspect-4/5 overflow-hidden border border-border-brand"
           >
-            <div className="text-center">
-              <Stethoscope size={64} className="mx-auto text-primary-brand/30" />
-              <p className="mt-3 font-body text-[12px] text-text-muted-brand">Photo {bio.nom}</p>
+            <ImgAvecFallback
+              src="/images/sage-femme.jpg"
+              alt={`${bio.nom} — ${bio.titre}`}
+              className="h-full w-full object-cover"
+              fallbackInitiales={bio.nom.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              fallbackClassName="h-full w-full"
+            />
+            {/* Badge identité */}
+            <div className="absolute bottom-0 left-0 right-0 border-t border-border-brand bg-white/95 px-5 py-4 backdrop-blur-sm">
+              <p className="font-display text-[16px] font-light text-text-main">{bio.nom}</p>
+              <p className="font-body text-[11px] uppercase tracking-[0.12em] text-gold">{bio.titre}</p>
             </div>
           </MotionSection>
 
           {/* Bio */}
           <MotionSection variants={fadeInRight}>
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Votre accompagnante
             </span>
             <h2 className="mt-2 font-display text-[32px] font-light text-text-main">
@@ -166,12 +206,26 @@ export default async function PageSageFemme() {
               {SPECIALITES.map((spec) => (
                 <span
                   key={spec}
-                  className="border border-border-brand bg-primary-light px-3 py-1.5 font-body text-[11px] uppercase tracking-[0.05em] text-primary-brand"
+                  className="border border-border-brand bg-primary-light px-3 py-1.5 font-body text-xs uppercase tracking-[0.05em] text-primary-brand"
                 >
                   {spec}
                 </span>
               ))}
             </div>
+
+            {DIPLOMES.length > 0 && (
+              <div className="mt-6 space-y-2 border-t border-border-brand pt-5">
+                <p className="font-body text-[11px] uppercase tracking-[0.15em] text-text-muted-brand">
+                  Formation &amp; Diplômes
+                </p>
+                {DIPLOMES.map((d, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <Award size={13} className="mt-0.5 shrink-0 text-gold" />
+                    <p className="font-body text-[13px] text-text-mid">{d}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </MotionSection>
         </div>
       </section>
@@ -182,7 +236,7 @@ export default async function PageSageFemme() {
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-px w-12 bg-gold" />
-              <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+              <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
                 Nos prestations
               </span>
               <div className="h-px w-12 bg-gold" />
@@ -225,12 +279,64 @@ export default async function PageSageFemme() {
         </div>
       </section>
 
-      {/* FAQ Accordion */}
+      {/* Témoignages patientes */}
+      {AVIS_SF.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <div className="mb-4 flex items-center justify-center gap-4">
+              <div className="h-px w-12 bg-gold" />
+              <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
+                Témoignages
+              </span>
+              <div className="h-px w-12 bg-gold" />
+            </div>
+            <h2 className="font-display text-[28px] font-light text-text-main">
+              Ce que disent nos <em className="italic text-primary-brand">patientes</em>
+            </h2>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {AVIS_SF.map((a) => (
+              <div key={a.id} className="border border-border-brand bg-white p-6">
+                <div className="mb-3 flex gap-0.5">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star
+                      key={i}
+                      size={13}
+                      aria-hidden="true"
+                      className={i < a.note ? "fill-gold text-gold" : "text-border-brand"}
+                    />
+                  ))}
+                </div>
+                <p className="font-body text-[13px] leading-relaxed text-text-mid">
+                  &ldquo;{a.commentaire}&rdquo;
+                </p>
+                <div className="mt-4 flex items-center gap-2 border-t border-border-brand pt-3">
+                  <div className="flex h-7 w-7 items-center justify-center bg-primary-light font-display text-xs text-primary-brand">
+                    {a.user.prenom[0]}{a.user.nom[0]}
+                  </div>
+                  <div>
+                    <p className="font-body text-[12px] font-medium text-text-main">
+                      {a.user.prenom} {a.user.nom.charAt(0)}.
+                    </p>
+                    {a.soin && (
+                      <p className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
+                        {a.soin.nom}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* FAQ Accordion */}}
       <section className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px w-12 bg-gold" />
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Questions fréquentes
             </span>
             <div className="h-px w-12 bg-gold" />
@@ -257,17 +363,21 @@ export default async function PageSageFemme() {
             Réservez votre consultation avec {bio.nom} directement en
             ligne ou contactez-nous par téléphone.
           </p>
+          <p className="mt-3 flex items-center justify-center gap-1.5 font-body text-[11px] text-white/45">
+            <Shield size={11} aria-hidden="true" />
+            Annulation gratuite jusqu&apos;à 24h avant le rendez-vous
+          </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/prise-rdv?soin=consultation-sage-femme"
-              className="flex items-center gap-2 bg-white px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors hover:bg-primary-light"
+              className="flex items-center gap-2 bg-white px-6 py-3 font-body text-xs font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors hover:bg-primary-light"
             >
               Réserver en ligne
               <ArrowRight size={14} />
             </Link>
             <a
               href={`tel:${telephone.replace(/\s/g, "")}`}
-              className="flex items-center gap-2 border border-white/40 px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-white/10"
+              className="flex items-center gap-2 border border-white/40 px-6 py-3 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-white/10"
             >
               <Phone size={14} />
               Appeler

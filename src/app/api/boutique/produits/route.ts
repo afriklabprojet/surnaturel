@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -15,21 +16,21 @@ export async function GET(request: NextRequest) {
     const prixMin = searchParams.get("prixMin") ? parseFloat(searchParams.get("prixMin")!) : undefined
     const prixMax = searchParams.get("prixMax") ? parseFloat(searchParams.get("prixMax")!) : undefined
     const enStock = searchParams.get("enStock") === "true"
+    const recherche = searchParams.get("recherche")?.trim() || ""
 
     // ─── Filtre catégorie ────────────────────────────────────────
     let where: Record<string, unknown> = { actif: true }
 
     if (categorie !== "tout" && categorie !== "nouveautes") {
-      // Map les catégories URL vers les valeurs DB
-      const categorieMap: Record<string, string> = {
+      // La valeur envoyée correspond directement à la valeur DB (ex : "Corps", "Grossesse & Post-natal")
+      // Rétrocompatibilité : anciens slugs lowercase mappés vers leur valeur DB
+      const legacyMap: Record<string, string> = {
         corps: "Corps",
         visage: "Visage",
         "bien-etre": "Bien-être",
       }
-      const categorieDb = categorieMap[categorie]
-      if (categorieDb) {
-        where = { ...where, categorie: categorieDb }
-      }
+      const categorieDb = legacyMap[categorie] ?? categorie
+      where = { ...where, categorie: categorieDb }
     }
 
     // ─── Filtre prix ─────────────────────────────────────────────
@@ -43,6 +44,17 @@ export async function GET(request: NextRequest) {
     // ─── Filtre stock ────────────────────────────────────────────
     if (enStock) {
       where = { ...where, stock: { gt: 0 } }
+    }
+
+    // ─── Recherche textuelle ─────────────────────────────────────
+    if (recherche) {
+      where = {
+        ...where,
+        OR: [
+          { nom: { contains: recherche, mode: "insensitive" } },
+          { description: { contains: recherche, mode: "insensitive" } },
+        ],
+      }
     }
 
     // ─── Tri ─────────────────────────────────────────────────────
@@ -65,7 +77,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ─── Requêtes ────────────────────────────────────────────────
-    const [produits, total] = await Promise.all([
+    const [produits, total, avisStats] = await Promise.all([
       prisma.produit.findMany({
         where,
         orderBy,
@@ -84,23 +96,38 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.produit.count({ where }),
+      prisma.avisProduit.groupBy({
+        by: ["produitId"],
+        _avg: { note: true },
+        _count: { note: true },
+      }),
     ])
 
     // Check "nouveau" = created within last 30 days
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const produitsEnrichis = produits.map((p) => ({
-      id: p.id,
-      nom: p.nom,
-      description: p.description,
-      prix: p.prix,
-      prixPromo: p.prixPromo,
-      stock: p.stock,
-      imageUrl: p.imageUrl,
-      categorie: p.categorie,
-      nouveau: p.createdAt >= thirtyDaysAgo,
-    }))
+    // Map avis stats by produitId
+    const avisMap = new Map(
+      avisStats.map((a) => [a.produitId, { avg: a._avg.note ?? 0, count: a._count.note }])
+    )
+
+    const produitsEnrichis = produits.map((p) => {
+      const stats = avisMap.get(p.id)
+      return {
+        id: p.id,
+        nom: p.nom,
+        description: p.description,
+        prix: p.prix,
+        prixPromo: p.prixPromo,
+        stock: p.stock,
+        imageUrl: p.imageUrl,
+        categorie: p.categorie,
+        nouveau: p.createdAt >= thirtyDaysAgo,
+        notesMoyenne: stats ? Math.round(stats.avg * 10) / 10 : 0,
+        nombreAvis: stats?.count ?? 0,
+      }
+    })
 
     const pages = Math.ceil(total / limit)
 
@@ -111,9 +138,9 @@ export async function GET(request: NextRequest) {
       page,
     })
   } catch (error) {
-    console.error("Erreur GET /api/boutique/produits:", error)
+    logger.error("Erreur GET /api/boutique/produits:", error)
     return NextResponse.json(
-      { error: "Erreur lors de la récupération des produits" },
+      { error: "Un souci technique est survenu. Réessayez dans quelques instants." },
       { status: 500 }
     )
   }

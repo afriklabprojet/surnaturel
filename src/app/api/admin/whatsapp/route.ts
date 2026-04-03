@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import {
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
       )
     }
   } catch (error) {
-    console.error("Erreur WhatsApp API:", error)
+    logger.error("Erreur WhatsApp API:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }
@@ -111,7 +112,7 @@ export async function GET() {
         : "WhatsApp non configuré. Ajoutez les variables WHATSAPP_PHONE_NUMBER_ID et WHATSAPP_ACCESS_TOKEN",
     })
   } catch (error) {
-    console.error("Erreur WhatsApp status:", error)
+    logger.error("Erreur WhatsApp status:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

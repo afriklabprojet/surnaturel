@@ -1,13 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ShoppingBag, Loader2, Download, Eye } from "lucide-react"
+import { ShoppingBag, Download, Eye } from "lucide-react"
 import { formatPrix, formatDate } from "@/lib/utils"
 import { staggerContainer, staggerItem } from "@/lib/animations"
+import { useFetch } from "@/lib/hooks/use-fetch"
+import { SkeletonCommandes } from "@/components/ui/skeletons"
 
 interface LigneCmd {
   produit: { nom: string; imageUrl: string | null }
@@ -35,27 +37,17 @@ const STATUT_BADGE: Record<string, { label: string; bg: string; text: string }> 
 export default function PageCommandes() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [commandes, setCommandes] = useState<Commande[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: cmdData, loading } = useFetch<{ commandes: Commande[] }>(
+    status === "authenticated" ? "/api/commandes" : null
+  )
+  const commandes = cmdData?.commandes ?? []
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/connexion?callbackUrl=/commandes")
   }, [status, router])
 
-  useEffect(() => {
-    if (status !== "authenticated") return
-    fetch("/api/commandes")
-      .then((r) => (r.ok ? r.json() : { commandes: [] }))
-      .then((data) => setCommandes(data?.commandes ?? []))
-      .finally(() => setLoading(false))
-  }, [status])
-
   if (status === "loading" || loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonCommandes />
   }
 
   if (commandes.length === 0) {
@@ -67,7 +59,7 @@ export default function PageCommandes() {
         </p>
         <Link
           href="/boutique"
-          className="mt-4 bg-primary-brand px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.15em] text-white hover:bg-primary-dark transition-colors"
+          className="mt-4 bg-primary-brand px-5 py-2.5 font-body text-xs uppercase tracking-[0.15em] text-white hover:bg-primary-dark transition-colors"
         >
           Découvrir la boutique
         </Link>
@@ -97,12 +89,12 @@ export default function PageCommandes() {
                 <span className="font-body text-[12px] text-text-muted-brand">
                   N° {cmd.id.slice(-8).toUpperCase()}
                 </span>
-                <span className="font-body text-[11px] text-text-muted-brand">
+                <span className="font-body text-xs text-text-muted-brand">
                   {formatDate(new Date(cmd.createdAt))}
                 </span>
               </div>
               <span
-                className="px-2 py-0.5 font-body text-[10px]"
+                className="px-2 py-0.5 font-body text-xs"
                 style={{ backgroundColor: badge?.bg, color: badge?.text }}
               >
                 {badge?.label}
@@ -135,7 +127,7 @@ export default function PageCommandes() {
             <div className="flex items-center gap-3 border-t border-border-brand px-5 py-3">
               <Link
                 href={`/commandes/${cmd.id}`}
-                className="flex items-center gap-1 font-body text-[11px] text-primary-brand hover:text-primary-dark"
+                className="flex items-center gap-1 font-body text-xs text-primary-brand hover:text-primary-dark"
               >
                 <Eye size={13} />
                 Voir le détail
@@ -144,7 +136,7 @@ export default function PageCommandes() {
                 href={`/api/commandes/${cmd.id}/facture`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 font-body text-[11px] text-text-muted-brand hover:text-text-mid"
+                className="flex items-center gap-1 font-body text-xs text-text-muted-brand hover:text-text-mid"
               >
                 <Download size={13} />
                 Facture

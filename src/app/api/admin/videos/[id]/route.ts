@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 const updateVideoSchema = z.object({
   titre: z.string().min(1).optional(),
@@ -48,7 +49,7 @@ export async function GET(
 
     return NextResponse.json(video)
   } catch (error) {
-    console.error("Erreur récupération vidéo:", error)
+    logger.error("Erreur récupération vidéo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -90,7 +91,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, video })
   } catch (error) {
-    console.error("Erreur mise à jour vidéo:", error)
+    logger.error("Erreur mise à jour vidéo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -120,7 +121,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur suppression vidéo:", error)
+    logger.error("Erreur suppression vidéo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

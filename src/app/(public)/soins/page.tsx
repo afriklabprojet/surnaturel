@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Soins & Services | Le Surnaturel de Dieu — Institut de bien-être à Abidjan",
   description:
     "Découvrez nos soins de bien-être à Abidjan : hammam, gommage, soin amincissant, soin du visage, post-accouchement, conseil esthétique et consultations sage-femme.",
+  alternates: { canonical: "/soins" },
 }
 
 export default async function PageSoins() {

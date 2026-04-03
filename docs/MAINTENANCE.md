@@ -84,8 +84,6 @@ surnaturel-de-dieu/
 │   ├── prisma.ts         ← Connexion à la base de données
 │   ├── email.ts          ← Envoi d'emails
 │   ├── jeko.ts           ← Paiement mobile
-│   ├── soins-data.ts     ← Liste des soins (modifiable)
-│   ├── produits-data.ts  ← Liste des produits (modifiable)
 │   └── i18n/             ← Traductions FR/EN
 │
 ├── public/
@@ -157,39 +155,31 @@ Appuyez sur `Ctrl + C` dans le Terminal.
 
 ### Modifier la liste des soins
 
-Fichier : `src/lib/soins-data.ts`
+Les soins sont gérés via le **panneau d'administration** :
 
-Chaque soin est défini comme ceci :
-
-```typescript
-{
-  id: "hammam",
-  nom: "Hammam Traditionnel",
-  description: "Description du soin...",
-  prix: 15000,        // Prix en FCFA
-  duree: 60,           // Durée en minutes
-  categorie: "HAMMAM",
-  imageUrl: "https://res.cloudinary.com/votre-cloud/image.jpg"
-}
-```
-
-**Pour changer un prix** : modifiez le nombre après `prix:`\
-**Pour changer une description** : modifiez le texte entre guillemets\
-**Pour ajouter un soin** : copiez un bloc existant et modifiez les valeurs
+- Connectez-vous en tant qu'admin
+- Allez dans **Admin > Soins**
+- Vous pouvez ajouter, modifier ou supprimer des soins directement
 
 ### Modifier la liste des produits boutique
 
-Fichier : `src/lib/produits-data.ts`
+Les produits sont gérés via le **panneau d'administration** :
 
-Même principe que les soins. Chaque produit a : nom, description, prix,
-catégorie, image.
+- Connectez-vous en tant qu'admin
+- Allez dans **Admin > Boutique**
+- Vous pouvez ajouter, modifier ou supprimer des produits directement
 
 ### Modifier les textes de la page d'accueil
 
-Fichier : `src/app/(public)/page.tsx`
+Les textes de la page d'accueil sont configurables via **Admin > Configuration**
+:
 
-Les textes sont directement dans le fichier. Cherchez les guillemets pour
-trouver les textes à modifier.
+- Homepage hero (titre, sous-titre, boutons)
+- Section services
+- Section chiffres clés
+- Section témoignages
+- Section vidéos
+- Section CTA
 
 ### Modifier une image
 

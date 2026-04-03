@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { depenserPoints, PALIERS } from "@/lib/fidelite"
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       throw error
     }
   } catch (error) {
-    console.error("Erreur utilisation récompense:", error)
+    logger.error("Erreur utilisation récompense:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

@@ -92,10 +92,10 @@ export default function SoinAvis({ soinSlug }: SoinAvisProps) {
               </p>
             )}
             <div className="mt-4 border-t border-border-brand pt-4">
-              <p className="font-body text-[11px] uppercase tracking-widest text-text-main">
+              <p className="font-body text-xs uppercase tracking-widest text-text-main">
                 {a.nom}
               </p>
-              <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+              <p className="mt-1 font-body text-xs text-text-muted-brand">
                 {formatDate(new Date(a.date))}
               </p>
             </div>

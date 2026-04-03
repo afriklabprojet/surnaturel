@@ -5,49 +5,12 @@ import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Loader2, ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
 import ListeConversations from "@/components/messagerie/ListeConversations"
-import FenetreChat from "@/components/messagerie/FenetreChat"
+import FenetreChat from "@/components/messagerie/FenetreChatLazy"
 import { usePusherChat } from "@/lib/hooks/use-pusher"
 import { fadeInUp } from "@/lib/animations"
-
-interface Interlocuteur {
-  id: string
-  nom: string
-  prenom: string
-  photoUrl: string | null
-}
-
-interface Conversation {
-  interlocuteur: Interlocuteur
-  dernierMessage: {
-    contenu: string
-    createdAt: string
-    expediteurId: string
-  }
-  nonLus: number
-}
-
-interface MessageData {
-  id: string
-  expediteurId: string
-  destinataireId: string
-  contenu: string
-  type?: string
-  dureeSecondes?: number | null
-  lu: boolean
-  createdAt: string
-  replyTo?: { id: string; contenu: string; type?: string; expediteur: { id: string; prenom: string; nom: string } } | null
-  reactions?: { type: string; userId: string }[]
-  expediteur: {
-    id: string
-    nom: string
-    prenom: string
-    photoUrl: string | null
-  }
-  _optimistic?: boolean
-  _status?: "sending" | "sent" | "error"
-  _tempId?: string
-}
+import type { MessageData, Interlocuteur, Conversation } from "@/types/messages"
 
 export default function PageCommunaute() {
   const { data: session, status } = useSession()
@@ -63,6 +26,16 @@ export default function PageCommunaute() {
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [showChat, setShowChat] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  // Présence en ligne
+  const [presenceEnLigne, setPresenceEnLigne] = useState(false)
+  const [derniereVueLe, setDerniereVueLe] = useState<string | null>(null)
+  // Messages éphémères
+  const [ephemere, setEphemere] = useState(false)
+  // Push notifications
+  const [pushActive, setPushActive] = useState(false)
 
   const currentUserId = session?.user?.id ?? ""
   const activeRef = useRef(activeInterlocuteur)
@@ -97,27 +70,69 @@ export default function PageCommunaute() {
   const handleReactionPusher = useCallback(
     (data: { messageId: string; reactions: { type: string; count: number }[]; userId: string }) => {
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === data.messageId
-            ? {
-                ...m,
-                reactions: data.reactions.flatMap((r) =>
-                  Array.from({ length: r.count }, () => ({ type: r.type, userId: "" }))
-                ),
-              }
-            : m
-        )
+        prev.map((m) => {
+          if (m.id !== data.messageId) return m
+          // Keep existing reactions for all users except the one who just reacted
+          const otherReactions = (m.reactions ?? []).filter((r) => r.userId !== data.userId)
+          // Find which reaction type this user added (count increased) or none (toggle off)
+          const userReactionType = data.reactions.find((r) => {
+            const oldCount = (m.reactions ?? []).filter((rx) => rx.type === r.type).length
+            return r.count > oldCount
+          })?.type ?? null
+          const newReactions = userReactionType
+            ? [...otherReactions, { type: userReactionType, userId: data.userId }]
+            : otherReactions
+          return { ...m, reactions: newReactions }
+        })
       )
     },
     []
   )
+
+  // ── Read receipts : marquer ✓✓ bleu en temps réel ────────
+  const handleMessageLu = useCallback(() => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.expediteurId === currentUserId ? { ...m, lu: true } : m
+      )
+    )
+  }, [currentUserId])
+
+  // ── Message supprimé par l'expéditeur ───────────────────
+  const handleMessageSupprime = useCallback(({ messageId }: { messageId: string }) => {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId))
+  }, [])
+
+  // ── Message modifié en temps réel ────────────────────────
+  const handleMessageModifie = useCallback(({ messageId, contenu, modifieLeAt }: { messageId: string; contenu: string; modifieLeAt: string }) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId ? { ...m, contenu, modifie: true, modifieLeAt } : m
+      )
+    )
+  }, [])
+
+  // ── Message épinglé/désépinglé en temps réel ─────────────
+  const handleMessageEpingle = useCallback(({ messageId, epingle }: { messageId: string; epingle: boolean; message: MessageData | null }) => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (epingle && m.id !== messageId) return { ...m, epingle: false }
+        if (m.id === messageId) return { ...m, epingle }
+        return m
+      })
+    )
+  }, [])
 
   usePusherChat(
     currentUserId,
     activeInterlocuteur?.id ?? "",
     handleNouveauMessage,
     handleEcritureEnCours,
-    handleReactionPusher
+    handleReactionPusher,
+    handleMessageLu,
+    handleMessageSupprime,
+    handleMessageModifie,
+    handleMessageEpingle
   )
 
   // ── Redirection si non authentifié ──────────────────────
@@ -133,7 +148,9 @@ export default function PageCommunaute() {
       const res = await fetch("/api/messages/conversations")
       if (res.ok) {
         const data: { conversations: Conversation[] } = await res.json()
-        setConversations(data.conversations)
+        setConversations(
+          Array.from(new Map(data.conversations.map((c) => [c.interlocuteur.id, c])).values())
+        )
       }
     } catch {
       // Silently fail
@@ -147,6 +164,71 @@ export default function PageCommunaute() {
       fetchConversations()
     }
   }, [status, fetchConversations])
+
+  // ── Heartbeat présence : signaler que je suis en ligne ──
+  useEffect(() => {
+    if (status !== "authenticated") return
+    const ping = () => fetch("/api/presence", { method: "POST" }).catch(() => {})
+    ping()
+    const interval = setInterval(ping, 30_000)
+    return () => clearInterval(interval)
+  }, [status])
+
+  // ── Push notifications : vérifier si déjà abonné ────────
+  useEffect(() => {
+    if (status !== "authenticated" || typeof window === "undefined" || !("serviceWorker" in navigator)) return
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.pushManager.getSubscription().then((sub) => {
+        setPushActive(!!sub)
+      }).catch(() => {})
+    }).catch(() => {})
+  }, [status])
+
+  // ── Activer / désactiver notifications push ─────────────
+  async function handleTogglePush() {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) return
+    try {
+      const reg = await navigator.serviceWorker.ready
+      const existing = await reg.pushManager.getSubscription()
+      if (existing) {
+        // Désabonner
+        await existing.unsubscribe()
+        await fetch("/api/push/subscribe", { method: "DELETE" })
+        setPushActive(false)
+      } else {
+        // S'abonner
+        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        if (!vapidKey) return
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidKey,
+        })
+        const subJson = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string }; expirationTime?: number | null }
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            endpoint: subJson.endpoint,
+            p256dh: subJson.keys.p256dh,
+            auth: subJson.keys.auth,
+          }),
+        })
+        setPushActive(true)
+      }
+    } catch { /* push non supporté ou refusé */ }
+  }
+
+  // ── Récupérer la présence de l'interlocuteur actif ───────
+  const fetchPresence = useCallback(async (userId: string) => {
+    try {
+      const res = await fetch(`/api/presence/${userId}`)
+      if (res.ok) {
+        const data: { enLigne: boolean; derniereVueLe: string | null } = await res.json()
+        setPresenceEnLigne(data.enLigne)
+        setDerniereVueLe(data.derniereVueLe)
+      }
+    } catch { /* silently fail */ }
+  }, [])
 
   // ── Auto-ouvrir conversation depuis ?to=userId ──────────
   useEffect(() => {
@@ -167,33 +249,53 @@ export default function PageCommunaute() {
             })
           }
         })
-        .catch(() => {})
+        .catch(() => toast.error("Impossible de charger ce profil"))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toUserId, status, loadingConvs])
 
   // ── Charger les messages d'une conversation ─────────────
-  const fetchMessages = useCallback(async (userId: string) => {
-    setLoadingMessages(true)
+  const fetchMessages = useCallback(async (userId: string, page = 1) => {
+    if (page === 1) setLoadingMessages(true)
+    else setLoadingMore(true)
     try {
-      const res = await fetch(`/api/messages/${userId}`)
+      const res = await fetch(`/api/messages/${userId}?page=${page}&limit=50`)
       if (res.ok) {
-        const data: { messages: MessageData[] } = await res.json()
-        setMessages(data.messages)
+        const data: { messages: MessageData[]; pagination: { page: number; pages: number } } = await res.json()
+        if (page === 1) {
+          setMessages(data.messages)
+        } else {
+          // Prepend older messages
+          setMessages((prev) => [...data.messages, ...prev])
+        }
+        setCurrentPage(page)
+        setHasMore(page < data.pagination.pages)
       }
     } catch {
       // Silently fail
     } finally {
       setLoadingMessages(false)
+      setLoadingMore(false)
     }
   }, [])
+
+  // ── Charger les messages plus anciens (infinite scroll) ──
+  const loadMoreMessages = useCallback(() => {
+    if (!activeInterlocuteur || loadingMore || !hasMore) return
+    fetchMessages(activeInterlocuteur.id, currentPage + 1)
+  }, [activeInterlocuteur, loadingMore, hasMore, currentPage, fetchMessages])
 
   // ── Sélectionner une conversation ───────────────────────
   function handleSelectConversation(interlocuteur: Interlocuteur) {
     setActiveInterlocuteur(interlocuteur)
     setIsTyping(false)
     setShowChat(true)
-    fetchMessages(interlocuteur.id)
+    setCurrentPage(1)
+    setHasMore(false)
+    setPresenceEnLigne(false)
+    setDerniereVueLe(null)
+    fetchMessages(interlocuteur.id, 1)
+    fetchPresence(interlocuteur.id)
 
     setConversations((prev) =>
       prev.map((c) =>
@@ -259,6 +361,7 @@ export default function PageCommunaute() {
         destinataireId: activeInterlocuteur.id,
         contenu,
         ...(replyToId ? { replyToId } : {}),
+        ...(ephemere ? { ephemere: true } : {}),
       }),
     })
       .then((res) => {
@@ -282,6 +385,121 @@ export default function PageCommunaute() {
             m._tempId === tempId
               ? { ...m, _status: "error" as const }
               : m
+          )
+        )
+      })
+  }
+
+  // ── Envoyer une pièce jointe ─────────────────────────────
+  function handleSendFile(file: File, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId,
+      expediteurId: currentUserId,
+      destinataireId: activeInterlocuteur.id,
+      contenu: `[fichier] ${file.name}|${file.size}|`,
+      type: "FICHIER",
+      lu: false,
+      createdAt: new Date().toISOString(),
+      replyTo: null,
+      reactions: [],
+      expediteur: {
+        id: currentUserId,
+        nom: session.user.nom ?? "",
+        prenom: session.user.prenom ?? "",
+        photoUrl: session.user.photoUrl ?? null,
+      },
+      _optimistic: true,
+      _status: "sending",
+      _tempId: tempId,
+    }
+
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    const formData = new FormData()
+    formData.append("fichier", file)
+    formData.append("destinataireId", activeInterlocuteur.id)
+    if (replyToId) formData.append("replyToId", replyToId)
+
+    fetch("/api/messages/fichier", { method: "POST", body: formData })
+      .then((res) => {
+        if (!res.ok) throw new Error("send failed")
+        return res.json()
+      })
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m
+          )
+        )
+      })
+      .catch(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...m, _status: "error" as const } : m
+          )
+        )
+      })
+  }
+
+  // ── Envoyer un message programmé ─────────────────────────
+  function handleScheduleMessage(contenu: string, programmeA: Date, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId,
+      expediteurId: currentUserId,
+      destinataireId: activeInterlocuteur.id,
+      contenu,
+      type: "TEXTE",
+      lu: false,
+      createdAt: new Date().toISOString(),
+      replyTo: null,
+      reactions: [],
+      programmeA: programmeA.toISOString(),
+      programmeEnvoye: false,
+      expediteur: {
+        id: currentUserId,
+        nom: session.user.nom ?? "",
+        prenom: session.user.prenom ?? "",
+        photoUrl: session.user.photoUrl ?? null,
+      },
+      _optimistic: true,
+      _status: "sending",
+      _tempId: tempId,
+    }
+
+    setMessages((prev) => [...prev, optimisticMsg])
+
+    fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        destinataireId: activeInterlocuteur.id,
+        contenu,
+        ...(replyToId ? { replyToId } : {}),
+        programmeA: programmeA.toISOString(),
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("send failed")
+        return res.json()
+      })
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m
+          )
+        )
+      })
+      .catch(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...m, _status: "error" as const } : m
           )
         )
       })
@@ -348,6 +566,210 @@ export default function PageCommunaute() {
       })
   }
 
+  // ── Supprimer un message ───────────────────────────────
+  function handleSupprimerMessage(messageId: string) {
+    // Optimistic remove
+    setMessages((prev) => prev.filter((m) => m.id !== messageId))
+    fetch(`/api/messages/message/${messageId}`, { method: "DELETE" })
+      .then((res) => {
+        if (!res.ok) {
+          // Restaurer si échec
+          if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1)
+        }
+      })
+      .catch(() => {
+        if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1)
+      })
+  }
+
+  // ── Modifier un message ─────────────────────────────────
+  function handleEditMessage(messageId: string, nouveauContenu: string) {
+    // Optimistic update
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId ? { ...m, contenu: nouveauContenu, modifie: true, modifieLeAt: new Date().toISOString() } : m
+      )
+    )
+    fetch(`/api/messages/message/${messageId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "edit", contenu: nouveauContenu }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          // Revenir à l'état précédent en rechargeant
+          if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1)
+        }
+      })
+      .catch(() => {
+        if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1)
+      })
+  }
+
+  // ── Épingler / désépingler un message ───────────────────
+  function handlePinMessage(messageId: string, nouvelEtat: boolean) {
+    // Optimistic: désépingler tous, puis épingler celui-ci
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (nouvelEtat && m.id !== messageId) return { ...m, epingle: false }
+        if (m.id === messageId) return { ...m, epingle: nouvelEtat }
+        return m
+      })
+    )
+    fetch(`/api/messages/message/${messageId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: nouvelEtat ? "pin" : "unpin" }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1)
+        }
+      })
+      .catch(() => {
+        if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1)
+      })
+  }
+
+  // ── Transférer un message —— envoyer vers le contact sélectionné ──
+  function handleForwardMessage(contenu: string, type: string, contactId: string) {
+    if (!contactId) return
+    // Si le contact cible est déjà l'interlocuteur actif, envoi normal
+    if (contactId === activeInterlocuteur?.id) {
+      if (type === "TEXTE") handleSendMessage(contenu)
+      return
+    }
+    // Sinon, envoi direct via API vers le contact cible (sans changer de conversation)
+    if (type !== "TEXTE") return // Les médias/vocaux ne peuvent pas être retransférés
+    fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destinataireId: contactId, contenu }),
+    }).catch(() => {})
+  }
+
+  // ── Envoyer une image ────────────────────────────────────
+  function handleSendImage(file: File, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const objectUrl = URL.createObjectURL(file)
+    const optimisticMsg: MessageData = {
+      id: tempId,
+      expediteurId: currentUserId,
+      destinataireId: activeInterlocuteur.id,
+      contenu: objectUrl,
+      type: "MEDIA",
+      lu: false,
+      createdAt: new Date().toISOString(),
+      replyTo: replyToId ? (messages.find((m) => m.id === replyToId) ? {
+        id: replyToId,
+        contenu: messages.find((m) => m.id === replyToId)!.contenu,
+        type: messages.find((m) => m.id === replyToId)!.type,
+        expediteur: messages.find((m) => m.id === replyToId)!.expediteur,
+      } : null) : null,
+      reactions: [],
+      expediteur: {
+        id: currentUserId,
+        nom: session.user.nom ?? "",
+        prenom: session.user.prenom ?? "",
+        photoUrl: session.user.photoUrl ?? null,
+      },
+      _optimistic: true,
+      _status: "sending",
+      _tempId: tempId,
+    }
+
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    const formData = new FormData()
+    formData.append("image", file)
+    formData.append("destinataireId", activeInterlocuteur.id)
+    if (replyToId) formData.append("replyToId", replyToId)
+    if (ephemere) formData.append("ephemere", "true")
+
+    fetch("/api/messages/image", { method: "POST", body: formData })
+      .then((res) => {
+        if (!res.ok) throw new Error("send failed")
+        return res.json()
+      })
+      .then((data: { message: MessageData }) => {
+        URL.revokeObjectURL(objectUrl)
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m
+          )
+        )
+      })
+      .catch(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...m, _status: "error" as const } : m
+          )
+        )
+      })
+  }
+
+  // ── Envoyer une vidéo ────────────────────────────────────
+  function handleSendVideo(file: File, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const objectUrl = URL.createObjectURL(file)
+    const optimisticMsg: MessageData = {
+      id: tempId,
+      expediteurId: currentUserId,
+      destinataireId: activeInterlocuteur.id,
+      contenu: objectUrl,
+      type: "MEDIA",
+      lu: false,
+      createdAt: new Date().toISOString(),
+      replyTo: null,
+      reactions: [],
+      expediteur: {
+        id: currentUserId,
+        nom: session.user.nom ?? "",
+        prenom: session.user.prenom ?? "",
+        photoUrl: session.user.photoUrl ?? null,
+      },
+      _optimistic: true,
+      _status: "sending",
+      _tempId: tempId,
+      _mediaSubtype: "video",
+    }
+
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    const formData = new FormData()
+    formData.append("video", file)
+    formData.append("destinataireId", activeInterlocuteur.id)
+    if (replyToId) formData.append("replyToId", replyToId)
+    if (ephemere) formData.append("ephemere", "true")
+
+    fetch("/api/messages/video", { method: "POST", body: formData })
+      .then((res) => {
+        if (!res.ok) throw new Error("send failed")
+        return res.json()
+      })
+      .then((data: { message: MessageData }) => {
+        URL.revokeObjectURL(objectUrl)
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m
+          )
+        )
+      })
+      .catch(() => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._tempId === tempId ? { ...m, _status: "error" as const } : m
+          )
+        )
+      })
+  }
+
   // ── Renvoyer un message échoué ───────────────────────────
   function handleRetry(tempId: string) {
     const failedMsg = messages.find((m) => m._tempId === tempId)
@@ -385,7 +807,7 @@ export default function PageCommunaute() {
           )
         )
       })
-      .catch(() => {})
+      .catch(() => toast.error("Erreur lors de l'ajout de la réaction"))
   }
 
   // ── Mettre à jour l'aperçu de conversation ─────────────
@@ -422,18 +844,25 @@ export default function PageCommunaute() {
             new Date(a.dernierMessage.createdAt).getTime()
         )
       }
-      return [
-        {
-          interlocuteur: msg.expediteur,
-          dernierMessage: {
-            contenu: msg.contenu,
-            createdAt: msg.createdAt,
-            expediteurId: msg.expediteurId,
-          },
-          nonLus: activeRef.current?.id === interlocuteurId ? 0 : 1,
-        },
-        ...prev,
-      ]
+      const interlocuteurInfo = msg.expediteurId === currentUserId
+        ? (activeRef.current ?? { id: interlocuteurId, nom: "", prenom: "", photoUrl: null })
+        : msg.expediteur
+      return Array.from(
+        new Map(
+          [
+            {
+              interlocuteur: interlocuteurInfo,
+              dernierMessage: {
+                contenu: msg.contenu,
+                createdAt: msg.createdAt,
+                expediteurId: msg.expediteurId,
+              },
+              nonLus: activeRef.current?.id === interlocuteurId ? 0 : 1,
+            },
+            ...prev,
+          ].map((c) => [c.interlocuteur.id, c])
+        ).values()
+      )
     })
   }
 
@@ -490,17 +919,17 @@ export default function PageCommunaute() {
         className="border-b border-border-brand bg-white px-5 py-4"
       >
         <h1 className="font-display text-[28px] font-light text-text-main">
-          Communauté
+          Messagerie
         </h1>
         <p className="font-body text-[12px] text-text-muted-brand">
           Échangez avec les membres et l&apos;équipe du centre
         </p>
       </motion.div>
 
-      <div className="flex h-[calc(100vh-200px)] overflow-hidden border-b border-border-brand bg-white">
+      <div className="flex overflow-hidden bg-bg-page" style={{ height: "calc(100dvh - 200px)" }}>
         {/* Colonne gauche — 280px fixe : Liste des conversations */}
         <div
-          className={`w-full border-r border-border-brand md:w-70 md:shrink-0 ${
+          className={`w-full border-r border-border-brand bg-white shadow-sm md:w-72 md:shrink-0 ${
             showChat ? "hidden md:flex md:flex-col" : "flex flex-col"
           }`}
         >
@@ -515,7 +944,7 @@ export default function PageCommunaute() {
 
         {/* Colonne droite — flex : Fenêtre de chat */}
         <div
-          className={`flex-1 ${
+          className={`flex-1 bg-bg-page ${
             showChat ? "flex flex-col" : "hidden md:flex md:flex-col"
           }`}
         >
@@ -542,7 +971,25 @@ export default function PageCommunaute() {
               onReaction={handleReaction}
               onTyping={handleTyping}
               onRetry={handleRetry}
+              onDelete={handleSupprimerMessage}
+              onEdit={handleEditMessage}
+              onPin={handlePinMessage}
+              onForward={handleForwardMessage}
+              onSendImage={handleSendImage}
+              onSendFile={handleSendFile}
+              onSendVideo={handleSendVideo}
+              onSchedule={handleScheduleMessage}
+              onLoadMore={loadMoreMessages}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
               loading={loadingMessages}
+              presenceEnLigne={presenceEnLigne}
+              derniereVueLe={derniereVueLe}
+              ephemere={ephemere}
+              onToggleEphemere={() => setEphemere((v) => !v)}
+              contacts={conversations.map((c) => c.interlocuteur).filter((c) => c.id !== activeInterlocuteur?.id)}
+              pushActive={pushActive}
+              onTogglePush={handleTogglePush}
             />
           </div>
         </div>

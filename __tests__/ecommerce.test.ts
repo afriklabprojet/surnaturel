@@ -26,6 +26,8 @@ describe("E-commerce — Commandes", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuth.mockResolvedValue(fakeSession)
+    // Le route vérifie le téléphone de l'utilisateur avant de créer la commande
+    prismaMock.user.findUnique.mockResolvedValue({ telephone: "+2250101020304" })
   })
 
   it("creates an order with valid items (201)", async () => {

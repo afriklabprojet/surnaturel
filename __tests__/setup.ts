@@ -20,7 +20,9 @@ export const prismaMock = {
   rendezVous: {
     findMany: vi.fn(),
     findFirst: vi.fn(),
+    findUnique: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
     count: vi.fn(),
   },
   soin: { findUnique: vi.fn(), findMany: vi.fn() },
@@ -100,6 +102,10 @@ vi.mock("@/lib/email", () => ({
 vi.mock("@/lib/pusher", () => ({
   getPusherServeur: () => ({ trigger: vi.fn().mockResolvedValue(undefined) }),
   getPusherClient: vi.fn(),
+  initPusherClient: vi.fn().mockResolvedValue({
+    subscribe: vi.fn().mockReturnValue({ bind: vi.fn(), unbind_all: vi.fn() }),
+    unsubscribe: vi.fn(),
+  }),
   PUSHER_CHANNELS: {
     conversation: (a: string, b: string) =>
       `conversation-${[a, b].sort().join("-")}`,
@@ -133,6 +139,13 @@ vi.mock("@/lib/sentry", () => ({
   captureApiError: vi.fn(),
   capturePaymentError: vi.fn(),
   captureAuthError: vi.fn(),
+}))
+
+/* ───── Next.js cache ─────────────────────────────────────────────── */
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: (...args: unknown[]) => Promise<unknown>) => fn,
+  revalidateTag: vi.fn(),
+  revalidatePath: vi.fn(),
 }))
 
 /* ───── Crypto (real or mock depending on ENCRYPTION_KEY) ─────────── */

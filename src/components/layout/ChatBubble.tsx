@@ -2,29 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
+import { usePathname } from "next/navigation"
 import { MessageCircle, X, Send, Loader2, ArrowLeft, ChevronRight, Search, Plus } from "lucide-react"
-
-interface Interlocuteur {
-  id: string
-  nom: string
-  prenom: string
-  photoUrl: string | null
-}
-
-interface Conversation {
-  interlocuteur: Interlocuteur
-  dernierMessage: { contenu: string; createdAt: string; expediteurId: string }
-  nonLus: number
-}
-
-interface MessageData {
-  id: string
-  expediteurId: string
-  destinataireId: string
-  contenu: string
-  createdAt: string
-  expediteur: { id: string; nom: string; prenom: string; photoUrl: string | null }
-}
+import type { MessageData, Interlocuteur, Conversation } from "@/types/messages"
 
 function MiniAvatar({ user, size = 32 }: { user: { prenom: string; nom: string; photoUrl: string | null }; size?: number }) {
   const initials = `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
@@ -44,6 +24,7 @@ function formatHeure(dateStr: string) {
 
 export default function ChatBubble() {
   const { data: session, status } = useSession()
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
   // Conversations
@@ -188,8 +169,12 @@ export default function ChatBubble() {
     setSending(false)
   }
 
-  // Ne pas afficher si non connecté
+  // N'afficher que sur la page d'accueil
+  if (pathname !== "/") return null
+
+  // Ne pas afficher si non connecté ou sur la page communauté (messagerie déjà intégrée)
   if (!isAuth) return null
+  if (pathname.startsWith("/communaute")) return null
 
   return (
     <>
@@ -201,7 +186,7 @@ export default function ChatBubble() {
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
         {!open && totalNonLus > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center bg-red-500 px-1 font-body text-[10px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center bg-red-500 px-1 font-body text-xs font-bold text-white">
             {totalNonLus > 99 ? "99+" : totalNonLus}
           </span>
         )}
@@ -209,14 +194,14 @@ export default function ChatBubble() {
 
       {/* Fenêtre messenger */}
       {open && (
-        <div className="fixed bottom-[8.5rem] right-4 lg:bottom-24 lg:right-6 z-50 w-[340px] max-w-[calc(100vw-2rem)] border border-border-brand bg-white shadow-xl flex flex-col" style={{ height: 420 }}>
+        <div className="fixed bottom-34 right-4 lg:bottom-24 lg:right-6 z-50 w-85 max-w-[calc(100vw-2rem)] border border-border-brand bg-white shadow-xl flex flex-col" style={{ height: 420 }}>
 
           {/* ── Vue chat actif ── */}
           {activeUser ? (
             <>
               {/* Header chat */}
               <div className="flex items-center gap-2 border-b border-border-brand bg-primary-brand px-3 py-2.5 shrink-0">
-                <button onClick={() => { setActiveUser(null); fetchConversations() }} className="text-white/80 hover:text-white transition-colors" aria-label="Retour">
+                <button onClick={() => { setActiveUser(null); fetchConversations() }} className="flex h-10 w-10 items-center justify-center text-white/80 hover:text-white transition-colors" aria-label="Retour">
                   <ArrowLeft size={18} />
                 </button>
                 <MiniAvatar user={activeUser} size={28} />
@@ -237,7 +222,7 @@ export default function ChatBubble() {
                     return (
                       <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[75%] px-3 py-1.5 ${isMine ? "bg-primary-brand text-white" : "bg-white border border-border-brand text-text-main"}`}>
-                          <p className="font-body text-[13px] leading-snug break-words">{m.contenu}</p>
+                          <p className="font-body text-[13px] leading-snug wrap-break-word">{m.contenu}</p>
                           <p className={`font-body text-[9px] mt-0.5 ${isMine ? "text-white/60" : "text-text-muted-brand"}`}>{formatHeure(m.createdAt)}</p>
                         </div>
                       </div>
@@ -261,7 +246,7 @@ export default function ChatBubble() {
                   <button
                     onClick={handleSend}
                     disabled={sending || !saisie.trim()}
-                    className="flex h-9 w-9 items-center justify-center bg-primary-brand text-white hover:bg-primary-brand/90 disabled:opacity-40 transition-colors shrink-0"
+                    className="flex h-11 w-11 items-center justify-center bg-primary-brand text-white hover:bg-primary-brand/90 disabled:opacity-40 transition-colors shrink-0"
                     aria-label="Envoyer"
                   >
                     {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
@@ -275,7 +260,7 @@ export default function ChatBubble() {
               {/* Header recherche */}
               <div className="border-b border-border-brand bg-primary-brand px-3 py-2.5 shrink-0">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => { setSearchMode(false); setSearchQuery(""); setSearchResults([]) }} className="text-white/80 hover:text-white transition-colors" aria-label="Retour">
+                  <button onClick={() => { setSearchMode(false); setSearchQuery(""); setSearchResults([]) }} className="flex h-10 w-10 items-center justify-center text-white/80 hover:text-white transition-colors" aria-label="Retour">
                     <ArrowLeft size={18} />
                   </button>
                   <p className="font-display text-[15px] font-light text-white">Nouvelle conversation</p>
@@ -330,7 +315,7 @@ export default function ChatBubble() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-display text-[16px] font-light text-white">Messagerie</p>
-                    <p className="font-body text-[11px] text-white/70">{conversations.length} conversation{conversations.length > 1 ? "s" : ""}</p>
+                    <p className="font-body text-xs text-white/70">{conversations.length} conversation{conversations.length > 1 ? "s" : ""}</p>
                   </div>
                   <button onClick={() => setSearchMode(true)} className="flex h-8 w-8 items-center justify-center text-white/80 hover:text-white transition-colors" aria-label="Nouvelle conversation">
                     <Plus size={20} />
@@ -348,7 +333,7 @@ export default function ChatBubble() {
                   <div className="flex flex-col items-center justify-center h-full px-4">
                     <MessageCircle size={32} className="text-border-brand mb-3" />
                     <p className="font-body text-[13px] text-text-muted-brand text-center">Aucune conversation</p>
-                    <button onClick={() => setSearchMode(true)} className="mt-3 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-[0.15em] hover:bg-primary-brand/90 transition-colors">
+                    <button onClick={() => setSearchMode(true)} className="mt-3 px-4 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-[0.15em] hover:bg-primary-brand/90 transition-colors">
                       Démarrer une conversation
                     </button>
                   </div>
@@ -366,10 +351,10 @@ export default function ChatBubble() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <span className="font-display text-[14px] text-text-main truncate">{conv.interlocuteur.prenom} {conv.interlocuteur.nom}</span>
-                            <span className="font-body text-[10px] text-text-muted-brand shrink-0 ml-1">{formatHeure(conv.dernierMessage.createdAt)}</span>
+                            <span className="font-body text-xs text-text-muted-brand shrink-0 ml-1">{formatHeure(conv.dernierMessage.createdAt)}</span>
                           </div>
                           <div className="flex items-center justify-between mt-0.5">
-                            <span className="font-body text-[11px] text-text-muted-brand truncate">
+                            <span className="font-body text-xs text-text-muted-brand truncate">
                               {isMine ? "Vous : " : ""}{apercu}
                             </span>
                             {conv.nonLus > 0 && (

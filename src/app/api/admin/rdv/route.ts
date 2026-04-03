@@ -1,9 +1,12 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { StatutRDV, Prisma } from "@/generated/prisma/client"
 import { startOfDay, endOfDay } from "date-fns"
 import { z } from "zod/v4"
+import { genererCreneauCle } from "@/lib/utils"
+import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -92,6 +95,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { userId, soinId, dateHeure, notes } = result.data
+  const dateRDV = new Date(dateHeure)
 
   const [user, soin] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { id: true } }),
@@ -101,25 +105,64 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Client non trouvé" }, { status: 404 })
   if (!soin) return NextResponse.json({ error: "Soin non trouvé" }, { status: 404 })
 
-  const rdv = await prisma.rendezVous.create({
-    data: {
-      userId,
-      soinId,
-      dateHeure: new Date(dateHeure),
-      notes: notes || null,
-      statut: "CONFIRME",
-    },
-    include: {
-      user: { select: { nom: true, prenom: true, email: true } },
-      soin: { select: { nom: true, prix: true } },
-    },
-  })
+  // Générer la clé unique du créneau
+  const creneauCle = genererCreneauCle(soinId, dateRDV)
 
-  return NextResponse.json({
-    id: rdv.id,
-    client: `${rdv.user.prenom} ${rdv.user.nom}`,
-    soin: rdv.soin.nom,
-    dateHeure: rdv.dateHeure.toISOString(),
-    statut: rdv.statut,
-  }, { status: 201 })
+  try {
+    const rdv = await prisma.rendezVous.create({
+      data: {
+        userId,
+        soinId,
+        dateHeure: dateRDV,
+        creneauCle,
+        notes: notes || null,
+        statut: "CONFIRME",
+      },
+      include: {
+        user: { select: { nom: true, prenom: true, email: true } },
+        soin: { select: { nom: true, prix: true } },
+      },
+    })
+
+    // Notifier en temps réel que ce créneau est maintenant pris
+    try {
+      const pusher = getPusherServeur()
+      const dateStr = dateRDV.toISOString().split("T")[0]
+      await pusher.trigger(
+        PUSHER_CHANNELS.creneaux(soinId, dateStr),
+        PUSHER_EVENTS.CRENEAU_RESERVE,
+        {
+          soinId,
+          dateHeure: dateRDV.toISOString(),
+          creneauCle,
+        }
+      )
+    } catch {
+      // Notification temps réel optionnelle
+    }
+
+    return NextResponse.json({
+      id: rdv.id,
+      client: `${rdv.user.prenom} ${rdv.user.nom}`,
+      soin: rdv.soin.nom,
+      dateHeure: rdv.dateHeure.toISOString(),
+      statut: rdv.statut,
+    }, { status: 201 })
+  } catch (error: unknown) {
+    // Gestion de la race condition : contrainte unique violée
+    const isPrismaDuplicateError = 
+      error && typeof error === "object" && "code" in error && error.code === "P2002"
+    
+    if (isPrismaDuplicateError) {
+      return NextResponse.json(
+        { error: "Ce créneau est déjà réservé." },
+        { status: 409 }
+      )
+    }
+    logger.error("[POST /api/admin/rdv] Erreur inattendue :", error)
+    return NextResponse.json(
+      { error: "Une erreur est survenue lors de la réservation." },
+      { status: 500 }
+    )
+  }
 }

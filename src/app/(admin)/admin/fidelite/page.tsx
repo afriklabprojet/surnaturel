@@ -98,7 +98,7 @@ export default function PageAdminFidelite() {
 
         <button
           onClick={() => setShowAjuster(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 transition-colors"
         >
           <Plus size={14} /> Ajuster points
         </button>
@@ -112,15 +112,62 @@ export default function PageAdminFidelite() {
           <Loader2 className="h-8 w-8 animate-spin text-primary-brand" />
         </div>
       ) : (
-        <div className="bg-white border border-border-brand overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <>
+          {/* Mobile Cards */}
+          <div className="space-y-3 md:hidden">
+            {items.map((p) => (
+              <div key={p.id} className="bg-white border border-border-brand p-4">
+                <div className="flex items-start gap-3">
+                  <Avatar user={p.user} size={40} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-[13px] font-medium text-text-main truncate">{p.user.prenom} {p.user.nom}</p>
+                    <p className="font-body text-xs text-text-muted-brand truncate">{p.user.email}</p>
+                    <div className="flex items-center gap-1 mt-1 text-gold-dark font-semibold">
+                      <Coins size={14} /> {p.total} pts
+                    </div>
+                  </div>
+                </div>
+                {p.historique.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border-brand space-y-1">
+                    {p.historique.slice(0, 2).map((h) => (
+                      <p key={h.id} className="font-body text-xs text-text-muted-brand">
+                        <span className={h.points >= 0 ? "text-emerald-600" : "text-red-500"}>{h.points >= 0 ? "+" : ""}{h.points}</span>
+                        {" · "}{TYPE_LABELS[h.type] || h.type}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-brand">
+                  <button
+                    onClick={() => { setForm({ userId: p.user.id, points: 0, raison: "", type: "GAIN_RDV" }); setShowAjuster(true) }}
+                    className="flex-1 py-2 text-xs font-medium uppercase tracking-widest bg-primary-brand text-white"
+                  >
+                    Ajuster
+                  </button>
+                  <button onClick={() => setDetail(p)} className="flex-1 py-2 text-xs font-medium uppercase tracking-widest border border-border-brand text-text-muted-brand">
+                    Historique
+                  </button>
+                </div>
+              </div>
+            ))}
+            {items.length === 0 && (
+              <div className="bg-white border border-border-brand p-8 text-center">
+                <Coins className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-text-muted-brand font-body">Aucun compte fidélité</p>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white border border-border-brand overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Client</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Total points</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Derniers mouvements</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Client</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Total points</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Derniers mouvements</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -131,7 +178,7 @@ export default function PageAdminFidelite() {
                         <Avatar user={p.user} />
                         <div>
                           <p className="font-body text-[13px] font-medium text-text-main">{p.user.prenom} {p.user.nom}</p>
-                          <p className="font-body text-[11px] text-text-muted-brand">{p.user.email}</p>
+                          <p className="font-body text-xs text-text-muted-brand">{p.user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -143,7 +190,7 @@ export default function PageAdminFidelite() {
                     <td className="px-4 py-3">
                       <div className="space-y-0.5">
                         {p.historique.slice(0, 3).map((h) => (
-                          <p key={h.id} className="font-body text-[11px] text-text-muted-brand">
+                          <p key={h.id} className="font-body text-xs text-text-muted-brand">
                             <span className={h.points >= 0 ? "text-emerald-600" : "text-red-500"}>{h.points >= 0 ? "+" : ""}{h.points}</span>
                             {" · "}{TYPE_LABELS[h.type] || h.type}{" · "}{h.raison}
                           </p>
@@ -157,13 +204,13 @@ export default function PageAdminFidelite() {
                             setForm({ userId: p.user.id, points: 0, raison: "", type: "GAIN_RDV" })
                             setShowAjuster(true)
                           }}
-                          className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors"
+                          className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors"
                         >
                           Ajuster
                         </button>
                         <button
                           onClick={() => setDetail(p)}
-                          className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-border-brand text-text-muted-brand hover:bg-bg-page transition-colors"
+                          className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-border-brand text-text-muted-brand hover:bg-bg-page transition-colors"
                         >
                           Historique
                         </button>
@@ -179,17 +226,18 @@ export default function PageAdminFidelite() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>
@@ -206,7 +254,7 @@ export default function PageAdminFidelite() {
 
             {!form.userId && (
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">ID Utilisateur</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">ID Utilisateur</label>
                 <input
                   type="text"
                   value={form.userId}
@@ -218,7 +266,7 @@ export default function PageAdminFidelite() {
             )}
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Points (négatif pour retrait)</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Points (négatif pour retrait)</label>
               <input
                 type="number"
                 value={form.points}
@@ -228,7 +276,7 @@ export default function PageAdminFidelite() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Type</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Type</label>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
@@ -239,7 +287,7 @@ export default function PageAdminFidelite() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Raison</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Raison</label>
               <input
                 type="text"
                 value={form.raison}
@@ -252,7 +300,7 @@ export default function PageAdminFidelite() {
             <button
               onClick={handleAjuster}
               disabled={saving || !form.userId || !form.raison}
-              className="w-full py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {saving && <Loader2 size={14} className="animate-spin" />} Valider
             </button>
@@ -276,7 +324,7 @@ export default function PageAdminFidelite() {
                 <div key={h.id} className="flex items-center justify-between px-3 py-2 border border-border-brand">
                   <div>
                     <p className="font-body text-[13px] text-text-main">{h.raison}</p>
-                    <p className="font-body text-[11px] text-text-muted-brand">{TYPE_LABELS[h.type] || h.type} · {new Date(h.createdAt).toLocaleDateString("fr")}</p>
+                    <p className="font-body text-xs text-text-muted-brand">{TYPE_LABELS[h.type] || h.type} · {new Date(h.createdAt).toLocaleDateString("fr")}</p>
                   </div>
                   <span className={`font-body text-[14px] font-semibold ${h.points >= 0 ? "text-emerald-600" : "text-red-500"}`}>
                     {h.points >= 0 ? "+" : ""}{h.points}

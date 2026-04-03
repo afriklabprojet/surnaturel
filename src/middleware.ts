@@ -7,13 +7,21 @@ import { createRateLimiter } from "@/lib/rate-limit"
 const authLimiter = createRateLimiter({ limit: 20, windowMs: 15 * 60 * 1000 })   // 20 req / 15 min
 const contactLimiter = createRateLimiter({ limit: 3, windowMs: 60 * 60 * 1000 }) // 3 req / 1 h
 const paiementLimiter = createRateLimiter({ limit: 10, windowMs: 60 * 60 * 1000 }) // 10 req / 1 h
+const rdvLimiter = createRateLimiter({ limit: 10, windowMs: 60 * 60 * 1000 })     // 10 req / 1 h
+const inscriptionLimiter = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 }) // 5 req / 1 h
+const postsLimiter = createRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 })    // 20 req / 1 h
+const searchLimiter = createRateLimiter({ limit: 30, windowMs: 60 * 1000 })        // 30 req / min
 
 type Limiter = ReturnType<typeof createRateLimiter>
 
-const rateLimitRules: { test: (p: string) => boolean; limiter: Limiter }[] = [
-  { test: (p) => p.startsWith("/api/auth/"),     limiter: authLimiter },
-  { test: (p) => p === "/api/contact",            limiter: contactLimiter },
-  { test: (p) => p.startsWith("/api/paiement/"),  limiter: paiementLimiter },
+const rateLimitRules: { test: (p: string, m: string) => boolean; limiter: Limiter }[] = [
+  { test: (p, m) => p.startsWith("/api/auth/") && m !== "GET",           limiter: authLimiter },
+  { test: (p) => p === "/api/contact",                                    limiter: contactLimiter },
+  { test: (p) => p.startsWith("/api/paiement/"),                          limiter: paiementLimiter },
+  { test: (p, m) => p.startsWith("/api/rdv") && m === "POST",             limiter: rdvLimiter },
+  { test: (p) => p === "/api/auth/inscription",                           limiter: inscriptionLimiter },
+  { test: (p, m) => p === "/api/communaute/posts" && m === "POST",        limiter: postsLimiter },
+  { test: (p) => p === "/api/search",                                     limiter: searchLimiter },
 ]
 
 function getClientIp(req: NextRequest): string {
@@ -33,12 +41,13 @@ const protectedRoutes = [
   "/communaute",
   "/suivi-medical",
   "/admin",
+  "/dashboard",
+  "/favoris",
 ]
 
-// SÉCURITÉ : /suivi-medical accessible uniquement à CLIENT et ACCOMPAGNATEUR_MEDICAL
-// ADMIN explicitement exclu — données médicales confidentielles
+// SÉCURITÉ : /suivi-medical accessible à CLIENT, ACCOMPAGNATEUR_MEDICAL et ADMIN
 const roleRestrictedRoutes: Record<string, string[]> = {
-  "/suivi-medical": ["CLIENT", "ACCOMPAGNATEUR_MEDICAL"],
+  "/suivi-medical": ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"],
   "/admin": ["ADMIN"],
 }
 
@@ -48,10 +57,10 @@ export async function middleware(req: NextRequest) {
   /* ── Rate limiting (avant toute logique auth) ── */
   // Exempter les GET auth (session, csrf, providers) — ne limiter que les POST (tentatives de login)
   const isAuthGet = pathname.startsWith("/api/auth/") && req.method === "GET"
-  const rule = isAuthGet ? undefined : rateLimitRules.find((r) => r.test(pathname))
+  const rule = isAuthGet ? undefined : rateLimitRules.find((r) => r.test(pathname, req.method))
   if (rule) {
     const ip = getClientIp(req)
-    const result = rule.limiter(ip)
+    const result = await Promise.resolve(rule.limiter(ip))
 
     const headers = new Headers()
     headers.set("X-RateLimit-Limit", String(result.limit))
@@ -117,14 +126,50 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(url)
         }
         const url = req.nextUrl.clone()
-        url.pathname = "/connexion"
+        url.pathname = "/dashboard"
         return NextResponse.redirect(url)
       }
+    }
+  }
 
-      if (route === "/suivi-medical") {
-        console.log(
-          `[MEDICAL] userId:${token.id} route:${pathname} at:${new Date().toISOString()}`
-        )
+  // ── Gate communauté : accès payant (gratuit pour ADMIN/SAGE_FEMME/ACCOMPAGNATEUR_MEDICAL) ──
+  // Couvre les pages /communaute/* ET les routes API /api/messages/* (messenger inclus)
+  const communauteExclus = ["/communaute/abonnement", "/communaute/essai"]
+  const estPageCommunaute =
+    (pathname === "/communaute" || pathname.startsWith("/communaute/")) &&
+    !communauteExclus.some((p) => pathname === p || pathname.startsWith(p + "/"))
+  const estApiMessages = pathname.startsWith("/api/messages/") || pathname === "/api/messages"
+
+  if (estPageCommunaute || estApiMessages) {
+    const role = token.role as string
+    const rolesLibres = ["ADMIN", "SAGE_FEMME", "ACCOMPAGNATEUR_MEDICAL"]
+
+    if (!rolesLibres.includes(role)) {
+      const accesCommuaute = token.accesCommuaute as boolean | undefined
+      const expireAt = token.accesCommuauteExpireAt as string | null | undefined
+      const essaiUtilise = token.essaiCommuauteUtilise as boolean | undefined
+
+      const accesToujoursValide =
+        accesCommuaute && (!expireAt || new Date(expireAt) > new Date())
+
+      if (!accesToujoursValide) {
+        // Les routes API reçoivent un 403 JSON (pas une redirection HTML)
+        if (estApiMessages) {
+          return NextResponse.json(
+            { error: "Abonnement communauté requis" },
+            { status: 403 }
+          )
+        }
+        const url = req.nextUrl.clone()
+        if (!essaiUtilise) {
+          // Premier accès → activer l'essai gratuit
+          url.pathname = "/communaute/essai"
+          url.searchParams.set("redirect", pathname)
+        } else {
+          // Essai épuisé / abonnement expiré → paywall
+          url.pathname = "/communaute/abonnement"
+        }
+        return NextResponse.redirect(url)
       }
     }
   }
@@ -137,11 +182,20 @@ export const config = {
     "/api/auth/:path*",
     "/api/contact",
     "/api/paiement/:path*",
+    "/api/rdv/:path*",
+    "/api/communaute/posts",
+    "/api/messages/:path*",
     "/profil/:path*",
     "/mes-rdv/:path*",
     "/commandes/:path*",
     "/communaute/:path*",
     "/suivi-medical/:path*",
     "/admin/:path*",
+    "/dashboard/:path*",
+    "/favoris/:path*",
+    "/fidelite/:path*",
+    "/parrainage/:path*",
+    "/avis/:path*",
+    "/notifications/:path*",
   ],
 }

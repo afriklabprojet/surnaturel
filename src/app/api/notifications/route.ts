@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
       pages: Math.ceil(total / limit),
     })
   } catch (error) {
-    console.error("Erreur récupération notifications:", error)
+    logger.error("Erreur récupération notifications:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

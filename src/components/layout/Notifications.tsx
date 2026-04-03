@@ -7,7 +7,7 @@ import { fr } from "date-fns/locale"
 import { motion, AnimatePresence } from "framer-motion"
 import { slideInRight, notificationBadge } from "@/lib/animations"
 import Link from "next/link"
-import { getPusherClient, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
+import { initPusherClient, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import type { NotifType } from "@/generated/prisma/client"
 
 interface Notification {
@@ -76,23 +76,26 @@ export default function Notifications({ userId }: { userId?: string }) {
   // Pusher — écouter les nouvelles notifications en temps réel
   useEffect(() => {
     if (!userId) return
-    try {
-      const pusher = getPusherClient()
-      const channel = pusher.subscribe(PUSHER_CHANNELS.notification(userId))
+    let channelRef: ReturnType<Awaited<ReturnType<typeof initPusherClient>>["subscribe"]> | null = null
 
-      channel.bind(PUSHER_EVENTS.NOUVELLE_NOTIFICATION, (notif: Notification) => {
+    initPusherClient().then((pusher) => {
+      channelRef = pusher.subscribe(PUSHER_CHANNELS.notification(userId))
+
+      channelRef.bind(PUSHER_EVENTS.NOUVELLE_NOTIFICATION, (notif: Notification) => {
         setNotifications((prev) => {
           if (prev.some((n) => n.id === notif.id)) return prev
           return [notif, ...prev].slice(0, 8)
         })
         setTotalNonLues((prev) => prev + 1)
       })
+    }).catch(() => { /* Pusher optionnel */ })
 
-      return () => {
-        channel.unbind_all()
-        pusher.unsubscribe(PUSHER_CHANNELS.notification(userId))
+    return () => {
+      if (channelRef) {
+        channelRef.unbind_all()
+        initPusherClient().then((p) => p.unsubscribe(PUSHER_CHANNELS.notification(userId)))
       }
-    } catch { /* Pusher optionnel */ }
+    }
   }, [userId])
 
   // Fermer le dropdown au clic extérieur
@@ -136,7 +139,7 @@ export default function Notifications({ userId }: { userId?: string }) {
       {/* Bouton cloche */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center text-text-main transition-colors hover:text-primary-brand"
+        className="relative flex h-11 w-11 items-center justify-center text-text-main transition-colors hover:text-primary-brand"
         aria-label="Notifications"
       >
         <Bell size={20} />
@@ -147,7 +150,7 @@ export default function Notifications({ userId }: { userId?: string }) {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center bg-danger px-1 font-body text-[10px] font-medium text-white"
+              className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center bg-danger px-1 font-body text-xs font-medium text-white"
             >
               {totalNonLues > 99 ? "99+" : totalNonLues}
             </motion.span>
@@ -174,7 +177,7 @@ export default function Notifications({ userId }: { userId?: string }) {
                 <button
                   onClick={marquerToutesLues}
                   disabled={loading}
-                  className="flex items-center gap-1 font-body text-[11px] font-medium text-primary-brand transition-colors hover:text-primary-dark disabled:opacity-50"
+                  className="flex items-center gap-1 font-body text-xs font-medium text-primary-brand transition-colors hover:text-primary-dark disabled:opacity-50"
                 >
                   <Check size={12} />
                   Tout marquer lu
@@ -211,10 +214,10 @@ export default function Notifications({ userId }: { userId?: string }) {
                       <p className="truncate font-display text-[13px] font-normal text-text-main">
                         {notif.titre}
                       </p>
-                      <p className="mt-0.5 line-clamp-2 font-body text-[11px] font-light text-text-muted-brand">
+                      <p className="mt-0.5 line-clamp-2 font-body text-xs font-light text-text-muted-brand">
                         {notif.message}
                       </p>
-                      <p className="mt-1 font-body text-[10px] text-text-muted-brand">
+                      <p className="mt-1 font-body text-xs text-text-muted-brand">
                         {formatDistanceToNow(new Date(notif.createdAt), {
                           addSuffix: true,
                           locale: fr,

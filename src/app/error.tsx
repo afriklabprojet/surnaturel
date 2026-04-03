@@ -34,7 +34,7 @@ export default function GlobalError({
       <div className="mt-8 flex items-center gap-4">
         <button
           onClick={reset}
-          className="inline-flex items-center gap-2 border border-border-brand bg-white px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.12em] text-text-main hover:border-gold transition-colors"
+          className="inline-flex items-center gap-2 border border-border-brand bg-white px-5 py-2.5 font-body text-xs uppercase tracking-[0.12em] text-text-main hover:border-gold transition-colors"
         >
           <RotateCcw size={14} />
           Réessayer
@@ -42,7 +42,7 @@ export default function GlobalError({
 
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors"
+          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-xs uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors"
         >
           <Home size={14} />
           Accueil

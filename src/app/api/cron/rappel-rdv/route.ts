@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailRappelRDV } from "@/lib/email"
+import { envoyerPushAUtilisateur } from "@/lib/push-service"
+import { PUSH_TYPES } from "@/lib/web-push"
 
 // GET — appelé par le cron Vercel chaque jour à 8h
 export async function GET(request: Request) {
@@ -44,6 +46,7 @@ export async function GET(request: Request) {
 
   let envoyes = 0
   let erreurs = 0
+  let pushEnvoyes = 0
 
   await Promise.allSettled(
     rdvsDemain.map(async (rdv) => {
@@ -56,6 +59,14 @@ export async function GET(request: Request) {
           heure: heureFormatter.format(rdv.dateHeure),
         })
         envoyes++
+
+        // Notification push en complément
+        const pushResult = await envoyerPushAUtilisateur(
+          rdv.userId,
+          PUSH_TYPES.RDV_RAPPEL,
+          { soin: rdv.soin.nom, heure: heureFormatter.format(rdv.dateHeure) }
+        )
+        pushEnvoyes += pushResult.envoyes
       } catch {
         erreurs++
       }
@@ -66,6 +77,7 @@ export async function GET(request: Request) {
     success: true,
     rdvsTotal: rdvsDemain.length,
     envoyes,
+    pushEnvoyes,
     erreurs,
   })
 }

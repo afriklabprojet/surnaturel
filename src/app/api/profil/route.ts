@@ -53,7 +53,7 @@ export async function PATCH(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = profilSchema.safeParse(body)
@@ -99,7 +99,7 @@ export async function PUT(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = passwordSchema.safeParse(body)
@@ -121,7 +121,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 })
   }
 
-  const isValid = await bcrypt.compare(motDePasseActuel, user.passwordHash)
+  const isValid = user.passwordHash ? await bcrypt.compare(motDePasseActuel, user.passwordHash) : false
   if (!isValid) {
     return NextResponse.json(
       { error: "Mot de passe actuel incorrect" },

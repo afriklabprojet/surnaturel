@@ -1,13 +1,17 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
+import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { staggerContainer, staggerItem } from "@/lib/animations"
-import { Heart, Sparkles, ShoppingBag, Loader2, Trash2, Clock } from "lucide-react"
+import { Heart, Sparkles, ShoppingBag, Trash2, Clock, Loader2 } from "lucide-react"
 import { BtnArrow } from "@/components/ui/buttons"
+import { formatPrix } from "@/lib/utils"
 import EmptyState from "@/components/ui/empty-states"
 import Image from "next/image"
 import Link from "next/link"
+import { useFetch } from "@/lib/hooks/use-fetch"
+import { SkeletonFavoris } from "@/components/ui/skeletons"
 
 interface Soin {
   id: string
@@ -42,28 +46,9 @@ interface FavorisData {
 }
 
 export default function FavorisPage() {
-  const [data, setData] = useState<FavorisData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, loading, mutate: fetchData } = useFetch<FavorisData>("/api/favoris")
   const [supprimant, setSupprimant] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"soins" | "produits">("soins")
-
-  const fetchData = useCallback(async () => {
-    try {
-      const res = await fetch("/api/favoris")
-      if (res.ok) {
-        const json = await res.json()
-        setData(json)
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
 
   async function supprimerFavori(favoriId: string) {
     setSupprimant(favoriId)
@@ -75,23 +60,18 @@ export default function FavorisPage() {
 
       if (res.ok) {
         fetchData()
+      } else {
+        toast.error("Erreur lors de la suppression")
       }
     } catch {
-      // silently fail
+      toast.error("Erreur réseau")
     } finally {
       setSupprimant(null)
     }
   }
 
-  const formatPrix = (prix: number) =>
-    prix.toLocaleString("fr") + " FCFA"
-
   if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonFavoris />
   }
 
   const soins = data?.soins || []
@@ -205,7 +185,7 @@ export default function FavorisPage() {
                   {/* Infos */}
                   <div className="flex-1">
                     {soin.categorie && (
-                      <p className="font-body text-[10px] font-medium uppercase tracking-widest text-gold">
+                      <p className="font-body text-xs font-medium uppercase tracking-widest text-gold">
                         {soin.categorie.nom}
                       </p>
                     )}
@@ -220,7 +200,7 @@ export default function FavorisPage() {
                         {formatPrix(soin.prix)}
                       </span>
                       {soin.duree && (
-                        <span className="flex items-center gap-1 font-body text-[11px]">
+                        <span className="flex items-center gap-1 font-body text-xs">
                           <Clock size={12} />
                           {soin.duree} min
                         </span>
@@ -244,7 +224,7 @@ export default function FavorisPage() {
 
                 {/* Footer avec action */}
                 <div className="border-t border-border-brand bg-bg-page p-3">
-                  <BtnArrow href={`/prise-rdv?soin=${soin.id}`} className="text-[11px]">
+                  <BtnArrow href={`/prise-rdv?soin=${soin.id}`} className="text-xs">
                     Prendre RDV
                   </BtnArrow>
                 </div>
@@ -309,7 +289,7 @@ export default function FavorisPage() {
                 {/* Infos */}
                 <div className="p-4">
                   {produit.categorie && (
-                    <p className="font-body text-[10px] font-medium uppercase tracking-widest text-gold">
+                    <p className="font-body text-xs font-medium uppercase tracking-widest text-gold">
                       {produit.categorie.nom}
                     </p>
                   )}
@@ -326,7 +306,7 @@ export default function FavorisPage() {
 
                 {/* Action */}
                 <div className="border-t border-border-brand p-3">
-                  <BtnArrow href={`/produits/${produit.slug}`} className="text-[11px]">
+                  <BtnArrow href={`/produits/${produit.slug}`} className="text-xs">
                     Voir le produit
                   </BtnArrow>
                 </div>

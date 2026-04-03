@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -61,7 +62,7 @@ export async function GET() {
 
     return NextResponse.json({ patients: patientsFormatted })
   } catch (error) {
-    console.error("Erreur patients sage-femme:", error)
+    logger.error("Erreur patients sage-femme:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Loader2, Lock, Edit3, Save, X, Heart, Pill, AlertTriangle, Droplets, Phone, FileText, Download } from "lucide-react"
+import { SkeletonProfile } from "@/components/ui/skeletons"
 
 interface DossierData {
   id: string
@@ -126,11 +127,7 @@ export default function DossierMedical() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 size={22} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonProfile />
   }
 
   const hasContent = dossier && (dossier.pathologie || dossier.allergies || dossier.antecedents || dossier.medicaments || dossier.groupeSanguin || dossier.contactUrgence || dossier.notes)
@@ -159,7 +156,7 @@ export default function DossierMedical() {
                   <div className="flex items-center gap-3 border border-border-brand bg-bg-page p-4">
                     <Droplets size={18} className="shrink-0 text-red-600" />
                     <div>
-                      <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                      <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                         Groupe sanguin
                       </p>
                       <p className="font-display text-[20px] font-light text-text-main">
@@ -172,7 +169,7 @@ export default function DossierMedical() {
                   <div className="flex items-center gap-3 border border-border-brand bg-bg-page p-4">
                     <Phone size={18} className="shrink-0 text-gold" />
                     <div>
-                      <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                      <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                         Contact d&apos;urgence
                       </p>
                       <p className="whitespace-pre-wrap font-body text-[14px] font-light text-text-main">
@@ -229,7 +226,7 @@ export default function DossierMedical() {
                 />
               )}
 
-              <p className="font-body text-[11px] text-text-muted-brand">
+              <p className="font-body text-xs text-text-muted-brand">
                 Mise à jour le{" "}
                 {new Date(dossier.updatedAt).toLocaleDateString("fr", {
                   day: "numeric",
@@ -274,7 +271,7 @@ export default function DossierMedical() {
 
           <div className="mt-6 flex items-center gap-2 border-t border-border-brand pt-5">
             <Lock size={13} className="shrink-0 text-text-muted-brand" />
-            <span className="font-body text-[11px] font-light text-text-muted-brand">
+            <span className="font-body text-xs font-light text-text-muted-brand">
               Ces informations sont chiffrées et strictement confidentielles
             </span>
           </div>
@@ -286,7 +283,7 @@ export default function DossierMedical() {
         <div className="space-y-5">
           {/* Groupe sanguin */}
           <div>
-            <label htmlFor="groupeSanguin" className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+            <label htmlFor="groupeSanguin" className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
               Groupe sanguin
             </label>
             <select
@@ -399,7 +396,7 @@ function InfoBlock({ icon, label, value, muted }: { icon: React.ReactNode; label
     <div>
       <div className="mb-1.5 flex items-center gap-2">
         {icon}
-        <span className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+        <span className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
           {label}
         </span>
       </div>
@@ -417,7 +414,7 @@ function FieldTextarea({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+      <label htmlFor={id} className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
         {label}
       </label>
       <textarea
@@ -429,7 +426,7 @@ function FieldTextarea({
         placeholder={placeholder}
         className="w-full border border-border-brand bg-bg-page px-4 py-3 font-body text-[14px] font-light text-text-main outline-none placeholder:text-text-muted-brand/60 focus:border-gold focus:bg-white"
       />
-      <p className="mt-1 text-right font-body text-[10px] text-text-muted-brand">
+      <p className="mt-1 text-right font-body text-xs text-text-muted-brand">
         {value.length}/{maxLength}
       </p>
     </div>

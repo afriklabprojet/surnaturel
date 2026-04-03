@@ -11,6 +11,11 @@ const fakeCommande = {
   total: 25000,
   statut: "EN_ATTENTE",
   paiementId: null,
+  webhookTraite: false,
+  methodePaiement: "wave",
+  tentativesPaiement: 1,
+  dernierEchecAt: null,
+  relanceSmsEnvoyee: false,
   user: {
     id: "usr_1",
     email: "client@example.com",
@@ -107,22 +112,24 @@ describe("Payment webhook — Jeko", () => {
         data: expect.objectContaining({
           statut: "PAYEE",
           paiementId: "pay_success",
+          webhookTraite: true,
         }),
       })
     )
   })
 
-  it("marks order as ANNULEE on error status", async () => {
+  it("sets EN_ATTENTE on error status (allows retry)", async () => {
     prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
     prismaMock.commande.update.mockResolvedValue({
       ...fakeCommande,
-      statut: "ANNULEE",
+      statut: "EN_ATTENTE",
     })
 
     const req = buildWebhookRequest({
       reference: "CMD-cmd_test-1234567890",
       status: "error",
       paymentRequestId: "pay_fail",
+      paymentMethod: "wave",
     })
 
     const res = await POST(req as never)
@@ -132,10 +139,66 @@ describe("Payment webhook — Jeko", () => {
       expect.objectContaining({
         where: { id: "cmd_test" },
         data: expect.objectContaining({
-          statut: "ANNULEE",
-          paiementId: "pay_fail",
+          statut: "EN_ATTENTE",
+          webhookTraite: false,
+          dernierEchecAt: expect.any(Date),
         }),
       })
     )
+  })
+
+  it("handles idempotent duplicate webhook (already processed)", async () => {
+    prismaMock.commande.findUnique.mockResolvedValue({
+      ...fakeCommande,
+      webhookTraite: true,
+      statut: "PAYEE",
+    })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "success",
+      paymentRequestId: "pay_dup",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+
+    const data = await res.json()
+    expect(data.alreadyProcessed).toBe(true)
+    expect(prismaMock.commande.update).not.toHaveBeenCalled()
+  })
+
+  it("handles compound commandeId with hyphens", async () => {
+    prismaMock.commande.findUnique.mockResolvedValue(null)
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cuid-abc-def-1234567890",
+      status: "success",
+      paymentRequestId: "pay_123",
+    })
+
+    const res = await POST(req as never)
+    // Returns 404 because commande not found, but proves the parsing works
+    expect(res.status).toBe(404)
+    expect(prismaMock.commande.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "cuid-abc-def" },
+      })
+    )
+  })
+
+  it("ignores unknown status values gracefully", async () => {
+    prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "pending",
+      paymentRequestId: "pay_pending",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    // No update called for unknown status
+    expect(prismaMock.commande.update).not.toHaveBeenCalled()
   })
 })

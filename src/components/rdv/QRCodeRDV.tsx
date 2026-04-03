@@ -146,7 +146,7 @@ export default function QRCodeRDV({ rdv, isOpen, onClose }: QRCodeRDVProps) {
                 />
               </div>
 
-              <p className="mt-4 text-center font-body text-[11px] text-text-muted-brand">
+              <p className="mt-4 text-center font-body text-xs text-text-muted-brand">
                 Présentez ce QR Code à votre arrivée à l&apos;institut
               </p>
 

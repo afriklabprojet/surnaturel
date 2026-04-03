@@ -5,7 +5,7 @@ import { HeroBoutique, BoutiqueCatalogue } from "@/components/boutique/BoutiqueC
 export default async function PageBoutique() {
   const LIMIT = 8
 
-  const [produitsData, total, promoConfig] = await Promise.all([
+  const [produitsData, total, promoConfig, categoriesConfig] = await Promise.all([
     prisma.produit.findMany({
       where: { actif: true },
       orderBy: { createdAt: "desc" },
@@ -24,6 +24,7 @@ export default async function PageBoutique() {
     }),
     prisma.produit.count({ where: { actif: true } }),
     prisma.appConfig.findUnique({ where: { cle: "bandeau_promo" } }),
+    prisma.appConfig.findUnique({ where: { cle: "categories_produit" } }),
   ])
 
   const thirtyDaysAgo = new Date()
@@ -49,6 +50,16 @@ export default async function PageBoutique() {
   const codePromo = promo?.actif ? promo.code : ""
   const promoPourcentage = promo?.actif ? promo.texte.match(/\d+%/)?.[0] || "10%" : "10%"
 
+  let categories: { label: string; value: string }[] = []
+  try {
+    if (categoriesConfig) {
+      const parsed = JSON.parse(categoriesConfig.valeur)
+      if (Array.isArray(parsed)) {
+        categories = parsed.filter((c) => c.value && c.value !== "TOUS" && c.value !== "all")
+      }
+    }
+  } catch { /* keep empty array */ }
+
   return (
     <Suspense>
       <HeroBoutique codePromo={codePromo} promoPourcentage={promoPourcentage} />
@@ -56,6 +67,7 @@ export default async function PageBoutique() {
         produitsInitiaux={produits}
         totalInitial={total}
         pagesInitiales={pages}
+        categoriesConfig={categories}
       />
     </Suspense>
   )

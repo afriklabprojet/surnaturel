@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const { photoUrl } = body as { photoUrl?: string }

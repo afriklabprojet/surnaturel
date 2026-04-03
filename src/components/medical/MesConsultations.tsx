@@ -153,7 +153,7 @@ export default function MesConsultations() {
                       {rdv.soin.nom}
                     </h4>
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 font-body text-[10px] font-medium uppercase tracking-[0.05em] ${cfg.className}`}
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 font-body text-xs font-medium uppercase tracking-[0.05em] ${cfg.className}`}
                     >
                       <Icon size={10} />
                       {cfg.label}

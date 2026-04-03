@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant landscape (@media (orientation: landscape) and (max-height: 500px));
 
 @theme inline {
   --color-background: var(--background);
@@ -21,9 +22,9 @@
   --color-admin-panel-deep: #0D1409;
   --color-admin-panel-mid: #1A2E14;
   --color-admin-panel-dark: #111810;
-  --color-gold: #B8972A;
+  --color-gold: #9A7B22;
   --color-gold-light: #F5EDD6;
-  --color-gold-dark: #92610A;
+  --color-gold-dark: #7A6119;
   --color-text-main: #1C1C1C;
   --color-text-mid: #4A4A4A;
   --color-text-muted-brand: #8A8A8A;
@@ -82,9 +83,9 @@
   --color-admin-panel-deep: #0D1409;
   --color-admin-panel-mid: #1A2E14;
   --color-admin-panel-dark: #111810;
-  --color-gold: #B8972A;
+  --color-gold: #9A7B22;
   --color-gold-light: #F5EDD6;
-  --color-gold-dark: #92610A;
+  --color-gold-dark: #7A6119;
   --color-bg: #FAFAF7;
   --color-bg-subtle: #FDFCFA;
   --color-bg-card: #FFFFFF;
@@ -109,18 +110,18 @@
   --secondary-foreground: #1A5C10;
   --muted: #F5F3EF;
   --muted-foreground: #8A8A8A;
-  --accent: #B8972A;
+  --accent: #9A7B22;
   --accent-foreground: #FFFFFF;
   --destructive: #DC2626;
   --border: #E8E4DC;
   --input: #E8E4DC;
-  --ring: #B8972A;
+  --ring: #9A7B22;
   --chart-1: #2D7A1F;
-  --chart-2: #B8972A;
+  --chart-2: #9A7B22;
   --chart-3: #16A34A;
   --chart-4: #1A5C10;
   --chart-5: #F5EDD6;
-  --radius: 0rem;
+  --radius: 0.5rem;
   --sidebar: #FAFAF7;
   --sidebar-foreground: #1C1C1C;
   --sidebar-primary: #2D7A1F;
@@ -128,7 +129,7 @@
   --sidebar-accent: #E8F5E3;
   --sidebar-accent-foreground: #1A5C10;
   --sidebar-border: #E8E4DC;
-  --sidebar-ring: #B8972A;
+  --sidebar-ring: #9A7B22;
 }
 
 .dark {
@@ -204,17 +205,69 @@
   html {
     @apply font-sans;
   }
-  /* Dark mode: override common hardcoded colors */
-  .dark .bg-white { background-color: var(--color-bg-card) !important; }
-  .dark .bg-gray-50 { background-color: var(--color-bg-subtle) !important; }
-  .dark .bg-gray-100 { background-color: #1A1A18 !important; }
-  .dark .text-gray-500 { color: var(--color-text-muted) !important; }
-  .dark .text-gray-600 { color: var(--color-text-mid) !important; }
-  .dark .text-gray-700 { color: var(--color-text-mid) !important; }
-  .dark .text-gray-900 { color: var(--color-text) !important; }
-  .dark .border-gray-200 { border-color: var(--color-border) !important; }
-  .dark .border-gray-100 { border-color: var(--color-border) !important; }
-  .dark .hover\:bg-gray-50:hover { background-color: var(--color-bg-subtle) !important; }
+
+  /* Dark mode: scrollbar */
+  .dark ::-webkit-scrollbar { width: 6px; }
+  .dark ::-webkit-scrollbar-track { background: var(--color-bg); }
+  .dark ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+  .dark ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+}
+
+/*
+ * Dark mode: semantic overrides for hardcoded Tailwind utility classes.
+ * These live in @layer utilities so specificity beats the original single-class
+ * utilities (.dark .bg-white → 2 classes > .bg-white → 1 class) with no !important.
+ */
+@layer utilities {
+  /* Backgrounds */
+  .dark .bg-white { background-color: var(--color-bg-card); }
+  .dark .bg-white\/95 { background-color: color-mix(in srgb, var(--color-bg-card) 95%, transparent); }
+  .dark .bg-white\/90 { background-color: color-mix(in srgb, var(--color-bg-card) 90%, transparent); }
+  .dark .bg-white\/80 { background-color: color-mix(in srgb, var(--color-bg-card) 80%, transparent); }
+  .dark .bg-gray-50 { background-color: var(--color-bg-subtle); }
+  .dark .bg-gray-100 { background-color: #1A1A18; }
+  .dark .bg-red-50 { background-color: #2A1515; }
+
+  /* Text */
+  .dark .text-gray-500 { color: var(--color-text-muted); }
+  .dark .text-gray-600 { color: var(--color-text-mid); }
+  .dark .text-gray-700 { color: var(--color-text-mid); }
+  .dark .text-gray-900 { color: var(--color-text); }
+  .dark .text-neutral-500 { color: var(--color-text-mid); }
+
+  /* Borders */
+  .dark .border-gray-200 { border-color: var(--color-border); }
+  .dark .border-gray-100 { border-color: var(--color-border); }
+  .dark .border-red-200 { border-color: #5C2020; }
+
+  /* Hover / focus states */
+  .dark .hover\:bg-gray-50:hover { background-color: var(--color-bg-subtle); }
+  .dark .hover\:bg-white:hover { background-color: var(--color-bg-card); }
+  .dark .focus\:bg-white:focus { background-color: var(--color-bg-card); }
+  .dark .supports-backdrop-filter\:bg-white\/80 { background-color: color-mix(in srgb, var(--color-bg-card) 80%, transparent); }
+
+  /* Form inputs */
+  .dark input, .dark textarea, .dark select { color: var(--color-text); }
+  .dark input::placeholder, .dark textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+  }
+
+  /* Brand accent tokens */
+  .dark .bg-gold-light { background-color: var(--color-gold-light); }
+  .dark .bg-primary-light { background-color: var(--color-primary-light); }
+
+  /* Colored status badges */
+  .dark .bg-amber-100 { background-color: #3D2E0A; }
+  .dark .text-amber-700 { color: #E8B83A; }
+  .dark .bg-blue-100 { background-color: #0F1E3D; }
+  .dark .text-blue-700 { color: #60A5FA; }
+  .dark .bg-green-100 { background-color: #0F2E1A; }
+  .dark .text-green-700 { color: #4ADE80; }
+  .dark .text-green-600 { color: #4ADE80; }
+  .dark .text-red-500 { color: #F87171; }
+  .dark .text-red-600 { color: #F87171; }
+  .dark .text-red-800 { color: #FCA5A5; }
 }
 
 /* Navbar dropdown animation (replaces framer-motion) */
@@ -233,6 +286,21 @@
   animation: slide-in-right 0.3s ease-out both;
 }
 
+/* Shimmer skeleton loading animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--color-border) 25%, var(--color-bg-subtle) 50%, var(--color-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, var(--color-border) 25%, #2A2A28 50%, var(--color-border) 75%);
+  background-size: 200% 100%;
+}
+
 /* ─── Accessibilité : prefers-reduced-motion ─── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -242,5 +310,110 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Écrans très petits (<340px) ─── */
+@media (max-width: 339px) {
+  /* Réduire tailles de police */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Compacter les espaces */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Boutons plus compacts */
+  button, [role="button"] {
+    min-height: 40px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Cards plus serrées */
+  .space-y-6 { gap: 1rem; }
+  .space-y-4, .space-y-5 { gap: 0.75rem; }
+  .p-6 { padding: 0.875rem; }
+  .p-5 { padding: 0.75rem; }
+  .p-4 { padding: 0.5rem; }
+  .gap-4, .gap-5, .gap-6 { gap: 0.75rem; }
+  
+  /* Texte plus petit pour les éléments de formulaire */
+  input, select, textarea {
+    font-size: 14px;
+    padding: 0.625rem 0.75rem;
+  }
+  
+  /* Navigation réduite */
+  nav .font-display {
+    font-size: 1rem;
+  }
+  
+  /* Grilles en colonne unique sur très petits écrans */
+  .grid-cols-2:not(.force-grid) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Mode paysage mobile ─── */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Layout plus horizontal */
+  .min-h-screen {
+    min-height: 100svh;
+  }
+  
+  /* Réduire paddings verticaux */
+  .py-8, .py-10, .py-12, .py-16, .py-20 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  /* Header plus compact */
+  header {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Hero sections plus compacts */
+  .hero, [class*="hero"] {
+    min-height: auto;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  /* Modals et overlays adaptés */
+  [role="dialog"] {
+    max-height: 90svh;
+    overflow-y: auto;
+  }
+  
+  /* Formulaires en ligne si possible */
+  .space-y-4:not(.force-stack) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .space-y-4:not(.force-stack) > * {
+    flex: 1 1 200px;
+  }
+}
+
+/* ─── Safe Area Insets (iPhone X+, Android avec encoche) ─── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  /* Navigation fixe en bas */
+  .fixed-bottom-nav {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+  }
+  
+  /* Modals avec safe area */
+  [role="dialog"] {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }

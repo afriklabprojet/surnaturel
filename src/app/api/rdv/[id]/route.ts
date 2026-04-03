@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { notifierRDVAnnule } from "@/lib/notifications"
+import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 
 export async function GET(
   _request: Request,
@@ -89,10 +90,37 @@ export async function PATCH(
     )
   }
 
+  // Stocker les infos avant mise à jour pour notification Pusher
+  const creneauCle = rdv.creneauCle
+  const soinId = rdv.soinId
+  const dateHeure = rdv.dateHeure
+
   await prisma.rendezVous.update({
     where: { id },
-    data: { statut: "ANNULE" },
+    data: { 
+      statut: "ANNULE",
+      creneauCle: null, // Libérer le créneau pour d'autres réservations
+    },
   })
+
+  // Notifier en temps réel que ce créneau est de nouveau disponible
+  if (creneauCle) {
+    try {
+      const pusher = getPusherServeur()
+      const dateStr = dateHeure.toISOString().split("T")[0]
+      await pusher.trigger(
+        PUSHER_CHANNELS.creneaux(soinId, dateStr),
+        PUSHER_EVENTS.CRENEAU_LIBERE,
+        {
+          soinId,
+          dateHeure: dateHeure.toISOString(),
+          creneauCle,
+        }
+      )
+    } catch {
+      // Notification temps réel optionnelle
+    }
+  }
 
   // Notification in-app
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 
 export async function PATCH(
   _req: NextRequest,
@@ -21,8 +22,27 @@ export async function PATCH(
       destinataireId: currentUserId,
       lu: false,
     },
-    data: { lu: true },
+    data: { lu: true, luLe: new Date() },
   })
+
+  // Reset le compteur de non-lus dans la Conversation dénormalisée
+  if (result.count > 0) {
+    const [pA, pB] = [currentUserId, userId].sort()
+    const isCurrentA = currentUserId === pA
+    await prisma.conversation.updateMany({
+      where: { participantAId: pA, participantBId: pB },
+      data: isCurrentA ? { nonLusA: 0 } : { nonLusB: 0 },
+    })
+  }
+
+  // Notifier l'expéditeur en temps réel que ses messages ont été lus
+  if (result.count > 0) {
+    const pusher = getPusherServeur()
+    const channelName = PUSHER_CHANNELS.conversation(userId, currentUserId)
+    await pusher.trigger(channelName, PUSHER_EVENTS.MESSAGE_LU, {
+      parUserId: currentUserId,
+    })
+  }
 
   return NextResponse.json({
     success: true,

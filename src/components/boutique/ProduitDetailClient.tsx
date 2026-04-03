@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { toast } from "sonner"
 import {
   ShoppingCart,
   Minus,
@@ -81,6 +82,7 @@ export default function ProduitDetailClient({
       stock: produit.stock,
     })
     setAjouteAuPanier(true)
+    toast.success(`${quantite}x ${produit.nom} ajouté au panier`)
     setTimeout(() => {
       setAjouteAuPanier(false)
       setQuantite(1)
@@ -102,7 +104,7 @@ export default function ProduitDetailClient({
           {produit.imageUrl ? (
             <Image
               src={produit.imageUrl}
-              alt={produit.nom}
+              alt={`Photo du produit ${produit.nom} - Le Surnaturel de Dieu`}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -114,7 +116,7 @@ export default function ProduitDetailClient({
             </div>
           )}
           {produit.stock > 0 && produit.stock < 5 && (
-            <span className="absolute right-4 top-4 bg-orange-500 px-3 py-1 font-body text-[11px] font-semibold text-white">
+            <span className="absolute right-4 top-4 bg-orange-500 px-3 py-1 font-body text-xs font-semibold text-white">
               Plus que {produit.stock} en stock
             </span>
           )}
@@ -125,7 +127,7 @@ export default function ProduitDetailClient({
 
         {/* Infos */}
         <div className="flex flex-col justify-center">
-          <p className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand">
+          <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-primary-brand">
             {produit.categorie}
           </p>
           <h1 className="mt-2 font-display text-[28px] font-light text-text-main sm:text-[34px]">
@@ -140,7 +142,7 @@ export default function ProduitDetailClient({
                 <p className="font-body text-[14px] text-text-muted-brand line-through">
                   {formatPrix(produit.prix)}
                 </p>
-                <span className="bg-gold px-2 py-0.5 font-body text-[10px] font-semibold uppercase text-white">
+                <span className="bg-gold px-2 py-0.5 font-body text-xs font-semibold uppercase text-white">
                   -{reduction}%
                 </span>
               </>
@@ -161,7 +163,7 @@ export default function ProduitDetailClient({
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-2">
                 <item.icon size={14} className="text-primary-brand shrink-0" />
-                <span className="font-body text-[11px] text-text-mid">{item.text}</span>
+                <span className="font-body text-xs text-text-mid">{item.text}</span>
               </div>
             ))}
           </div>
@@ -194,7 +196,7 @@ export default function ProduitDetailClient({
               <button
                 onClick={handleAddToCart}
                 disabled={ajouteAuPanier}
-                className={`flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 ${
+                className={`flex items-center justify-center gap-2 w-full px-6 py-3.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 ${
                   ajouteAuPanier
                     ? "bg-success"
                     : "bg-primary-brand hover:bg-primary-dark"
@@ -232,7 +234,7 @@ export default function ProduitDetailClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 font-body text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-200 ${
+              className={`px-6 py-3 font-body text-xs font-medium uppercase tracking-[0.12em] transition-colors duration-200 ${
                 activeTab === tab.id
                   ? "border-b-2 border-primary-brand text-primary-brand"
                   : "text-text-muted-brand hover:text-text-main"
@@ -317,7 +319,7 @@ export default function ProduitDetailClient({
                     {s.imageUrl && (
                       <Image
                         src={s.imageUrl}
-                        alt={s.nom}
+                        alt={`Photo du produit ${s.nom} - Produit similaire`}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

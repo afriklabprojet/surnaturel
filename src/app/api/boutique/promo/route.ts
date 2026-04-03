@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Corps invalide." }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = schema.safeParse(body)

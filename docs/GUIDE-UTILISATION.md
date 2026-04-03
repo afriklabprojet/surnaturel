@@ -111,9 +111,8 @@
 
 ### Les produits
 
-- Les produits sont définis dans le code source (fichier `produits-data.ts`)
-- Pour ajouter/modifier des produits, voir le
-  [Guide de Maintenance](MAINTENANCE.md)
+- Les produits sont gérés via le panneau d'administration
+- Menu admin > **"Boutique"** pour ajouter, modifier ou supprimer des produits
 
 ---
 

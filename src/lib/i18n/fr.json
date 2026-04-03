@@ -56,7 +56,7 @@
     "message": "Message",
     "envoyer": "Envoyer le message",
     "succes": "Message envoyé avec succès !",
-    "erreur": "Erreur lors de l'envoi."
+    "erreur": "Votre message n'a pas pu être envoyé. Réessayez."
   },
   "auth": {
     "connexion": "Connexion",

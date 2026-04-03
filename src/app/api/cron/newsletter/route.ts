@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailNewsletter } from "@/lib/email"
@@ -156,7 +157,7 @@ export async function GET(request: Request) {
           )
           envoyes++
         } catch (error) {
-          console.error(`Erreur envoi newsletter à ${abonne.email}:`, error)
+          logger.error(`Erreur envoi newsletter à ${abonne.email}:`, error)
           erreurs++
         }
       })
@@ -180,7 +181,7 @@ export async function GET(request: Request) {
       total: abonnes.length,
     })
   } catch (error) {
-    console.error("Erreur cron newsletter:", error)
+    logger.error("Erreur cron newsletter:", error)
     return NextResponse.json(
       { error: "Erreur lors de l'envoi de la newsletter" },
       { status: 500 }

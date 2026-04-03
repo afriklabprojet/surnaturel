@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailOnboarding } from "@/lib/email"
@@ -81,13 +82,11 @@ export async function GET(request: Request) {
 
           results[`step${step}`].sent++
         } catch (error) {
-          console.error(`[CRON Onboarding] Erreur envoi step ${step} à ${user.email}:`, error)
+          logger.error(`[CRON Onboarding] Erreur envoi step ${step} à ${user.email}:`, error)
           results[`step${step}`].errors++
         }
       }
     }
-
-    console.log("[CRON Onboarding] Résultats:", results)
 
     return NextResponse.json({
       success: true,
@@ -95,7 +94,7 @@ export async function GET(request: Request) {
       results,
     })
   } catch (error) {
-    console.error("[CRON Onboarding] Erreur globale:", error)
+    logger.error("[CRON Onboarding] Erreur globale:", error)
     return NextResponse.json(
       { error: "Erreur lors de l'envoi des emails d'onboarding" },
       { status: 500 }

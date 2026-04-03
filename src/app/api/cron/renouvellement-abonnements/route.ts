@@ -1,5 +1,7 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { envoyerEmailRenouvellementAbonnement } from "@/lib/email"
 
 /**
  * CRON pour renouveler les abonnements mensuels
@@ -87,8 +89,22 @@ export async function GET(request: Request) {
         renouveles++
         details.push({ id: abonnement.id, success: true })
 
-        // TODO: Envoyer notification de renouvellement
-        // await envoyerEmailRenouvellement(abonnement.user.email, ...)
+        // Envoyer notification de renouvellement
+        try {
+          await envoyerEmailRenouvellementAbonnement({
+            destinataire: abonnement.user.email,
+            prenom: abonnement.user.prenom,
+            formule: abonnement.formule.nom,
+            montant: abonnement.formule.prixMensuel,
+            prochainPaiement: prochainPaiement.toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+          })
+        } catch {
+          // Ne pas bloquer le renouvellement si l'email échoue
+        }
       } catch (err) {
         erreurs++
         details.push({
@@ -134,7 +150,7 @@ export async function GET(request: Request) {
       details,
     })
   } catch (error) {
-    console.error("Erreur CRON renouvellement abonnements:", error)
+    logger.error("Erreur CRON renouvellement abonnements:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

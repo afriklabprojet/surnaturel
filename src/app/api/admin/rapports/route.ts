@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { subMonths, startOfMonth, endOfMonth, format } from "date-fns"
+import { subMonths, startOfMonth, format } from "date-fns"
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -62,24 +62,33 @@ export async function GET(req: NextRequest) {
     }),
   ])
 
-  // Monthly revenue for the last 6 months
+  // Revenu mensuel sur 6 mois — une seule requête GROUP BY au lieu de 12 requêtes séquentielles
   const now = new Date()
+  const [revenuMensuelRaw, rdvMensuelRaw] = await Promise.all([
+    prisma.$queryRaw<{ mois: Date; ca: number }[]>`
+      SELECT date_trunc('month', "createdAt") AS mois, COALESCE(SUM(total), 0)::float AS ca
+      FROM "Commande"
+      WHERE "createdAt" >= ${subMonths(now, 5)}
+        AND statut != 'ANNULEE'
+      GROUP BY mois
+      ORDER BY mois ASC
+    `,
+    prisma.$queryRaw<{ mois: Date; rdv: number }[]>`
+      SELECT date_trunc('month', "dateHeure") AS mois, COUNT(*)::int AS rdv
+      FROM "RendezVous"
+      WHERE "dateHeure" >= ${subMonths(now, 5)}
+      GROUP BY mois
+      ORDER BY mois ASC
+    `,
+  ])
+
   const revenuMensuel: { mois: string; ca: number; rdv: number }[] = []
   for (let i = 5; i >= 0; i--) {
     const mStart = startOfMonth(subMonths(now, i))
-    const mEnd = endOfMonth(subMonths(now, i))
-    const [ca, rdvCount] = await Promise.all([
-      prisma.commande.aggregate({
-        _sum: { total: true },
-        where: { createdAt: { gte: mStart, lte: mEnd }, statut: { not: "ANNULEE" } },
-      }),
-      prisma.rendezVous.count({ where: { dateHeure: { gte: mStart, lte: mEnd } } }),
-    ])
-    revenuMensuel.push({
-      mois: format(mStart, "MMM yyyy"),
-      ca: ca._sum.total || 0,
-      rdv: rdvCount,
-    })
+    const key = format(mStart, "MMM yyyy")
+    const caRow = revenuMensuelRaw.find((r) => format(new Date(r.mois), "MMM yyyy") === key)
+    const rdvRow = rdvMensuelRaw.find((r) => format(new Date(r.mois), "MMM yyyy") === key)
+    revenuMensuel.push({ mois: key, ca: caRow?.ca ?? 0, rdv: rdvRow?.rdv ?? 0 })
   }
 
   // Soins noms

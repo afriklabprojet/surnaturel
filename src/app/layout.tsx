@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Suspense } from "react";
+import CookieConsent from "@/components/layout/CookieConsent";
 import { Toaster } from "sonner";
 import { CartProvider } from "@/lib/cart-context";
 import { I18nProvider } from "@/lib/i18n";
 import SessionWrapper from "@/components/providers/SessionWrapper";
+import { SiteConfigProvider } from "@/components/providers/SiteConfigProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import PostHogProvider from "@/components/providers/PostHogProvider";
+import PwaInstallPrompt from "@/components/layout/PwaInstallPrompt";
+import { getConfig } from "@/lib/config";
+import { auth } from "@/lib/auth";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -55,16 +60,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const config = await getConfig()
+  const session = await auth()
   return (
     <html
       lang="fr"
-      className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
       suppressHydrationWarning
+      className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
@@ -75,23 +82,23 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "HealthAndBeautyBusiness",
-              name: "Le Surnaturel de Dieu",
+              name: config.nomCentre,
               description: "Institut de bien-être holistique à Abidjan — Hammam, gommage, soins du visage, post-accouchement, sage-femme et boutique de produits naturels.",
               url: APP_URL,
-              telephone: "+2250778520699",
-              email: "contact@surnatureldedieu.com",
+              telephone: config.telephoneTel,
+              email: config.email,
               address: {
                 "@type": "PostalAddress",
-                streetAddress: "Cocody, Riviera Palmeraie",
-                addressLocality: "Abidjan",
-                addressRegion: "Abidjan",
-                postalCode: "00225",
+                streetAddress: config.adresse,
+                addressLocality: config.ville,
+                addressRegion: config.ville,
+                postalCode: "",
                 addressCountry: "CI",
               },
               geo: {
                 "@type": "GeoCoordinates",
-                latitude: 5.3600,
-                longitude: -3.9700,
+                latitude: config.latitude,
+                longitude: config.longitude,
               },
               openingHoursSpecification: [
                 { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], opens: "08:00", closes: "19:00" },
@@ -117,22 +124,30 @@ export default function RootLayout({
                 ],
               },
               sameAs: [
-                "https://www.facebook.com/surnatureldedieu",
-                "https://www.instagram.com/surnatureldedieu",
+                config.facebook,
+                config.instagram,
               ],
             }),
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main dark:bg-slate-900 dark:text-slate-100">
+      <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-9999 focus:bg-primary-brand focus:text-white focus:px-4 focus:py-2 focus:font-body focus:text-sm">Aller au contenu principal</a>
         <ThemeProvider>
-        <SessionWrapper>
+        <SiteConfigProvider config={config}>
+        <SessionWrapper session={session}>
           <I18nProvider>
             <CartProvider>
-              {children}
+              <Suspense>
+                <PostHogProvider>
+                  <main id="main-content">{children}</main>
+                </PostHogProvider>
+              </Suspense>
             </CartProvider>
           </I18nProvider>
         </SessionWrapper>
+        <PwaInstallPrompt />
+        </SiteConfigProvider>
         </ThemeProvider>
         <Toaster
           position="top-right"
@@ -146,14 +161,15 @@ export default function RootLayout({
             },
             style: {
               border: "1px solid var(--color-border)",
+              backgroundColor: "var(--color-bg-card)",
+              color: "var(--color-text)",
             },
           }}
         />
-        <Analytics />
-        <SpeedInsights />
+        <CookieConsent />
         <script
           dangerouslySetInnerHTML={{
-            __html: `if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js")})}`,
+            __html: `if("serviceWorker" in navigator){if(location.hostname==="localhost"){navigator.serviceWorker.getRegistrations().then(rs=>{rs.forEach(r=>r.unregister())})}else{window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js")})}}`
           }}
         />
       </body>

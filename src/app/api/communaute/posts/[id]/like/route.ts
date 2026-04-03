@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 interface Params { params: Promise<{ id: string }> }
 
-// POST — Toggle like
+// POST — Toggle like (stocké comme Reaction de type "👍" — Like unifié)
 export async function POST(_req: NextRequest, { params }: Params) {
   const session = await auth()
   if (!session?.user) {
@@ -13,17 +13,17 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
   const { id: postId } = await params
 
-  const existing = await prisma.like.findUnique({
+  const existing = await prisma.reaction.findUnique({
     where: { postId_userId: { postId, userId: session.user.id } },
   })
 
   if (existing) {
-    await prisma.like.delete({ where: { id: existing.id } })
+    await prisma.reaction.delete({ where: { id: existing.id } })
     return NextResponse.json({ liked: false })
   }
 
-  await prisma.like.create({
-    data: { postId, userId: session.user.id },
+  await prisma.reaction.create({
+    data: { postId, userId: session.user.id, type: "👍" },
   })
 
   return NextResponse.json({ liked: true })

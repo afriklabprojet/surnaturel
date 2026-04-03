@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { creerPaiement, type JekoPaymentMethod } from "@/lib/jeko"
+import { capturePaymentError } from "@/lib/sentry"
 
 const paiementSchema = z.object({
   commandeId: z.string().min(1),
@@ -12,7 +13,7 @@ const paiementSchema = z.object({
 export async function POST(request: Request) {
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    return NextResponse.json({ error: "Connectez-vous pour effectuer un paiement." }, { status: 401 })
   }
 
   let body: unknown
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     body = await request.json()
   } catch {
     return NextResponse.json(
-      { error: "Corps de requête invalide." },
+      { error: "Les informations envoyées sont incorrectes. Veuillez réessayer." },
       { status: 400 }
     )
   }
@@ -47,10 +48,10 @@ export async function POST(request: Request) {
     }
 
     if (commande.userId !== session.user.id) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 403 })
+      return NextResponse.json({ error: "Vous n'avez pas accès à cette commande." }, { status: 403 })
     }
 
-    if (commande.statut !== "EN_ATTENTE") {
+    if (commande.statut !== "EN_ATTENTE" && commande.statut !== "PAIEMENT_EN_COURS") {
       return NextResponse.json(
         { error: "Cette commande a déjà été traitée." },
         { status: 400 }
@@ -66,13 +67,23 @@ export async function POST(request: Request) {
 
     await prisma.commande.update({
       where: { id: commandeId },
-      data: { paiementId },
+      data: {
+        paiementId,
+        statut: "PAIEMENT_EN_COURS",
+        methodePaiement: methode,
+        tentativesPaiement: { increment: 1 },
+      },
     })
 
     return NextResponse.json({ redirectUrl })
-  } catch {
+  } catch (error) {
+    capturePaymentError(error, commandeId, {
+      commandeId,
+      montant: undefined,
+      methode,
+    })
     return NextResponse.json(
-      { error: "Erreur lors de l'initiation du paiement." },
+      { error: "Le paiement n'a pas pu démarrer. Vérifiez vos informations et réessayez." },
       { status: 500 }
     )
   }

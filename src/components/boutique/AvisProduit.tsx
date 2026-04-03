@@ -196,7 +196,7 @@ export default function AvisProduit({ produitId, produitNom }: AvisProduitProps)
         setCommentaireForm("")
         fetchAvis()
       } else {
-        setMessage({ type: "error", text: data.error || "Erreur lors de l'envoi" })
+        setMessage({ type: "error", text: data.error || "Votre avis n'a pas pu être envoyé. Réessayez." })
       }
     } catch {
       setMessage({ type: "error", text: "Erreur de connexion" })
@@ -260,7 +260,7 @@ export default function AvisProduit({ produitId, produitNom }: AvisProduitProps)
         {session?.user ? (
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-primary-brand px-6 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark"
+            className="bg-primary-brand px-6 py-2.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark"
           >
             Donner mon avis
           </button>
@@ -355,7 +355,7 @@ export default function AvisProduit({ produitId, produitNom }: AvisProduitProps)
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center justify-center gap-2 bg-primary-brand px-6 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-primary-brand px-6 py-2.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-50"
             >
               {submitting && <Loader2 size={14} className="animate-spin" />}
               Publier mon avis
@@ -363,7 +363,7 @@ export default function AvisProduit({ produitId, produitNom }: AvisProduitProps)
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="border border-border-brand px-6 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-text-mid transition-colors duration-300 hover:bg-bg-page"
+              className="border border-border-brand px-6 py-2.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-text-mid transition-colors duration-300 hover:bg-bg-page"
             >
               Annuler
             </button>
@@ -378,12 +378,34 @@ export default function AvisProduit({ produitId, produitNom }: AvisProduitProps)
         </div>
       ) : avis.length === 0 ? (
         <div className="mt-8 text-center py-12 border border-border-brand bg-bg-page">
-          <p className="font-body text-[15px] text-text-mid">
-            Aucun avis pour le moment.
+          <div className="relative mx-auto mb-4 w-fit">
+            <div className="absolute -inset-3 bg-gold-light opacity-40" />
+            <div className="relative flex h-14 w-14 items-center justify-center bg-white">
+              <Star size={28} className="text-gold" strokeWidth={1.5} />
+            </div>
+          </div>
+          <h4 className="font-display text-[18px] font-light text-text-main">
+            Aucun avis pour le moment
+          </h4>
+          <p className="font-body text-[13px] text-text-muted-brand mt-1 max-w-xs mx-auto">
+            Soyez le premier à donner votre avis sur ce produit !
           </p>
-          <p className="font-body text-[13px] text-text-muted-brand mt-1">
-            Soyez le premier à donner votre avis !
-          </p>
+          {session?.user ? (
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-4 inline-flex items-center gap-2 border border-primary-brand px-5 py-2 font-body text-[11px] uppercase tracking-widest text-primary-brand transition-colors hover:bg-primary-brand hover:text-white"
+            >
+              <Star size={14} />
+              Laisser un avis
+            </button>
+          ) : (
+            <p className="mt-4 font-body text-[12px] text-text-muted-brand">
+              <a href="/connexion" className="text-primary-brand underline">
+                Connectez-vous
+              </a>{" "}
+              pour donner votre avis
+            </p>
+          )}
         </div>
       ) : (
         <div className="mt-8 space-y-6">
@@ -416,7 +438,7 @@ export default function AvisProduit({ produitId, produitNom }: AvisProduitProps)
                     <div className="flex items-center gap-2">
                       <StarsDisplay note={a.note} size={14} />
                       {a.verifie && (
-                        <span className="flex items-center gap-1 font-body text-[11px] text-success">
+                        <span className="flex items-center gap-1 font-body text-xs text-success">
                           <CheckCircle size={12} />
                           Achat vérifié
                         </span>

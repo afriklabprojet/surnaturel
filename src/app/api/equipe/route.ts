@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -9,7 +10,7 @@ export async function GET() {
     })
     return NextResponse.json({ membres })
   } catch (error) {
-    console.error("Erreur GET /api/equipe:", error)
+    logger.error("Erreur GET /api/equipe:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

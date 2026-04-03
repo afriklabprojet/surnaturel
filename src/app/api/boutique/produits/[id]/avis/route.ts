@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 // ─── GET: Récupérer les avis d'un produit ────────────────────────
 
@@ -111,7 +112,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error("[API] Erreur récupération avis:", error)
+    logger.error("[API] Erreur récupération avis:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }
@@ -146,7 +147,7 @@ export async function POST(
 
     if (!result.success) {
       return NextResponse.json(
-        { error: "Données invalides", details: result.error.flatten() },
+        { error: "Données invalides", details: z.flattenError(result.error) },
         { status: 400 }
       )
     }
@@ -247,7 +248,7 @@ export async function POST(
       pointsGagnes: pointsFidelite ? 10 : 0,
     })
   } catch (error) {
-    console.error("[API] Erreur création avis:", error)
+    logger.error("[API] Erreur création avis:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }
@@ -282,7 +283,7 @@ export async function PATCH(
       utile: avis.utile,
     })
   } catch (error) {
-    console.error("[API] Erreur vote avis:", error)
+    logger.error("[API] Erreur vote avis:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

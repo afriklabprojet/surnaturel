@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -74,7 +75,7 @@ export async function GET(
       similaires: [...similaires, ...autresProduits],
     })
   } catch (error) {
-    console.error("Erreur API produit:", error)
+    logger.error("Erreur API produit:", error)
     return NextResponse.json(
       { error: "Erreur lors de la récupération du produit" },
       { status: 500 }

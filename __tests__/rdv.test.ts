@@ -30,7 +30,7 @@ describe("RDV — Prise de rendez-vous", () => {
 
   it("books a free slot (201)", async () => {
     prismaMock.soin.findUnique.mockResolvedValue(fakeSoin)
-    prismaMock.rendezVous.findFirst.mockResolvedValue(null) // slot free
+    prismaMock.rendezVous.findUnique.mockResolvedValue(null) // slot free
     prismaMock.rendezVous.create.mockResolvedValue({
       id: "rdv_1",
       soin: fakeSoin,
@@ -52,7 +52,7 @@ describe("RDV — Prise de rendez-vous", () => {
 
   it("rejects booking on an already-taken slot (409)", async () => {
     prismaMock.soin.findUnique.mockResolvedValue(fakeSoin)
-    prismaMock.rendezVous.findFirst.mockResolvedValue({ id: "rdv_existing" }) // slot taken
+    prismaMock.rendezVous.findUnique.mockResolvedValue({ id: "rdv_existing" }) // slot taken
 
     const dateHeure = new Date(Date.now() + 86400_000).toISOString()
     const req = buildJsonRequest("/api/rdv", {
@@ -64,7 +64,7 @@ describe("RDV — Prise de rendez-vous", () => {
     const json = await res.json()
 
     expect(res.status).toBe(409)
-    expect(json.error).toContain("déjà réservé")
+    expect(json.error).toContain("réservé")
   })
 
   it("rejects booking for unknown soin (404)", async () => {

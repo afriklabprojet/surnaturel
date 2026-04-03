@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 const videoSchema = z.object({
   titre: z.string().min(1, "Titre requis"),
@@ -49,7 +50,7 @@ export async function GET() {
       stats: { total, approuvees, vedettes },
     })
   } catch (error) {
-    console.error("Erreur récupération vidéos admin:", error)
+    logger.error("Erreur récupération vidéos admin:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, video }, { status: 201 })
   } catch (error) {
-    console.error("Erreur création vidéo:", error)
+    logger.error("Erreur création vidéo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

@@ -52,12 +52,12 @@ export async function PATCH(
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Corps invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = updateSchema.safeParse(body)
   if (!result.success) {
-    return NextResponse.json({ error: result.error.flatten() }, { status: 400 })
+    return NextResponse.json({ error: z.flattenError(result.error) }, { status: 400 })
   }
 
   const existe = await prisma.codePromo.findUnique({ where: { id } })

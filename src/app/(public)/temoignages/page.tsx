@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Star, Loader2, Quote } from "lucide-react"
+import { Star, Quote, ArrowRight } from "lucide-react"
+import { SkeletonTemoignages } from "@/components/ui/skeletons"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
 import Link from "next/link"
 
@@ -44,11 +45,7 @@ export default function PageAvis() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonTemoignages />
   }
 
   return (
@@ -61,7 +58,7 @@ export default function PageAvis() {
           animate="animate"
           className="mx-auto max-w-3xl text-center"
         >
-          <p className="font-body text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
+          <p className="font-body text-xs font-semibold uppercase tracking-[0.2em] text-gold">
             Avis clients
           </p>
           <h1 className="mt-4 font-display text-3xl font-light text-text-main sm:text-4xl">
@@ -116,7 +113,7 @@ export default function PageAvis() {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="w-6 font-body text-[10px] text-text-muted-brand">
+                    <span className="w-6 font-body text-xs text-text-muted-brand">
                       {count}
                     </span>
                   </div>
@@ -132,9 +129,26 @@ export default function PageAvis() {
         <div className="mx-auto max-w-5xl">
           {avis.length === 0 ? (
             <div className="py-20 text-center">
-              <p className="font-body text-sm text-text-muted-brand">
-                Aucun avis pour le moment. Soyez la première à partager votre expérience !
+              <div className="relative mx-auto mb-6 w-fit">
+                <div className="absolute -inset-4 bg-gold-light opacity-50" />
+                <div className="relative flex h-16 w-16 items-center justify-center bg-white">
+                  <Star size={32} className="text-gold" strokeWidth={1.5} />
+                </div>
+                <div className="absolute -right-2 -top-2 h-3 w-3 bg-gold opacity-60" />
+              </div>
+              <h3 className="font-display text-[22px] font-light text-text-main">
+                Aucun avis pour le moment
+              </h3>
+              <p className="mx-auto mt-2 max-w-sm font-body text-[13px] font-light leading-relaxed text-text-muted-brand">
+                Soyez la première à partager votre expérience avec nous !
               </p>
+              <Link
+                href="/prise-rdv"
+                className="mt-6 inline-flex items-center gap-2 border border-primary-brand bg-primary-brand px-6 py-2.5 font-body text-[12px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
+              >
+                Prendre rendez-vous
+                <ArrowRight size={14} />
+              </Link>
             </div>
           ) : (
             <motion.div
@@ -172,7 +186,7 @@ export default function PageAvis() {
                     <p className="font-display text-sm font-medium text-text-main">
                       {a.user.prenom} {a.user.nom.charAt(0)}.
                     </p>
-                    <p className="font-body text-[11px] text-gold">
+                    <p className="font-body text-xs text-gold">
                       {a.soin.nom}
                     </p>
                   </div>

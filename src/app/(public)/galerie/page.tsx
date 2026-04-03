@@ -69,7 +69,7 @@ export default function GaleriePage() {
         variants={fadeInUp}
         className="mb-12 text-center"
       >
-        <span className="font-body text-[11px] font-medium uppercase tracking-widest text-gold">
+        <span className="font-body text-xs font-medium uppercase tracking-widest text-gold">
           Résultats réels
         </span>
         <h1 className="mt-2 font-display text-[36px] font-light text-text-main sm:text-[48px]">
@@ -128,7 +128,7 @@ export default function GaleriePage() {
           </p>
           <Link
             href="/prise-rdv"
-            className="mt-6 inline-block bg-primary-brand px-6 py-3 font-body text-[11px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
+            className="mt-6 inline-block bg-primary-brand px-6 py-3 font-body text-xs uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
           >
             Prendre rendez-vous
           </Link>
@@ -149,7 +149,7 @@ export default function GaleriePage() {
               }}
             >
               {/* Comparaison visuelle */}
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-4/3 overflow-hidden">
                 {/* Image avant */}
                 <div className="absolute inset-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -170,15 +170,15 @@ export default function GaleriePage() {
                 </div>
                 {/* Labels */}
                 <div className="absolute bottom-3 left-3 flex gap-2">
-                  <span className="bg-black/60 px-2 py-1 font-body text-[10px] uppercase text-white group-hover:opacity-0">
+                  <span className="bg-black/60 px-2 py-1 font-body text-xs uppercase text-white group-hover:opacity-0">
                     Avant
                   </span>
-                  <span className="bg-primary-brand/80 px-2 py-1 font-body text-[10px] uppercase text-white opacity-0 group-hover:opacity-100">
+                  <span className="bg-primary-brand/80 px-2 py-1 font-body text-xs uppercase text-white opacity-0 group-hover:opacity-100">
                     Après
                   </span>
                 </div>
                 {/* Instruction */}
-                <div className="absolute right-3 top-3 bg-white/90 px-2 py-1 font-body text-[10px] text-text-mid opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="absolute right-3 top-3 bg-white/90 px-2 py-1 font-body text-xs text-text-mid opacity-0 transition-opacity group-hover:opacity-100">
                   Cliquez pour agrandir
                 </div>
               </div>
@@ -209,7 +209,7 @@ export default function GaleriePage() {
         </p>
         <Link
           href="/prise-rdv"
-          className="mt-6 inline-block bg-primary-brand px-8 py-4 font-body text-[11px] uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
+          className="mt-6 inline-block bg-primary-brand px-8 py-4 font-body text-xs uppercase tracking-widest text-white transition-colors hover:bg-primary-dark"
         >
           Réserver un soin
         </Link>
@@ -233,7 +233,7 @@ export default function GaleriePage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Image slider */}
-            <div className="relative aspect-[4/3] sm:aspect-[16/9]">
+            <div className="relative aspect-4/3 sm:aspect-video">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={showAfter ? selectedPhoto.imageApresUrl : selectedPhoto.imageAvantUrl}
@@ -264,7 +264,7 @@ export default function GaleriePage() {
                 <div className="flex overflow-hidden border border-border-brand bg-white">
                   <button
                     onClick={() => setShowAfter(false)}
-                    className={`px-4 py-2 font-body text-[11px] uppercase tracking-wider ${
+                    className={`px-4 py-2 font-body text-xs uppercase tracking-wider ${
                       !showAfter ? "bg-primary-brand text-white" : "text-text-mid"
                     }`}
                   >
@@ -272,7 +272,7 @@ export default function GaleriePage() {
                   </button>
                   <button
                     onClick={() => setShowAfter(true)}
-                    className={`px-4 py-2 font-body text-[11px] uppercase tracking-wider ${
+                    className={`px-4 py-2 font-body text-xs uppercase tracking-wider ${
                       showAfter ? "bg-primary-brand text-white" : "text-text-mid"
                     }`}
                   >

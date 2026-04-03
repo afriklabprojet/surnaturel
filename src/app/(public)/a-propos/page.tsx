@@ -4,27 +4,49 @@ import { MotionSection, MotionStagger, MotionItem } from "@/components/ui/Motion
 import { fadeInUp, fadeInLeft, fadeInRight, staggerContainer, staggerItem, cardHover } from "@/lib/animations"
 import { prisma } from "@/lib/prisma"
 import { getIcon } from "@/lib/icon-map"
+import { ImgAvecFallback } from "@/components/ui/ImgAvecFallback"
 
 export const metadata: Metadata = {
   title: "À propos | Le Surnaturel de Dieu — Institut de bien-être à Abidjan",
   description:
     "Fondé en 2015 par Marie Jeanne, Le Surnaturel de Dieu est un institut de bien-être dédié aux femmes d'Abidjan. Découvrez notre histoire, notre équipe et nos valeurs.",
+  alternates: { canonical: "/a-propos" },
 }
 
 export default async function PageAPropos() {
-  const [equipe, valeursConfig] = await Promise.all([
+  const [equipe, valeursConfig, fondatriceConfig] = await Promise.all([
     prisma.membreEquipe.findMany({ orderBy: { ordre: "asc" } }),
     prisma.appConfig.findUnique({ where: { cle: "valeurs" } }),
+    prisma.appConfig.findUnique({ where: { cle: "bio_fondatrice" } }),
   ])
 
+  const VALEURS_DEFAUT: Array<{ icon: string; titre: string; description: string }> = [
+    { icon: "Heart", titre: "Bienveillance", description: "Chaque cliente est accueillie avec chaleur, respect et sans jugement." },
+    { icon: "Shield", titre: "Confidentialité", description: "Vos données personnelles et médicales restent strictement privées." },
+    { icon: "Award", titre: "Excellence", description: "Nos praticiens sont formés et sélectionnés pour leur savoir-faire." },
+    { icon: "Leaf", titre: "Naturalité", description: "Nous privilégions des ingrédients naturels adaptés à la peau africaine." },
+  ]
   const VALEURS: Array<{ icon: string; titre: string; description: string }> =
-    valeursConfig ? JSON.parse(valeursConfig.valeur) : []
+    (valeursConfig ? (JSON.parse(valeursConfig.valeur) as Array<{ icon: string; titre: string; description: string }>) : null) ?? VALEURS_DEFAUT
+
+  const fondatrice = fondatriceConfig ? JSON.parse(fondatriceConfig.valeur) as {
+    nom?: string; tag?: string; paragraphes?: string[]
+  } : {}
+  const fondNom = fondatrice.nom || "Marie Jeanne"
+  const fondTag = fondatrice.tag || "Fondatrice"
+  const fondParas = fondatrice.paragraphes?.length
+    ? fondatrice.paragraphes
+    : [
+        "C'est en 2015 que Marie Jeanne a donné vie au Surnaturel de Dieu, au cœur d'Abidjan. Formée entre la France et la Côte d'Ivoire, elle a acquis une double expertise en esthétique et en bien-être holistique, qu'elle met aujourd'hui au service des femmes ivoiriennes.",
+        "Sa conviction : chaque femme mérite un espace où elle peut se ressourcer, prendre soin de sa santé et révéler sa beauté naturelle, dans un cadre bienveillant et professionnel. De la cabine de hammam traditionnel à la consultation sage-femme, en passant par les soins esthétiques et la boutique de produits naturels, l'institut propose une approche complète du bien-être féminin.",
+        "Entourée d'une équipe de professionnelles passionnées, Marie Jeanne continue de faire évoluer l'institut pour offrir des soins d'exception accessibles à toutes les femmes d'Abidjan, parce que prendre soin de soi n'est pas un luxe, c'est une nécessité.",
+      ]
   return (
     <div className="bg-bg-page">
       {/* Hero */}
       <section className="bg-primary-brand px-4 py-20 sm:px-6 lg:px-8">
         <MotionSection variants={fadeInUp} trigger="animate" className="mx-auto max-w-4xl text-center">
-          <span className="font-body text-[11px] uppercase tracking-[0.2em] text-gold">
+          <span className="font-body text-xs uppercase tracking-[0.2em] text-gold">
             Notre histoire
           </span>
           <h1 className="mt-4 font-display text-[44px] font-light text-white md:text-[52px]">
@@ -42,38 +64,26 @@ export default async function PageAPropos() {
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <MotionSection variants={fadeInLeft} className="relative h-80 overflow-hidden border border-border-brand">
-            <img
+            <ImgAvecFallback
               src="/images/fondatrice.jpg"
               alt="Marie Jeanne — Fondatrice du Surnaturel de Dieu"
               className="h-full w-full object-cover"
+              fallbackInitiales="MJ"
+              fallbackClassName="h-full w-full"
             />
           </MotionSection>
           <MotionSection variants={fadeInRight}>
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
-              Fondatrice
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
+              {fondTag}
             </span>
             <h2 className="mt-2 font-display text-[32px] font-light text-text-main">
-              Marie Jeanne
+              {fondNom}
             </h2>
             <div className="mt-1 h-px w-12 bg-gold" />
             <div className="mt-6 space-y-4 font-body text-[14px] leading-relaxed text-text-mid">
-              <p>
-                C&apos;est en 2015 que Marie Jeanne a donné vie au Surnaturel de Dieu, au cœur d&apos;Abidjan.
-                Formée entre la France et la Côte d&apos;Ivoire, elle a acquis une double expertise en esthétique
-                et en bien-être holistique, qu&apos;elle met aujourd&apos;hui au service des femmes ivoiriennes.
-              </p>
-              <p>
-                Sa conviction : chaque femme mérite un espace où elle peut se ressourcer, prendre soin de
-                sa santé et révéler sa beauté naturelle, dans un cadre bienveillant et professionnel.
-                De la cabine de hammam traditionnel à la consultation sage-femme, en passant par les soins
-                esthétiques et la boutique de produits naturels, l&apos;institut propose une approche complète
-                du bien-être féminin.
-              </p>
-              <p>
-                Entourée d&apos;une équipe de professionnelles passionnées, Marie Jeanne continue de faire
-                évoluer l&apos;institut pour offrir des soins d&apos;exception accessibles à toutes les femmes
-                d&apos;Abidjan, parce que prendre soin de soi n&apos;est pas un luxe, c&apos;est une nécessité.
-              </p>
+              {fondParas.map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
             </div>
             <div className="mt-6">
               <BtnSerif href="/prise-rdv">
@@ -90,7 +100,7 @@ export default async function PageAPropos() {
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="h-px w-12 bg-gold" />
-              <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+              <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
                 Ce qui nous guide
               </span>
               <div className="h-px w-12 bg-gold" />
@@ -135,7 +145,7 @@ export default async function PageAPropos() {
         <div className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px w-12 bg-gold" />
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Les expertes
             </span>
             <div className="h-px w-12 bg-gold" />
@@ -149,10 +159,12 @@ export default async function PageAPropos() {
         </div>
 
         <MotionSection variants={fadeInUp} className="mb-16 overflow-hidden border border-border-brand">
-          <img
+          <ImgAvecFallback
             src="/images/equipe.jpg"
             alt="L'équipe de l'Institut de Bien-Être Le Surnaturel de Dieu à Abidjan"
             className="h-auto w-full object-cover"
+            fallbackInitiales="✦"
+            fallbackClassName="h-64 w-full"
           />
         </MotionSection>
 
@@ -187,7 +199,7 @@ export default async function PageAPropos() {
                 <h3 className="mt-4 font-display text-[18px] text-text-main">
                   {membre.nom}
                 </h3>
-                <p className="mt-1 font-body text-[11px] uppercase tracking-widest text-gold">
+                <p className="mt-1 font-body text-xs uppercase tracking-widest text-gold">
                   {membre.role}
                 </p>
                 <p className="mt-3 font-body text-[13px] leading-relaxed text-text-mid">

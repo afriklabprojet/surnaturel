@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -35,7 +36,7 @@ export async function GET() {
       total: videos.length,
     })
   } catch (error) {
-    console.error("Erreur récupération vidéos témoignages:", error)
+    logger.error("Erreur récupération vidéos témoignages:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

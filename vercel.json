@@ -37,8 +37,24 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/cron/messages-programmes",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/publication-planifiee",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/relance-paiement",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/relance-panier",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/cron/reactivation",
+      "schedule": "0 10 * * 1"
     }
   ]
 }

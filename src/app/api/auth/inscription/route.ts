@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
+import { z } from "zod/v4"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     body = await request.json()
   } catch {
     return NextResponse.json(
-      { error: "Corps de requête invalide." },
+      { error: "Les informations envoyées sont incorrectes. Veuillez réessayer." },
       { status: 400 }
     )
   }

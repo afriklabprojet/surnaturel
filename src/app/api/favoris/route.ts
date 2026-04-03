@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -36,7 +37,7 @@ export async function GET() {
 
     return NextResponse.json({ soins, produits })
   } catch (error) {
-    console.error("Erreur récupération favoris:", error)
+    logger.error("Erreur récupération favoris:", error)
     return NextResponse.json(
       { error: "Erreur lors de la récupération des favoris" },
       { status: 500 }
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(favori, { status: 201 })
   } catch (error) {
-    console.error("Erreur ajout favori:", error)
+    logger.error("Erreur ajout favori:", error)
     return NextResponse.json(
       { error: "Erreur lors de l'ajout du favori" },
       { status: 500 }
@@ -143,7 +144,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur suppression favori:", error)
+    logger.error("Erreur suppression favori:", error)
     return NextResponse.json(
       { error: "Erreur lors de la suppression du favori" },
       { status: 500 }

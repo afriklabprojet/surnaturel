@@ -11,44 +11,12 @@ import {
   X,
   Plus,
 } from "lucide-react"
-
-// ── Types ───────────────────────────────────────────────────────
-interface Interlocuteur {
-  id: string
-  nom: string
-  prenom: string
-  photoUrl: string | null
-}
-
-interface Conversation {
-  interlocuteur: Interlocuteur
-  dernierMessage: {
-    contenu: string
-    createdAt: string
-    expediteurId: string
-  }
-  nonLus: number
-}
-
-interface MessageData {
-  id: string
-  expediteurId: string
-  destinataireId: string
-  contenu: string
-  lu: boolean
-  createdAt: string
-  expediteur: {
-    id: string
-    nom: string
-    prenom: string
-    photoUrl: string | null
-  }
-}
+import type { MessageData, Interlocuteur, Conversation } from "@/types/messages"
 
 // ── Avatar carré vert uniforme ──────────────────────────────────
 function Avatar({ nom, prenom, size = "md" }: { nom: string; prenom: string; size?: "sm" | "md" }) {
   const initiales = `${prenom[0]}${nom[0]}`.toUpperCase()
-  const dim = size === "sm" ? "h-9 w-9 text-[11px]" : "h-11 w-11 text-[13px]"
+  const dim = size === "sm" ? "h-9 w-9 text-xs" : "h-11 w-11 text-[13px]"
 
   return (
     <div
@@ -215,7 +183,7 @@ export default function MessagerieMedicale({ currentUserId }: { currentUserId: s
       {/* Header confidentiel */}
       <div className="flex items-center gap-2 border-b border-border-brand bg-primary-light px-5 py-2.5">
         <Lock size={14} className="text-primary-brand" />
-        <span className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-primary-brand">
+        <span className="font-body text-xs font-medium uppercase tracking-[0.15em] text-primary-brand">
           Messagerie confidentielle
         </span>
       </div>
@@ -228,7 +196,7 @@ export default function MessagerieMedicale({ currentUserId }: { currentUserId: s
           }`}
         >
           <div className="flex items-center justify-between border-b border-border-brand px-4 py-3">
-            <span className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+            <span className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
               Conversations
             </span>
             <button
@@ -272,12 +240,12 @@ export default function MessagerieMedicale({ currentUserId }: { currentUserId: s
                         <span className="truncate font-display text-[14px] font-normal text-text-main">
                           {conv.interlocuteur.prenom} {conv.interlocuteur.nom}
                         </span>
-                        <span className="shrink-0 font-body text-[10px] text-text-muted-brand">
+                        <span className="shrink-0 font-body text-xs text-text-muted-brand">
                           {formatHeure(conv.dernierMessage.createdAt)}
                         </span>
                       </div>
                       <div className="mt-0.5 flex items-center justify-between">
-                        <span className="truncate font-body text-[11px] font-light text-text-muted-brand">
+                        <span className="truncate font-body text-xs font-light text-text-muted-brand">
                           {isMine ? "Vous : " : ""}{apercu}
                         </span>
                         {conv.nonLus > 0 && (
@@ -323,7 +291,7 @@ export default function MessagerieMedicale({ currentUserId }: { currentUserId: s
       {/* Bandeau bas confidentiel */}
       <div className="flex items-center gap-2 border-t border-border-brand bg-bg-page px-5 py-2.5">
         <Lock size={12} className="shrink-0 text-text-muted-brand" />
-        <span className="font-body text-[11px] font-light text-text-muted-brand">
+        <span className="font-body text-xs font-light text-text-muted-brand">
           Cette messagerie est chiffrée et réservée à votre accompagnateur médical
         </span>
       </div>
@@ -402,7 +370,7 @@ function ChatMedical({
           <h4 className="font-display text-[15px] font-normal text-text-main">
             {interlocuteur.prenom} {interlocuteur.nom}
           </h4>
-          <span className="font-body text-[10px] font-light text-text-muted-brand">
+          <span className="font-body text-xs font-light text-text-muted-brand">
             Confidentiel
           </span>
         </div>
@@ -435,7 +403,7 @@ function ChatMedical({
                 {showDateSep && (
                   <div className="my-5 flex items-center gap-3">
                     <div className="h-px flex-1 bg-border-brand" />
-                    <span className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                    <span className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                       {formatDateSeparator(msg.createdAt)}
                     </span>
                     <div className="h-px flex-1 bg-border-brand" />
@@ -462,7 +430,7 @@ function ChatMedical({
                       <span className="bg-red-50 px-1.5 py-0.5 font-body text-[8px] font-medium text-red-800">
                         Confidentiel
                       </span>
-                      <span className="font-body text-[10px] text-text-muted-brand">
+                      <span className="font-body text-xs text-text-muted-brand">
                         {new Date(msg.createdAt).toLocaleTimeString("fr", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -552,7 +520,7 @@ function NouvelleConversationMedicale({
             <h3 className="font-display text-[16px] font-light text-text-main">
               Nouvelle conversation médicale
             </h3>
-            <p className="mt-0.5 font-body text-[11px] font-light text-text-muted-brand">
+            <p className="mt-0.5 font-body text-xs font-light text-text-muted-brand">
               Confidentiel
             </p>
           </div>
@@ -603,7 +571,7 @@ function NouvelleConversationMedicale({
                     {user.prenom} {user.nom}
                   </span>
                   {user.role === "ACCOMPAGNATEUR_MEDICAL" && (
-                    <span className="ml-2 bg-primary-light px-2 py-0.5 font-body text-[10px] font-medium text-primary-brand">
+                    <span className="ml-2 bg-primary-light px-2 py-0.5 font-body text-xs font-medium text-primary-brand">
                       Accompagnateur
                     </span>
                   )}

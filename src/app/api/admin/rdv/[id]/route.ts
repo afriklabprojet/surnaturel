@@ -1,3 +1,4 @@
+import logger from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -7,7 +8,9 @@ import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { formatPrix } from "@/lib/utils"
 import { notifierRDVConfirme, notifierRDVAnnule } from "@/lib/notifications"
+import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import { Resend } from "resend"
+import type { StatutRDV } from "@/generated/prisma/client"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = "Le Surnaturel de Dieu <rdv@surnatureldedieu.com>"
@@ -36,9 +39,23 @@ export async function PATCH(
     )
   }
 
+  // Si annulation, on libère le créneau
+  const updateData: { statut: StatutRDV; creneauCle?: null } = {
+    statut: result.data.statut as StatutRDV,
+  }
+  if (result.data.statut === "ANNULE") {
+    updateData.creneauCle = null
+  }
+
+  // Récupérer les infos avant mise à jour pour notification Pusher
+  const rdvAvant = await prisma.rendezVous.findUnique({
+    where: { id },
+    select: { creneauCle: true, soinId: true, dateHeure: true },
+  })
+
   const rdv = await prisma.rendezVous.update({
     where: { id },
-    data: { statut: result.data.statut },
+    data: updateData,
     include: {
       user: { select: { id: true, email: true, nom: true, prenom: true } },
       soin: { select: { nom: true, prix: true } },
@@ -58,11 +75,30 @@ export async function PATCH(
       date: dateFormatee,
       heure: heureFormatee,
       prix: formatPrix(rdv.soin.prix),
-    }).catch(console.error)
-    notifierRDVConfirme(rdv.user.id, rdv.soin.nom, rdv.dateHeure).catch(console.error)
+    }).catch((e) => logger.error(e, "background task failed"))
+    notifierRDVConfirme(rdv.user.id, rdv.soin.nom, rdv.dateHeure).catch((e) => logger.error(e, "background task failed"))
   }
 
   if (result.data.statut === "ANNULE") {
+    // Notifier en temps réel que ce créneau est de nouveau disponible
+    if (rdvAvant?.creneauCle) {
+      try {
+        const pusher = getPusherServeur()
+        const dateStr = rdvAvant.dateHeure.toISOString().split("T")[0]
+        await pusher.trigger(
+          PUSHER_CHANNELS.creneaux(rdvAvant.soinId, dateStr),
+          PUSHER_EVENTS.CRENEAU_LIBERE,
+          {
+            soinId: rdvAvant.soinId,
+            dateHeure: rdvAvant.dateHeure.toISOString(),
+            creneauCle: rdvAvant.creneauCle,
+          }
+        )
+      } catch {
+        // Notification temps réel optionnelle
+      }
+    }
+    
     resend.emails.send({
       from: FROM,
       to: rdv.user.email,
@@ -80,8 +116,8 @@ export async function PATCH(
           </div>
         </div>
       `,
-    }).catch(console.error)
-    notifierRDVAnnule(rdv.user.id, rdv.soin.nom).catch(console.error)
+    }).catch((e) => logger.error(e, "background task failed"))
+    notifierRDVAnnule(rdv.user.id, rdv.soin.nom).catch((e) => logger.error(e, "background task failed"))
   }
 
   if (result.data.statut === "TERMINE") {
@@ -105,7 +141,7 @@ export async function PATCH(
           </div>
         </div>
       `,
-    }).catch(console.error)
+    }).catch((e) => logger.error(e, "background task failed"))
   }
 
   return NextResponse.json({ id: rdv.id, statut: rdv.statut })

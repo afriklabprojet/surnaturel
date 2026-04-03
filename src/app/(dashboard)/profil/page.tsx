@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -18,8 +18,10 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import { SkeletonProfile } from "@/components/ui/skeletons"
 import { BtnArrow } from "@/components/ui/buttons"
 import { staggerContainer, staggerItem } from "@/lib/animations"
+import { SecuritySection } from "@/components/compte/SecuritySection"
 
 function getPasswordStrength(p: string): number {
   let s = 0
@@ -58,6 +60,10 @@ export default function PageProfil() {
   const [notifCommandes, setNotifCommandes] = useState(true)
   const [notifNewsletter, setNotifNewsletter] = useState(false)
   const [prefsLoading, setPrefsLoading] = useState(false)
+
+  // États suppression de compte
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // Stats
   const [stats, setStats] = useState({ rdvs: 0, commandes: 0, points: 0 })
@@ -119,11 +125,7 @@ export default function PageProfil() {
   }, [])
 
   if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonProfile />
   }
 
   const initiales = `${prenom[0] ?? ""}${nom[0] ?? ""}`.toUpperCase()
@@ -134,19 +136,17 @@ export default function PageProfil() {
     setUploading(true)
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "")
+    formData.append("folder", "surnaturel-de-dieu/profils")
     try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: "POST", body: formData }
-      )
+      const res = await fetch("/api/upload/image", { method: "POST", body: formData })
       const data = await res.json()
-      if (data.secure_url) {
-        setPhotoUrl(data.secure_url)
+      if (!res.ok) throw new Error(data.error ?? "Erreur upload")
+      if (data.url) {
+        setPhotoUrl(data.url)
         await fetch("/api/profil/photo", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photoUrl: data.secure_url }),
+          body: JSON.stringify({ photoUrl: data.url }),
         })
         await update()
       }
@@ -268,7 +268,7 @@ export default function PageProfil() {
           </div>
 
           {/* Membre depuis */}
-          <p className="mt-2 font-body text-[11px] text-gold">
+          <p className="mt-2 font-body text-xs text-gold">
             {memberSince
               ? `Membre depuis ${memberSince.toLocaleDateString("fr", { month: "long", year: "numeric" })}`
               : ""}
@@ -293,8 +293,8 @@ export default function PageProfil() {
           {/* Barre progression */}
           <div className="mt-4">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-body text-[10px] text-text-muted-brand">Profil complété</span>
-              <span className="font-body text-[10px] font-medium text-gold">{profileProgress}%</span>
+              <span className="font-body text-xs text-text-muted-brand">Profil complété</span>
+              <span className="font-body text-xs font-medium text-gold">{profileProgress}%</span>
             </div>
             <div className="h-1.5 w-full bg-border-brand overflow-hidden">
               <motion.div
@@ -314,7 +314,7 @@ export default function PageProfil() {
         <motion.section variants={staggerItem}>
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px w-6 bg-gold" />
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Mes informations
             </span>
             <div className="h-px flex-1 bg-gold/30" />
@@ -323,7 +323,7 @@ export default function PageProfil() {
           <form onSubmit={handleProfilSubmit} className="border border-border-brand bg-white p-6 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+                <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                   Prénom
                 </label>
                 <input
@@ -334,7 +334,7 @@ export default function PageProfil() {
                 />
               </div>
               <div>
-                <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+                <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                   Nom
                 </label>
                 <input
@@ -347,7 +347,7 @@ export default function PageProfil() {
             </div>
 
             <div>
-              <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+              <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                 Email
               </label>
               <input
@@ -359,7 +359,7 @@ export default function PageProfil() {
             </div>
 
             <div>
-              <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+              <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                 Téléphone
               </label>
               <input
@@ -392,7 +392,7 @@ export default function PageProfil() {
         <motion.section variants={staggerItem}>
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px w-6 bg-gold" />
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Mot de passe
             </span>
             <div className="h-px flex-1 bg-gold/30" />
@@ -400,7 +400,7 @@ export default function PageProfil() {
 
           <form onSubmit={handlePasswordSubmit} className="border border-border-brand bg-white p-6 space-y-4">
             <div className="relative">
-              <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+              <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                 Mot de passe actuel
               </label>
               <input
@@ -419,7 +419,7 @@ export default function PageProfil() {
             </div>
 
             <div>
-              <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+              <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                 Nouveau mot de passe
               </label>
               <input
@@ -436,7 +436,7 @@ export default function PageProfil() {
             </div>
 
             <div>
-              <label className="block font-body text-[11px] uppercase tracking-wider text-text-muted-brand mb-1">
+              <label className="block font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1">
                 Confirmer le mot de passe
               </label>
               <input
@@ -464,11 +464,14 @@ export default function PageProfil() {
           </form>
         </motion.section>
 
+        {/* Section 2FA et Sessions */}
+        <SecuritySection />
+
         {/* Préférences notifications */}
         <motion.section variants={staggerItem}>
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px w-6 bg-gold" />
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Notifications
             </span>
             <div className="h-px flex-1 bg-gold/30" />
@@ -530,6 +533,64 @@ export default function PageProfil() {
               {prefsLoading ? <Loader2 size={14} className="animate-spin" /> : "Enregistrer"}
             </BtnArrow>
           </div>
+        </motion.section>
+
+        {/* ─── Suppression de compte ─── */}
+        <motion.section
+          variants={staggerItem}
+          className="border border-danger/30 bg-white p-6"
+        >
+          <h2 className="mb-2 font-display text-[20px] font-light text-danger">
+            Supprimer mon compte
+          </h2>
+          <p className="mb-4 font-body text-[13px] text-text-mid">
+            Cette action est irréversible. Vos données personnelles seront anonymisées et votre compte désactivé.
+          </p>
+
+          {!showDeleteConfirm ? (
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="border border-danger px-4 py-2 font-body text-[13px] text-danger transition-colors hover:bg-danger hover:text-white"
+            >
+              Supprimer mon compte
+            </button>
+          ) : (
+            <div className="flex flex-col gap-3 border-t border-danger/20 pt-4">
+              <p className="font-body text-[13px] font-medium text-danger">
+                Êtes-vous sûr(e) ? Cette action ne peut pas être annulée.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  disabled={deleteLoading}
+                  onClick={async () => {
+                    setDeleteLoading(true)
+                    try {
+                      const res = await fetch("/api/profil/supprimer", { method: "DELETE" })
+                      if (res.ok) {
+                        await signOut({ callbackUrl: "/" })
+                      } else {
+                        setDeleteLoading(false)
+                      }
+                    } catch {
+                      setDeleteLoading(false)
+                    }
+                  }}
+                  className="bg-danger px-4 py-2 font-body text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : "Oui, supprimer définitivement"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="border border-border-brand px-4 py-2 font-body text-[13px] text-text-mid transition-colors hover:bg-bg-page"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
         </motion.section>
       </div>
     </motion.div>

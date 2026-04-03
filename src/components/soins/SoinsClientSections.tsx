@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Search, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import SoinCard, { type SoinDB } from "@/components/soins/SoinCard"
 import ForfaitCard, { type ForfaitDB } from "@/components/soins/ForfaitCard"
@@ -27,15 +28,38 @@ interface SoinsFiltresProps {
 
 export function SoinsFiltres({ soins, categories }: SoinsFiltresProps) {
   const [categorieActive, setCategorieActive] = useState("TOUS")
+  const [recherche, setRecherche] = useState("")
 
-  const soinsFiltres =
-    categorieActive === "TOUS"
-      ? soins
-      : soins.filter((s) => s.categorie === categorieActive)
+  const soinsFiltres = soins.filter((s) => {
+    const matchCategorie = categorieActive === "TOUS" || s.categorie === categorieActive
+    const matchRecherche = !recherche || s.nom.toLowerCase().includes(recherche.toLowerCase()) || s.description.toLowerCase().includes(recherche.toLowerCase())
+    return matchCategorie && matchRecherche
+  })
 
   return (
     <section className="bg-bg-page px-6 py-20 lg:px-10">
       <div className="mx-auto max-w-7xl">
+        {/* Recherche */}
+        <div className="relative mx-auto mb-8 max-w-md">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-brand" />
+          <input
+            type="text"
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            placeholder="Rechercher un soin…"
+            className="w-full border border-border-brand bg-white py-2.5 pl-10 pr-10 font-body text-[13px] text-text-main outline-none focus:border-gold transition-colors duration-200"
+          />
+          {recherche && (
+            <button
+              onClick={() => setRecherche("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-muted-brand hover:text-text-main transition-colors"
+              aria-label="Effacer la recherche"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
         {/* Filtres par catégorie */}
         <motion.div
           variants={fadeInUp}
@@ -48,7 +72,7 @@ export function SoinsFiltres({ soins, categories }: SoinsFiltresProps) {
             <button
               key={cat.value}
               onClick={() => setCategorieActive(cat.value)}
-              className={`px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-widest transition-colors duration-300 ${
+              className={`px-5 py-2.5 font-body text-xs font-medium uppercase tracking-widest transition-colors duration-300 ${
                 categorieActive === cat.value
                   ? "bg-primary-brand text-white"
                   : "border border-border-brand bg-white text-text-mid hover:border-primary-brand hover:text-primary-brand"
@@ -122,7 +146,7 @@ export function HeroSoins({ nombreSoins, heroIcones }: HeroSoinsProps) {
         className="relative mx-auto max-w-4xl text-center"
       >
         {/* Tag doré */}
-        <span className="inline-flex items-center gap-3 font-body text-[10px] uppercase tracking-[0.25em] text-gold/80">
+        <span className="inline-flex items-center gap-3 font-body text-xs uppercase tracking-[0.25em] text-gold/80">
           <span className="h-px w-8 bg-gold/40" />
           Notre expertise
           <span className="h-px w-8 bg-gold/40" />
@@ -145,7 +169,7 @@ export function HeroSoins({ nombreSoins, heroIcones }: HeroSoinsProps) {
               <div className="flex h-11 w-11 items-center justify-center border border-gold/30 bg-gold/10">
                 <span className="text-[18px]">{ic.emoji}</span>
               </div>
-              <span className="font-body text-[11px] text-white/50 uppercase tracking-wider">
+              <span className="font-body text-xs text-white/50 uppercase tracking-wider">
                 {ic.label}
               </span>
             </div>

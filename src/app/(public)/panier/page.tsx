@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, ArrowRight, Lock } from "lucide-react"
+import { toast } from "sonner"
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, ArrowRight, Lock, Truck, MapPin } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 import { useCart } from "@/lib/cart-context"
 
@@ -16,6 +17,22 @@ const LOGOS_PAIEMENT = [
   { nom: "Djamo", color: "#6C47FF" },
 ]
 
+interface ZoneLivraison {
+  id: string
+  nom: string
+  description: string
+  frais: number
+  delai: string
+  actif: boolean
+}
+
+interface ConfigLivraison {
+  zones: ZoneLivraison[]
+  seuilGratuit: number | null
+  messageGratuit: string
+  zoneDefautId: string
+}
+
 export default function PagePanier() {
   const { items, totalPrix, totalArticles, updateQuantity, removeItem } = useCart()
   const [codePromo, setCodePromo] = useState("")
@@ -25,8 +42,47 @@ export default function PagePanier() {
   const [promoErreur, setPromoErreur] = useState("")
   const [promoLoading, setPromoLoading] = useState(false)
 
-  // Livraison gratuite
-  const livraison = 0
+  // Livraison dynamique
+  const [configLivraison, setConfigLivraison] = useState<ConfigLivraison | null>(null)
+  const [zoneSelectionnee, setZoneSelectionnee] = useState<string>("")
+  const [fraisLivraison, setFraisLivraison] = useState(0)
+  const [livraisonGratuite, setLivraisonGratuite] = useState(false)
+
+  // Charger la config de livraison
+  useEffect(() => {
+    fetch("/api/boutique/livraison")
+      .then((res) => res.json())
+      .then((data: ConfigLivraison) => {
+        setConfigLivraison(data)
+        setZoneSelectionnee(data.zoneDefautId)
+      })
+      .catch(() => {
+        // Fallback silencieux
+        setFraisLivraison(0)
+        setLivraisonGratuite(true)
+      })
+  }, [])
+
+  // Calculer les frais quand zone ou montant change
+  useEffect(() => {
+    if (!zoneSelectionnee || !configLivraison) return
+
+    const zone = configLivraison.zones.find((z) => z.id === zoneSelectionnee)
+    if (!zone) return
+
+    // Vérifier si livraison gratuite
+    const gratuite =
+      configLivraison.seuilGratuit !== null &&
+      totalPrix >= configLivraison.seuilGratuit
+
+    setLivraisonGratuite(gratuite)
+    setFraisLivraison(gratuite ? 0 : zone.frais)
+  }, [zoneSelectionnee, totalPrix, configLivraison])
+
+  function handleRemoveItem(id: string, nom: string) {
+    removeItem(id)
+    toast.success(`${nom} retiré du panier`)
+  }
 
   async function handleAppliquerPromo() {
     if (!codePromo.trim()) return
@@ -44,21 +100,33 @@ export default function PagePanier() {
         setPromoCode(data.code)
         setPromoPourcentage(data.pourcentage)
         setPromoErreur("")
+        toast.success(`Code ${data.code} appliqué ! -${data.pourcentage}%`)
       } else {
         setPromoErreur(data.error || "Code promo invalide")
         setPromoApplique(false)
         setPromoPourcentage(0)
+        toast.error(data.error || "Code promo invalide")
       }
     } catch {
       setPromoErreur("Impossible de vérifier le code promo.")
       setPromoApplique(false)
+      toast.error("Erreur de vérification du code")
     } finally {
       setPromoLoading(false)
     }
   }
 
   const reduction = promoApplique ? Math.round(totalPrix * (promoPourcentage / 100)) : 0
-  const totalFinal = totalPrix - reduction + livraison
+  const totalFinal = totalPrix - reduction + fraisLivraison
+
+  // Info zone sélectionnée
+  const zoneInfo = configLivraison?.zones.find((z) => z.id === zoneSelectionnee)
+  const zonesActives = configLivraison?.zones.filter((z) => z.actif) ?? []
+
+  // Montant restant pour livraison gratuite
+  const montantPourGratuit = configLivraison?.seuilGratuit
+    ? Math.max(0, configLivraison.seuilGratuit - totalPrix)
+    : null
 
   if (items.length === 0) {
     return (
@@ -72,7 +140,7 @@ export default function PagePanier() {
         </p>
         <Link
           href="/boutique"
-          className="mt-8 flex items-center gap-2 px-6 py-3 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
+          className="mt-8 flex items-center gap-2 px-6 py-3 bg-primary-brand font-body text-xs uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
         >
           <ArrowLeft size={14} />
           Voir la boutique
@@ -98,16 +166,16 @@ export default function PagePanier() {
         <div className="lg:col-span-2">
           {/* En-tête tableau (desktop) */}
           <div className="hidden border-b border-border-brand pb-3 sm:grid sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-center sm:gap-4">
-            <span className="font-body text-[10px] uppercase tracking-[0.15em] text-text-muted-brand">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-text-muted-brand">
               Produit
             </span>
-            <span className="text-center font-body text-[10px] uppercase tracking-[0.15em] text-text-muted-brand">
+            <span className="text-center font-body text-xs uppercase tracking-[0.15em] text-text-muted-brand">
               Prix unitaire
             </span>
-            <span className="text-center font-body text-[10px] uppercase tracking-[0.15em] text-text-muted-brand">
+            <span className="text-center font-body text-xs uppercase tracking-[0.15em] text-text-muted-brand">
               Quantité
             </span>
-            <span className="text-right font-body text-[10px] uppercase tracking-[0.15em] text-text-muted-brand">
+            <span className="text-right font-body text-xs uppercase tracking-[0.15em] text-text-muted-brand">
               Total
             </span>
             <span className="w-8" />
@@ -125,7 +193,7 @@ export default function PagePanier() {
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden bg-muted">
                     <Image
                       src={item.imageUrl || "/images/placeholder-produit.jpg"}
-                      alt={item.nom}
+                      alt={`Photo du produit ${item.nom}`}
                       fill
                       className="object-cover"
                       sizes="80px"
@@ -138,7 +206,7 @@ export default function PagePanier() {
                     >
                       {item.nom}
                     </Link>
-                    <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+                    <p className="mt-1 font-body text-xs text-text-muted-brand">
                       Réf: {item.id.slice(-6).toUpperCase()}
                     </p>
                   </div>
@@ -146,7 +214,7 @@ export default function PagePanier() {
 
                 {/* Prix unitaire */}
                 <p className="text-center font-display text-[16px] text-text-main">
-                  <span className="mr-1 font-body text-[10px] text-text-muted-brand sm:hidden">
+                  <span className="mr-1 font-body text-xs text-text-muted-brand sm:hidden">
                     Prix :
                   </span>
                   {formatPrix(item.prix)}
@@ -176,7 +244,7 @@ export default function PagePanier() {
 
                 {/* Sous-total */}
                 <p className="text-right font-display text-[16px] font-normal text-text-main">
-                  <span className="mr-1 font-body text-[10px] text-text-muted-brand sm:hidden">
+                  <span className="mr-1 font-body text-xs text-text-muted-brand sm:hidden">
                     Total :
                   </span>
                   {formatPrix(item.prix * item.quantite)}
@@ -184,7 +252,7 @@ export default function PagePanier() {
 
                 {/* Supprimer */}
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => handleRemoveItem(item.id, item.nom)}
                   className="flex h-9 w-9 items-center justify-center text-text-muted-brand transition-colors duration-200 hover:text-danger"
                   aria-label={`Supprimer ${item.nom}`}
                 >
@@ -211,6 +279,52 @@ export default function PagePanier() {
               Récapitulatif
             </h2>
 
+            {/* Zone de livraison */}
+            {zonesActives.length > 1 && (
+              <div className="mt-6">
+                <label className="flex items-center gap-2 font-body text-xs uppercase tracking-widest text-text-muted-brand">
+                  <MapPin size={12} />
+                  Zone de livraison
+                </label>
+                <select
+                  value={zoneSelectionnee}
+                  onChange={(e) => setZoneSelectionnee(e.target.value)}
+                  className="mt-2 w-full border border-border-brand px-3 py-2 font-body text-[12px] text-text-main outline-none focus:border-gold transition-colors duration-200"
+                >
+                  {zonesActives.map((zone) => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.nom} — {zone.frais === 0 ? "Gratuit" : formatPrix(zone.frais)}
+                    </option>
+                  ))}
+                </select>
+                {zoneInfo && (
+                  <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+                    {zoneInfo.description} • Délai: {zoneInfo.delai}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Barre de progression livraison gratuite */}
+            {montantPourGratuit !== null && montantPourGratuit > 0 && (
+              <div className="mt-4 p-3 bg-bg-subtle border border-border-brand">
+                <div className="flex items-center gap-2 text-primary-brand">
+                  <Truck size={14} />
+                  <span className="font-body text-[11px]">
+                    Plus que <strong>{formatPrix(montantPourGratuit)}</strong> pour la livraison gratuite !
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 bg-border-brand overflow-hidden">
+                  <div
+                    className="h-full bg-primary-brand transition-all duration-300"
+                    style={{
+                      width: `${Math.min(100, (totalPrix / (configLivraison?.seuilGratuit ?? 1)) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Lignes */}
             <div className="mt-6 space-y-3">
               <div className="flex items-center justify-between">
@@ -221,7 +335,13 @@ export default function PagePanier() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-body text-[12px] text-text-muted-brand">Livraison</span>
-                <span className="font-body text-[12px] text-primary-brand">Gratuite</span>
+                {livraisonGratuite ? (
+                  <span className="font-body text-[12px] text-primary-brand">Gratuite</span>
+                ) : (
+                  <span className="font-display text-[16px] text-text-main">
+                    {formatPrix(fraisLivraison)}
+                  </span>
+                )}
               </div>
               {promoApplique && (
                 <div className="flex items-center justify-between text-primary-brand">
@@ -233,7 +353,7 @@ export default function PagePanier() {
 
             {/* Code promo */}
             <div className="mt-6">
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">
                 Code promo
               </label>
               <div className="mt-2 flex gap-2">
@@ -247,16 +367,16 @@ export default function PagePanier() {
                 <button
                   onClick={handleAppliquerPromo}
                   disabled={promoLoading || !codePromo.trim()}
-                  className="px-4 py-2 border border-primary-brand font-body text-[10px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border border-primary-brand font-body text-xs uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {promoLoading ? "…" : "Appliquer"}
                 </button>
               </div>
               {promoErreur && (
-                <p className="mt-2 font-body text-[11px] text-danger">{promoErreur}</p>
+                <p className="mt-2 font-body text-xs text-danger">{promoErreur}</p>
               )}
               {promoApplique && (
-                <p className="mt-2 font-body text-[11px] text-primary-brand">
+                <p className="mt-2 font-body text-xs text-primary-brand">
                   Code {promoCode} appliqué !
                 </p>
               )}
@@ -275,10 +395,13 @@ export default function PagePanier() {
               </span>
             </div>
 
-            {/* Bouton commander */}
+            {/* Bouton commander — unique, responsive */}
             <Link
-              href={promoCode ? `/checkout?promo=${encodeURIComponent(promoCode)}` : "/checkout"}
-              className="mt-6 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
+              href={`/checkout?${new URLSearchParams({
+                ...(promoCode && { promo: promoCode }),
+                ...(zoneSelectionnee && { zone: zoneSelectionnee }),
+              }).toString()}`}
+              className="mt-6 flex w-full items-center justify-center gap-2 py-4 bg-primary-brand font-body text-xs uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
             >
               Commander
               <ArrowRight size={14} />
@@ -286,7 +409,7 @@ export default function PagePanier() {
 
             {/* Sécurité */}
             <div className="mt-6 text-center">
-              <p className="flex items-center justify-center gap-2 font-body text-[11px] text-text-muted-brand">
+              <p className="flex items-center justify-center gap-2 font-body text-xs text-text-muted-brand">
                 <Lock size={12} />
                 Paiement sécurisé via Jeko Africa
               </p>

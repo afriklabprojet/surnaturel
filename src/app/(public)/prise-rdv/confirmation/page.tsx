@@ -221,7 +221,7 @@ function ConfirmationContent() {
               </BtnArrow>
               <button
                 onClick={() => setShowQR(true)}
-                className="inline-flex items-center justify-center gap-2 border border-gold px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.18em] text-gold transition-all duration-200 hover:bg-gold hover:text-white group"
+                className="inline-flex items-center justify-center gap-2 border border-gold px-5 py-2.5 font-body text-xs uppercase tracking-[0.18em] text-gold transition-all duration-200 hover:bg-gold hover:text-white group"
               >
                 <QrCode size={16} />
                 QR code de check-in

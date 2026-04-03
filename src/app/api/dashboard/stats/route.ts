@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -107,7 +108,7 @@ export async function GET() {
       soinsRecommandes,
     })
   } catch (error) {
-    console.error("Erreur API dashboard/stats:", error)
+    logger.error("Erreur API dashboard/stats:", error)
     return NextResponse.json(
       { error: "Erreur lors de la récupération des statistiques" },
       { status: 500 }

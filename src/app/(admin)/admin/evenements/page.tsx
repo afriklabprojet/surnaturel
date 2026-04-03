@@ -127,7 +127,7 @@ export default function PageAdminEvenements() {
             <button
               key={p.key}
               onClick={() => { setPeriode(p.key); setPage(1) }}
-              className={`px-2.5 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                 periode === p.key ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -140,7 +140,7 @@ export default function PageAdminEvenements() {
 
         <button
           onClick={openCreate}
-          className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark transition-colors"
+          className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-dark transition-colors"
         >
           <Plus size={14} /> Nouvel événement
         </button>
@@ -169,7 +169,7 @@ export default function PageAdminEvenements() {
 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-display text-[16px] font-light text-text-main">{e.titre}</h3>
-                  <div className="flex flex-wrap items-center gap-3 mt-1 font-body text-[11px] text-text-muted-brand">
+                  <div className="flex flex-wrap items-center gap-3 mt-1 font-body text-xs text-text-muted-brand">
                     <span className="flex items-center gap-1"><Clock size={12} /> {formatDateFr(e.dateDebut)}</span>
                     {e.lieu && <span className="flex items-center gap-1"><MapPin size={12} /> {e.lieu}</span>}
                     <span className="flex items-center gap-1"><Users size={12} /> {e.nbParticipants}{e.maxParticipants ? ` / ${e.maxParticipants}` : ""}</span>
@@ -195,11 +195,11 @@ export default function PageAdminEvenements() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>
@@ -215,34 +215,34 @@ export default function PageAdminEvenements() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Titre</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Titre</label>
                 <input type="text" required value={form.titre} onChange={(e) => setForm((f) => ({ ...f, titre: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Description</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Description</label>
                 <textarea required value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand resize-none" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Date début</label>
+                  <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Date début</label>
                   <input type="datetime-local" required value={form.dateDebut} onChange={(e) => setForm((f) => ({ ...f, dateDebut: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Date fin</label>
+                  <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Date fin</label>
                   <input type="datetime-local" value={form.dateFin} onChange={(e) => setForm((f) => ({ ...f, dateFin: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Lieu</label>
+                  <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Lieu</label>
                   <input type="text" value={form.lieu} onChange={(e) => setForm((f) => ({ ...f, lieu: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Max participants</label>
+                  <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Max participants</label>
                   <input type="number" min="1" value={form.maxParticipants} onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
-              <button type="submit" disabled={saving} className="w-full py-2.5 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark transition-colors disabled:opacity-50">
+              <button type="submit" disabled={saving} className="w-full py-2.5 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-dark transition-colors disabled:opacity-50">
                 {saving ? "Enregistrement…" : editItem ? "Mettre à jour" : "Créer l'événement"}
               </button>
             </form>

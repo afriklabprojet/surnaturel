@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight, Download } from "lucide-react"
+import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight, Download, CheckSquare, Square, X } from "lucide-react"
 
 interface AvisItem {
   id: string
@@ -44,11 +44,14 @@ export default function PageAdminAvis() {
   const [filtrePublie, setFiltrePublie] = useState<string>("all")
   const [filtreNote, setFiltreNote] = useState<string>("all")
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({})
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
 
   const limit = 20
 
   const fetchAvis = useCallback(async () => {
     setLoading(true)
+    setSelected(new Set())
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
       if (filtrePublie !== "all") params.set("publie", filtrePublie)
@@ -93,6 +96,56 @@ export default function PageAdminAvis() {
     setActionLoading((p) => ({ ...p, [id]: false }))
   }
 
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selected.size === avis.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(avis.map((a) => a.id)))
+    }
+  }
+
+  async function bulkPublier(publie: boolean) {
+    if (selected.size === 0) return
+    setBulkLoading(true)
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          fetch(`/api/admin/avis/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publie }),
+          })
+        )
+      )
+      await fetchAvis()
+    } catch { /* ignore */ }
+    setBulkLoading(false)
+  }
+
+  async function bulkSupprimer() {
+    if (selected.size === 0) return
+    if (!confirm(`Supprimer ${selected.size} avis sélectionné(s) ?`)) return
+    setBulkLoading(true)
+    try {
+      await Promise.all(
+        Array.from(selected).map((id) =>
+          fetch(`/api/admin/avis/${id}`, { method: "DELETE" })
+        )
+      )
+      await fetchAvis()
+    } catch { /* ignore */ }
+    setBulkLoading(false)
+  }
+
   const totalPages = Math.ceil(total / limit)
 
   return (
@@ -100,7 +153,7 @@ export default function PageAdminAvis() {
       {/* Filtres */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Statut :</span>
+          <span className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Statut :</span>
           {[
             { key: "all", label: "Tous" },
             { key: "false", label: "En attente" },
@@ -109,7 +162,7 @@ export default function PageAdminAvis() {
             <button
               key={f.key}
               onClick={() => { setFiltrePublie(f.key); setPage(1) }}
-              className={`px-2.5 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                 filtrePublie === f.key ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -119,12 +172,12 @@ export default function PageAdminAvis() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Note :</span>
+          <span className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Note :</span>
           {["all", "5", "4", "3", "2", "1"].map((n) => (
             <button
               key={n}
               onClick={() => { setFiltreNote(n); setPage(1) }}
-              className={`px-2.5 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                 filtreNote === n ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -136,11 +189,47 @@ export default function PageAdminAvis() {
         <span className="ml-auto font-body text-[12px] text-text-muted-brand">{total} avis</span>
         <button
           onClick={() => window.open("/api/admin/export?type=avis", "_blank")}
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
         >
           <Download className="h-3.5 w-3.5" /> CSV
         </button>
       </div>
+
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-primary-brand/5 border border-primary-brand/20">
+          <span className="font-body text-sm text-primary-brand font-medium">{selected.size} sélectionné(s)</span>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              onClick={() => bulkPublier(true)}
+              disabled={bulkLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-dark disabled:opacity-50 transition-colors"
+            >
+              <Eye className="h-3.5 w-3.5" /> Publier tout
+            </button>
+            <button
+              onClick={() => bulkPublier(false)}
+              disabled={bulkLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand text-text-mid font-body text-xs uppercase tracking-widest hover:bg-bg-page disabled:opacity-50 transition-colors"
+            >
+              <EyeOff className="h-3.5 w-3.5" /> Masquer tout
+            </button>
+            <button
+              onClick={bulkSupprimer}
+              disabled={bulkLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white font-body text-xs uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Supprimer
+            </button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="p-1.5 text-text-muted-brand hover:text-text-main transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Liste */}
       {loading ? (
@@ -154,9 +243,41 @@ export default function PageAdminAvis() {
         </div>
       ) : (
         <div className="space-y-3">
+          {/* Select all */}
+          <div className="flex items-center gap-2 px-1">
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 font-body text-xs text-text-muted-brand hover:text-text-main transition-colors"
+            >
+              {selected.size === avis.length && avis.length > 0 ? (
+                <CheckSquare size={15} className="text-primary-brand" />
+              ) : (
+                <Square size={15} />
+              )}
+              Tout sélectionner
+            </button>
+          </div>
+
           {avis.map((a) => (
-            <div key={a.id} className="border border-border-brand bg-white p-5">
+            <div
+              key={a.id}
+              className={`border bg-white p-5 transition-colors ${
+                selected.has(a.id) ? "border-primary-brand/40 bg-primary-brand/2" : "border-border-brand"
+              }`}
+            >
               <div className="flex items-start gap-4">
+                {/* Checkbox */}
+                <button
+                  onClick={() => toggleSelect(a.id)}
+                  className="mt-1 shrink-0 text-text-muted-brand hover:text-primary-brand transition-colors"
+                >
+                  {selected.has(a.id) ? (
+                    <CheckSquare size={16} className="text-primary-brand" />
+                  ) : (
+                    <Square size={16} />
+                  )}
+                </button>
+
                 <Avatar user={a.user} size={40} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
@@ -164,13 +285,13 @@ export default function PageAdminAvis() {
                       {a.user.prenom} {a.user.nom}
                     </span>
                     <Stars note={a.note} />
-                    <span className={`px-2 py-0.5 font-body text-[10px] uppercase tracking-widest ${
+                    <span className={`px-2 py-0.5 font-body text-xs uppercase tracking-widest ${
                       a.publie ? "bg-primary-light text-primary-brand" : "bg-gold-light text-gold-dark"
                     }`}>
                       {a.publie ? "Publié" : "En attente"}
                     </span>
                   </div>
-                  <p className="font-body text-[11px] text-text-muted-brand mb-2">
+                  <p className="font-body text-xs text-text-muted-brand mb-2">
                     {a.soin} — {new Date(a.dateRdv).toLocaleDateString("fr", { day: "numeric", month: "long", year: "numeric" })}
                   </p>
                   {a.commentaire && (
@@ -208,7 +329,7 @@ export default function PageAdminAvis() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors"
           >
             <ChevronLeft size={14} /> Préc.
           </button>
@@ -216,7 +337,7 @@ export default function PageAdminAvis() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors"
           >
             Suiv. <ChevronRight size={14} />
           </button>

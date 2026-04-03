@@ -63,7 +63,7 @@ export default function MiniCart({ open, onClose }: MiniCartProps) {
           <h2 className="flex items-center gap-3 font-display text-[20px] font-normal text-text-main">
             Mon panier
             {totalArticles > 0 && (
-              <span className="px-2 py-0.5 bg-primary-brand font-body text-[11px] text-white">
+              <span className="px-2 py-0.5 bg-primary-brand font-body text-xs text-white">
                 {totalArticles}
               </span>
             )}
@@ -84,7 +84,7 @@ export default function MiniCart({ open, onClose }: MiniCartProps) {
             <p className="font-body text-[13px] text-text-muted-brand">Votre panier est vide</p>
             <Link
               href="/boutique"
-              className="mt-6 px-6 py-2.5 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
+              className="mt-6 px-6 py-2.5 bg-primary-brand font-body text-xs uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
               onClick={onClose}
             >
               Voir la boutique
@@ -166,7 +166,7 @@ export default function MiniCart({ open, onClose }: MiniCartProps) {
                 <Link
                   href="/panier"
                   onClick={onClose}
-                  className="flex items-center justify-center gap-2 px-4 py-3 border border-primary-brand font-body text-[11px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
+                  className="flex items-center justify-center gap-2 px-4 py-3 border border-primary-brand font-body text-xs uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
                 >
                   Voir le panier
                   <ArrowRight size={14} />
@@ -174,7 +174,7 @@ export default function MiniCart({ open, onClose }: MiniCartProps) {
                 <Link
                   href="/checkout"
                   onClick={onClose}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-primary-brand font-body text-[11px] uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-primary-brand font-body text-xs uppercase tracking-widest text-white transition-colors duration-200 hover:bg-primary-dark"
                 >
                   Commander
                   <ArrowRight size={14} />

@@ -341,12 +341,84 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
 *Parce que chaque maman mérite de se sentir belle et bien dans son corps. Réservez votre séance.*`,
       publie: true,
     },
+    {
+      titre: "Le beurre de karité : trésor de beauté africain",
+      slug: "beurre-karite-tresor-beaute-africain",
+      categorie: "Beauté",
+      tempsLecture: 4,
+      contenu: `## Un ingrédient millénaire
+
+Le beurre de karité est utilisé depuis des siècles en Afrique de l'Ouest pour ses vertus nourrissantes et protectrices. Issu des noix de l'arbre de karité (*Vitellaria paradoxa*), il est un pilier des rituels de beauté ivoiriens.
+
+## Composition exceptionnelle
+
+Riche en vitamines A, D, E et F, le beurre de karité contient des acides gras essentiels qui pénètrent la peau en profondeur. Ses propriétés anti-inflammatoires et antioxydantes en font un soin complet pour tout le corps.
+
+## 5 utilisations au quotidien
+
+1. **Hydratant corps** : appliquez une noisette sur la peau humide après la douche pour un effet nourrissant longue durée.
+2. **Soin des mains** : massez vos mains avant le coucher pour réparer les peaux sèches et abîmées.
+3. **Masque capillaire** : appliquez sur les longueurs et pointes, laissez poser 30 minutes avant le shampooing.
+4. **Baume à lèvres** : une pointe de beurre de karité remplace tous les baumes du commerce.
+5. **Anti-vergetures** : massez les zones concernées quotidiennement pendant la grossesse et après l'accouchement.
+
+## Comment le choisir ?
+
+Privilégiez toujours un beurre de karité pur, non raffiné, de couleur crème à jaune pâle. Il doit avoir une odeur caractéristique de noix. Les versions blanchies et désodorisées ont perdu une partie de leurs bienfaits.
+
+---
+
+*Découvrez notre Beurre de Karité Pur 100% artisanal dans notre boutique en ligne.*`,
+      publie: true,
+    },
+    {
+      titre: "Routine bien-être : 7 gestes pour commencer la journée",
+      slug: "routine-bien-etre-7-gestes-matin",
+      categorie: "Bien-être",
+      tempsLecture: 3,
+      contenu: `## Commencez chaque journée du bon pied
+
+Une routine matinale bien pensée pose les bases d'une journée sereine et productive. Voici 7 gestes simples à intégrer dans votre quotidien.
+
+## 1. Buvez un verre d'eau tiède au réveil
+
+Avant le café, hydratez votre corps qui vient de passer 7 à 8 heures sans eau. Ajoutez-y un filet de citron pour stimuler la digestion.
+
+## 2. Étirez-vous 5 minutes
+
+Des étirements légers réveillent vos muscles et stimulent la circulation sanguine. Concentrez-vous sur le dos, les épaules et les jambes.
+
+## 3. Respirez profondément
+
+3 grandes inspirations par le nez, 3 expirations par la bouche. Ce simple exercice oxygène le cerveau et réduit le cortisol (hormone du stress).
+
+## 4. Nettoyez votre visage à l'eau fraîche
+
+Un nettoyant doux suivi d'eau fraîche resserre les pores et donne un teint frais. Appliquez ensuite votre sérum et crème hydratante.
+
+## 5. Prenez un petit-déjeuner équilibré
+
+Fruits frais, céréales complètes, protéines. Un bon petit-déjeuner régule votre glycémie et votre énergie pour la matinée entière.
+
+## 6. Offrez-vous un auto-massage du visage
+
+2 minutes de mouvements circulaires du menton vers les tempes. Cela stimule la microcirculation et prévient les rides.
+
+## 7. Posez une intention positive
+
+Avant de quitter la maison, choisissez un mot ou une phrase qui guidera votre journée : « calme », « présence », « gratitude ».
+
+---
+
+*Au Surnaturel de Dieu, nous croyons que le bien-être commence par de petits gestes quotidiens. Venez découvrir nos soins pour compléter votre routine.*`,
+      publie: true,
+    },
   ]
 
   for (const data of articlesData) {
     await prisma.article.create({ data })
   }
-  console.log("✅ 3 articles créés")
+  console.log("✅ 5 articles créés")
 
   // ─── Rendez-vous ───────────────────────────────────────────
   const now = new Date()
@@ -464,7 +536,7 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
 
   const equipeData = [
     { nom: "Marie Jeanne", role: "Fondatrice & Directrice", description: "Passionnée par le bien-être holistique, Marie Jeanne a fondé Le Surnaturel de Dieu avec la vision d'offrir des soins d'exception accessibles à toutes.", ordre: 1 },
-    { nom: "Ama Kouassi", role: "Sage-femme diplômée d'État", description: "Forte de plus de 10 ans d'expérience, Ama accompagne les femmes à chaque étape de leur vie avec professionnalisme et bienveillance.", ordre: 2 },
+    { nom: "Ama Kouassi", role: "Sage-femme diplômée d'État", description: "Forte de plus de 18 ans d'expérience, Ama accompagne les femmes à chaque étape de leur vie avec professionnalisme et bienveillance.", ordre: 2 },
     { nom: "Awa Diallo", role: "Esthéticienne spécialisée", description: "Experte en soins du corps et du visage, Awa maîtrise les techniques traditionnelles et modernes pour sublimer chaque cliente.", ordre: 3 },
     { nom: "Fatou Bamba", role: "Accompagnatrice médicale", description: "Formée en accompagnement médical, elle apporte un suivi personnalisé et confidentiel aux clientes ayant des besoins spécifiques.", ordre: 4 },
   ]
@@ -489,6 +561,11 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
     { question: "Proposez-vous un suivi post-partum ?", reponse: "Oui, notre sage-femme Ama Kouassi propose un suivi post-partum complet : rééducation périnéale, conseils d'allaitement, et accompagnement émotionnel.", categorie: "sage-femme", ordre: 3 },
     { question: "Peut-on venir avec son bébé ?", reponse: "Bien sûr ! Nos locaux sont adaptés pour accueillir les jeunes mamans avec leurs bébés. Un espace change et allaitement est mis à votre disposition.", categorie: "sage-femme", ordre: 4 },
     { question: "La sage-femme se déplace-t-elle à domicile ?", reponse: "Pour certains soins post-nataux, des visites à domicile peuvent être organisées. Contactez-nous pour en discuter et vérifier la disponibilité.", categorie: "sage-femme", ordre: 5 },
+    // Abonnements
+    { question: "Comment fonctionne l'abonnement ?", reponse: "Chaque mois, vous bénéficiez d'un nombre de soins inclus dans votre formule. Prenez rendez-vous comme d'habitude, vos soins seront automatiquement déduits de votre quota mensuel.", categorie: "abonnements", ordre: 1 },
+    { question: "Puis-je changer de formule ?", reponse: "Oui, vous pouvez changer de formule à tout moment. Le changement prendra effet à partir du mois suivant.", categorie: "abonnements", ordre: 2 },
+    { question: "Que se passe-t-il si je n'utilise pas tous mes soins ?", reponse: "Les soins non utilisés ne sont pas reportés au mois suivant. Nous vous encourageons à profiter pleinement de votre abonnement !", categorie: "abonnements", ordre: 3 },
+    { question: "Comment annuler mon abonnement ?", reponse: "Vous pouvez annuler votre abonnement à tout moment depuis cette page. L'annulation prendra effet immédiatement et vous ne serez plus prélevé(e).", categorie: "abonnements", ordre: 4 },
   ]
 
   for (const data of faqData) {
@@ -521,7 +598,7 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
     ]) },
     { cle: "avantages", valeur: JSON.stringify([
       { icon: "Shield", titre: "Produits naturels certifiés", description: "Nous utilisons exclusivement des produits naturels et certifiés, respectueux de votre peau et de l'environnement." },
-      { icon: "Award", titre: "Expertise reconnue", description: "Marie Jeanne et son équipe cumulent plus de 10 ans d'expérience dans les soins esthétiques et le bien-être." },
+      { icon: "Award", titre: "Expertise reconnue", description: "Marie Jeanne et son équipe cumulent plus de 18 ans d'expérience dans les soins esthétiques et le bien-être." },
       { icon: "Clock", titre: "Horaires flexibles", description: "Du lundi au samedi, avec des créneaux en soirée pour s'adapter à votre emploi du temps chargé." },
       { icon: "Users", titre: "Approche personnalisée", description: "Chaque soin est adapté à vos besoins spécifiques. Aucun protocole générique, que du sur-mesure." },
       { icon: "Star", titre: "Programme fidélité", description: "Cumulez des points à chaque visite et bénéficiez de soins gratuits grâce à notre programme de fidélité." },
@@ -546,14 +623,25 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
       code: "BIENVENUE10",
       detail: "Offre valable sur tous les soins",
     }) },
-    { cle: "telephone_contact", valeur: JSON.stringify("+225 07 09 00 00 00") },
-    { cle: "adresse_institut", valeur: JSON.stringify("Cocody, Riviera Palmeraie, Abidjan") },
+    { cle: "telephone_contact", valeur: JSON.stringify("+225 05 75 97 51 22") },
+    { cle: "whatsapp_contact", valeur: JSON.stringify("+225 07 79 19 04 61") },
+    { cle: "whatsapp_number", valeur: JSON.stringify("2250779190461") },
+    { cle: "whatsapp_message", valeur: JSON.stringify("Bonjour, j'aimerais avoir des informations sur vos soins et services.") },
+    { cle: "adresse_institut", valeur: JSON.stringify("Cocody, Riviera Palmeraie") },
+    { cle: "nom_centre", valeur: JSON.stringify("Le Surnaturel de Dieu") },
+    { cle: "fondatrice", valeur: JSON.stringify("Marie Jeanne") },
+    { cle: "annee_fondation", valeur: JSON.stringify(2015) },
+    { cle: "email_contact", valeur: JSON.stringify("contact@surnatureldedieu.com") },
+    { cle: "email_rdv", valeur: JSON.stringify("rdv@surnatureldedieu.com") },
+    { cle: "horaires", valeur: JSON.stringify("Lun — Ven : 08h00 — 18h00\nSam : 09h00 — 16h00\nDim : Fermé") },
+    { cle: "facebook_url", valeur: JSON.stringify("https://www.facebook.com/surnatureldedieu") },
+    { cle: "instagram_url", valeur: JSON.stringify("https://www.instagram.com/surnatureldedieu") },
     { cle: "bio_sage_femme", valeur: JSON.stringify({
       nom: "Ama Kouassi",
       titre: "Sage-femme diplômée d'État",
-      experience: "10 ans",
+      experience: "18 ans",
       paragraphes: [
-        "Avec plus de 10 ans d'expérience dans l'accompagnement des femmes, Ama Kouassi est la sage-femme de confiance du Surnaturel de Dieu. Diplômée d'État, elle met son expertise au service du bien-être maternel avec douceur et professionnalisme.",
+        "Avec plus de 18 ans d'expérience dans l'accompagnement des femmes, Ama Kouassi est la sage-femme de confiance du Surnaturel de Dieu. Diplômée d'État, elle met son expertise au service du bien-être maternel avec douceur et professionnalisme.",
         "Spécialisée dans le suivi physiologique de la grossesse, la préparation à l'accouchement et la rééducation post-natale, elle accompagne chaque femme avec une écoute attentive et des conseils adaptés à sa situation unique.",
         "Chaque consultation est un moment d'échange privilégié pour répondre à toutes vos questions et vous accompagner en toute confiance vers la maternité.",
       ],
@@ -612,13 +700,56 @@ Chez Le Surnaturel de Dieu, notre Programme Post-Accouchement est conçu par Mar
       { label: "Général", value: "general" },
       { label: "Boutique", value: "boutique" },
       { label: "Rendez-vous", value: "rdv" },
+      { label: "Abonnements", value: "abonnements" },
     ]) },
+    // ── Homepage & À propos content ──────────────────────────────
+    { cle: "homepage_hero", valeur: JSON.stringify({
+      tag: "Institut de bien-être",
+      titre: "Votre bien-être est notre vocation",
+      sousTitre: "Depuis 2015, Marie Jeanne accueille les femmes d'Abidjan dans un espace de sérénité unique, dédié à la beauté naturelle et au bien-être holistique.",
+      cta1: "Découvrir nos soins",
+      cta2: "Prendre rendez-vous",
+      badge: "Depuis 2015 à Abidjan",
+    }) },
+    { cle: "homepage_services", valeur: JSON.stringify({
+      tag: "Nos soins",
+      titre: "Soins & Services",
+      sousTitre: "Des soins sur mesure pour votre beauté, votre santé et votre sérénité",
+    }) },
+    { cle: "homepage_chiffres", valeur: JSON.stringify({
+      label1: "Clientes satisfaites",
+      label2: "Soins disponibles",
+      label3: "D'expérience",
+    }) },
+    { cle: "homepage_temoignages", valeur: JSON.stringify({
+      tag: "Témoignages",
+      titre: "Ce que disent nos clientes",
+    }) },
+    { cle: "homepage_videos", valeur: JSON.stringify({
+      tag: "Témoignages vidéo",
+      titre: "Elles partagent leur expérience",
+      sousTitre: "Découvrez les témoignages authentiques de nos clientes satisfaites",
+    }) },
+    { cle: "homepage_cta", valeur: JSON.stringify({
+      titre: "Prête à prendre soin de vous ?",
+      sousTitre: "Réservez votre créneau en quelques clics et offrez-vous un moment de bien-être sur mesure.",
+      bouton: "Réserver maintenant",
+    }) },
+    { cle: "bio_fondatrice", valeur: JSON.stringify({
+      nom: "Marie Jeanne",
+      tag: "Fondatrice",
+      paragraphes: [
+        "C'est en 2015 que Marie Jeanne a donné vie au Surnaturel de Dieu, au cœur d'Abidjan. Formée entre la France et la Côte d'Ivoire, elle a acquis une double expertise en esthétique et en bien-être holistique, qu'elle met aujourd'hui au service des femmes ivoiriennes.",
+        "Sa conviction : chaque femme mérite un espace où elle peut se ressourcer, prendre soin de sa santé et révéler sa beauté naturelle, dans un cadre bienveillant et professionnel. De la cabine de hammam traditionnel à la consultation sage-femme, en passant par les soins esthétiques et la boutique de produits naturels, l'institut propose une approche complète du bien-être féminin.",
+        "Entourée d'une équipe de professionnelles passionnées, Marie Jeanne continue de faire évoluer l'institut pour offrir des soins d'exception accessibles à toutes les femmes d'Abidjan, parce que prendre soin de soi n'est pas un luxe, c'est une nécessité.",
+      ],
+    }) },
   ]
 
   for (const data of configData) {
     await prisma.appConfig.create({ data })
   }
-  console.log("✅ Configuration créée")
+  console.log("✅ Configuration créée (15 fonctionnelle + 10 métier)")
 
   console.log("\n🎉 Seed terminé avec succès !")
   console.log("─────────────────────────────────────")

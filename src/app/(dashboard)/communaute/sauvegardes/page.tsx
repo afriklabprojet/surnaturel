@@ -85,7 +85,7 @@ export default function PageSauvegardes() {
             <Bookmark size={24} className="text-primary-brand" />
           </div>
           <p className="font-display text-[16px] font-light text-text-main">Aucune publication sauvegardée</p>
-          <p className="font-body text-[11px] text-text-muted-brand mt-1">Les publications que vous sauvegardez apparaîtront ici</p>
+          <p className="font-body text-xs text-text-muted-brand mt-1">Les publications que vous sauvegardez apparaîtront ici</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -99,7 +99,7 @@ export default function PageSauvegardes() {
                   <Link href={`/communaute/profil/${post.auteur.id}`} className="font-body text-[12px] font-medium text-text-main hover:text-gold transition-colors">
                     {post.auteur.prenom} {post.auteur.nom}
                   </Link>
-                  <p className="font-body text-[10px] text-text-muted-brand">{timeAgo(post.createdAt)}</p>
+                  <p className="font-body text-xs text-text-muted-brand">{timeAgo(post.createdAt)}</p>
                 </div>
                 <button onClick={() => handleUnsave(post.id)} className="p-1.5 text-gold hover:text-danger transition-colors" title="Retirer de la sauvegarde">
                   <BookmarkX size={16} />
@@ -108,15 +108,15 @@ export default function PageSauvegardes() {
               <p className="font-body text-[13px] text-text-main leading-relaxed whitespace-pre-wrap line-clamp-4">{post.contenu}</p>
               {post.imageUrl && <img src={post.imageUrl} alt="" className="w-full max-h-48 object-cover mt-2" />}
               <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border-brand">
-                <span className="font-body text-[10px] text-text-muted-brand">{post.reactionsCount || 0} réactions</span>
-                <span className="font-body text-[10px] text-text-muted-brand flex items-center gap-0.5"><MessageCircle size={10} />{post.commentairesCount || 0}</span>
+                <span className="font-body text-xs text-text-muted-brand">{post.reactionsCount || 0} réactions</span>
+                <span className="font-body text-xs text-text-muted-brand flex items-center gap-0.5"><MessageCircle size={10} />{post.commentairesCount || 0}</span>
               </div>
             </div>
           ))}
 
           {page < totalPages && (
             <div className="flex justify-center pt-2 pb-4">
-              <button onClick={() => fetchSaved(page + 1, true)} disabled={loadingMore} className="flex items-center gap-2 border border-border-brand bg-white px-6 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-mid hover:border-gold hover:text-gold transition-colors disabled:opacity-40">
+              <button onClick={() => fetchSaved(page + 1, true)} disabled={loadingMore} className="flex items-center gap-2 border border-border-brand bg-white px-6 py-2.5 font-body text-xs font-medium uppercase tracking-[0.12em] text-text-mid hover:border-gold hover:text-gold transition-colors disabled:opacity-40">
                 {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
                 Voir plus
               </button>

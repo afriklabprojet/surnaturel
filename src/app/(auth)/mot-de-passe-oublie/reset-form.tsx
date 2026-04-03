@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -130,7 +130,7 @@ function DemandeReset() {
         <div className="w-full max-w-[400px]">
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-6 bg-gold" />
-            <span className="font-body text-[10px] font-medium uppercase tracking-[0.2em] text-gold">
+            <span className="font-body text-xs font-medium uppercase tracking-[0.2em] text-gold">
               Réinitialisation
             </span>
             <span className="h-px w-6 bg-gold" />
@@ -153,7 +153,7 @@ function DemandeReset() {
           {succes ? (
             <div className="mt-8 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-4 font-body text-[12px] text-primary-brand">
               <p className="font-medium">Email envoyé !</p>
-              <p className="mt-1 text-[11px]">
+              <p className="mt-1 text-xs">
                 Si un compte existe avec cette adresse, vous recevrez un lien
                 de réinitialisation dans quelques instants. Pensez à vérifier
                 vos spams.
@@ -162,7 +162,7 @@ function DemandeReset() {
           ) : (
             <>
               {erreur && (
-                <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-[11px] text-danger-deep">
+                <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-xs text-danger-deep">
                   {erreur}
                 </div>
               )}
@@ -175,7 +175,7 @@ function DemandeReset() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.2em] text-text-mid"
+                    className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.2em] text-text-mid"
                   >
                     Adresse email
                   </label>
@@ -188,7 +188,7 @@ function DemandeReset() {
                     className="w-full border border-border-brand bg-bg-page px-4 py-3 font-body text-[14px] text-text-main outline-none transition-all duration-300 placeholder:text-text-muted-brand/50 focus:border-gold focus:bg-white"
                   />
                   {errors.email && (
-                    <p className="mt-1.5 font-body text-[10px] text-danger-deep">
+                    <p className="mt-1.5 font-body text-xs text-danger-deep">
                       {errors.email.message}
                     </p>
                   )}
@@ -197,7 +197,7 @@ function DemandeReset() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex w-full items-center justify-center gap-2 bg-primary-brand py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-70"
+                  className="flex w-full items-center justify-center gap-2 bg-primary-brand py-3.5 font-body text-xs font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-70"
                 >
                   {isSubmitting && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -307,7 +307,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
         <div className="w-full max-w-[400px]">
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-6 bg-gold" />
-            <span className="font-body text-[10px] font-medium uppercase tracking-[0.2em] text-gold">
+            <span className="font-body text-xs font-medium uppercase tracking-[0.2em] text-gold">
               Réinitialisation
             </span>
             <span className="h-px w-6 bg-gold" />
@@ -321,13 +321,13 @@ function NouveauMotDePasse({ token }: { token: string }) {
             <div className="mt-8 text-center">
               <div className="border-l-2 border-primary-brand bg-primary-light/50 px-4 py-4 text-left font-body text-[12px] text-primary-brand">
                 <p className="font-medium">Mot de passe mis à jour !</p>
-                <p className="mt-1 text-[11px]">
+                <p className="mt-1 text-xs">
                   Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
                 </p>
               </div>
               <Link
                 href="/connexion"
-                className="mt-6 inline-flex items-center justify-center bg-primary-brand px-8 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark"
+                className="mt-6 inline-flex items-center justify-center bg-primary-brand px-8 py-3.5 font-body text-xs font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark"
               >
                 Se connecter
               </Link>
@@ -335,7 +335,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
           ) : (
             <>
               {erreur && (
-                <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-[11px] text-danger-deep">
+                <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-xs text-danger-deep">
                   {erreur}
                 </div>
               )}
@@ -348,7 +348,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
                 <div>
                   <label
                     htmlFor="motDePasse"
-                    className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.2em] text-text-mid"
+                    className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.2em] text-text-mid"
                   >
                     Nouveau mot de passe
                   </label>
@@ -361,7 +361,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
                     className="w-full border border-border-brand bg-bg-page px-4 py-3 font-body text-[14px] text-text-main outline-none transition-all duration-300 placeholder:text-text-muted-brand/50 focus:border-gold focus:bg-white"
                   />
                   {errors.motDePasse && (
-                    <p className="mt-1.5 font-body text-[10px] text-danger-deep">
+                    <p className="mt-1.5 font-body text-xs text-danger-deep">
                       {errors.motDePasse.message}
                     </p>
                   )}
@@ -370,7 +370,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
                 <div>
                   <label
                     htmlFor="confirmation"
-                    className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.2em] text-text-mid"
+                    className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.2em] text-text-mid"
                   >
                     Confirmer le mot de passe
                   </label>
@@ -383,7 +383,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
                     className="w-full border border-border-brand bg-bg-page px-4 py-3 font-body text-[14px] text-text-main outline-none transition-all duration-300 placeholder:text-text-muted-brand/50 focus:border-gold focus:bg-white"
                   />
                   {errors.confirmation && (
-                    <p className="mt-1.5 font-body text-[10px] text-danger-deep">
+                    <p className="mt-1.5 font-body text-xs text-danger-deep">
                       {errors.confirmation.message}
                     </p>
                   )}
@@ -392,7 +392,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex w-full items-center justify-center gap-2 bg-primary-brand py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-70"
+                  className="flex w-full items-center justify-center gap-2 bg-primary-brand py-3.5 font-body text-xs font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-70"
                 >
                   {isSubmitting && (
                     <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />

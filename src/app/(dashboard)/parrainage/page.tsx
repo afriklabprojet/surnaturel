@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { staggerContainer, staggerItem, fadeInUp } from "@/lib/animations"
 import {
@@ -15,6 +15,8 @@ import {
   Share2,
 } from "lucide-react"
 import EmptyState from "@/components/ui/empty-states"
+import { useFetch } from "@/lib/hooks/use-fetch"
+import { SkeletonParrainage } from "@/components/ui/skeletons"
 
 interface Parrainage {
   id: string
@@ -42,32 +44,13 @@ interface ParrainageData {
 }
 
 export default function ParrainagePage() {
-  const [data, setData] = useState<ParrainageData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, loading, mutate: fetchData } = useFetch<ParrainageData>("/api/parrainage")
   const [copied, setCopied] = useState(false)
   const [email, setEmail] = useState("")
   const [envoyant, setEnvoyant] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(
     null
   )
-
-  const fetchData = useCallback(async () => {
-    try {
-      const res = await fetch("/api/parrainage")
-      if (res.ok) {
-        const json = await res.json()
-        setData(json)
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
 
   async function copierCode() {
     if (!data) return
@@ -122,21 +105,21 @@ export default function ParrainagePage() {
     switch (statut) {
       case "EN_ATTENTE":
         return (
-          <span className="inline-flex items-center gap-1 bg-gold/10 px-2 py-1 font-body text-[11px] text-gold">
+          <span className="inline-flex items-center gap-1 bg-gold/10 px-2 py-1 font-body text-xs text-gold">
             <Clock size={12} />
             En attente
           </span>
         )
       case "ACTIF":
         return (
-          <span className="inline-flex items-center gap-1 bg-primary-light px-2 py-1 font-body text-[11px] text-primary-brand">
+          <span className="inline-flex items-center gap-1 bg-primary-light px-2 py-1 font-body text-xs text-primary-brand">
             <CheckCircle size={12} />
             Actif
           </span>
         )
       case "TERMINE":
         return (
-          <span className="inline-flex items-center gap-1 bg-border-brand px-2 py-1 font-body text-[11px] text-text-muted-brand">
+          <span className="inline-flex items-center gap-1 bg-border-brand px-2 py-1 font-body text-xs text-text-muted-brand">
             <Check size={12} />
             Terminé
           </span>
@@ -147,11 +130,7 @@ export default function ParrainagePage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonParrainage />
   }
 
   if (!data) {
@@ -192,7 +171,7 @@ export default function ParrainagePage() {
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <div className="border border-border-brand bg-white p-5">
-          <p className="font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+          <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
             Total invités
           </p>
           <p className="mt-2 font-display text-[32px] font-light text-text-main">
@@ -200,7 +179,7 @@ export default function ParrainagePage() {
           </p>
         </div>
         <div className="border border-border-brand bg-white p-5">
-          <p className="font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+          <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
             En attente
           </p>
           <p className="mt-2 font-display text-[32px] font-light text-gold">
@@ -208,7 +187,7 @@ export default function ParrainagePage() {
           </p>
         </div>
         <div className="border border-border-brand bg-white p-5">
-          <p className="font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+          <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
             Actifs
           </p>
           <p className="mt-2 font-display text-[32px] font-light text-primary-brand">
@@ -216,7 +195,7 @@ export default function ParrainagePage() {
           </p>
         </div>
         <div className="border border-border-brand bg-white p-5">
-          <p className="font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+          <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
             Points gagnés
           </p>
           <p className="mt-2 font-display text-[32px] font-light text-gold">
@@ -240,7 +219,7 @@ export default function ParrainagePage() {
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
           {/* Code */}
           <div className="flex-1 border border-border-brand bg-bg-page p-4">
-            <p className="font-body text-[10px] font-medium uppercase tracking-widest text-text-muted-brand">
+            <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
               Code
             </p>
             <p className="mt-1 font-display text-[24px] font-medium tracking-wider text-primary-brand">
@@ -347,7 +326,7 @@ export default function ParrainagePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 Partagez votre lien
               </p>
-              <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+              <p className="mt-1 font-body text-xs text-text-muted-brand">
                 Envoyez votre lien de parrainage à vos proches
               </p>
             </div>
@@ -360,7 +339,7 @@ export default function ParrainagePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 Ils s&apos;inscrivent
               </p>
-              <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+              <p className="mt-1 font-body text-xs text-text-muted-brand">
                 Vos filleuls créent leur compte avec votre code
               </p>
             </div>
@@ -373,7 +352,7 @@ export default function ParrainagePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 Gagnez 200 points
               </p>
-              <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+              <p className="mt-1 font-body text-xs text-text-muted-brand">
                 Après leur premier rendez-vous, vous gagnez 200 points !
               </p>
             </div>
@@ -394,13 +373,13 @@ export default function ParrainagePage() {
             <table className="w-full">
               <thead className="border-b border-border-brand bg-bg-page">
                 <tr>
-                  <th className="px-4 py-3 text-left font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                  <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                     Filleul
                   </th>
-                  <th className="hidden px-4 py-3 text-left font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand sm:table-cell">
+                  <th className="hidden px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand sm:table-cell">
                     Date d&apos;inscription
                   </th>
-                  <th className="px-4 py-3 text-right font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                  <th className="px-4 py-3 text-right font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                     Statut
                   </th>
                 </tr>
@@ -415,7 +394,7 @@ export default function ParrainagePage() {
                       <p className="font-body text-[13px] font-medium text-text-main">
                         {parrainage.filleul.name || "Nouveau membre"}
                       </p>
-                      <p className="font-body text-[11px] text-text-muted-brand">
+                      <p className="font-body text-xs text-text-muted-brand">
                         {parrainage.filleul.email}
                       </p>
                     </td>

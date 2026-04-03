@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailInvitationAvis } from "@/lib/email"
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
 
       envoyes++
     } catch (error) {
-      console.error(
+      logger.error(
         `[CRON invitations-avis] Erreur pour RDV ${rdv.id}:`,
         error
       )

@@ -159,7 +159,7 @@ export default function AdminFaqPage() {
                     <h3 className="font-display text-sm text-text-main">{f.question}</h3>
                   </div>
                   <p className="text-sm text-gray-500 font-body mt-1 pl-6">{f.reponse}</p>
-                  <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body mt-2 inline-block ml-6">
+                  <span className="text-xs uppercase tracking-widest px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body mt-2 inline-block ml-6">
                     {getCategorieLabel(f.categorie)}
                   </span>
                 </div>
@@ -190,23 +190,23 @@ export default function AdminFaqPage() {
             {error && <p className="text-sm text-red-600 mb-3 font-body">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Question</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Question</label>
                 <input required value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Réponse</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Réponse</label>
                 <textarea required rows={4} value={form.reponse} onChange={(e) => setForm({ ...form, reponse: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
                   <select required value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand">
                     <option value="">Sélectionner…</option>
                     {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Ordre</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Ordre</label>
                   <input type="number" value={form.ordre} onChange={(e) => setForm({ ...form, ordre: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>

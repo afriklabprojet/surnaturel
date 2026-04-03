@@ -107,15 +107,15 @@ export default function PageGroupes() {
     <section className="mx-auto max-w-2xl space-y-5">
       {/* En-tête */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-1 bg-white border border-border-brand p-1 flex-1 mr-3">
-          <button onClick={() => setTab("joined")} className={`flex-1 py-2 font-body text-[11px] font-medium uppercase tracking-[0.08em] transition-colors ${tab === "joined" ? "bg-primary-brand text-white" : "text-text-muted-brand hover:bg-bg-page"}`}>
+        <div className="flex gap-1 rounded-xl bg-bg-page ring-1 ring-border-brand p-1 flex-1 mr-3">
+          <button onClick={() => setTab("joined")} className={`flex-1 rounded-lg py-2 font-body text-xs font-medium transition-colors ${tab === "joined" ? "bg-white shadow-sm text-primary-brand" : "text-text-muted-brand hover:bg-white/60"}`}>
             Mes groupes
           </button>
-          <button onClick={() => setTab("discover")} className={`flex-1 py-2 font-body text-[11px] font-medium uppercase tracking-[0.08em] transition-colors ${tab === "discover" ? "bg-primary-brand text-white" : "text-text-muted-brand hover:bg-bg-page"}`}>
+          <button onClick={() => setTab("discover")} className={`flex-1 rounded-lg py-2 font-body text-xs font-medium transition-colors ${tab === "discover" ? "bg-white shadow-sm text-primary-brand" : "text-text-muted-brand hover:bg-white/60"}`}>
             Découvrir
           </button>
         </div>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 bg-primary-brand px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors shrink-0">
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 rounded-full bg-primary-brand px-4 py-2 font-body text-xs font-medium text-white hover:bg-primary-dark transition-colors shrink-0">
           <Plus size={14} />
           Créer
         </button>
@@ -130,10 +130,10 @@ export default function PageGroupes() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher un groupe..."
-              className="w-full pl-9 pr-3 py-2.5 border border-border-brand bg-white font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none transition-colors"
+              className="w-full rounded-full pl-9 pr-3 py-2.5 border border-border-brand bg-white font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none transition-colors"
             />
           </div>
-          <button type="submit" className="px-4 py-2.5 bg-gold text-white font-body text-[11px] font-medium uppercase tracking-wider hover:bg-gold-dark transition-colors">
+          <button type="submit" className="px-4 py-2.5 bg-gold text-white font-body text-xs font-medium uppercase tracking-wider hover:bg-gold-dark transition-colors">
             Rechercher
           </button>
         </form>
@@ -153,7 +153,7 @@ export default function PageGroupes() {
           <p className="font-display text-[16px] font-light text-text-main">
             {tab === "joined" ? "Vous n'avez rejoint aucun groupe" : "Aucun groupe trouvé"}
           </p>
-          <p className="font-body text-[11px] text-text-muted-brand mt-1">
+          <p className="font-body text-xs text-text-muted-brand mt-1">
             {tab === "joined" ? "Découvrez des groupes ou créez le vôtre" : "Essayez avec d'autres mots-clés"}
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function PageGroupes() {
             <Link
               key={g.id}
               href={`/communaute/groupes/${g.slug}`}
-              className="bg-white border border-border-brand hover:border-gold transition-colors overflow-hidden group"
+              className="rounded-2xl bg-white shadow-sm ring-1 ring-border-brand hover:ring-gold hover:shadow-md transition-all overflow-hidden group"
             >
               {g.imageUrl ? (
                 <img src={g.imageUrl} alt="" className="w-full h-28 object-cover" />
@@ -177,10 +177,10 @@ export default function PageGroupes() {
                   {visIcon(g.visibilite)}
                   <h3 className="font-body text-[13px] font-medium text-text-main group-hover:text-gold transition-colors truncate">{g.nom}</h3>
                 </div>
-                {g.description && <p className="font-body text-[11px] text-text-mid line-clamp-2 mb-2">{g.description}</p>}
+                {g.description && <p className="font-body text-xs text-text-mid line-clamp-2 mb-2">{g.description}</p>}
                 <div className="flex items-center gap-3">
-                  <span className="font-body text-[10px] text-text-muted-brand flex items-center gap-1"><Users size={10} />{g.membresCount} membres</span>
-                  <span className="font-body text-[10px] text-text-muted-brand flex items-center gap-1"><FileText size={10} />{g.postsCount} posts</span>
+                  <span className="font-body text-xs text-text-muted-brand flex items-center gap-1"><Users size={10} />{g.membresCount} membres</span>
+                  <span className="font-body text-xs text-text-muted-brand flex items-center gap-1"><FileText size={10} />{g.postsCount} posts</span>
                 </div>
                 {g.role && (
                   <span className="inline-block mt-2 px-2 py-0.5 bg-gold-light font-body text-[9px] font-medium text-gold uppercase tracking-wider rounded-full">{g.role}</span>
@@ -188,7 +188,7 @@ export default function PageGroupes() {
                 {tab === "discover" && !g.isMember && (
                   <button
                     onClick={(e) => { e.preventDefault(); handleJoin(g.slug) }}
-                    className="mt-2 w-full py-1.5 bg-primary-brand text-white font-body text-[10px] font-medium uppercase tracking-wider hover:bg-primary-dark transition-colors"
+                    className="mt-2 w-full rounded-full py-1.5 bg-primary-brand text-white font-body text-xs font-medium hover:bg-primary-dark transition-colors"
                   >
                     Rejoindre
                   </button>
@@ -235,16 +235,13 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
     try {
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "surnaturel_upload")
+      formData.append("folder", "surnaturel-de-dieu/groupes")
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: "POST", body: formData }
-      )
+      const res = await fetch("/api/upload/image", { method: "POST", body: formData })
       if (!res.ok) throw new Error("Échec upload")
       const data = await res.json()
-      setImageUrl(data.secure_url)
-      setImagePreview(data.secure_url)
+      setImageUrl(data.url)
+      setImagePreview(data.url)
     } catch {
       setError("Erreur lors de l'upload de l'image")
     }
@@ -286,7 +283,7 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white border border-border-brand shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl ring-1 ring-black/5 p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-[20px] font-light text-text-main">Créer un groupe</h2>
           <button onClick={onClose} className="p-1 text-text-muted-brand hover:text-text-mid transition-colors"><X size={18} /></button>
@@ -295,7 +292,7 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Image du groupe */}
           <div>
-            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Image du groupe</label>
+            <label className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Image du groupe</label>
             <input
               ref={fileRef}
               type="file"
@@ -326,7 +323,7 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
                 ) : (
                   <>
                     <ImagePlus size={20} className="text-text-muted-brand" />
-                    <span className="font-body text-[10px] text-text-muted-brand">Cliquez pour ajouter une image (max 5 Mo)</span>
+                    <span className="font-body text-xs text-text-muted-brand">Cliquez pour ajouter une image (max 5 Mo)</span>
                   </>
                 )}
               </button>
@@ -335,19 +332,19 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
 
           {/* Nom */}
           <div>
-            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Nom du groupe</label>
+            <label className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Nom du groupe</label>
             <input value={nom} onChange={(e) => setNom(e.target.value)} maxLength={100} className="w-full border border-border-brand bg-bg-page px-3 py-2.5 font-body text-[13px] text-text-main focus:border-gold focus:outline-none transition-colors" />
           </div>
 
           {/* Description */}
           <div>
-            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Description</label>
+            <label className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Description</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={1000} className="w-full resize-none border border-border-brand bg-bg-page px-3 py-2.5 font-body text-[12px] text-text-main focus:border-gold focus:outline-none transition-colors" />
           </div>
 
           {/* Visibilité */}
           <div>
-            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Visibilité</label>
+            <label className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1 block">Visibilité</label>
             <div className="flex gap-2">
               {[
                 { value: "PUBLIC", label: "Public", icon: Globe },
@@ -360,7 +357,7 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
                     key={opt.value}
                     type="button"
                     onClick={() => setVisibilite(opt.value)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 border font-body text-[11px] font-medium transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 border font-body text-xs font-medium transition-colors ${
                       visibilite === opt.value ? "border-gold bg-gold-light text-gold" : "border-border-brand text-text-muted-brand hover:border-gold"
                     }`}
                   >
@@ -371,13 +368,13 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
               })}
             </div>
             {visibilite === "SECRET" && (
-              <p className="font-body text-[10px] text-text-muted-brand mt-1">Visible uniquement par les membres. Inaccessible en recherche.</p>
+              <p className="font-body text-xs text-text-muted-brand mt-1">Visible uniquement par les membres. Inaccessible en recherche.</p>
             )}
           </div>
 
           {/* Règles */}
           <div>
-            <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1 flex items-center gap-1">
+            <label className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1 flex items-center gap-1">
               <ScrollText size={12} />Règles du groupe
             </label>
             <textarea
@@ -393,10 +390,10 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
           {/* Questions d'adhésion (privé / secret uniquement) */}
           {visibilite !== "PUBLIC" && (
             <div>
-              <label className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1.5 flex items-center gap-1">
+              <label className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1.5 flex items-center gap-1">
                 <HelpCircle size={12} />Questions d&apos;adhésion (max 3)
               </label>
-              <p className="font-body text-[10px] text-text-muted-brand mb-2">Les nouveaux membres devront répondre avant de rejoindre le groupe</p>
+              <p className="font-body text-xs text-text-muted-brand mb-2">Les nouveaux membres devront répondre avant de rejoindre le groupe</p>
               <div className="space-y-2">
                 {questions.map((q, i) => (
                   <div key={i} className="flex gap-2">
@@ -413,7 +410,7 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
                   </div>
                 ))}
                 {questions.length < 3 && (
-                  <button type="button" onClick={() => setQuestions([...questions, ""])} className="font-body text-[10px] text-primary-brand hover:text-primary-dark transition-colors">
+                  <button type="button" onClick={() => setQuestions([...questions, ""])} className="font-body text-xs text-primary-brand hover:text-primary-dark transition-colors">
                     + Ajouter une question
                   </button>
                 )}
@@ -421,12 +418,12 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
             </div>
           )}
 
-          {error && <p className="font-body text-[11px] text-danger">{error}</p>}
+          {error && <p className="font-body text-xs text-danger">{error}</p>}
 
           <button
             type="submit"
             disabled={!nom.trim() || loading || uploading}
-            className="w-full flex items-center justify-center gap-2 bg-primary-brand py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40"
+            className="w-full flex items-center justify-center gap-2 bg-primary-brand py-2.5 font-body text-xs font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
             Créer le groupe

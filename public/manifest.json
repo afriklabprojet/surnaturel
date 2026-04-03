@@ -3,6 +3,7 @@
   "short_name": "Surnaturel",
   "description": "Institut de Bien-Être holistique à Abidjan — Hammam, gommage, soins, sage-femme et boutique",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FAFAF7",
   "theme_color": "#2D7A1F",
@@ -17,16 +18,49 @@
       "src": "/logos/logo-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logos/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/logos/logo-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logos/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Prendre un rendez-vous",
+      "short_name": "Réserver",
+      "url": "/prise-rdv",
+      "icons": [{ "src": "/logos/logo-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Boutique",
+      "short_name": "Boutique",
+      "url": "/boutique",
+      "icons": [{ "src": "/logos/logo-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mon espace",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/logos/logo-192.png", "sizes": "192x192" }]
     }
   ],
   "categories": ["health", "beauty", "lifestyle"],
   "lang": "fr",
-  "dir": "ltr"
+  "dir": "ltr",
+  "prefer_related_applications": false
 }

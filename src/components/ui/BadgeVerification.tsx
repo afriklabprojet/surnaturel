@@ -42,7 +42,7 @@ export default function BadgeVerification({ status, size = 14, className = "" }:
     >
       <Icon size={size} className={cfg.color} />
       {showTooltip && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded bg-text-main px-2.5 py-1 font-body text-[10px] text-white shadow-lg z-50 pointer-events-none">
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded bg-text-main px-2.5 py-1 font-body text-xs text-white shadow-lg z-50 pointer-events-none">
           {cfg.tooltip}
           <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-text-main" />
         </span>

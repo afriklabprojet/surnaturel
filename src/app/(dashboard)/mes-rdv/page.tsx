@@ -9,12 +9,13 @@ import {
   CalendarCheck,
   Clock,
   Sparkles,
-  Loader2,
   Plus,
 } from "lucide-react"
 import { formatPrix, formatDate } from "@/lib/utils"
 import AnnulerButton from "./AnnulerButton"
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
+import { useFetch } from "@/lib/hooks/use-fetch"
+import { SkeletonMesRDV } from "@/components/ui/skeletons"
 
 interface RDV {
   id: string
@@ -42,28 +43,18 @@ const STATUT_BADGE: Record<string, { label: string; bg: string; text: string }> 
 export default function PageMesRDV() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [rdvs, setRdvs] = useState<RDV[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: rdvData, loading } = useFetch<{ rdvs: RDV[] }>(
+    status === "authenticated" ? "/api/rdv" : null
+  )
+  const rdvs = rdvData?.rdvs ?? []
   const [activeTab, setActiveTab] = useState<TabId>("avenir")
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/connexion?callbackUrl=/mes-rdv")
   }, [status, router])
 
-  useEffect(() => {
-    if (status !== "authenticated") return
-    fetch("/api/rdv")
-      .then((r) => (r.ok ? r.json() : { rdvs: [] }))
-      .then((data) => setRdvs(data?.rdvs ?? []))
-      .finally(() => setLoading(false))
-  }, [status])
-
   if (status === "loading" || loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonMesRDV />
   }
 
   const now = new Date()
@@ -102,7 +93,7 @@ export default function PageMesRDV() {
           {activeTab === "avenir" && (
             <Link
               href="/prise-rdv"
-              className="mt-4 flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.15em] text-white hover:bg-primary-dark transition-colors"
+              className="mt-4 flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-xs uppercase tracking-[0.15em] text-white hover:bg-primary-dark transition-colors"
             >
               <Plus size={14} />
               Prendre rendez-vous
@@ -135,7 +126,7 @@ export default function PageMesRDV() {
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <h3 className="font-display text-[18px] text-text-main">{rdv.soin.nom}</h3>
                     <span
-                      className="px-2 py-0.5 font-body text-[10px]"
+                      className="px-2 py-0.5 font-body text-xs"
                       style={{ backgroundColor: badge?.bg, color: badge?.text }}
                     >
                       {badge?.label}
@@ -162,21 +153,12 @@ export default function PageMesRDV() {
                 <div className="shrink-0 flex flex-col gap-2">
                   {peutAnnuler && <AnnulerButton rdvId={rdv.id} />}
                   {rdv.statut === "CONFIRME" && (
-                    <>
-                      <Link
-                        href={`/mes-rdv/${rdv.id}/qrcode`}
-                        className="font-body text-[11px] text-gold hover:text-gold-dark underline"
-                      >
-                        Voir le billet QR
-                      </Link>
-                      <a
-                        href={`/api/rdv/${rdv.id}/ics`}
-                        download
-                        className="font-body text-[11px] text-primary-brand hover:text-primary-dark underline"
-                      >
-                        Ajouter au calendrier
-                      </a>
-                    </>
+                    <Link
+                      href={`/mes-rdv/${rdv.id}`}
+                      className="font-body text-xs text-gold hover:text-gold-dark underline"
+                    >
+                      Voir le billet →
+                    </Link>
                   )}
                 </div>
               </motion.div>

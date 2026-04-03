@@ -13,6 +13,8 @@
 // Si les variables ne sont pas configurées, les SMS sont ignorés
 // silencieusement (pas d'erreur bloquante).
 
+import { getConfig } from "@/lib/config"
+
 const AT_API_KEY = process.env.AT_API_KEY
 const AT_USERNAME = process.env.AT_USERNAME
 const AT_SENDER_ID = process.env.AT_SENDER_ID // optionnel
@@ -90,10 +92,11 @@ export async function envoyerSmsRappelRDV(params: {
   date: string
   heure: string
 }): Promise<boolean> {
+  const { nomCentre, adresse, ville } = await getConfig()
   const message =
     `Bonjour ${params.prenom}, rappel de votre RDV demain à ${params.heure} ` +
-    `pour ${params.soin} au Surnaturel de Dieu. ` +
-    `Adresse : Cocody, Riviera Palmeraie, Abidjan. ` +
+    `pour ${params.soin} au ${nomCentre}. ` +
+    `Adresse : ${adresse}, ${ville}. ` +
     `Pour annuler : connectez-vous sur votre espace client.`
 
   return envoyerSms(params.telephone, message)
@@ -108,10 +111,11 @@ export async function envoyerSmsConfirmationRDV(params: {
   date: string
   heure: string
 }): Promise<boolean> {
+  const { nomCentre, adresse } = await getConfig()
   const message =
     `${params.prenom}, votre RDV est confirmé ! ` +
     `${params.soin} le ${params.date} à ${params.heure}. ` +
-    `Le Surnaturel de Dieu — Cocody, Riviera Palmeraie.`
+    `${nomCentre} — ${adresse}.`
 
   return envoyerSms(params.telephone, message)
 }
@@ -124,9 +128,10 @@ export async function envoyerSmsAcomptePaye(params: {
   montant: string
   soin: string
 }): Promise<boolean> {
+  const { nomCentre } = await getConfig()
   const message =
     `${params.prenom}, votre acompte de ${params.montant} pour ${params.soin} ` +
-    `a été reçu. Votre RDV est garanti. Merci ! — Le Surnaturel de Dieu`
+    `a été reçu. Votre RDV est garanti. Merci ! — ${nomCentre}`
 
   return envoyerSms(params.telephone, message)
 }

@@ -11,8 +11,12 @@ import {
   Loader2,
   Check,
   ShoppingBag,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react"
+import { METHODES_PAIEMENT } from "@/lib/jeko"
 import { formatPrix } from "@/lib/utils"
+import { SkeletonCommandeDetailPage } from "@/components/ui/skeletons"
 
 interface LigneCommande {
   id: string
@@ -26,12 +30,16 @@ interface Commande {
   total: number
   statut: string
   paiementId: string | null
+  methodePaiement: string | null
+  tentativesPaiement: number
+  dernierEchecAt: string | null
   createdAt: string
   lignes: LigneCommande[]
 }
 
 const STATUT_BADGE: Record<string, { label: string; className: string }> = {
-  EN_ATTENTE: { label: "En attente", className: "bg-gold-light text-gold-dark" },
+  EN_ATTENTE: { label: "En attente de paiement", className: "bg-gold-light text-gold-dark" },
+  PAIEMENT_EN_COURS: { label: "Paiement en cours", className: "bg-blue-50 text-blue-700" },
   PAYEE: { label: "Payée", className: "bg-primary-light text-primary-dark" },
   EN_PREPARATION: { label: "En préparation", className: "bg-gold-light text-gold-dark" },
   EXPEDIEE: { label: "Expédiée", className: "bg-primary-light text-primary-dark" },
@@ -53,6 +61,7 @@ export default function PageDetailCommande() {
   const params = useParams()
   const [commande, setCommande] = useState<Commande | null>(null)
   const [loading, setLoading] = useState(true)
+  const [retrying, setRetrying] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/connexion")
@@ -68,11 +77,7 @@ export default function PageDetailCommande() {
   }, [status, params.id])
 
   if (status === "loading" || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonCommandeDetailPage />
   }
 
   if (!commande) {
@@ -119,7 +124,7 @@ export default function PageDetailCommande() {
             </p>
           </div>
           <span
-            className={`px-3 py-1.5 font-body text-[11px] uppercase tracking-widest ${badge?.className ?? ""}`}
+            className={`px-3 py-1.5 font-body text-xs uppercase tracking-widest ${badge?.className ?? ""}`}
           >
             {badge?.label ?? commande.statut}
           </span>
@@ -137,16 +142,16 @@ export default function PageDetailCommande() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border-brand">
-                <th className="text-left p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
+                <th className="text-left p-3 font-body text-xs uppercase tracking-widest text-text-muted-brand">
                   Produit
                 </th>
-                <th className="text-center p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
+                <th className="text-center p-3 font-body text-xs uppercase tracking-widest text-text-muted-brand">
                   Qté
                 </th>
-                <th className="text-right p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
+                <th className="text-right p-3 font-body text-xs uppercase tracking-widest text-text-muted-brand">
                   Prix unit.
                 </th>
-                <th className="text-right p-3 font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
+                <th className="text-right p-3 font-body text-xs uppercase tracking-widest text-text-muted-brand">
                   Sous-total
                 </th>
               </tr>
@@ -206,7 +211,7 @@ export default function PageDetailCommande() {
               const isCurrent = i === statutIndex
               return (
                 <div key={step.statut} className="flex items-center">
-                  <div className="flex flex-col items-center min-w-[80px]">
+                  <div className="flex flex-col items-center min-w-20">
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                         done
@@ -217,7 +222,7 @@ export default function PageDetailCommande() {
                       {done && <Check className="h-3 w-3 text-white" />}
                     </div>
                     <p
-                      className={`mt-2 font-body text-[10px] text-center ${
+                      className={`mt-2 font-body text-xs text-center ${
                         done ? "text-primary-brand" : "text-text-muted-brand"
                       }`}
                     >
@@ -238,20 +243,65 @@ export default function PageDetailCommande() {
         )}
       </div>
 
+      {/* Section — Réessayer le paiement si échoué */}
+      {(commande.statut === "EN_ATTENTE" && commande.tentativesPaiement > 0) && (
+        <div className="bg-gold-light/30 border border-gold/30 p-6 space-y-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-gold shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-display text-[18px] font-light text-text-main">
+                Paiement non abouti
+              </h3>
+              <p className="font-body text-[13px] text-text-muted-brand mt-1">
+                Votre paiement n&apos;a pas pu être traité. Vous pouvez réessayer avec le même moyen de paiement ou en choisir un autre.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {METHODES_PAIEMENT.map((m) => (
+              <button
+                key={m.id}
+                disabled={retrying}
+                onClick={async () => {
+                  setRetrying(true)
+                  try {
+                    const res = await fetch("/api/paiement/initier", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ commandeId: commande.id, methode: m.id }),
+                    })
+                    const data = await res.json()
+                    if (data.redirectUrl) {
+                      window.location.href = data.redirectUrl
+                    }
+                  } catch {} finally {
+                    setRetrying(false)
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-border-brand font-body text-xs font-medium text-text-main hover:border-primary-brand transition-colors disabled:opacity-50"
+              >
+                {retrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Section 4 — Actions */}
       <div className="flex items-center gap-3 flex-wrap">
         <a
           href={`/api/commandes/${commande.id}/facture`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary-brand text-white font-body text-[11px] uppercase tracking-[0.15em] hover:bg-primary-dark transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary-brand text-white font-body text-xs uppercase tracking-[0.15em] hover:bg-primary-dark transition-colors"
         >
           <Download className="h-3.5 w-3.5" />
           Télécharger la facture PDF
         </a>
         <Link
           href="/contact"
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 border border-border-brand text-text-mid font-body text-[11px] uppercase tracking-[0.15em] hover:border-gold transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 border border-border-brand text-text-mid font-body text-xs uppercase tracking-[0.15em] hover:border-gold transition-colors"
         >
           <MessageCircle className="h-3.5 w-3.5" />
           Contacter le support

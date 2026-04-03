@@ -144,7 +144,7 @@ export default function AdminEquipePage() {
               )}
               <div className="p-4 space-y-2">
                 <h3 className="font-display text-base text-text-main">{m.nom}</h3>
-                <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-gold/10 text-gold font-body inline-block">{m.role}</span>
+                <span className="text-xs uppercase tracking-widest px-2 py-0.5 bg-gold/10 text-gold font-body inline-block">{m.role}</span>
                 <p className="text-sm text-gray-500 line-clamp-2 font-body">{m.description}</p>
                 <div className="flex items-center gap-2 pt-2 border-t border-border-brand">
                   <button onClick={() => openEdit(m)} className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
@@ -173,19 +173,19 @@ export default function AdminEquipePage() {
             {error && <p className="text-sm text-red-600 mb-3 font-body">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
                 <input required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Rôle</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Rôle</label>
                 <input required value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
                 <textarea required rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Photo</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Photo</label>
                 <div className="flex items-center gap-2">
                   <input value={form.photoUrl} onChange={(e) => setForm({ ...form, photoUrl: e.target.value })} className="flex-1 border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="URL Cloudinary…" />
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
@@ -194,9 +194,14 @@ export default function AdminEquipePage() {
                   </button>
                 </div>
                 {uploading && <p className="text-xs text-gold mt-1 font-body">Téléversement en cours…</p>}
+                {form.photoUrl && !uploading && (
+                  <div className="mt-2">
+                    <img src={form.photoUrl} alt="Aperçu" className="h-24 w-24 object-cover border border-border-brand" />
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Ordre</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Ordre</label>
                 <input type="number" value={form.ordre} onChange={(e) => setForm({ ...form, ordre: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div className="flex justify-end gap-3 pt-2">

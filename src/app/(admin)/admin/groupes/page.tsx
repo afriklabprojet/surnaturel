@@ -272,14 +272,14 @@ export default function PageAdminGroupes() {
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-border-brand font-body text-[11px] uppercase tracking-widest hover:bg-bg-page transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-border-brand font-body text-xs uppercase tracking-widest hover:bg-bg-page transition-colors disabled:opacity-50"
           >
             {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
             Exporter CSV
           </button>
           <button
             onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 transition-colors"
           >
             <Plus size={14} /> Créer
           </button>
@@ -303,7 +303,7 @@ export default function PageAdminGroupes() {
             <button
               key={v}
               onClick={() => { setFiltreVisibilite(v); setPage(1) }}
-              className={`px-2.5 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                 filtreVisibilite === v ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -350,17 +350,17 @@ export default function PageAdminGroupes() {
                     <p className="font-body text-[12px] text-text-muted-brand line-clamp-2">{g.description}</p>
                   )}
 
-                  <div className="flex items-center gap-4 text-text-muted-brand font-body text-[11px]">
+                  <div className="flex items-center gap-4 text-text-muted-brand font-body text-xs">
                     <span className="flex items-center gap-1"><Users size={12} /> {g.nbMembres}</span>
                     <span className="flex items-center gap-1"><Newspaper size={12} /> {g.nbPosts}</span>
                     <span className="flex items-center gap-1"><CalendarDays size={12} /> {g.nbEvenements}</span>
-                    <span className="ml-auto text-[10px]">{new Date(g.createdAt).toLocaleDateString("fr")}</span>
+                    <span className="ml-auto text-xs">{new Date(g.createdAt).toLocaleDateString("fr")}</span>
                   </div>
 
                   <div className="flex items-center gap-1 pt-1">
                     <button
                       onClick={() => voirDetail(g.id)}
-                      className="flex-1 flex items-center justify-center gap-1 py-1.5 border border-border-brand font-body text-[10px] uppercase tracking-widest text-text-mid hover:text-primary-brand hover:border-primary-brand transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 py-1.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:text-primary-brand hover:border-primary-brand transition-colors"
                     >
                       <Eye size={12} /> Gérer
                     </button>
@@ -383,11 +383,11 @@ export default function PageAdminGroupes() {
       {/* ── Pagination ── */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>
@@ -403,15 +403,15 @@ export default function PageAdminGroupes() {
             </div>
             <form onSubmit={creerGroupe} className="space-y-4">
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Nom</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Nom</label>
                 <input type="text" required value={form.nom} onChange={(e) => setForm((f) => ({ ...f, nom: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Description</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand resize-none" />
               </div>
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Visibilité</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Visibilité</label>
                 <select value={form.visibilite} onChange={(e) => setForm((f) => ({ ...f, visibilite: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand">
                   <option value="PUBLIC">Public</option>
                   <option value="PRIVE">Privé</option>
@@ -419,10 +419,10 @@ export default function PageAdminGroupes() {
                 </select>
               </div>
               <div>
-                <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Règles</label>
+                <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Règles</label>
                 <textarea value={form.regles} onChange={(e) => setForm((f) => ({ ...f, regles: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand resize-none" />
               </div>
-              <button type="submit" disabled={saving} className="w-full py-2.5 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 transition-colors disabled:opacity-50">
+              <button type="submit" disabled={saving} className="w-full py-2.5 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 transition-colors disabled:opacity-50">
                 {saving ? "Création…" : "Créer le groupe"}
               </button>
             </form>
@@ -448,7 +448,7 @@ export default function PageAdminGroupes() {
                       <p className="font-body text-[12px] text-text-muted-brand mt-0.5">
                         {detail.membres.filter((m) => m.approuve).length} membres · {detail.nbPosts} posts · {detail.nbEvenements} événements
                         {detail.demandesEnAttente.length > 0 && (
-                          <span className="ml-2 px-1.5 py-0.5 bg-gold-light text-gold-dark text-[10px] uppercase tracking-widest">{detail.demandesEnAttente.length} demande{detail.demandesEnAttente.length > 1 ? "s" : ""}</span>
+                          <span className="ml-2 px-1.5 py-0.5 bg-gold-light text-gold-dark text-xs uppercase tracking-widest">{detail.demandesEnAttente.length} demande{detail.demandesEnAttente.length > 1 ? "s" : ""}</span>
                         )}
                       </p>
                     </div>
@@ -466,7 +466,7 @@ export default function PageAdminGroupes() {
                       <button
                         key={t.key}
                         onClick={() => setDetailTab(t.key)}
-                        className={`flex items-center gap-1.5 px-3 py-2 font-body text-[11px] uppercase tracking-widest border-b-2 transition-colors ${
+                        className={`flex items-center gap-1.5 px-3 py-2 font-body text-xs uppercase tracking-widest border-b-2 transition-colors ${
                           detailTab === t.key
                             ? "border-primary-brand text-primary-brand"
                             : "border-transparent text-text-muted-brand hover:text-text-mid"
@@ -489,12 +489,12 @@ export default function PageAdminGroupes() {
                     {!editing ? (
                       <>
                         <div className="flex items-center justify-between">
-                          <span className={`px-2 py-0.5 font-body text-[10px] uppercase tracking-widest ${VISIBILITE_LABELS[detail.visibilite]?.bg} ${VISIBILITE_LABELS[detail.visibilite]?.text}`}>
+                          <span className={`px-2 py-0.5 font-body text-xs uppercase tracking-widest ${VISIBILITE_LABELS[detail.visibilite]?.bg} ${VISIBILITE_LABELS[detail.visibilite]?.text}`}>
                             {VISIBILITE_LABELS[detail.visibilite]?.label}
                           </span>
                           <button
                             onClick={() => setEditing(true)}
-                            className="flex items-center gap-1 px-3 py-1.5 border border-border-brand font-body text-[10px] uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors"
                           >
                             <Edit size={12} /> Modifier
                           </button>
@@ -502,21 +502,21 @@ export default function PageAdminGroupes() {
 
                         {detail.description && (
                           <div>
-                            <p className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand mb-1">Description</p>
+                            <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand mb-1">Description</p>
                             <p className="font-body text-[13px] text-text-mid">{detail.description}</p>
                           </div>
                         )}
 
                         {detail.regles && (
                           <div className="p-3 bg-bg-page border border-border-brand">
-                            <p className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand mb-1">Règles</p>
+                            <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand mb-1">Règles</p>
                             <p className="font-body text-[12px] text-text-mid whitespace-pre-line">{detail.regles}</p>
                           </div>
                         )}
 
                         {detail.questions.length > 0 && (
                           <div>
-                            <p className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand mb-2">Questions d&apos;adhésion</p>
+                            <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand mb-2">Questions d&apos;adhésion</p>
                             <div className="space-y-1">
                               {detail.questions.map((q, i) => (
                                 <p key={q.id} className="font-body text-[13px] text-text-mid">{i + 1}. {q.texte}</p>
@@ -529,15 +529,15 @@ export default function PageAdminGroupes() {
                       /* Mode édition */
                       <div className="space-y-4">
                         <div>
-                          <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Nom</label>
+                          <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Nom</label>
                           <input type="text" value={editForm.nom} onChange={(e) => setEditForm((f) => ({ ...f, nom: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand" />
                         </div>
                         <div>
-                          <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Description</label>
+                          <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Description</label>
                           <textarea value={editForm.description} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand resize-none" />
                         </div>
                         <div>
-                          <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Visibilité</label>
+                          <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Visibilité</label>
                           <select value={editForm.visibilite} onChange={(e) => setEditForm((f) => ({ ...f, visibilite: e.target.value }))} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand">
                             <option value="PUBLIC">Public</option>
                             <option value="PRIVE">Privé</option>
@@ -545,20 +545,20 @@ export default function PageAdminGroupes() {
                           </select>
                         </div>
                         <div>
-                          <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand block mb-1">Règles</label>
+                          <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand block mb-1">Règles</label>
                           <textarea value={editForm.regles} onChange={(e) => setEditForm((f) => ({ ...f, regles: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand resize-none" />
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={sauvegarderEdit}
                             disabled={saving}
-                            className="flex-1 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                            className="flex-1 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                           >
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Sauvegarder
                           </button>
                           <button
                             onClick={() => setEditing(false)}
-                            className="px-4 py-2 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-muted-brand hover:bg-bg-page transition-colors"
+                            className="px-4 py-2 border border-border-brand font-body text-xs uppercase tracking-widest text-text-muted-brand hover:bg-bg-page transition-colors"
                           >
                             Annuler
                           </button>
@@ -580,7 +580,7 @@ export default function PageAdminGroupes() {
                             <Avatar user={m.user} size={32} />
                             <div className="flex-1 min-w-0">
                               <p className="font-body text-[13px] text-text-main truncate">{m.user.prenom} {m.user.nom}</p>
-                              <p className="font-body text-[11px] text-text-muted-brand">{m.user.email}</p>
+                              <p className="font-body text-xs text-text-muted-brand">{m.user.email}</p>
                             </div>
 
                             {/* Changer le rôle */}
@@ -588,7 +588,7 @@ export default function PageAdminGroupes() {
                               value={m.role}
                               onChange={(e) => actionMembre(detail.id, "changeRole", m.id, { role: e.target.value })}
                               disabled={actionLoading[m.id]}
-                              className="px-2 py-1 border border-border-brand font-body text-[10px] uppercase tracking-widest bg-white focus:outline-none focus:border-primary-brand"
+                              className="px-2 py-1 border border-border-brand font-body text-xs uppercase tracking-widest bg-white focus:outline-none focus:border-primary-brand"
                             >
                               <option value="ADMIN">Admin</option>
                               <option value="MODERATEUR">Modérateur</option>
@@ -631,7 +631,7 @@ export default function PageAdminGroupes() {
                               <Avatar user={d.user} size={32} />
                               <div className="flex-1 min-w-0">
                                 <p className="font-body text-[13px] font-medium text-text-main">{d.user.prenom} {d.user.nom}</p>
-                                <p className="font-body text-[11px] text-text-muted-brand">{d.user.email} · {new Date(d.createdAt).toLocaleDateString("fr")}</p>
+                                <p className="font-body text-xs text-text-muted-brand">{d.user.email} · {new Date(d.createdAt).toLocaleDateString("fr")}</p>
                               </div>
                             </div>
 
@@ -640,7 +640,7 @@ export default function PageAdminGroupes() {
                               <div className="space-y-2 bg-bg-page p-3 border border-border-brand">
                                 {d.reponses.map((r, i) => (
                                   <div key={i}>
-                                    <p className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand">{r.question}</p>
+                                    <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand">{r.question}</p>
                                     <p className="font-body text-[13px] text-text-mid mt-0.5">{r.reponse}</p>
                                   </div>
                                 ))}
@@ -652,14 +652,14 @@ export default function PageAdminGroupes() {
                               <button
                                 onClick={() => actionMembre(detail.id, "approuver", d.membreId)}
                                 disabled={actionLoading[d.membreId]}
-                                className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-600 text-white font-body text-[10px] uppercase tracking-widest hover:bg-green-700 disabled:opacity-50 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-600 text-white font-body text-xs uppercase tracking-widest hover:bg-green-700 disabled:opacity-50 transition-colors"
                               >
                                 {actionLoading[d.membreId] ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />} Approuver
                               </button>
                               <button
                                 onClick={() => actionMembre(detail.id, "refuser", d.membreId)}
                                 disabled={actionLoading[d.membreId]}
-                                className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-red-500 text-white font-body text-[10px] uppercase tracking-widest hover:bg-red-600 disabled:opacity-50 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-red-500 text-white font-body text-xs uppercase tracking-widest hover:bg-red-600 disabled:opacity-50 transition-colors"
                               >
                                 {actionLoading[d.membreId] ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />} Refuser
                               </button>
@@ -687,7 +687,7 @@ export default function PageAdminGroupes() {
                     <button
                       onClick={publierAnnonce}
                       disabled={saving || !annonceText.trim()}
-                      className="w-full py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                     >
                       {saving ? <Loader2 size={14} className="animate-spin" /> : <Megaphone size={14} />} Publier l&apos;annonce
                     </button>

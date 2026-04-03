@@ -1,0 +1,56 @@
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║  .htaccess — Reverse proxy Apache → Next.js (Hostinger VPS)        ║
+# ║                                                                    ║
+# ║  QUAND CE FICHIER EST NÉCESSAIRE :                                 ║
+# ║    → Hostinger VPS avec Apache devant PM2 (port 3000)             ║
+# ║                                                                    ║
+# ║  QUAND CE FICHIER N'EST PAS NÉCESSAIRE :                           ║
+# ║    → Hostinger Node.js managé (hPanel "Node.js" app)              ║
+# ║      → Hostinger gère lui-même le proxy et HTTPS                  ║
+# ║      → Supprimez ce fichier dans ce cas                           ║
+# ║                                                                    ║
+# ║  Placement : répertoire racine public de votre site Hostinger      ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+
+# Activer le moteur de réécriture Apache
+RewriteEngine On
+
+# Forcer HTTPS (redirection HTTP → HTTPS)
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ── Proxy vers Next.js (port 3000) ───────────────────────────────────
+# Hostinger expose le process Node.js sur un port interne.
+# Remplacer 3000 par le port assigné par Hostinger si différent.
+
+# Ne pas réécrire les fichiers et dossiers existants
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Proxifier toutes les requêtes vers Next.js
+RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+
+# ── Headers de sécurité supplémentaires ──────────────────────────────
+<IfModule mod_headers.c>
+  Header set X-Frame-Options "DENY"
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ── Compression gzip ─────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>
+
+# ── Cache pour les assets statiques Next.js ──────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+</IfModule>

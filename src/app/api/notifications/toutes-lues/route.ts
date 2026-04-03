@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -20,7 +21,7 @@ export async function PATCH() {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur marquer toutes lues:", error)
+    logger.error("Erreur marquer toutes lues:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

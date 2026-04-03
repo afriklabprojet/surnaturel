@@ -109,7 +109,7 @@ export default function PageAdminParrainages() {
             <button
               key={s}
               onClick={() => { setFiltreStatut(s); setPage(1) }}
-              className={`px-2.5 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                 filtreStatut === s ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -132,12 +132,12 @@ export default function PageAdminParrainages() {
             <table className="w-full text-sm">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Parrain</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Filleul</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Code</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Date</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Statut</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Parrain</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Filleul</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Code</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Date</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Statut</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -150,7 +150,7 @@ export default function PageAdminParrainages() {
                           <Avatar user={p.parrain} />
                           <div>
                             <p className="font-body text-[13px] font-medium text-text-main">{p.parrain.prenom} {p.parrain.nom}</p>
-                            <p className="font-body text-[11px] text-text-muted-brand">{p.parrain.email}</p>
+                            <p className="font-body text-xs text-text-muted-brand">{p.parrain.email}</p>
                           </div>
                         </div>
                       </td>
@@ -171,7 +171,7 @@ export default function PageAdminParrainages() {
                         {new Date(p.createdAt).toLocaleDateString("fr")}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-[10px] uppercase tracking-widest ${s.bg} ${s.text}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-xs uppercase tracking-widest ${s.bg} ${s.text}`}>
                           <s.icon size={12} /> {s.label}
                         </span>
                       </td>
@@ -181,7 +181,7 @@ export default function PageAdminParrainages() {
                             <button
                               onClick={() => changeStatut(p.id, "ACTIF")}
                               disabled={actionLoading[p.id]}
-                              className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors disabled:opacity-50"
+                              className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors disabled:opacity-50"
                             >
                               Activer
                             </button>
@@ -190,7 +190,7 @@ export default function PageAdminParrainages() {
                             <button
                               onClick={() => changeStatut(p.id, "RECOMPENSE_ACCORDEE")}
                               disabled={actionLoading[p.id]}
-                              className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-gold text-gold-dark hover:bg-gold-light transition-colors disabled:opacity-50"
+                              className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-gold text-gold-dark hover:bg-gold-light transition-colors disabled:opacity-50"
                             >
                               Récompenser
                             </button>
@@ -221,11 +221,11 @@ export default function PageAdminParrainages() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>

@@ -1,10 +1,84 @@
 import type { Metadata } from "next"
+import { getConfig } from "@/lib/config"
+import { prisma } from "@/lib/prisma"
+import { Fragment } from "react"
 
 export const metadata: Metadata = {
   title: "Mentions légales",
+  description: "Mentions légales du site Le Surnaturel de Dieu — Institut de bien-être à Abidjan. Informations sur l'éditeur et l'hébergeur.",
+  alternates: { canonical: "/mentions-legales" },
 }
 
-export default function MentionsLegales() {
+interface Section { titre: string; contenu: string }
+
+function renderInline(text: string): React.ReactNode[] {
+  const parts = text.split(/\*\*(.*?)\*\*/g)
+  return parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : <Fragment key={i}>{part}</Fragment>))
+}
+
+function renderContenu(raw: string, config: { email: string; telephone: string; telephoneTel: string; adresseFull: string; nomCentre: string; fondatrice: string }) {
+  const text = raw
+    .replace(/\{\{nomCentre\}\}/g, config.nomCentre)
+    .replace(/\{\{fondatrice\}\}/g, config.fondatrice)
+    .replace(/\{\{adresse\}\}/g, config.adresseFull)
+    .replace(/\{\{telephone\}\}/g, config.telephone)
+    .replace(/\{\{email\}\}/g, config.email)
+
+  const lines = text.split("\n")
+  const elements: React.ReactNode[] = []
+  let listItems: React.ReactNode[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (line.startsWith("- ")) {
+      listItems.push(<li key={`li-${i}`}>{renderInline(line.slice(2))}</li>)
+    } else {
+      if (listItems.length > 0) {
+        elements.push(<ul key={`ul-${i}`} className="mt-2 list-disc space-y-1 pl-5">{listItems}</ul>)
+        listItems = []
+      }
+      if (line.trim()) {
+        elements.push(<p key={`p-${i}`}>{renderInline(line)}</p>)
+      }
+    }
+  }
+  if (listItems.length > 0) {
+    elements.push(<ul key="ul-last" className="mt-2 list-disc space-y-1 pl-5">{listItems}</ul>)
+  }
+  return elements
+}
+
+export default async function MentionsLegales() {
+  const config = await getConfig()
+
+  let sections: Section[] = []
+  try {
+    const row = await prisma.appConfig.findUnique({ where: { cle: "mentions_legales" } })
+    if (row) {
+      const parsed = JSON.parse(row.valeur)
+      if (Array.isArray(parsed) && parsed.length > 0) sections = parsed
+    }
+  } catch { /* use default hardcoded */ }
+
+  if (sections.length > 0) {
+    return (
+      <section className="mx-auto max-w-3xl px-6 py-20 lg:px-10">
+        <h1 className="font-display text-3xl font-light text-text-main sm:text-4xl">
+          Mentions légales
+        </h1>
+        <div className="mt-10 space-y-8 font-body text-sm leading-relaxed text-text-mid">
+          {sections.map((s, i) => (
+            <div key={i}>
+              <h2 className="mb-3 font-display text-xl font-light text-text-main">{s.titre}</h2>
+              {renderContenu(s.contenu, config)}
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  // Fallback: contenu par défaut hardcodé
   return (
     <section className="mx-auto max-w-3xl px-6 py-20 lg:px-10">
       <h1 className="font-display text-3xl font-light text-text-main sm:text-4xl">
@@ -16,11 +90,11 @@ export default function MentionsLegales() {
             Éditeur du site
           </h2>
           <p>
-            <strong>Le Surnaturel de Dieu — Institut de Bien-Être</strong><br />
-            Fondatrice : Marie Jeanne<br />
-            Adresse : Cocody, Riviera Palmeraie — Abidjan, Côte d&apos;Ivoire<br />
-            Téléphone : <a href="tel:+2250778520699" className="text-primary-brand hover:underline">+225 07 78 52 06 99</a><br />
-            Email : <a href="mailto:contact@surnatureldedieu.com" className="text-primary-brand hover:underline">contact@surnatureldedieu.com</a>
+            <strong>{config.nomCentre} — Institut de Bien-Être</strong><br />
+            Fondatrice : {config.fondatrice}<br />
+            Adresse : {config.adresseFull}<br />
+            Téléphone : <a href={`tel:${config.telephoneTel}`} className="text-primary-brand hover:underline">{config.telephone}</a><br />
+            Email : <a href={`mailto:${config.email}`} className="text-primary-brand hover:underline">{config.email}</a>
           </p>
         </div>
 
@@ -57,7 +131,7 @@ export default function MentionsLegales() {
             de vos demandes. Conformément à la loi ivoirienne n°2013-450 relative à la protection
             des données à caractère personnel, vous disposez d&apos;un droit d&apos;accès, de
             rectification et de suppression de vos données. Pour exercer ce droit, contactez-nous
-            à : <a href="mailto:contact@surnatureldedieu.com" className="text-primary-brand hover:underline">contact@surnatureldedieu.com</a>.
+            à : <a href={`mailto:${config.email}`} className="text-primary-brand hover:underline">{config.email}</a>.
           </p>
         </div>
 

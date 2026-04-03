@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -62,7 +63,7 @@ export async function GET() {
       stats,
     })
   } catch (error) {
-    console.error("Erreur récupération parrainages:", error)
+    logger.error("Erreur récupération parrainages:", error)
     return NextResponse.json(
       { error: "Erreur lors de la récupération des parrainages" },
       { status: 500 }
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
       lien,
     })
   } catch (error) {
-    console.error("Erreur envoi invitation:", error)
+    logger.error("Erreur envoi invitation:", error)
     return NextResponse.json(
       { error: "Erreur lors de l'envoi de l'invitation" },
       { status: 500 }

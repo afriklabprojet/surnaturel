@@ -12,6 +12,8 @@ import {
   Image as ImageIcon, Video, Link as LinkIcon, ThumbsUp, Heart, Repeat2,
 } from "lucide-react"
 
+import { REACTIONS, ReactionType } from "@/components/communaute/types"
+
 /* ────────────── Types ────────────── */
 
 interface GroupeDetail {
@@ -32,7 +34,6 @@ interface MembreData {
   id: string; userId: string; role: string; badge?: string | null; mutedUntil?: string | null
   user: { id: string; nom: string; prenom: string; pseudo?: string | null; photoUrl?: string | null }
 }
-type ReactionType = "JAIME" | "SOUTIEN" | "ENCOURAGEMENT" | "BRAVO" | "INSPIRATION"
 interface CommentData {
   id: string; contenu: string; createdAt: string
   auteur: { id: string; nom: string; prenom: string; photoUrl: string | null; pseudo?: string | null }
@@ -49,13 +50,6 @@ interface PostData {
   _count: { commentaires: number; reactions: number }
 }
 
-const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: "JAIME", emoji: "\ud83d\udc4d", label: "J'aime" },
-  { type: "SOUTIEN", emoji: "\u2764\ufe0f", label: "Soutien" },
-  { type: "ENCOURAGEMENT", emoji: "\ud83d\udcaa", label: "Courage" },
-  { type: "BRAVO", emoji: "\ud83d\udc4f", label: "Bravo" },
-  { type: "INSPIRATION", emoji: "\u2728", label: "Inspiration" },
-]
 interface DemandeData {
   id: string; userId: string
   user: { id: string; nom: string; prenom: string; photoUrl?: string | null; pseudo?: string | null }
@@ -240,7 +234,7 @@ function GroupePostCard({ post, currentUserId, onUpdatePost }: {
         <Link href={`/communaute/profil/${post.auteur.id}`}><Avatar user={post.auteur} size={36} /></Link>
         <div className="flex-1 min-w-0">
           <Link href={`/communaute/profil/${post.auteur.id}`} className="font-body text-[12px] font-medium text-text-main hover:text-gold transition-colors">{post.auteur.prenom} {post.auteur.nom}</Link>
-          <p className="font-body text-[10px] text-text-muted-brand">{timeAgo(post.createdAt)}</p>
+          <p className="font-body text-xs text-text-muted-brand">{timeAgo(post.createdAt)}</p>
         </div>
       </div>
 
@@ -270,13 +264,13 @@ function GroupePostCard({ post, currentUserId, onUpdatePost }: {
       {(reactionsCount > 0 || totalComments > 0) && (
         <div className="flex items-center justify-between px-4 py-2 text-text-muted-brand">
           {reactionsCount > 0 && (
-            <span className="font-body text-[11px] flex items-center gap-1">
+            <span className="font-body text-xs flex items-center gap-1">
               {topEmojis.map((emoji, i) => <span key={i} className="text-[12px]">{emoji}</span>)}
               <span className="ml-0.5">{reactionsCount}</span>
             </span>
           )}
           {totalComments > 0 && (
-            <button onClick={toggleComments} className="font-body text-[11px] hover:text-gold transition-colors ml-auto">
+            <button onClick={toggleComments} className="font-body text-xs hover:text-gold transition-colors ml-auto">
               {totalComments} commentaire{totalComments > 1 ? "s" : ""}
             </button>
           )}
@@ -328,7 +322,7 @@ function GroupePostCard({ post, currentUserId, onUpdatePost }: {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
                       <Link href={`/communaute/profil/${c.auteur.id}`} className="font-body text-[12px] font-medium text-text-main hover:text-gold transition-colors">{c.auteur.prenom} {c.auteur.nom}</Link>
-                      <span className="font-body text-[10px] text-text-muted-brand">{timeAgo(c.createdAt)}</span>
+                      <span className="font-body text-xs text-text-muted-brand">{timeAgo(c.createdAt)}</span>
                     </div>
                     <p className="font-body text-[12px] text-text-mid mt-0.5">{c.contenu}</p>
                   </div>
@@ -337,7 +331,7 @@ function GroupePostCard({ post, currentUserId, onUpdatePost }: {
             </div>
           )}
           {commentsLoaded && commentPage < totalCommentPages && (
-            <button onClick={loadMoreComments} disabled={loadingComments} className="flex items-center gap-1.5 mb-3 font-body text-[11px] text-primary-brand hover:text-gold transition-colors">
+            <button onClick={loadMoreComments} disabled={loadingComments} className="flex items-center gap-1.5 mb-3 font-body text-xs text-primary-brand hover:text-gold transition-colors">
               {loadingComments ? <Loader2 size={12} className="animate-spin" /> : <ChevronDown size={12} />}
               Voir plus de commentaires
             </button>
@@ -521,13 +515,10 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
       for (const file of Array.from(files).slice(0, 4 - postImages.length)) {
         const formData = new FormData()
         formData.append("file", file)
-        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "surnaturel_upload")
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          { method: "POST", body: formData }
-        )
+        formData.append("folder", "surnaturel-de-dieu/posts")
+        const res = await fetch("/api/upload/image", { method: "POST", body: formData })
         const data = await res.json()
-        if (data.secure_url) newUrls.push(data.secure_url)
+        if (res.ok && data.url) newUrls.push(data.url)
       }
       setPostImages((prev) => [...prev, ...newUrls].slice(0, 4))
       setPostMediaType("image")
@@ -727,7 +718,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
   return (
     <section className="mx-auto max-w-2xl space-y-5">
       {/* Retour */}
-      <Link href="/communaute/groupes" className="inline-flex items-center gap-1.5 font-body text-[11px] text-text-muted-brand hover:text-text-mid transition-colors">
+      <Link href="/communaute/groupes" className="inline-flex items-center gap-1.5 font-body text-xs text-text-muted-brand hover:text-text-mid transition-colors">
         <ArrowLeft size={14} />Retour aux groupes
       </Link>
 
@@ -749,19 +740,19 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
               </div>
               {groupe.description && <p className="font-body text-[12px] text-text-mid mt-1">{groupe.description}</p>}
               <div className="flex items-center gap-4 mt-2 flex-wrap">
-                <span className="font-body text-[11px] text-text-muted-brand flex items-center gap-1"><Users size={12} />{membres.length} membres</span>
-                <span className="font-body text-[11px] text-text-muted-brand flex items-center gap-1"><FileText size={12} />{posts.length} publications</span>
+                <span className="font-body text-xs text-text-muted-brand flex items-center gap-1"><Users size={12} />{membres.length} membres</span>
+                <span className="font-body text-xs text-text-muted-brand flex items-center gap-1"><FileText size={12} />{posts.length} publications</span>
                 {groupe.categorie && groupe.categorie !== "AUTRE" && (
-                  <span className="font-body text-[10px] px-2 py-0.5 bg-bg-page border border-border-brand text-text-muted-brand">{CATEGORIE_LABELS[groupe.categorie] || groupe.categorie}</span>
+                  <span className="font-body text-xs px-2 py-0.5 bg-bg-page border border-border-brand text-text-muted-brand">{CATEGORIE_LABELS[groupe.categorie] || groupe.categorie}</span>
                 )}
               </div>
             </div>
             {isPending ? (
-              <span className="shrink-0 flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-widest border border-gold text-gold">
+              <span className="shrink-0 flex items-center gap-1.5 px-4 py-2 font-body text-xs font-medium uppercase tracking-widest border border-gold text-gold">
                 <Clock size={13} />En attente
               </span>
             ) : (
-              <button onClick={handleJoinLeave} className={`shrink-0 flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-widest transition-colors ${isMember ? "border border-danger text-danger hover:bg-danger hover:text-white" : "bg-primary-brand text-white hover:bg-primary-dark"}`}>
+              <button onClick={handleJoinLeave} className={`shrink-0 flex items-center gap-1.5 px-4 py-2 font-body text-xs font-medium uppercase tracking-widest transition-colors ${isMember ? "border border-danger text-danger hover:bg-danger hover:text-white" : "bg-primary-brand text-white hover:bg-primary-dark"}`}>
                 {isMember ? <><LogOut size={13} />Quitter</> : <><UserPlus size={13} />Rejoindre</>}
               </button>
             )}
@@ -769,7 +760,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
           {myRole && (
             <div className="mt-2 flex items-center gap-1">
               {roleIcon(myRole)}
-              <span className="font-body text-[10px] font-medium uppercase tracking-wider text-gold">{myRole}</span>
+              <span className="font-body text-xs font-medium uppercase tracking-wider text-gold">{myRole}</span>
             </div>
           )}
         </div>
@@ -778,7 +769,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
       {/* Onglets */}
       <div className="flex gap-1 bg-white border border-border-brand p-1 overflow-x-auto">
         {tabs.filter(t => t.show).map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`shrink-0 px-3 py-2 font-body text-[11px] font-medium uppercase tracking-[0.08em] transition-colors relative ${tab === t.key ? "bg-primary-brand text-white" : "text-text-muted-brand hover:bg-bg-page"}`}>
+          <button key={t.key} onClick={() => setTab(t.key)} className={`shrink-0 px-3 py-2 font-body text-xs font-medium uppercase tracking-[0.08em] transition-colors relative ${tab === t.key ? "bg-primary-brand text-white" : "text-text-muted-brand hover:bg-bg-page"}`}>
             {t.label}
             {t.key === "demandes" && t.badge && t.badge > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[9px] flex items-center justify-center">{t.badge}</span>
@@ -794,8 +785,8 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
             <div key={a.id} className="bg-gold-light border border-gold/30 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Megaphone size={14} className="text-gold" />
-                <span className="font-body text-[11px] font-medium uppercase tracking-widest text-gold">Annonce</span>
-                <span className="font-body text-[10px] text-text-muted-brand ml-auto">{timeAgo(a.createdAt)}</span>
+                <span className="font-body text-xs font-medium uppercase tracking-widest text-gold">Annonce</span>
+                <span className="font-body text-xs text-text-muted-brand ml-auto">{timeAgo(a.createdAt)}</span>
                 {isAdmin && <button onClick={() => handleArchiveAnnonce(a.id)} className="ml-1 text-text-muted-brand hover:text-danger transition-colors"><Archive size={13} /></button>}
               </div>
               <div className="flex items-start gap-2.5">
@@ -811,17 +802,17 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
           {isAdminOrMod && isMember && (
             showAnnonceForm ? (
               <form onSubmit={handlePostAnnonce} className="bg-gold-light border border-gold/30 p-4 space-y-3">
-                <div className="flex items-center gap-2"><Megaphone size={14} className="text-gold" /><span className="font-body text-[11px] font-medium uppercase tracking-widest text-gold">Nouvelle annonce</span></div>
+                <div className="flex items-center gap-2"><Megaphone size={14} className="text-gold" /><span className="font-body text-xs font-medium uppercase tracking-widest text-gold">Nouvelle annonce</span></div>
                 <textarea value={annonceContent} onChange={(e) => setAnnonceContent(e.target.value)} placeholder="R&#233;digez une annonce importante..." className="w-full border border-border-brand p-3 font-body text-[13px] text-text-main placeholder:text-text-muted-brand focus:outline-none focus:border-gold resize-none" rows={3} />
                 <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => { setShowAnnonceForm(false); setAnnonceContent("") }} className="px-3 py-1.5 font-body text-[11px] text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">Annuler</button>
-                  <button type="submit" disabled={!annonceContent.trim() || postingAnnonce} className="px-3 py-1.5 font-body text-[11px] text-white bg-gold hover:bg-gold/90 uppercase tracking-widest disabled:opacity-50 transition-colors flex items-center gap-1.5">
+                  <button type="button" onClick={() => { setShowAnnonceForm(false); setAnnonceContent("") }} className="px-3 py-1.5 font-body text-xs text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">Annuler</button>
+                  <button type="submit" disabled={!annonceContent.trim() || postingAnnonce} className="px-3 py-1.5 font-body text-xs text-white bg-gold hover:bg-gold/90 uppercase tracking-widest disabled:opacity-50 transition-colors flex items-center gap-1.5">
                     {postingAnnonce ? <Loader2 size={12} className="animate-spin" /> : <Megaphone size={12} />}Publier
                   </button>
                 </div>
               </form>
             ) : (
-              <button onClick={() => setShowAnnonceForm(true)} className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-gold/50 text-gold font-body text-[11px] uppercase tracking-widest hover:bg-gold-light transition-colors">
+              <button onClick={() => setShowAnnonceForm(true)} className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-gold/50 text-gold font-body text-xs uppercase tracking-widest hover:bg-gold-light transition-colors">
                 <Megaphone size={13} />Cr&#233;er une annonce
               </button>
             )
@@ -862,9 +853,9 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                   </button>
                   <button type="button" onClick={() => setPostMediaType(postMediaType === "video" ? "" : "video")} className={`p-1.5 transition-colors ${postMediaType === "video" ? "text-gold" : "text-text-muted-brand hover:text-text-mid"}`} title="Vid\u00e9o"><Video size={16} /></button>
                   <button type="button" onClick={() => setPostMediaType(postMediaType === "lien" ? "" : "lien")} className={`p-1.5 transition-colors ${postMediaType === "lien" ? "text-gold" : "text-text-muted-brand hover:text-text-mid"}`} title="Lien"><LinkIcon size={16} /></button>
-                  <span className="font-body text-[10px] text-text-muted-brand ml-2">{newPost.length}/2000</span>
+                  <span className="font-body text-xs text-text-muted-brand ml-2">{newPost.length}/2000</span>
                 </div>
-                <button type="submit" disabled={!newPost.trim() || posting || uploading} className="flex items-center gap-1.5 bg-primary-brand px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40">
+                <button type="submit" disabled={!newPost.trim() || posting || uploading} className="flex items-center gap-1.5 bg-primary-brand px-4 py-2 font-body text-xs font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40">
                   {posting ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}Publier
                 </button>
               </div>
@@ -885,7 +876,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
           {isMember && (
             showSondageForm ? (
               <form onSubmit={handleCreateSondage} className="bg-white border border-border-brand p-4 space-y-3">
-                <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand flex items-center gap-1"><BarChart3 size={13} />Nouveau sondage</h3>
+                <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand flex items-center gap-1"><BarChart3 size={13} />Nouveau sondage</h3>
                 <input value={sondageQ} onChange={(e) => setSondageQ(e.target.value)} placeholder="Votre question..." maxLength={500} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[13px] text-text-main focus:border-gold focus:outline-none transition-colors" />
                 <div className="space-y-2">
                   {sondageOpts.map((o, i) => (
@@ -894,26 +885,26 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                       {sondageOpts.length > 2 && <button type="button" onClick={() => setSondageOpts(sondageOpts.filter((_, j) => j !== i))} className="p-1 text-text-muted-brand hover:text-danger"><Trash2 size={13} /></button>}
                     </div>
                   ))}
-                  {sondageOpts.length < 10 && <button type="button" onClick={() => setSondageOpts([...sondageOpts, ""])} className="font-body text-[10px] text-primary-brand hover:text-primary-dark">+ Ajouter une option</button>}
+                  {sondageOpts.length < 10 && <button type="button" onClick={() => setSondageOpts([...sondageOpts, ""])} className="font-body text-xs text-primary-brand hover:text-primary-dark">+ Ajouter une option</button>}
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <label className="flex items-center gap-1.5 font-body text-[11px] text-text-mid"><input type="checkbox" checked={sondageMulti} onChange={(e) => setSondageMulti(e.target.checked)} className="accent-primary-brand" />Multi-choix</label>
-                  <label className="flex items-center gap-1.5 font-body text-[11px] text-text-mid"><input type="checkbox" checked={sondageAnonyme} onChange={(e) => setSondageAnonyme(e.target.checked)} className="accent-primary-brand" />Anonyme</label>
-                  <label className="flex items-center gap-1.5 font-body text-[11px] text-text-mid">Dur&#233;e:
-                    <select value={sondageDuree} onChange={(e) => setSondageDuree(Number(e.target.value))} className="border border-border-brand px-2 py-0.5 font-body text-[11px] bg-bg-page">
+                  <label className="flex items-center gap-1.5 font-body text-xs text-text-mid"><input type="checkbox" checked={sondageMulti} onChange={(e) => setSondageMulti(e.target.checked)} className="accent-primary-brand" />Multi-choix</label>
+                  <label className="flex items-center gap-1.5 font-body text-xs text-text-mid"><input type="checkbox" checked={sondageAnonyme} onChange={(e) => setSondageAnonyme(e.target.checked)} className="accent-primary-brand" />Anonyme</label>
+                  <label className="flex items-center gap-1.5 font-body text-xs text-text-mid">Dur&#233;e:
+                    <select value={sondageDuree} onChange={(e) => setSondageDuree(Number(e.target.value))} className="border border-border-brand px-2 py-0.5 font-body text-xs bg-bg-page">
                       <option value={1}>1h</option><option value={6}>6h</option><option value={24}>24h</option><option value={48}>48h</option><option value={168}>1 semaine</option>
                     </select>
                   </label>
                 </div>
                 <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => setShowSondageForm(false)} className="px-3 py-1.5 font-body text-[11px] text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">Annuler</button>
-                  <button type="submit" disabled={!sondageQ.trim() || sondageOpts.filter(o => o.trim()).length < 2 || creatingSondage} className="px-3 py-1.5 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark uppercase tracking-widest disabled:opacity-50 transition-colors flex items-center gap-1.5">
+                  <button type="button" onClick={() => setShowSondageForm(false)} className="px-3 py-1.5 font-body text-xs text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">Annuler</button>
+                  <button type="submit" disabled={!sondageQ.trim() || sondageOpts.filter(o => o.trim()).length < 2 || creatingSondage} className="px-3 py-1.5 font-body text-xs text-white bg-primary-brand hover:bg-primary-dark uppercase tracking-widest disabled:opacity-50 transition-colors flex items-center gap-1.5">
                     {creatingSondage ? <Loader2 size={12} className="animate-spin" /> : <BarChart3 size={12} />}Cr&#233;er
                   </button>
                 </div>
               </form>
             ) : (
-              <button onClick={() => setShowSondageForm(true)} className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-primary-brand/50 text-primary-brand font-body text-[11px] uppercase tracking-widest hover:bg-primary-light transition-colors">
+              <button onClick={() => setShowSondageForm(true)} className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-primary-brand/50 text-primary-brand font-body text-xs uppercase tracking-widest hover:bg-primary-light transition-colors">
                 <BarChart3 size={13} />Cr&#233;er un sondage
               </button>
             )
@@ -925,7 +916,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
             <div key={s.id} className="bg-white border border-border-brand p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="font-body text-[14px] font-medium text-text-main">{s.question}</h4>
-                {s.isExpired && <span className="font-body text-[10px] px-2 py-0.5 bg-bg-page border border-border-brand text-text-muted-brand">Termin&#233;</span>}
+                {s.isExpired && <span className="font-body text-xs px-2 py-0.5 bg-bg-page border border-border-brand text-text-muted-brand">Termin&#233;</span>}
               </div>
               <div className="space-y-2">
                 {s.options.map((opt) => (
@@ -934,16 +925,16 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                     <div className="absolute inset-y-0 left-0 bg-primary-brand/10 transition-all" style={{ width: `${s.hasVoted || s.isExpired ? opt.pourcentage : 0}%` }} />
                     <div className="relative px-3 py-2 flex items-center justify-between">
                       <span className="font-body text-[12px] text-text-main">{opt.texte}</span>
-                      {(s.hasVoted || s.isExpired) && <span className="font-body text-[11px] font-medium text-primary-brand">{opt.pourcentage}%</span>}
+                      {(s.hasVoted || s.isExpired) && <span className="font-body text-xs font-medium text-primary-brand">{opt.pourcentage}%</span>}
                     </div>
                   </button>
                 ))}
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-body text-[10px] text-text-muted-brand">{s.totalVotes} vote{s.totalVotes !== 1 ? "s" : ""}</span>
-                {s.multiChoix && <span className="font-body text-[10px] text-text-muted-brand">Multi-choix</span>}
-                {s.anonyme && <span className="font-body text-[10px] text-text-muted-brand">Anonyme</span>}
-                <span className="font-body text-[10px] text-text-muted-brand ml-auto">{timeAgo(s.createdAt)}</span>
+                <span className="font-body text-xs text-text-muted-brand">{s.totalVotes} vote{s.totalVotes !== 1 ? "s" : ""}</span>
+                {s.multiChoix && <span className="font-body text-xs text-text-muted-brand">Multi-choix</span>}
+                {s.anonyme && <span className="font-body text-xs text-text-muted-brand">Anonyme</span>}
+                <span className="font-body text-xs text-text-muted-brand ml-auto">{timeAgo(s.createdAt)}</span>
               </div>
             </div>
           ))}
@@ -955,17 +946,17 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
         <div className="space-y-2">
           {isAdminOrMod && (
             <div className="bg-white border border-border-brand p-3 mb-3">
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1"><Link2 size={12} />Lien d&apos;invitation</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1"><Link2 size={12} />Lien d&apos;invitation</h3>
               {inviteCode ? (
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 font-body text-[10px] bg-bg-page border border-border-brand px-2 py-1.5 truncate text-text-mid">{typeof window !== "undefined" ? `${window.location.origin}/communaute/groupes/rejoindre?code=${inviteCode}` : inviteCode}</code>
-                  <button onClick={copyInviteLink} className="px-2 py-1.5 border border-border-brand font-body text-[10px] text-text-muted-brand hover:text-primary-brand transition-colors flex items-center gap-1">
+                  <code className="flex-1 font-body text-xs bg-bg-page border border-border-brand px-2 py-1.5 truncate text-text-mid">{typeof window !== "undefined" ? `${window.location.origin}/communaute/groupes/rejoindre?code=${inviteCode}` : inviteCode}</code>
+                  <button onClick={copyInviteLink} className="px-2 py-1.5 border border-border-brand font-body text-xs text-text-muted-brand hover:text-primary-brand transition-colors flex items-center gap-1">
                     {copiedInvite ? <><Check size={11} />Copi&#233;</> : <><Copy size={11} />Copier</>}
                   </button>
-                  {isAdmin && <button onClick={handleRevokeInvite} className="px-2 py-1.5 border border-danger text-danger font-body text-[10px] hover:bg-danger hover:text-white transition-colors">R&#233;voquer</button>}
+                  {isAdmin && <button onClick={handleRevokeInvite} className="px-2 py-1.5 border border-danger text-danger font-body text-xs hover:bg-danger hover:text-white transition-colors">R&#233;voquer</button>}
                 </div>
               ) : (
-                <button onClick={handleGenerateInvite} className="font-body text-[11px] text-primary-brand hover:text-primary-dark transition-colors flex items-center gap-1"><Plus size={12} />G&#233;n&#233;rer un lien d&apos;invitation</button>
+                <button onClick={handleGenerateInvite} className="font-body text-xs text-primary-brand hover:text-primary-dark transition-colors flex items-center gap-1"><Plus size={12} />G&#233;n&#233;rer un lien d&apos;invitation</button>
               )}
             </div>
           )}
@@ -984,7 +975,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   {roleIcon(m.role)}
-                  <span className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">{m.role}</span>
+                  <span className="font-body text-xs uppercase tracking-wider text-text-muted-brand">{m.role}</span>
                 </div>
                 {isAdmin && m.userId !== session?.user?.id && (
                   <div className="relative">
@@ -992,15 +983,15 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                     {roleChangeTarget === m.userId && (
                       <div className="absolute right-0 top-8 z-20 bg-white border border-border-brand shadow-lg w-40 py-1">
                         {["ADMIN", "MODERATEUR", "MEMBRE"].filter(r => r !== m.role).map(r => (
-                          <button key={r} onClick={() => handleChangeRole(m.userId, r)} className="w-full text-left px-3 py-1.5 font-body text-[11px] text-text-main hover:bg-bg-page transition-colors flex items-center gap-1.5">
+                          <button key={r} onClick={() => handleChangeRole(m.userId, r)} className="w-full text-left px-3 py-1.5 font-body text-xs text-text-main hover:bg-bg-page transition-colors flex items-center gap-1.5">
                             {r === "ADMIN" ? <Crown size={11} className="text-gold" /> : r === "MODERATEUR" ? <Shield size={11} className="text-primary-brand" /> : <Users size={11} />}{r}
                           </button>
                         ))}
                         <hr className="my-1 border-border-brand" />
-                        <button onClick={() => { handleSanction(m.userId, "AVERTISSEMENT", "Avertissement"); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-[11px] text-yellow-600 hover:bg-yellow-50 transition-colors flex items-center gap-1.5"><AlertTriangle size={11} />Avertir</button>
-                        <button onClick={() => { handleSanction(m.userId, "MUTE", "Sourdine temporaire", 24); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-[11px] text-orange-600 hover:bg-orange-50 transition-colors flex items-center gap-1.5"><VolumeX size={11} />Muter 24h</button>
-                        <button onClick={() => { handleKickMember(m.userId); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-[11px] text-danger hover:bg-red-50 transition-colors flex items-center gap-1.5"><UserX size={11} />Expulser</button>
-                        <button onClick={() => { handleSanction(m.userId, "BAN", "Banni du groupe"); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-[11px] text-danger hover:bg-red-50 transition-colors flex items-center gap-1.5"><Ban size={11} />Bannir</button>
+                        <button onClick={() => { handleSanction(m.userId, "AVERTISSEMENT", "Avertissement"); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-xs text-yellow-600 hover:bg-yellow-50 transition-colors flex items-center gap-1.5"><AlertTriangle size={11} />Avertir</button>
+                        <button onClick={() => { handleSanction(m.userId, "MUTE", "Sourdine temporaire", 24); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-xs text-orange-600 hover:bg-orange-50 transition-colors flex items-center gap-1.5"><VolumeX size={11} />Muter 24h</button>
+                        <button onClick={() => { handleKickMember(m.userId); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-xs text-danger hover:bg-red-50 transition-colors flex items-center gap-1.5"><UserX size={11} />Expulser</button>
+                        <button onClick={() => { handleSanction(m.userId, "BAN", "Banni du groupe"); setRoleChangeTarget(null) }} className="w-full text-left px-3 py-1.5 font-body text-xs text-danger hover:bg-red-50 transition-colors flex items-center gap-1.5"><Ban size={11} />Bannir</button>
                       </div>
                     )}
                   </div>
@@ -1022,23 +1013,23 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                 <Avatar user={d.user} size={36} />
                 <div className="flex-1">
                   <span className="font-body text-[13px] font-medium text-text-main">{d.user.prenom} {d.user.nom}</span>
-                  {d.user.pseudo && <p className="font-body text-[10px] text-text-muted-brand">@{d.user.pseudo}</p>}
+                  {d.user.pseudo && <p className="font-body text-xs text-text-muted-brand">@{d.user.pseudo}</p>}
                 </div>
-                <span className="font-body text-[10px] text-text-muted-brand">{timeAgo(d.createdAt)}</span>
+                <span className="font-body text-xs text-text-muted-brand">{timeAgo(d.createdAt)}</span>
               </div>
               {d.reponses.length > 0 && (
                 <div className="bg-bg-page border border-border-brand p-3 space-y-2">
                   {d.reponses.map((r, i) => (
                     <div key={i}>
-                      <p className="font-body text-[11px] font-medium text-text-main flex items-center gap-1"><HelpCircle size={11} className="text-gold shrink-0" />{r.question.texte}</p>
+                      <p className="font-body text-xs font-medium text-text-main flex items-center gap-1"><HelpCircle size={11} className="text-gold shrink-0" />{r.question.texte}</p>
                       <p className="font-body text-[12px] text-text-mid ml-4 mt-0.5">{r.reponse}</p>
                     </div>
                   ))}
                 </div>
               )}
               <div className="flex gap-2 justify-end">
-                <button onClick={() => handleDemandeAction(d.id, "refuser")} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] border border-danger text-danger hover:bg-danger hover:text-white transition-colors uppercase tracking-[0.08em]"><X size={12} />Refuser</button>
-                <button onClick={() => handleDemandeAction(d.id, "approuver")} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] bg-primary-brand text-white hover:bg-primary-dark transition-colors uppercase tracking-[0.08em]"><Check size={12} />Accepter</button>
+                <button onClick={() => handleDemandeAction(d.id, "refuser")} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs border border-danger text-danger hover:bg-danger hover:text-white transition-colors uppercase tracking-[0.08em]"><X size={12} />Refuser</button>
+                <button onClick={() => handleDemandeAction(d.id, "approuver")} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs bg-primary-brand text-white hover:bg-primary-dark transition-colors uppercase tracking-[0.08em]"><Check size={12} />Accepter</button>
               </div>
             </div>
           ))}
@@ -1055,10 +1046,10 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
               <Avatar user={m.user} size={36} />
               <div className="flex-1 min-w-0">
                 <span className="font-body text-[12px] font-medium text-text-main">{m.user.prenom} {m.user.nom}</span>
-                {m.user.pseudo && <span className="text-text-muted-brand font-normal ml-1 text-[11px]">@{m.user.pseudo}</span>}
+                {m.user.pseudo && <span className="text-text-muted-brand font-normal ml-1 text-xs">@{m.user.pseudo}</span>}
                 <span className="ml-2 font-body text-[9px] px-1.5 py-0.5 bg-red-50 text-danger border border-danger/30">Banni</span>
               </div>
-              <button onClick={() => handleUnban(m.userId)} className="px-3 py-1.5 border border-primary-brand text-primary-brand font-body text-[11px] hover:bg-primary-brand hover:text-white transition-colors uppercase tracking-widest">
+              <button onClick={() => handleUnban(m.userId)} className="px-3 py-1.5 border border-primary-brand text-primary-brand font-body text-xs hover:bg-primary-brand hover:text-white transition-colors uppercase tracking-widest">
                 D&eacute;bannir
               </button>
             </div>
@@ -1076,7 +1067,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
               <div key={r.id} className="bg-white border border-border-brand p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="font-body text-[11px] font-medium text-gold mr-2">{i + 1}.</span>
+                    <span className="font-body text-xs font-medium text-gold mr-2">{i + 1}.</span>
                     <span className="font-body text-[13px] font-medium text-text-main">{r.titre}</span>
                   </div>
                   {isAdmin && (
@@ -1101,11 +1092,11 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
               <Shield size={14} className="text-primary-brand shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-body text-[11px] font-medium text-text-main">{entry.moderateur?.prenom} {entry.moderateur?.nom}</span>
-                  <span className="font-body text-[10px] px-1.5 py-0.5 bg-bg-page border border-border-brand text-primary-brand uppercase tracking-wider">{entry.action}</span>
-                  {entry.cibleUser && <span className="font-body text-[10px] text-text-muted-brand">&rarr; {entry.cibleUser.prenom} {entry.cibleUser.nom}</span>}
+                  <span className="font-body text-xs font-medium text-text-main">{entry.moderateur?.prenom} {entry.moderateur?.nom}</span>
+                  <span className="font-body text-xs px-1.5 py-0.5 bg-bg-page border border-border-brand text-primary-brand uppercase tracking-wider">{entry.action}</span>
+                  {entry.cibleUser && <span className="font-body text-xs text-text-muted-brand">&rarr; {entry.cibleUser.prenom} {entry.cibleUser.nom}</span>}
                 </div>
-                {entry.details && <p className="font-body text-[10px] text-text-mid mt-0.5">{entry.details}</p>}
+                {entry.details && <p className="font-body text-xs text-text-mid mt-0.5">{entry.details}</p>}
                 <span className="font-body text-[9px] text-text-muted-brand">{timeAgo(entry.createdAt)}</span>
               </div>
             </div>
@@ -1130,7 +1121,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
               { label: "Engagement", value: stats.general.tauxEngagement ?? 0, icon: TrendingUp },
             ].map((s) => (
               <div key={s.label} className="bg-white border border-border-brand p-3">
-                <div className="flex items-center gap-1.5 mb-1"><s.icon size={12} className="text-text-muted-brand" /><span className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">{s.label}</span></div>
+                <div className="flex items-center gap-1.5 mb-1"><s.icon size={12} className="text-text-muted-brand" /><span className="font-body text-xs uppercase tracking-wider text-text-muted-brand">{s.label}</span></div>
                 <p className="font-display text-[22px] font-light text-text-main">{s.value}</p>
               </div>
             ))}
@@ -1138,12 +1129,12 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
 
           {stats.topContributeurs.length > 0 && (
             <div className="bg-white border border-border-brand p-4">
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-3">Top contributeurs (30j)</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-3">Top contributeurs (30j)</h3>
               <div className="space-y-2">
                 {stats.topContributeurs.map((c, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <span className="font-body text-[12px] text-text-main">{i + 1}. {c.prenom} {c.nom}</span>
-                    <span className="font-body text-[11px] font-medium text-primary-brand">{c.postsCount} posts</span>
+                    <span className="font-body text-xs font-medium text-primary-brand">{c.postsCount} posts</span>
                   </div>
                 ))}
               </div>
@@ -1152,14 +1143,14 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
 
           {stats.croissance.length > 0 && (
             <div className="bg-white border border-border-brand p-4">
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-3">Croissance (4 semaines)</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-3">Croissance (4 semaines)</h3>
               <div className="flex items-end gap-2 h-24">
                 {stats.croissance.map((w, i) => {
                   const max = Math.max(...stats.croissance.map(c => c.nouveauxMembres), 1)
                   const h = Math.max((w.nouveauxMembres / max) * 100, 5)
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="font-body text-[10px] text-text-muted-brand">{w.nouveauxMembres}</span>
+                      <span className="font-body text-xs text-text-muted-brand">{w.nouveauxMembres}</span>
                       <div className="w-full bg-primary-brand/20 rounded-sm" style={{ height: `${h}%` }}><div className="w-full h-full bg-primary-brand rounded-sm" /></div>
                       <span className="font-body text-[9px] text-text-muted-brand">{w.semaine}</span>
                     </div>
@@ -1171,12 +1162,12 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
 
           {stats.heuresPic && stats.heuresPic.length > 0 && (
             <div className="bg-white border border-border-brand p-4">
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-3 flex items-center gap-1"><Clock size={12} />Heures de forte activit&eacute;</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-3 flex items-center gap-1"><Clock size={12} />Heures de forte activit&eacute;</h3>
               <div className="space-y-2">
                 {stats.heuresPic.map((h, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <span className="font-body text-[12px] text-text-main">{h.heure}</span>
-                    <span className="font-body text-[11px] font-medium text-primary-brand">{h.posts} publications</span>
+                    <span className="font-body text-xs font-medium text-primary-brand">{h.posts} publications</span>
                   </div>
                 ))}
               </div>
@@ -1194,30 +1185,30 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
       {tab === "infos" && (
         <div className="bg-white border border-border-brand p-5 space-y-4">
           <div>
-            <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1">Visibilit&#233;</h3>
+            <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1">Visibilit&#233;</h3>
             <p className="font-body text-[13px] text-text-main flex items-center gap-1.5">
               {groupe.visibilite === "SECRET" ? <><EyeOff size={13} className="text-text-muted-brand" />Groupe secret</> : groupe.visibilite === "PRIVE" ? <><Lock size={13} className="text-gold" />Groupe priv&#233;</> : <><Globe size={13} className="text-primary-brand" />Groupe public</>}
             </p>
           </div>
           {groupe.categorie && groupe.categorie !== "AUTRE" && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1">Cat&#233;gorie</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1">Cat&#233;gorie</h3>
               <p className="font-body text-[13px] text-text-main">{CATEGORIE_LABELS[groupe.categorie] || groupe.categorie}</p>
             </div>
           )}
           {groupe.regles && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1">R&#232;gles du groupe</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1">R&#232;gles du groupe</h3>
               <p className="font-body text-[12px] text-text-mid whitespace-pre-wrap">{groupe.regles}</p>
             </div>
           )}
           <div>
-            <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1">Cr&#233;&#233; le</h3>
+            <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1">Cr&#233;&#233; le</h3>
             <p className="font-body text-[12px] text-text-mid">{new Date(groupe.createdAt).toLocaleDateString("fr", { day: "numeric", month: "long", year: "numeric" })}</p>
           </div>
           {groupe.questions && groupe.questions.length > 0 && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1">Questions d&apos;adh&#233;sion</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1">Questions d&apos;adh&#233;sion</h3>
               <ul className="space-y-1">
                 {groupe.questions.map((q) => (
                   <li key={q.id} className="font-body text-[12px] text-text-mid flex items-start gap-1.5"><HelpCircle size={11} className="text-gold shrink-0 mt-0.5" />{q.texte}</li>
@@ -1227,17 +1218,17 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
           )}
           {groupe.tags && groupe.tags.length > 0 && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-1">Tags</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-1">Tags</h3>
               <div className="flex flex-wrap gap-1.5">
                 {groupe.tags.map((tag, i) => (
-                  <span key={i} className="font-body text-[10px] px-2 py-0.5 bg-primary-light border border-primary-brand/20 text-primary-brand">{tag}</span>
+                  <span key={i} className="font-body text-xs px-2 py-0.5 bg-primary-light border border-primary-brand/20 text-primary-brand">{tag}</span>
                 ))}
               </div>
             </div>
           )}
           {isMember && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-2">Notifications du groupe</h3>
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-2">Notifications du groupe</h3>
               <select value={notifPref} onChange={(e) => handleUpdateNotifPref(e.target.value)}
                 className="border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main focus:border-gold focus:outline-none">
                 <option value="TOUTES">Toutes les notifications</option>
@@ -1250,7 +1241,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
           {groupe.slowModeMinutes !== undefined && groupe.slowModeMinutes > 0 && (
             <div className="flex items-center gap-1.5">
               <Clock size={12} className="text-gold" />
-              <span className="font-body text-[11px] text-text-mid">Mode lent actif : {groupe.slowModeMinutes} min entre chaque publication</span>
+              <span className="font-body text-xs text-text-mid">Mode lent actif : {groupe.slowModeMinutes} min entre chaque publication</span>
             </div>
           )}
         </div>
@@ -1272,8 +1263,8 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                 </div>
               ))}
               <div className="flex gap-2 justify-end pt-2">
-                <button type="button" onClick={() => setShowQuestionsModal(false)} className="px-4 py-2 font-body text-[11px] text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors uppercase tracking-widest">Annuler</button>
-                <button type="submit" disabled={submittingAdhesion} className="px-4 py-2 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark disabled:opacity-50 transition-colors uppercase tracking-widest flex items-center gap-1.5">
+                <button type="button" onClick={() => setShowQuestionsModal(false)} className="px-4 py-2 font-body text-xs text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors uppercase tracking-widest">Annuler</button>
+                <button type="submit" disabled={submittingAdhesion} className="px-4 py-2 font-body text-xs text-white bg-primary-brand hover:bg-primary-dark disabled:opacity-50 transition-colors uppercase tracking-widest flex items-center gap-1.5">
                   {submittingAdhesion ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}Envoyer
                 </button>
               </div>
@@ -1361,34 +1352,34 @@ function ParametresTab({ slug, groupe, onUpdated }: { slug: string; groupe: Grou
   return (
     <div className="space-y-4">
       <div className="bg-white border border-border-brand p-4 space-y-3">
-        <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand flex items-center gap-1"><Settings size={12} />Param&#232;tres g&#233;n&#233;raux</h3>
+        <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand flex items-center gap-1"><Settings size={12} />Param&#232;tres g&#233;n&#233;raux</h3>
         <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Nom</label>
+          <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Nom</label>
           <input value={nom} onChange={(e) => setNom(e.target.value)} maxLength={100} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[13px] text-text-main focus:border-gold focus:outline-none" />
         </div>
         <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Description</label>
+          <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={1000} className="w-full resize-none border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main focus:border-gold focus:outline-none" />
         </div>
         <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">R&#232;gles</label>
+          <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">R&#232;gles</label>
           <textarea value={regles} onChange={(e) => setRegles(e.target.value)} rows={3} maxLength={2000} className="w-full resize-none border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main focus:border-gold focus:outline-none" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Visibilit&#233;</label>
+            <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Visibilit&#233;</label>
             <select value={visibilite} onChange={(e) => setVisibilite(e.target.value)} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main">
               <option value="PUBLIC">Public</option><option value="PRIVE">Priv&#233;</option><option value="SECRET">Secret</option>
             </select>
           </div>
           <div>
-            <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Cat&#233;gorie</label>
+            <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Cat&#233;gorie</label>
             <select value={categorie} onChange={(e) => setCategorie(e.target.value)} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main">
               {Object.entries(CATEGORIE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           </div>
         </div>
-        <label className="flex items-center gap-2 font-body text-[11px] text-text-mid">
+        <label className="flex items-center gap-2 font-body text-xs text-text-mid">
           <input type="checkbox" checked={approvalReq} onChange={(e) => setApprovalReq(e.target.checked)} className="accent-primary-brand" />
           Mod&#233;ration des publications (approbation avant publication)
         </label>
@@ -1396,14 +1387,14 @@ function ParametresTab({ slug, groupe, onUpdated }: { slug: string; groupe: Grou
         {/* Permissions */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Qui peut publier</label>
+            <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Qui peut publier</label>
             <select value={quiPeutPublier} onChange={(e) => setQuiPeutPublier(e.target.value)} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main">
               <option value="TOUS">Tous les membres</option>
               <option value="ADMINS_SEULEMENT">Admins uniquement</option>
             </select>
           </div>
           <div>
-            <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Qui peut commenter</label>
+            <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Qui peut commenter</label>
             <select value={quiPeutCommenter} onChange={(e) => setQuiPeutCommenter(e.target.value)} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main">
               <option value="TOUS">Tous les membres</option>
               <option value="MEMBRES_SEULEMENT">Membres uniquement</option>
@@ -1413,7 +1404,7 @@ function ParametresTab({ slug, groupe, onUpdated }: { slug: string; groupe: Grou
 
         {/* Mode lent */}
         <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Mode lent (minutes entre publications)</label>
+          <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Mode lent (minutes entre publications)</label>
           <select value={slowModeMinutes} onChange={(e) => setSlowModeMinutes(Number(e.target.value))} className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main">
             <option value={0}>D&#233;sactiv&#233;</option>
             <option value={1}>1 minute</option>
@@ -1426,10 +1417,10 @@ function ParametresTab({ slug, groupe, onUpdated }: { slug: string; groupe: Grou
 
         {/* Tags */}
         <div>
-          <label className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand mb-1 block">Tags (max 10)</label>
+          <label className="font-body text-xs uppercase tracking-wider text-text-muted-brand mb-1 block">Tags (max 10)</label>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {tags.map((tag, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-light border border-primary-brand/20 font-body text-[10px] text-primary-brand">
+              <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-light border border-primary-brand/20 font-body text-xs text-primary-brand">
                 {tag}
                 <button type="button" onClick={() => setTags(tags.filter((_, j) => j !== i))} className="hover:text-danger"><X size={9} /></button>
               </span>
@@ -1439,62 +1430,62 @@ function ParametresTab({ slug, groupe, onUpdated }: { slug: string; groupe: Grou
             <div className="flex gap-2">
               <input value={newTag} onChange={(e) => setNewTag(e.target.value)} placeholder="Ajouter un tag..." maxLength={50} className="flex-1 border border-border-brand bg-bg-page px-3 py-1.5 font-body text-[12px] text-text-main focus:border-gold focus:outline-none"
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag("") } } }} />
-              <button type="button" onClick={() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag("") } }} disabled={!newTag.trim()} className="px-3 py-1.5 bg-primary-brand text-white font-body text-[11px] hover:bg-primary-dark disabled:opacity-50 transition-colors"><Plus size={12} /></button>
+              <button type="button" onClick={() => { if (newTag.trim() && !tags.includes(newTag.trim())) { setTags([...tags, newTag.trim()]); setNewTag("") } }} disabled={!newTag.trim()} className="px-3 py-1.5 bg-primary-brand text-white font-body text-xs hover:bg-primary-dark disabled:opacity-50 transition-colors"><Plus size={12} /></button>
             </div>
           )}
         </div>
 
         {/* Toggles */}
         <div className="space-y-2">
-          <label className="flex items-center gap-2 font-body text-[11px] text-text-mid">
+          <label className="flex items-center gap-2 font-body text-xs text-text-mid">
             <input type="checkbox" checked={reactionsActivees} onChange={(e) => setReactionsActivees(e.target.checked)} className="accent-primary-brand" />
             Activer les r&#233;actions
           </label>
-          <label className="flex items-center gap-2 font-body text-[11px] text-text-mid">
+          <label className="flex items-center gap-2 font-body text-xs text-text-mid">
             <input type="checkbox" checked={invitationsParMembres} onChange={(e) => setInvitationsParMembres(e.target.checked)} className="accent-primary-brand" />
             Autoriser les membres &#224; inviter
           </label>
-          <label className="flex items-center gap-2 font-body text-[11px] text-text-mid">
+          <label className="flex items-center gap-2 font-body text-xs text-text-mid">
             <input type="checkbox" checked={suggestionsActivees} onChange={(e) => setSuggestionsActivees(e.target.checked)} className="accent-primary-brand" />
             Afficher dans les suggestions
           </label>
-          <label className="flex items-center gap-2 font-body text-[11px] text-text-mid">
+          <label className="flex items-center gap-2 font-body text-xs text-text-mid">
             <input type="checkbox" checked={partagesExternes} onChange={(e) => setPartagesExternes(e.target.checked)} className="accent-primary-brand" />
             Autoriser les partages externes
           </label>
-          <label className="flex items-center gap-2 font-body text-[11px] text-text-mid">
+          <label className="flex items-center gap-2 font-body text-xs text-text-mid">
             <input type="checkbox" checked={badgesActifs} onChange={(e) => setBadgesActifs(e.target.checked)} className="accent-primary-brand" />
             Activer les badges
           </label>
         </div>
 
-        <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 bg-primary-brand px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark disabled:opacity-50 transition-colors">
+        <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 bg-primary-brand px-4 py-2 font-body text-xs font-medium uppercase tracking-[0.12em] text-white hover:bg-primary-dark disabled:opacity-50 transition-colors">
           {saving ? <Loader2 size={12} className="animate-spin" /> : saved ? <><Check size={12} />Enregistr&#233;</> : <><Settings size={12} />Enregistrer</>}
         </button>
       </div>
 
       <div className="bg-white border border-border-brand p-4 space-y-3">
-        <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand flex items-center gap-1"><Ban size={12} />Mots bloqu&#233;s</h3>
-        <p className="font-body text-[10px] text-text-muted-brand">Les publications contenant ces mots seront automatiquement filtr&#233;es.</p>
+        <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand flex items-center gap-1"><Ban size={12} />Mots bloqu&#233;s</h3>
+        <p className="font-body text-xs text-text-muted-brand">Les publications contenant ces mots seront automatiquement filtr&#233;es.</p>
         <div className="flex gap-2">
           <input value={newMot} onChange={(e) => setNewMot(e.target.value)} placeholder="Ajouter un mot..." maxLength={100} className="flex-1 border border-border-brand bg-bg-page px-3 py-1.5 font-body text-[12px] text-text-main focus:border-gold focus:outline-none" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddMot() } }} />
-          <button onClick={handleAddMot} disabled={!newMot.trim()} className="px-3 py-1.5 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark disabled:opacity-50 transition-colors"><Plus size={12} /></button>
+          <button onClick={handleAddMot} disabled={!newMot.trim()} className="px-3 py-1.5 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-dark disabled:opacity-50 transition-colors"><Plus size={12} /></button>
         </div>
         {loadingMots ? <Loader2 size={14} className="animate-spin text-gold mx-auto" /> : (
           <div className="flex flex-wrap gap-2">
             {motsBloques.map((m) => (
-              <span key={m.id} className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-danger/30 font-body text-[11px] text-danger">
+              <span key={m.id} className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-danger/30 font-body text-xs text-danger">
                 {m.mot}
                 <button onClick={() => handleDeleteMot(m.id)} className="hover:text-red-700"><X size={10} /></button>
               </span>
             ))}
-            {motsBloques.length === 0 && <p className="font-body text-[10px] text-text-muted-brand">Aucun mot bloqu&#233;</p>}
+            {motsBloques.length === 0 && <p className="font-body text-xs text-text-muted-brand">Aucun mot bloqu&#233;</p>}
           </div>
         )}
       </div>
 
       <div className="bg-white border border-danger/30 p-4 space-y-3">
-        <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-danger flex items-center gap-1"><AlertTriangle size={12} />Zone dangereuse</h3>
+        <h3 className="font-body text-xs font-medium uppercase tracking-wider text-danger flex items-center gap-1"><AlertTriangle size={12} />Zone dangereuse</h3>
         <div className="flex flex-wrap gap-2">
           <button onClick={async () => {
             if (confirm("Archiver ce groupe ? Les membres ne pourront plus publier.")) {
@@ -1504,10 +1495,10 @@ function ParametresTab({ slug, groupe, onUpdated }: { slug: string; groupe: Grou
               })
               onUpdated()
             }
-          }} className="px-4 py-2 border border-yellow-500 text-yellow-600 font-body text-[11px] uppercase tracking-widest hover:bg-yellow-50 transition-colors flex items-center gap-1.5">
+          }} className="px-4 py-2 border border-yellow-500 text-yellow-600 font-body text-xs uppercase tracking-widest hover:bg-yellow-50 transition-colors flex items-center gap-1.5">
             <Archive size={12} />Archiver le groupe
           </button>
-          <button onClick={async () => { if (confirm("Supprimer d\u00e9finitivement ce groupe ?")) { await fetch(`/api/communaute/groupes/${slug}`, { method: "DELETE" }); window.location.href = "/communaute/groupes" } }} className="px-4 py-2 border border-danger text-danger font-body text-[11px] uppercase tracking-widest hover:bg-danger hover:text-white transition-colors flex items-center gap-1.5">
+          <button onClick={async () => { if (confirm("Supprimer d\u00e9finitivement ce groupe ?")) { await fetch(`/api/communaute/groupes/${slug}`, { method: "DELETE" }); window.location.href = "/communaute/groupes" } }} className="px-4 py-2 border border-danger text-danger font-body text-xs uppercase tracking-widest hover:bg-danger hover:text-white transition-colors flex items-center gap-1.5">
             <Trash2 size={12} />Supprimer le groupe
           </button>
         </div>
@@ -1527,7 +1518,7 @@ function RegleForm({ onAdd }: { onAdd: (titre: string, contenu: string) => void 
 
   if (!show) {
     return (
-      <button onClick={() => setShow(true)} className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-primary-brand/50 text-primary-brand font-body text-[11px] uppercase tracking-widest hover:bg-primary-light transition-colors">
+      <button onClick={() => setShow(true)} className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-primary-brand/50 text-primary-brand font-body text-xs uppercase tracking-widest hover:bg-primary-light transition-colors">
         <Plus size={13} />Ajouter une r&egrave;gle
       </button>
     )
@@ -1535,15 +1526,15 @@ function RegleForm({ onAdd }: { onAdd: (titre: string, contenu: string) => void 
 
   return (
     <div className="bg-white border border-border-brand p-4 space-y-3">
-      <h4 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand">Nouvelle r&egrave;gle</h4>
+      <h4 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand">Nouvelle r&egrave;gle</h4>
       <input value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Titre de la r&egrave;gle" maxLength={200}
         className="w-full border border-border-brand bg-bg-page px-3 py-2 font-body text-[13px] text-text-main focus:border-gold focus:outline-none" />
       <textarea value={contenu} onChange={(e) => setContenu(e.target.value)} placeholder="Description de la r&egrave;gle..." rows={3} maxLength={2000}
         className="w-full resize-none border border-border-brand bg-bg-page px-3 py-2 font-body text-[12px] text-text-main focus:border-gold focus:outline-none" />
       <div className="flex gap-2 justify-end">
-        <button onClick={() => { setShow(false); setTitre(""); setContenu("") }} className="px-3 py-1.5 font-body text-[11px] text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">Annuler</button>
+        <button onClick={() => { setShow(false); setTitre(""); setContenu("") }} className="px-3 py-1.5 font-body text-xs text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">Annuler</button>
         <button onClick={() => { onAdd(titre, contenu); setTitre(""); setContenu(""); setShow(false) }} disabled={!titre.trim() || !contenu.trim()}
-          className="px-3 py-1.5 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark uppercase tracking-widest disabled:opacity-50 transition-colors flex items-center gap-1.5">
+          className="px-3 py-1.5 font-body text-xs text-white bg-primary-brand hover:bg-primary-dark uppercase tracking-widest disabled:opacity-50 transition-colors flex items-center gap-1.5">
           <Plus size={12} />Ajouter
         </button>
       </div>

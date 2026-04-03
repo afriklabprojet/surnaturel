@@ -9,6 +9,7 @@ import {
   Mail,
 } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider"
 
 const LIENS_RAPIDES = [
   { label: "Accueil", href: "/" },
@@ -32,6 +33,7 @@ const LIENS_SOINS = [
 
 export default function Footer() {
   const { t } = useI18n()
+  const config = useSiteConfig()
 
   return (
     <footer className="bg-text-main">
@@ -41,7 +43,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="block">
               <p className="font-display text-xl font-light text-white">
-                Le Surnaturel de Dieu
+                {config.nomCentre}
               </p>
               <p className="mt-1 font-body text-[9px] font-medium uppercase tracking-[0.2em] text-gold">
                 Institut de bien-être
@@ -52,7 +54,7 @@ export default function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-4">
               <a
-                href="https://www.facebook.com/surnatureldedieu"
+                href={config.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -61,7 +63,7 @@ export default function Footer() {
                 <Facebook size={18} />
               </a>
               <a
-                href="https://www.instagram.com/surnatureldedieu"
+                href={config.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -74,7 +76,7 @@ export default function Footer() {
 
           {/* À propos / liens rapides */}
           <div>
-            <h3 className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
+            <h3 className="font-body text-xs font-medium uppercase tracking-[0.15em] text-gold">
               {t.footer.navigation}
             </h3>
             <ul className="mt-5 space-y-3">
@@ -93,7 +95,7 @@ export default function Footer() {
 
           {/* Soins */}
           <div>
-            <h3 className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
+            <h3 className="font-body text-xs font-medium uppercase tracking-[0.15em] text-gold">
               {t.footer.services}
             </h3>
             <ul className="mt-5 space-y-3">
@@ -112,7 +114,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
+            <h3 className="font-body text-xs font-medium uppercase tracking-[0.15em] text-gold">
               {t.footer.contact}
             </h3>
             <ul className="mt-5 space-y-4">
@@ -124,13 +126,13 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <Phone size={16} className="mt-0.5 shrink-0 text-gold" />
-                <a href="tel:+2250778520699" className="font-body text-[12px] text-white/55 hover:text-gold transition-colors duration-300">+225 07 78 52 06 99</a>
+                <a href={`tel:${config.telephoneTel}`} className="font-body text-[12px] text-white/55 hover:text-gold transition-colors duration-300">{config.telephone}</a>
               </li>
               <li className="flex items-start gap-3">
                 <Mail size={16} className="mt-0.5 shrink-0 text-gold" />
-                <span className="font-body text-[12px] text-white/55">
-                  contact@surnatureldedieu.com
-                </span>
+                <a href={`mailto:${config.email}`} className="font-body text-[12px] text-white/55 hover:text-gold transition-colors duration-300">
+                  {config.email}
+                </a>
               </li>
             </ul>
           </div>
@@ -140,22 +142,28 @@ export default function Footer() {
       {/* Copyright */}
       <div className="border-t border-white/10 px-6 py-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="font-body text-[11px] text-white/40">
-            &copy; {new Date().getFullYear()} Le Surnaturel de Dieu — Marie Jeanne.
+          <p className="font-body text-xs text-white/40">
+            &copy; {new Date().getFullYear()} {config.nomCentre} — {config.fondatrice}.
             {t.footer.droits}
           </p>
           <div className="flex gap-6">
             <Link
               href="/mentions-legales"
-              className="font-body text-[11px] text-white/40 transition-colors duration-300 hover:text-gold"
+              className="font-body text-xs text-white/40 transition-colors duration-300 hover:text-gold"
             >
               Mentions légales
             </Link>
             <Link
               href="/politique-confidentialite"
-              className="font-body text-[11px] text-white/40 transition-colors duration-300 hover:text-gold"
+              className="font-body text-xs text-white/40 transition-colors duration-300 hover:text-gold"
             >
               Politique de confidentialité
+            </Link>
+            <Link
+              href="/conditions-utilisation"
+              className="font-body text-xs text-white/40 transition-colors duration-300 hover:text-gold"
+            >
+              CGU
             </Link>
           </div>
         </div>

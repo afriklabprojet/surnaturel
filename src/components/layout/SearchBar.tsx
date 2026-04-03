@@ -80,8 +80,8 @@ export default function SearchBar() {
       const data = await res.json()
       setResults(data)
       setSelectedIndex(-1)
-    } catch (error) {
-      console.error("Erreur recherche:", error)
+    } catch {
+      setResults(null)
     } finally {
       setLoading(false)
     }
@@ -162,7 +162,7 @@ export default function SearchBar() {
         <span className="hidden lg:block font-body text-[13px] text-text-muted-brand">
           Rechercher...
         </span>
-        <kbd className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 bg-bg-page border border-border-brand font-body text-[10px] text-text-muted-brand">
+        <kbd className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 bg-bg-page border border-border-brand font-body text-xs text-text-muted-brand">
           ⌘K
         </kbd>
       </button>
@@ -170,7 +170,7 @@ export default function SearchBar() {
       {/* Modal de recherche */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-100 flex items-start justify-center pt-[10vh] bg-black/40 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsOpen(false)
           }}
@@ -265,7 +265,7 @@ export default function SearchBar() {
                   {/* Soins */}
                   {results.soins.length > 0 && (
                     <div>
-                      <p className="px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-text-muted-brand">
+                      <p className="px-4 py-2 font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                         Soins ({results.soins.length})
                       </p>
                       {results.soins.map((result, index) => (
@@ -284,7 +284,7 @@ export default function SearchBar() {
                   {/* Produits */}
                   {results.produits.length > 0 && (
                     <div>
-                      <p className="px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-text-muted-brand">
+                      <p className="px-4 py-2 font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                         Produits ({results.produits.length})
                       </p>
                       {results.produits.map((result, index) => (
@@ -303,7 +303,7 @@ export default function SearchBar() {
                   {/* Articles */}
                   {results.articles.length > 0 && (
                     <div>
-                      <p className="px-4 py-2 font-body text-[11px] font-medium uppercase tracking-[0.1em] text-text-muted-brand">
+                      <p className="px-4 py-2 font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                         Articles ({results.articles.length})
                       </p>
                       {results.articles.map((result, index) => (
@@ -326,7 +326,7 @@ export default function SearchBar() {
 
             {/* Footer */}
             <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-border-brand bg-bg-page">
-              <div className="flex items-center gap-4 font-body text-[11px] text-text-muted-brand">
+              <div className="flex items-center gap-4 font-body text-xs text-text-muted-brand">
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-white border border-border-brand">↑↓</kbd>
                   naviguer
@@ -341,7 +341,7 @@ export default function SearchBar() {
                 </span>
               </div>
               {results && results.total > 0 && (
-                <span className="font-body text-[11px] text-text-muted-brand">
+                <span className="font-body text-xs text-text-muted-brand">
                   {results.total} résultat{results.total > 1 ? "s" : ""}
                 </span>
               )}
@@ -399,7 +399,7 @@ function SearchResultItem({
           <h4 className="font-body text-[14px] font-medium text-text-main truncate">
             {result.titre}
           </h4>
-          <span className="shrink-0 px-1.5 py-0.5 bg-bg-page border border-border-brand font-body text-[10px] text-text-muted-brand">
+          <span className="shrink-0 px-1.5 py-0.5 bg-bg-page border border-border-brand font-body text-xs text-text-muted-brand">
             {typeLabel}
           </span>
         </div>
@@ -410,19 +410,19 @@ function SearchResultItem({
           <p className="mt-1 font-body text-[13px] text-primary-brand font-medium">
             {formatPrix(result.prix)}
             {result.prixOriginal && (
-              <span className="ml-2 text-text-muted-brand line-through text-[11px]">
+              <span className="ml-2 text-text-muted-brand line-through text-xs">
                 {formatPrix(result.prixOriginal)}
               </span>
             )}
             {result.duree && (
-              <span className="ml-2 text-text-muted-brand text-[11px]">
+              <span className="ml-2 text-text-muted-brand text-xs">
                 · {result.duree} min
               </span>
             )}
           </p>
         )}
         {result.tempsLecture && (
-          <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+          <p className="mt-1 font-body text-xs text-text-muted-brand">
             {result.tempsLecture} min de lecture
           </p>
         )}

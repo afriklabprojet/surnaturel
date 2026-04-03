@@ -16,6 +16,8 @@ export default function AdminBlogEditorPage() {
   const [titre, setTitre] = useState("")
   const [contenu, setContenu] = useState("")
   const [imageUrl, setImageUrl] = useState("")
+  const [auteur, setAuteur] = useState("")
+  const [auteurRole, setAuteurRole] = useState("")
   const [publie, setPublie] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -31,6 +33,8 @@ export default function AdminBlogEditorPage() {
           setTitre(data.titre)
           setContenu(data.contenu)
           setImageUrl(data.imageUrl || "")
+          setAuteur(data.auteur || "")
+          setAuteurRole(data.auteurRole || "")
           setPublie(data.publie)
         })
         .catch(console.error)
@@ -61,6 +65,8 @@ export default function AdminBlogEditorPage() {
       contenu,
       imageUrl: imageUrl || null,
       publie: publish !== undefined ? publish : publie,
+      auteur: auteur || undefined,
+      auteurRole: auteurRole || undefined,
     }
     const url = isNew ? "/api/admin/articles" : `/api/admin/articles/${params.id}`
     const method = isNew ? "POST" : "PATCH"
@@ -118,7 +124,7 @@ export default function AdminBlogEditorPage() {
 
       {/* Title */}
       <div className="bg-white border border-border-brand p-6">
-        <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Titre de l&apos;article</label>
+        <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-2">Titre de l&apos;article</label>
         <input
           value={titre}
           onChange={(e) => setTitre(e.target.value)}
@@ -129,7 +135,7 @@ export default function AdminBlogEditorPage() {
 
       {/* Image */}
       <div className="bg-white border border-border-brand p-6">
-        <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Image de couverture</label>
+        <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-2">Image de couverture</label>
         <div className="flex items-center gap-3">
           <input
             value={imageUrl}
@@ -152,9 +158,34 @@ export default function AdminBlogEditorPage() {
         )}
       </div>
 
+      {/* Auteur */}
+      <div className="bg-white border border-border-brand p-6">
+        <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-4">Auteur</label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block font-body text-[11px] text-gray-500">Nom de l&apos;auteur</label>
+            <input
+              value={auteur}
+              onChange={(e) => setAuteur(e.target.value)}
+              placeholder="Ex. Ama Kouassi…"
+              className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block font-body text-[11px] text-gray-500">Rôle / Titre</label>
+            <input
+              value={auteurRole}
+              onChange={(e) => setAuteurRole(e.target.value)}
+              placeholder="Ex. Sage-femme diplômée d&apos;État…"
+              className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Markdown editor */}
       <div className="bg-white border border-border-brand p-6" data-color-mode="light">
-        <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-2">Contenu (Markdown)</label>
+        <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-2">Contenu (Markdown)</label>
         <MDEditor
           value={contenu}
           onChange={(val) => setContenu(val || "")}

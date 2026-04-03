@@ -8,6 +8,8 @@ const patchSchema = z.object({
   contenu: z.string().min(1).optional(),
   imageUrl: z.string().url().nullable().optional(),
   publie: z.boolean().optional(),
+  auteur: z.string().optional(),
+  auteurRole: z.string().optional(),
 })
 
 export async function GET(

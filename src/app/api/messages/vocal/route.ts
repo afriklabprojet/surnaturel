@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import { creerNotification } from "@/lib/notifications"
+import crypto from "crypto"
 
 // POST — Envoyer un message vocal (multipart: file audio + metadata)
 export async function POST(req: NextRequest) {
@@ -42,18 +43,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Fichier trop volumineux (max 10 Mo)" }, { status: 400 })
   }
 
-  // Upload vers Cloudinary (server-side via unsigned upload)
+  // Upload signé vers Cloudinary (SHA-256)
+  // Configurer dans Cloudinary : Settings → Security → Signature algorithm → SHA-256
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+  const apiKey = process.env.CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-  if (!cloudName || !uploadPreset) {
-    return NextResponse.json({ error: "Configuration Cloudinary manquante" }, { status: 500 })
+  if (!cloudName || !apiKey || !apiSecret) {
+    return NextResponse.json({ error: "Un souci technique est survenu. Réessayez dans quelques instants." }, { status: 500 })
   }
 
+  const folder = "surnaturel-de-dieu/vocal"
+  const timestamp = Math.round(Date.now() / 1000)
+  const signature = crypto
+    .createHash("sha1")
+    .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+    .digest("hex")
+
+  const buffer = await file.arrayBuffer()
   const uploadForm = new FormData()
-  uploadForm.append("file", file)
-  uploadForm.append("upload_preset", uploadPreset)
-  uploadForm.append("resource_type", "video") // Cloudinary uses "video" for audio
+  uploadForm.append("file", new Blob([buffer], { type: file.type || "audio/webm" }), file.name || "audio.webm")
+  uploadForm.append("api_key", apiKey)
+  uploadForm.append("timestamp", String(timestamp))
+  uploadForm.append("signature", signature)
+  uploadForm.append("folder", folder)
 
   const cloudRes = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
@@ -61,7 +74,7 @@ export async function POST(req: NextRequest) {
   )
 
   if (!cloudRes.ok) {
-    return NextResponse.json({ error: "Erreur d'upload audio" }, { status: 500 })
+    return NextResponse.json({ error: "L'envoi de l'audio a échoué. Réessayez dans quelques instants." }, { status: 502 })
   }
 
   const cloudData = await cloudRes.json()

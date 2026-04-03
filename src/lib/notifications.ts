@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
+import { enfileNotification } from "@/lib/queue"
 import type { NotifType } from "@/generated/prisma/client"
 
 // Mapping type → préférence utilisateur
@@ -36,16 +37,38 @@ export async function creerNotification(params: CreerNotificationParams) {
     if (user && user[prefField] === false) return null
   }
 
-  const notif = await prisma.notification.create({
-    data: {
-      userId: params.userId,
-      type: params.type,
-      titre: params.titre,
-      message: params.message,
-      lien: params.lien,
-      sourceId: params.sourceId,
-    },
-  })
+  // Si BullMQ + Redis disponibles → enfile le job (retry automatique, no perte)
+  // Sinon → exécution synchrone directe (fallback)
+  const queued = await enfileNotification(params)
+  if (queued) return { queued: true }
+
+  // ── Fallback synchrone (pas de Redis) ────────────────────────────────────
+  const notifData = {
+    userId: params.userId,
+    type: params.type,
+    titre: params.titre,
+    message: params.message,
+    lien: params.lien,
+    sourceId: params.sourceId,
+  }
+
+  const notif = params.sourceId
+    ? await prisma.notification.upsert({
+        where: {
+          notif_dedup: {
+            userId: params.userId,
+            type: params.type,
+            sourceId: params.sourceId,
+          },
+        },
+        create: { ...notifData, compteur: 1 },
+        update: {
+          compteur: { increment: 1 },
+          message: params.message,
+          lu: false, // remettre "non lu" quand une nouvelle action arrive
+        },
+      })
+    : await prisma.notification.create({ data: notifData })
 
   // Envoyer en temps réel via Pusher
   try {

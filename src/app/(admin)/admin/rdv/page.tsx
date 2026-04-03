@@ -194,166 +194,265 @@ export default function AdminRDVPage() {
 
         <button
           onClick={() => window.open("/api/admin/export?type=rdv", "_blank")}
-          className="ml-auto flex items-center gap-1.5 px-3 py-2 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+          className="ml-auto flex items-center gap-1.5 px-3 py-2 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
         >
           <Download className="h-3.5 w-3.5" /> CSV
         </button>
 
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-dark transition-colors"
         >
           <Plus size={14} /> Nouveau RDV
         </button>
       </div>
 
-      {/* Tableau */}
-      <div className="bg-white border border-border-brand overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="h-6 w-6 border-4 border-primary-brand border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-bg-page">
-                <tr>
-                  {([["client", "Client"], ["soin", "Soin"], ["dateHeure", "Date & Heure"], ["statut", "Statut"]] as [SortKey, string][]).map(([key, label]) => (
-                    <th
-                      key={key}
-                      onClick={() => handleSort(key)}
-                      className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium cursor-pointer select-none hover:text-text-main"
+      {/* RDV List - Responsive */}
+      {loading ? (
+        <div className="flex items-center justify-center h-32 bg-white border border-border-brand">
+          <div className="h-6 w-6 border-4 border-primary-brand border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <>
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {sorted.map((rdv) => (
+              <div key={rdv.id} className="bg-white border border-border-brand p-4 space-y-3">
+                {/* Header: Client & Status */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-text-main font-body">{rdv.client}</p>
+                    <p className="text-xs text-text-muted-brand font-body">{rdv.email}</p>
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs font-medium font-body uppercase tracking-wider ${statutColors[rdv.statut] || ""}`}>
+                    {statutLabels[rdv.statut] || rdv.statut}
+                  </span>
+                </div>
+
+                {/* Service & Date */}
+                <div className="space-y-1.5 text-sm font-body">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-muted-brand">Soin</span>
+                    <span className="text-text-main font-medium">{rdv.soin}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-muted-brand">Date</span>
+                    <span className="text-text-main">
+                      {new Date(rdv.dateHeure).toLocaleDateString("fr", { day: "2-digit", month: "short" })}
+                      {" à "}
+                      {new Date(rdv.dateHeure).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-muted-brand">Prix</span>
+                    <span className="text-gold font-medium">{formatPrix(rdv.prix)}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-3 border-t border-border-brand">
+                  {rdv.statut === "EN_ATTENTE" && (
+                    <>
+                      <button
+                        onClick={() => updateStatut(rdv.id, "CONFIRME")}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-50 text-green-600 hover:bg-green-100 transition-colors text-xs uppercase tracking-widest font-body"
+                      >
+                        <Check className="h-4 w-4" /> Confirmer
+                      </button>
+                      <button
+                        onClick={() => updateStatut(rdv.id, "ANNULE")}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs uppercase tracking-widest font-body"
+                      >
+                        <X className="h-4 w-4" /> Annuler
+                      </button>
+                    </>
+                  )}
+                  {rdv.statut === "CONFIRME" && (
+                    <>
+                      <button
+                        onClick={() => updateStatut(rdv.id, "TERMINE")}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-xs uppercase tracking-widest font-body"
+                      >
+                        <Clock className="h-4 w-4" /> Terminer
+                      </button>
+                      <button
+                        onClick={() => updateStatut(rdv.id, "ANNULE")}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs uppercase tracking-widest font-body"
+                      >
+                        <X className="h-4 w-4" /> Annuler
+                      </button>
+                    </>
+                  )}
+                  {(rdv.statut === "ANNULE" || rdv.statut === "TERMINE") && (
+                    <button
+                      onClick={() => setDetailId(detailId === rdv.id ? null : rdv.id)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-light text-primary-brand hover:bg-primary-lighter transition-colors text-xs uppercase tracking-widest font-body"
                     >
-                      <span className="inline-flex items-center gap-1">
-                        {label} <SortIcon col={key} />
-                      </span>
-                    </th>
-                  ))}
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((rdv) => (
-                  <Fragment key={rdv.id}>
-                    <tr className="border-t border-border-brand hover:bg-bg-page">
-                      <td className="px-4 py-3">
-                        <div className="text-text-main font-medium font-body text-[13px]">{rdv.client}</div>
-                        <div className="text-text-muted-brand text-xs font-body">{rdv.email}</div>
-                      </td>
-                      <td className="px-4 py-3 text-text-main font-body text-[13px]">{rdv.soin}</td>
-                      <td className="px-4 py-3 text-text-mid font-body text-[13px]">
-                        {new Date(rdv.dateHeure).toLocaleDateString("fr", { day: "2-digit", month: "short", year: "numeric" })}
-                        {" "}
-                        {new Date(rdv.dateHeure).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 text-[10px] font-medium font-body uppercase tracking-wider ${statutColors[rdv.statut] || ""}`}>
-                          {statutLabels[rdv.statut] || rdv.statut}
+                      <Eye className="h-4 w-4" /> Détails
+                    </button>
+                  )}
+                </div>
+
+                {/* Expanded details */}
+                {detailId === rdv.id && rdv.notes && (
+                  <div className="pt-3 border-t border-border-brand">
+                    <span className="text-text-muted-brand text-xs uppercase tracking-wider block mb-1 font-body">Notes</span>
+                    <p className="text-text-mid text-sm font-body">{rdv.notes}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+            {rdvs.length === 0 && (
+              <div className="bg-white border border-border-brand p-8 text-center">
+                <p className="text-text-muted-brand font-body">Aucun rendez-vous trouvé</p>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white border border-border-brand overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-bg-page">
+                  <tr>
+                    {([["client", "Client"], ["soin", "Soin"], ["dateHeure", "Date & Heure"], ["statut", "Statut"]] as [SortKey, string][]).map(([key, label]) => (
+                      <th
+                        key={key}
+                        onClick={() => handleSort(key)}
+                        className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium cursor-pointer select-none hover:text-text-main"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {label} <SortIcon col={key} />
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          {rdv.statut === "EN_ATTENTE" && (
-                            <>
-                              <button
-                                onClick={() => updateStatut(rdv.id, "CONFIRME")}
-                                className="p-1.5 bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
-                                title="Confirmer"
-                              >
-                                <Check className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => updateStatut(rdv.id, "ANNULE")}
-                                className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                title="Annuler"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </>
-                          )}
-                          {rdv.statut === "CONFIRME" && (
-                            <>
-                              <button
-                                onClick={() => updateStatut(rdv.id, "TERMINE")}
-                                className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                                title="Terminer"
-                              >
-                                <Clock className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => updateStatut(rdv.id, "ANNULE")}
-                                className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                title="Annuler"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => setDetailId(detailId === rdv.id ? null : rdv.id)}
-                            className="p-1.5 bg-primary-light text-primary-brand hover:bg-primary-lighter transition-colors"
-                            title="Voir détail"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    {detailId === rdv.id && (
-                      <tr className="bg-bg-page">
-                        <td colSpan={5} className="px-6 py-4">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm font-body">
-                            <div>
-                              <span className="text-text-muted-brand text-[11px] uppercase tracking-wider block">Prix</span>
-                              <span className="text-text-main font-medium">{formatPrix(rdv.prix)}</span>
-                            </div>
-                            <div>
-                              <span className="text-text-muted-brand text-[11px] uppercase tracking-wider block">Email</span>
-                              <span className="text-text-main">{rdv.email}</span>
-                            </div>
-                            <div className="col-span-2">
-                              <span className="text-text-muted-brand text-[11px] uppercase tracking-wider block">Notes</span>
-                              <span className="text-text-mid">{rdv.notes || "Aucune note"}</span>
-                            </div>
+                      </th>
+                    ))}
+                    <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((rdv) => (
+                    <Fragment key={rdv.id}>
+                      <tr className="border-t border-border-brand hover:bg-bg-page">
+                        <td className="px-4 py-3">
+                          <div className="text-text-main font-medium font-body text-[13px]">{rdv.client}</div>
+                          <div className="text-text-muted-brand text-xs font-body">{rdv.email}</div>
+                        </td>
+                        <td className="px-4 py-3 text-text-main font-body text-[13px]">{rdv.soin}</td>
+                        <td className="px-4 py-3 text-text-mid font-body text-[13px]">
+                          {new Date(rdv.dateHeure).toLocaleDateString("fr", { day: "2-digit", month: "short", year: "numeric" })}
+                          {" "}
+                          {new Date(rdv.dateHeure).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 text-xs font-medium font-body uppercase tracking-wider ${statutColors[rdv.statut] || ""}`}>
+                            {statutLabels[rdv.statut] || rdv.statut}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            {rdv.statut === "EN_ATTENTE" && (
+                              <>
+                                <button
+                                  onClick={() => updateStatut(rdv.id, "CONFIRME")}
+                                  className="p-1.5 bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+                                  title="Confirmer"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => updateStatut(rdv.id, "ANNULE")}
+                                  className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                  title="Annuler"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </>
+                            )}
+                            {rdv.statut === "CONFIRME" && (
+                              <>
+                                <button
+                                  onClick={() => updateStatut(rdv.id, "TERMINE")}
+                                  className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                  title="Terminer"
+                                >
+                                  <Clock className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => updateStatut(rdv.id, "ANNULE")}
+                                  className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                  title="Annuler"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => setDetailId(detailId === rdv.id ? null : rdv.id)}
+                              className="p-1.5 bg-primary-light text-primary-brand hover:bg-primary-lighter transition-colors"
+                              title="Voir détail"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </Fragment>
-                ))}
-                {rdvs.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-text-muted-brand font-body">Aucun rendez-vous trouvé</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border-brand">
-            <p className="text-sm text-text-muted-brand font-body">{total} résultat(s)</p>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-                className="px-3 py-1.5 text-sm border border-border-brand disabled:opacity-50 font-body"
-              >
-                Préc.
-              </button>
-              <span className="text-sm text-text-muted-brand font-body">{page}/{totalPages}</span>
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(page + 1)}
-                className="px-3 py-1.5 text-sm border border-border-brand disabled:opacity-50 font-body"
-              >
-                Suiv.
-              </button>
+                      {detailId === rdv.id && (
+                        <tr className="bg-bg-page">
+                          <td colSpan={5} className="px-6 py-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm font-body">
+                              <div>
+                                <span className="text-text-muted-brand text-xs uppercase tracking-wider block">Prix</span>
+                                <span className="text-text-main font-medium">{formatPrix(rdv.prix)}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-muted-brand text-xs uppercase tracking-wider block">Email</span>
+                                <span className="text-text-main">{rdv.email}</span>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-text-muted-brand text-xs uppercase tracking-wider block">Notes</span>
+                                <span className="text-text-mid">{rdv.notes || "Aucune note"}</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  ))}
+                  {rdvs.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-text-muted-brand font-body">Aucun rendez-vous trouvé</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border border-border-brand bg-white">
+          <p className="text-sm text-text-muted-brand font-body order-2 sm:order-1">{total} résultat(s)</p>
+          <div className="flex items-center gap-2 order-1 sm:order-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="px-4 py-2 text-sm border border-border-brand disabled:opacity-50 font-body hover:bg-bg-page transition-colors"
+            >
+              Préc.
+            </button>
+            <span className="text-sm text-text-muted-brand font-body px-2">{page}/{totalPages}</span>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              className="px-4 py-2 text-sm border border-border-brand disabled:opacity-50 font-body hover:bg-bg-page transition-colors"
+            >
+              Suiv.
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal Création RDV */}
       {showCreate && (
@@ -365,7 +464,7 @@ export default function AdminRDVPage() {
             </div>
             <form onSubmit={handleCreateRdv} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-text-muted-brand font-body mb-1">Client</label>
+                <label className="block text-xs uppercase tracking-widest text-text-muted-brand font-body mb-1">Client</label>
                 <input
                   type="text"
                   placeholder="Rechercher un client…"
@@ -386,7 +485,7 @@ export default function AdminRDVPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-text-muted-brand font-body mb-1">Soin</label>
+                <label className="block text-xs uppercase tracking-widest text-text-muted-brand font-body mb-1">Soin</label>
                 <select
                   required
                   value={rdvForm.soinId}
@@ -400,7 +499,7 @@ export default function AdminRDVPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-text-muted-brand font-body mb-1">Date & Heure</label>
+                <label className="block text-xs uppercase tracking-widest text-text-muted-brand font-body mb-1">Date & Heure</label>
                 <input
                   type="datetime-local"
                   required
@@ -410,7 +509,7 @@ export default function AdminRDVPage() {
                 />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-text-muted-brand font-body mb-1">Notes</label>
+                <label className="block text-xs uppercase tracking-widest text-text-muted-brand font-body mb-1">Notes</label>
                 <textarea
                   value={rdvForm.notes}
                   onChange={(e) => setRdvForm((f) => ({ ...f, notes: e.target.value }))}
@@ -418,7 +517,7 @@ export default function AdminRDVPage() {
                   className="w-full px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand resize-none"
                 />
               </div>
-              <button type="submit" disabled={rdvSaving} className="w-full py-2.5 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-dark transition-colors disabled:opacity-50">
+              <button type="submit" disabled={rdvSaving} className="w-full py-2.5 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-dark transition-colors disabled:opacity-50">
                 {rdvSaving ? "Création…" : "Créer le rendez-vous"}
               </button>
             </form>

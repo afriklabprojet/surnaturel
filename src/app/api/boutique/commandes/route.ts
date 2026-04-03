@@ -1,5 +1,6 @@
+import logger from "@/lib/logger"
 import { NextResponse } from "next/server"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailConfirmationCommande } from "@/lib/email"
@@ -13,12 +14,40 @@ const ligneSchema = z.object({
 const commandeSchema = z.object({
   items: z.array(ligneSchema).min(1),
   codePromo: z.string().max(50).optional(),
+  zoneId: z.string().optional(),
+  fraisLivraison: z.number().min(0).optional(),
+  nomDestinataire: z.string().min(1).max(200).optional(),
+  adresseLivraison: z.string().min(5).max(500).optional(),
+  telephoneLivraison: z.string().max(30).optional(),
 })
 
 export async function POST(request: Request) {
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    return NextResponse.json({ error: "Connectez-vous pour passer commande." }, { status: 401 })
+  }
+
+  // Vérifier que l'utilisateur a un numéro de téléphone valide
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { telephone: true },
+  })
+
+  if (!user?.telephone) {
+    return NextResponse.json(
+      { error: "Ajoutez votre numéro de téléphone dans votre profil avant de continuer." },
+      { status: 400 }
+    )
+  }
+
+  // Validation format téléphone Côte d'Ivoire (+225 ou 225 suivi de 10 chiffres)
+  const cleanPhone = user.telephone.replace(/[\s\-().]/g, "")
+  const phoneRegex = /^(\+?225)?[0-9]{10}$/
+  if (!phoneRegex.test(cleanPhone)) {
+    return NextResponse.json(
+      { error: "Numéro de téléphone non reconnu. Vérifiez votre numéro dans votre profil (ex : 07 00 00 00 00)." },
+      { status: 400 }
+    )
   }
 
   let body: unknown
@@ -26,7 +55,7 @@ export async function POST(request: Request) {
     body = await request.json()
   } catch {
     return NextResponse.json(
-      { error: "Corps de requête invalide." },
+      { error: "Quelque chose ne va pas avec votre demande. Réessayez." },
       { status: 400 }
     )
   }
@@ -39,7 +68,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const { items, codePromo } = result.data
+  const { items, codePromo, zoneId, fraisLivraison: fraisLivraisonClient, nomDestinataire, adresseLivraison, telephoneLivraison } = result.data
 
   try {
     // Validate promo code server-side if provided
@@ -61,9 +90,50 @@ export async function POST(request: Request) {
       }
     }
 
+    // Calculer frais de livraison côté serveur pour éviter manipulation
+    let fraisLivraison = 0
+    let zoneLivraison: string | null = null
+
+    if (zoneId) {
+      const configLivraison = await prisma.appConfig.findUnique({
+        where: { cle: "livraison" },
+      })
+      if (configLivraison) {
+        const livraisonData = JSON.parse(configLivraison.valeur)
+        const zone = livraisonData.zones?.find((z: { id: string; actif: boolean }) => z.id === zoneId && z.actif)
+        if (zone) {
+          zoneLivraison = zone.nom
+          // Calculer total produits pour vérifier seuil gratuit
+          const produitsTemp = await prisma.produit.findMany({
+            where: { id: { in: items.map((i) => i.produitId) }, actif: true },
+          })
+          let totalTemp = 0
+          for (const item of items) {
+            const produit = produitsTemp.find((p) => p.id === item.produitId)
+            if (produit) {
+              const prix = produit.prixPromo && produit.prixPromo < produit.prix ? produit.prixPromo : produit.prix
+              totalTemp += prix * item.quantite
+            }
+          }
+          // Appliquer seuil gratuit
+          if (livraisonData.seuilGratuit && totalTemp >= livraisonData.seuilGratuit) {
+            fraisLivraison = 0
+          } else {
+            fraisLivraison = zone.frais || 0
+          }
+        }
+      }
+    } else if (fraisLivraisonClient !== undefined) {
+      // Fallback au montant client si pas de zone (compatibilité)
+      fraisLivraison = fraisLivraisonClient
+    }
+
     const commande = await prisma.$transaction(async (tx) => {
-      // Fetch all products and validate stock
+      // Verrouiller les lignes produit pour éviter les achats simultanés du dernier stock
       const produitIds = items.map((i) => i.produitId)
+      await tx.$executeRaw`SELECT id FROM "Produit" WHERE id = ANY(${produitIds}::text[]) FOR UPDATE`
+
+      // Fetch all products and validate stock
       const produits = await tx.produit.findMany({
         where: { id: { in: produitIds }, actif: true },
       })
@@ -96,7 +166,7 @@ export async function POST(request: Request) {
 
       // Apply promo reduction
       const reduction = promoReduction > 0 ? Math.round(total * promoReduction / 100) : 0
-      const totalFinal = total - reduction
+      const totalFinal = total - reduction + fraisLivraison
 
       // Decrement stock
       for (const item of items) {
@@ -113,6 +183,11 @@ export async function POST(request: Request) {
           total: totalFinal,
           codePromo: promoCodeValide,
           reduction,
+          fraisLivraison,
+          zoneLivraison,
+          nomDestinataire: nomDestinataire?.trim() || null,
+          adresseLivraison: adresseLivraison?.trim() || null,
+          telephoneLivraison: telephoneLivraison?.trim() || null,
           lignes: { create: lignes },
         },
         include: {
@@ -128,12 +203,12 @@ export async function POST(request: Request) {
       prenom: commande.user.prenom,
       commandeId: commande.id,
       total: commande.total,
-      lignes: commande.lignes.map((l) => ({
+      lignes: commande.lignes.map((l: { produit: { nom: string }; quantite: number; prixUnitaire: number }) => ({
         nom: l.produit.nom,
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
       })),
-    }).catch(console.error)
+    }).catch((e) => logger.error(e, "background task failed"))
 
     return NextResponse.json({ commandeId: commande.id }, { status: 201 })
   } catch (error) {

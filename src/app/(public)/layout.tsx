@@ -2,8 +2,9 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 import Navbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
-import ChatBubble from "@/components/layout/ChatBubble"
-import ChatIA from "@/components/soins/ChatIA"
+import ChatBubble from "@/components/layout/ChatBubbleLazy"
+import ChatIA from "@/components/soins/ChatIALazy"
+import MobileBottomNav from "@/components/layout/MobileBottomNav"
 
 export const metadata: Metadata = {
   title: {
@@ -28,9 +29,10 @@ export default function PublicLayout({
     <>
       <Navbar />
       <Suspense fallback={<main className="flex-1 min-h-screen" />}>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
       </Suspense>
       <Footer />
+      <MobileBottomNav />
       <ChatBubble />
       <ChatIA />
     </>

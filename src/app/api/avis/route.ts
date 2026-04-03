@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -96,7 +97,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 })
   } catch (error) {
-    console.error("Erreur récupération avis:", error)
+    logger.error("Erreur récupération avis:", error)
     return NextResponse.json(
       { error: "Erreur lors de la récupération des avis" },
       { status: 500 }
@@ -188,7 +189,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(avis, { status: 201 })
   } catch (error) {
-    console.error("Erreur création avis:", error)
+    logger.error("Erreur création avis:", error)
     return NextResponse.json(
       { error: "Erreur lors de la création de l'avis" },
       { status: 500 }
@@ -232,7 +233,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json(avisModifie)
   } catch (error) {
-    console.error("Erreur modification avis:", error)
+    logger.error("Erreur modification avis:", error)
     return NextResponse.json(
       { error: "Erreur lors de la modification de l'avis" },
       { status: 500 }
@@ -273,7 +274,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur suppression avis:", error)
+    logger.error("Erreur suppression avis:", error)
     return NextResponse.json(
       { error: "Erreur lors de la suppression de l'avis" },
       { status: 500 }

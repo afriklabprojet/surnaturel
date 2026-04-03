@@ -2,7 +2,9 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { toast } from "sonner"
 import {
   CheckCircle,
   Clock,
@@ -44,6 +46,7 @@ export default function PagePriseRDV() {
 function PriseRDVContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { data: session, status: authStatus } = useSession()
 
   // État du stepper
   const [etape, setEtape] = useState(1)
@@ -61,9 +64,27 @@ function PriseRDVContent() {
   const [methodes, setMethodes] = useState<{ id: string; label: string; color: string }[]>([])
   const [loadingPaiement, setLoadingPaiement] = useState(false)
 
-  const MONTANT_ACOMPTE = 2000 // 2 000 F CFA
+  const [montantAcompte, setMontantAcompte] = useState(2000)
+  const [creneauxMatin, setCreneauxMatin] = useState<number[] | undefined>(undefined)
+  const [creneauxApresMidi, setCreneauxApresMidi] = useState<number[] | undefined>(undefined)
 
-  // Charger les soins depuis l'API
+  // Charger le montant d'acompte depuis la config (défaut : 2 000 F CFA)
+  useEffect(() => {
+    fetch("/api/config/booking_montant_acompte")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (typeof d?.valeur === "number") setMontantAcompte(d.valeur) })
+      .catch(() => {})
+    fetch("/api/config/booking_creneaux_matin")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (Array.isArray(d?.valeur)) setCreneauxMatin(d.valeur) })
+      .catch(() => {})
+    fetch("/api/config/booking_creneaux_apres_midi")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (Array.isArray(d?.valeur)) setCreneauxApresMidi(d.valeur) })
+      .catch(() => {})
+  }, [])
+
+  // Charger les soins depuis l'API + restaurer la sélection depuis les URL params
   useEffect(() => {
     fetch("/api/soins")
       .then(r => r.json())
@@ -71,13 +92,27 @@ function PriseRDVContent() {
         const soins = d.soins || []
         setSoinsData(soins)
 
-        // Pré-sélection via ?soin=
         const soinParam = searchParams.get("soin")
+        const dateParam = searchParams.get("date")
+        const heureParam = searchParams.get("heure")
+
         if (soinParam) {
           const found = soins.find((s: SoinItem) => s.slug === soinParam)
           if (found) {
             setSoinSelectionne(found)
-            setEtape(2)
+            // Si date + heure sont dans l'URL (retour après connexion), aller à l'étape 3
+            if (dateParam && heureParam) {
+              const h = parseInt(heureParam, 10)
+              if (!isNaN(h)) {
+                setSelectedDate(dateParam)
+                setSelectedHeure(h)
+                setEtape(3)
+              } else {
+                setEtape(2)
+              }
+            } else {
+              setEtape(2)
+            }
           }
         }
       })
@@ -87,8 +122,8 @@ function PriseRDVContent() {
   const etapes = [
     { numero: 1, label: "Choisir un soin" },
     { numero: 2, label: "Date & Heure" },
-    { numero: 3, label: "Confirmation" },
-    { numero: 4, label: "Acompte" },
+    { numero: 3, label: "Récapitulatif" },
+    { numero: 4, label: "Paiement" },
   ]
 
   function handleSelectSoin(soin: SoinItem) {
@@ -107,63 +142,44 @@ function PriseRDVContent() {
 
   async function handleConfirmer() {
     if (!soinSelectionne || !selectedDate || selectedHeure === null) return
+
+    // Rediriger vers connexion si pas de session (en conservant toute la sélection)
+    if (!session) {
+      const callbackUrl = `/prise-rdv?soin=${soinSelectionne.slug}&date=${selectedDate}&heure=${selectedHeure}`
+      router.push(`/connexion?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+      return
+    }
+
     setErreur("")
     setLoading(true)
+    try {
+      const mRes = await fetch("/api/config/methodes_paiement")
+      const mData = await mRes.json()
+      setMethodes(mData.valeur || [])
+    } catch {
+      // Continuer même sans méthodes
+    } finally {
+      setLoading(false)
+    }
+    setEtape(4)
+  }
+
+  async function handlePayerAcompte() {
+    if (!soinSelectionne || !selectedDate || selectedHeure === null || !methode) return
+    setErreur("")
+    setLoadingPaiement(true)
 
     const dateHeure = `${selectedDate}T${String(selectedHeure).padStart(2, "0")}:00:00.000Z`
 
     try {
-      const res = await fetch("/api/rdv", {
+      const res = await fetch("/api/rdv/reserver-et-payer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           soinId: soinSelectionne.id,
           dateHeure,
           notes: notes || undefined,
-        }),
-      })
-
-      if (res.status === 201) {
-        const data: { rdvId: string } = await res.json()
-        setRdvId(data.rdvId)
-        // Charger les méthodes de paiement pour l'étape acompte
-        try {
-          const mRes = await fetch("/api/config/methodes_paiement")
-          const mData = await mRes.json()
-          setMethodes(mData.valeur || [])
-        } catch {
-          // Continuer même sans méthodes
-        }
-        setEtape(4)
-        return
-      }
-
-      if (res.status === 401) {
-        router.push(`/connexion?callbackUrl=${encodeURIComponent("/prise-rdv?soin=" + soinSelectionne.slug)}`)
-        return
-      }
-
-      const data: { error?: string } = await res.json()
-      setErreur(data.error ?? "Une erreur est survenue.")
-    } catch {
-      setErreur("Impossible de contacter le serveur. Veuillez réessayer.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handlePayerAcompte() {
-    if (!rdvId || !methode) return
-    setErreur("")
-    setLoadingPaiement(true)
-
-    try {
-      const res = await fetch("/api/rdv/acompte", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rdvId,
-          montant: MONTANT_ACOMPTE,
+          montant: montantAcompte,
           methode,
           telephone: telephone || undefined,
         }),
@@ -176,7 +192,7 @@ function PriseRDVContent() {
       }
 
       const data: { error?: string } = await res.json()
-      setErreur(data.error ?? "Erreur lors du paiement.")
+      setErreur(data.error ?? "Le paiement n'a pas abouti. Vérifiez vos informations et réessayez.")
     } catch {
       setErreur("Impossible de contacter le serveur.")
     } finally {
@@ -184,8 +200,33 @@ function PriseRDVContent() {
     }
   }
 
-  function handleSkipAcompte() {
-    router.push("/mes-rdv?nouveau=ok")
+  async function handleReserverSansAcompte() {
+    if (!soinSelectionne || !selectedDate || selectedHeure === null) return
+    setErreur("")
+    setLoading(true)
+    const dateHeure = `${selectedDate}T${String(selectedHeure).padStart(2, "0")}:00:00.000Z`
+    try {
+      const res = await fetch("/api/rdv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          soinId: soinSelectionne.id,
+          dateHeure,
+          notes: notes || undefined,
+        }),
+      })
+      if (res.status === 201) {
+        toast.success("Rendez-vous réservé avec succès !")
+        router.push("/mes-rdv?nouveau=ok")
+        return
+      }
+      const data: { error?: string } = await res.json()
+      setErreur(data.error ?? "Une erreur est survenue.")
+    } catch {
+      setErreur("Impossible de contacter le serveur.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -199,7 +240,7 @@ function PriseRDVContent() {
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center border border-gold/30 bg-gold/10">
           <Calendar size={24} className="text-gold" />
         </div>
-        <span className="inline-block bg-gold/20 px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/30">
+        <span className="inline-block bg-gold/20 px-4 py-1.5 font-body text-xs uppercase tracking-[0.2em] text-gold border border-gold/30">
           Réservation
         </span>
         <h1 className="mt-6 font-display text-4xl font-light text-white sm:text-5xl lg:text-6xl">
@@ -237,7 +278,7 @@ function PriseRDVContent() {
                   )}
                 </div>
                 <span
-                  className={`mt-2 hidden font-body text-[10px] font-medium uppercase tracking-widest sm:block ${
+                  className={`mt-2 hidden font-body text-xs font-medium uppercase tracking-widest sm:block ${
                     etape >= e.numero ? "text-gold" : "text-text-muted-brand"
                   }`}
                 >
@@ -262,7 +303,24 @@ function PriseRDVContent() {
           <h2 className="mb-6 font-display text-2xl font-light text-text-main">
             Sélectionnez votre soin
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
+          {/* Bandeau connexion pour visiteurs non connectés */}
+          {authStatus !== "loading" && !session && (
+            <div className="mb-6 flex flex-col gap-3 border border-gold/30 bg-gold-light/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <AlertCircle size={15} className="mt-0.5 shrink-0 text-gold" aria-hidden="true" />
+                <p className="font-body text-[12px] text-text-mid">
+                  Votre sélection sera conservée.{" "}
+                  <strong className="text-text-main">Une connexion vous sera demandée avant la confirmation.</strong>
+                </p>
+              </div>
+              <Link
+                href={`/connexion?callbackUrl=${encodeURIComponent("/prise-rdv")}`}
+                className="shrink-0 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-primary-brand underline-offset-2 hover:underline"
+              >
+                Se connecter maintenant
+              </Link>
+            </div>
+          )}          <div className="grid gap-3 sm:grid-cols-2">
             {soinsData.map((soin) => {
               const Icon = getIcon(soin.icon)
               const isSelected = soinSelectionne?.slug === soin.slug
@@ -308,11 +366,21 @@ function PriseRDVContent() {
             })}
           </div>
 
-          <div className="mt-8 flex justify-end">
+          {/* Notice acompte */}
+          <div className="mt-6 flex items-start gap-3 border border-gold/40 bg-gold-light/30 px-4 py-3">
+            <Shield size={14} className="mt-0.5 shrink-0 text-gold" />
+            <p className="font-body text-[12px] text-text-mid">
+              Un acompte de{" "}
+              <strong className="font-medium text-text-main">{formatPrix(montantAcompte)}</strong>{" "}
+              vous sera demandé lors de la confirmation pour sécuriser votre créneau.
+            </p>
+          </div>
+
+          <div className="mt-6 flex justify-end">
             <button
               onClick={allerEtape2}
               disabled={!soinSelectionne}
-              className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuer
               <ArrowRight size={14} />
@@ -340,12 +408,14 @@ function PriseRDVContent() {
             selectedHeure={selectedHeure}
             onSelectDate={setSelectedDate}
             onSelectHeure={setSelectedHeure}
+            creneauxMatin={creneauxMatin}
+            creneauxApresMidi={creneauxApresMidi}
           />
 
           <div className="mt-8 flex items-center justify-between">
             <button
               onClick={() => setEtape(1)}
-              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-widest text-text-mid transition-colors duration-300 hover:bg-bg-page"
+              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-xs font-medium uppercase tracking-widest text-text-mid transition-colors duration-300 hover:bg-bg-page"
             >
               <ArrowLeft size={14} />
               Retour
@@ -353,7 +423,7 @@ function PriseRDVContent() {
             <button
               onClick={allerEtape3}
               disabled={!selectedDate || selectedHeure === null}
-              className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuer
               <ArrowRight size={14} />
@@ -377,7 +447,7 @@ function PriseRDVContent() {
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                   Soin
                 </p>
                 <p className="mt-1 font-body text-sm font-medium text-text-main">
@@ -385,7 +455,7 @@ function PriseRDVContent() {
                 </p>
               </div>
               <div>
-                <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                   Durée
                 </p>
                 <p className="mt-1 flex items-center gap-1 font-body text-sm font-medium text-text-main">
@@ -394,7 +464,7 @@ function PriseRDVContent() {
                 </p>
               </div>
               <div>
-                <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                   Date
                 </p>
                 <p className="mt-1 flex items-center gap-1 font-body text-sm font-medium text-text-main">
@@ -403,7 +473,7 @@ function PriseRDVContent() {
                 </p>
               </div>
               <div>
-                <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                   Heure
                 </p>
                 <p className="mt-1 font-body text-sm font-medium text-text-main">
@@ -411,7 +481,7 @@ function PriseRDVContent() {
                 </p>
               </div>
               <div className="sm:col-span-2">
-                <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+                <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                   Prix
                 </p>
                 <p className="mt-1 font-display text-2xl font-light text-gold">
@@ -440,11 +510,37 @@ function PriseRDVContent() {
             />
           </div>
 
-          {/* Info connexion */}
-          <div className="mt-4 border border-border-brand bg-gold-light/30 px-5 py-3 font-body text-[12px] text-gold">
-            Vous devez être connecté(e) pour confirmer. Si vous n&apos;avez pas de
-            compte, vous serez redirigé(e) vers la page de connexion.
-          </div>
+          {/* Bloc connexion — visible uniquement si non connecté */}
+          {authStatus === "unauthenticated" && soinSelectionne && selectedDate && selectedHeure !== null && (
+            <div className="mt-6 border border-primary-brand/30 bg-primary-light/20 p-6">
+              <div className="flex items-start gap-3">
+                <Shield size={20} className="mt-0.5 shrink-0 text-primary-brand" />
+                <div className="flex-1">
+                  <p className="font-body text-[14px] font-medium text-primary-brand">
+                    Connexion requise pour confirmer
+                  </p>
+                  <p className="mt-1 font-body text-[12px] text-text-mid">
+                    Votre soin, date et heure sont sauvegardés. Connectez-vous pour finaliser votre réservation.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link
+                      href={`/connexion?callbackUrl=${encodeURIComponent(`/prise-rdv?soin=${soinSelectionne.slug}&date=${selectedDate}&heure=${selectedHeure}`)}`}
+                      className="inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+                    >
+                      Se connecter
+                      <ArrowRight size={13} />
+                    </Link>
+                    <Link
+                      href={`/inscription?callbackUrl=${encodeURIComponent(`/prise-rdv?soin=${soinSelectionne.slug}&date=${selectedDate}&heure=${selectedHeure}`)}`}
+                      className="inline-flex items-center gap-2 border border-primary-brand px-5 py-2.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-primary-brand transition-colors hover:bg-primary-light/40"
+                    >
+                      Créer un compte
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {erreur && (
             <div className="mt-4 flex items-center gap-2 border border-red-200 bg-red-50 px-4 py-3 font-body text-[12px] text-danger">
@@ -456,49 +552,39 @@ function PriseRDVContent() {
           <div className="mt-8 flex items-center justify-between">
             <button
               onClick={() => setEtape(2)}
-              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-[11px] font-medium uppercase tracking-widest text-text-mid transition-colors duration-300 hover:bg-bg-page"
+              className="flex items-center gap-2 border border-border-brand px-5 py-2.5 font-body text-xs font-medium uppercase tracking-widest text-text-mid transition-colors duration-300 hover:bg-bg-page"
             >
               <ArrowLeft size={14} />
               Retour
             </button>
-            <button
-              onClick={handleConfirmer}
-              disabled={loading}
-              className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-60"
-            >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <CheckCircle size={16} />
-              )}
-              {loading ? "Réservation en cours…" : "Confirmer le rendez-vous"}
-            </button>
+            {authStatus !== "unauthenticated" && (
+              <button
+                onClick={handleConfirmer}
+                disabled={loading || authStatus === "loading"}
+                className="flex items-center gap-2 bg-primary-brand px-7 py-3.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-60"
+              >
+                {loading || authStatus === "loading" ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <CreditCard size={16} />
+                )}
+                {loading ? "Chargement…" : "Procéder au paiement"}
+              </button>
+            )}
           </div>
         </div>
       )}
 
       {/* ─── Étape 4 : Paiement acompte ──────────────────────────── */}
-      {etape === 4 && soinSelectionne && rdvId && (
+      {etape === 4 && soinSelectionne && (
         <div>
-          <div className="mb-6 flex items-center gap-3 border border-primary-light bg-primary-light/30 px-5 py-4">
-            <CheckCircle size={20} className="shrink-0 text-primary-brand" />
-            <div>
-              <p className="font-body text-sm font-medium text-primary-brand">
-                Rendez-vous créé avec succès !
-              </p>
-              <p className="font-body text-[12px] text-text-mid">
-                Sécurisez votre créneau en payant un acompte de {formatPrix(MONTANT_ACOMPTE)}.
-              </p>
-            </div>
-          </div>
-
           <h2 className="mb-2 font-display text-2xl font-light text-text-main">
-            Garantir votre rendez-vous
+            Payer l&apos;acompte pour confirmer
           </h2>
           <p className="mb-6 font-body text-sm text-text-muted-brand">
-            Un acompte de <span className="font-medium text-gold">{formatPrix(MONTANT_ACOMPTE)}</span> est
-            recommandé pour confirmer définitivement votre créneau.
-            Le reste ({formatPrix(soinSelectionne.prix - MONTANT_ACOMPTE)}) sera à régler sur place.
+            Réglez un acompte de <span className="font-medium text-gold">{formatPrix(montantAcompte)}</span> pour
+            valider définitivement votre créneau.
+            Le reste ({formatPrix(soinSelectionne.prix - montantAcompte)}) sera à régler sur place.
           </p>
 
           {/* Avantages acompte */}
@@ -507,21 +593,21 @@ function PriseRDVContent() {
               <Shield size={18} className="mt-0.5 shrink-0 text-gold" />
               <div>
                 <p className="font-body text-[12px] font-medium text-text-main">Créneau garanti</p>
-                <p className="font-body text-[11px] text-text-muted-brand">Votre place est réservée</p>
+                <p className="font-body text-xs text-text-muted-brand">Votre place est réservée</p>
               </div>
             </div>
             <div className="flex items-start gap-3 border border-border-brand bg-white p-4">
               <CreditCard size={18} className="mt-0.5 shrink-0 text-gold" />
               <div>
                 <p className="font-body text-[12px] font-medium text-text-main">Paiement sécurisé</p>
-                <p className="font-body text-[11px] text-text-muted-brand">Via Mobile Money</p>
+                <p className="font-body text-xs text-text-muted-brand">Via Mobile Money</p>
               </div>
             </div>
             <div className="flex items-start gap-3 border border-border-brand bg-white p-4">
               <Phone size={18} className="mt-0.5 shrink-0 text-gold" />
               <div>
                 <p className="font-body text-[12px] font-medium text-text-main">Rappel SMS</p>
-                <p className="font-body text-[11px] text-text-muted-brand">La veille de votre RDV</p>
+                <p className="font-body text-xs text-text-muted-brand">La veille de votre RDV</p>
               </div>
             </div>
           </div>
@@ -542,7 +628,7 @@ function PriseRDVContent() {
               placeholder="07 XX XX XX XX"
               className="w-full border border-border-brand bg-white px-4 py-3 font-body text-sm text-text-main outline-none transition-colors duration-300 placeholder:text-text-muted-brand/60 focus:border-gold"
             />
-            <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+            <p className="mt-1 font-body text-xs text-text-muted-brand">
               Vous recevrez un SMS de rappel la veille de votre rendez-vous.
             </p>
           </div>
@@ -574,13 +660,13 @@ function PriseRDVContent() {
             <div className="flex items-center justify-between">
               <span className="font-body text-sm text-text-mid">Acompte à payer</span>
               <span className="font-display text-2xl font-light text-gold">
-                {formatPrix(MONTANT_ACOMPTE)}
+                {formatPrix(montantAcompte)}
               </span>
             </div>
             <div className="mt-2 flex items-center justify-between border-t border-border-brand pt-2">
               <span className="font-body text-[12px] text-text-muted-brand">Reste à régler sur place</span>
               <span className="font-body text-sm text-text-mid">
-                {formatPrix(soinSelectionne.prix - MONTANT_ACOMPTE)}
+                {formatPrix(soinSelectionne.prix - montantAcompte)}
               </span>
             </div>
           </div>
@@ -594,22 +680,23 @@ function PriseRDVContent() {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
-              onClick={handleSkipAcompte}
-              className="font-body text-[11px] text-text-muted-brand underline transition-colors duration-300 hover:text-text-mid"
+              onClick={handleReserverSansAcompte}
+              disabled={loading}
+              className="font-body text-xs text-text-muted-brand underline transition-colors duration-300 hover:text-text-mid disabled:opacity-50"
             >
-              Continuer sans acompte
+              {loading ? "Réservation en cours…" : "Réserver sans payer l'acompte"}
             </button>
             <button
               onClick={handlePayerAcompte}
               disabled={!methode || loadingPaiement}
-              className="flex items-center gap-2 bg-gold px-7 py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 bg-gold px-7 py-3.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loadingPaiement ? (
                 <Loader2 size={16} className="animate-spin" />
               ) : (
                 <CreditCard size={16} />
               )}
-              {loadingPaiement ? "Paiement en cours…" : `Payer ${formatPrix(MONTANT_ACOMPTE)}`}
+              {loadingPaiement ? "Paiement en cours…" : `Payer ${formatPrix(montantAcompte)}`}
             </button>
           </div>
         </div>

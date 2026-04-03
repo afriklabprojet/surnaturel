@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Bot, Send, X, MessageCircle } from "lucide-react"
+import { toast } from "sonner"
 import Link from "next/link"
 import { formatPrix } from "@/lib/utils"
 
@@ -82,7 +83,7 @@ export default function ChatIA() {
           setMessages(prev => [...prev, { role: "bot", text: q[0].question }])
         }
       }
-    }).catch(() => {})
+    }).catch(() => toast.error("Impossible de charger l'assistant"))
   }, [open])
 
   function handleOption(value: string, label: string) {
@@ -138,7 +139,7 @@ export default function ChatIA() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[480px] w-[340px] flex-col border border-border-brand bg-white shadow-2xl sm:w-[380px]">
+        <div className="fixed bottom-24 right-4 z-50 flex h-[min(480px,70vh)] w-[min(340px,calc(100vw-2rem))] flex-col border border-border-brand bg-white shadow-2xl sm:right-6 sm:w-[380px]">
           {/* Header */}
           <div className="flex items-center justify-between bg-primary-brand px-4 py-3">
             <div className="flex items-center gap-2">
@@ -171,7 +172,7 @@ export default function ChatIA() {
                           className="block border border-gold/30 bg-white p-2 transition-colors hover:border-gold"
                         >
                           <p className="font-display text-[14px] text-text-main">{s.nom}</p>
-                          <p className="font-body text-[11px] text-gold">{formatPrix(s.prix)}</p>
+                          <p className="font-body text-xs text-gold">{formatPrix(s.prix)}</p>
                         </Link>
                       ))}
                     </div>
@@ -190,7 +191,7 @@ export default function ChatIA() {
                   <button
                     key={opt.value}
                     onClick={() => handleOption(opt.value, opt.label)}
-                    className="border border-border-brand px-3 py-1.5 font-body text-[11px] text-text-mid transition-colors hover:border-gold hover:text-gold"
+                    className="border border-border-brand px-3 py-1.5 font-body text-xs text-text-mid transition-colors hover:border-gold hover:text-gold"
                   >
                     {opt.label}
                   </button>
@@ -200,13 +201,13 @@ export default function ChatIA() {
               <div className="flex gap-2">
                 <Link
                   href="/prise-rdv"
-                  className="flex-1 bg-primary-brand py-2 text-center font-body text-[11px] uppercase tracking-wider text-white hover:bg-primary-dark transition-colors"
+                  className="flex-1 bg-primary-brand py-2 text-center font-body text-xs uppercase tracking-wider text-white hover:bg-primary-dark transition-colors"
                 >
                   Prendre RDV
                 </Link>
                 <button
                   onClick={restart}
-                  className="flex-1 border border-border-brand py-2 font-body text-[11px] uppercase tracking-wider text-text-mid hover:border-gold hover:text-gold transition-colors"
+                  className="flex-1 border border-border-brand py-2 font-body text-xs uppercase tracking-wider text-text-mid hover:border-gold hover:text-gold transition-colors"
                 >
                   Recommencer
                 </button>

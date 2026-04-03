@@ -92,11 +92,11 @@ export default function PageAdminBlocages() {
             <table className="w-full text-sm">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Bloqueur</th>
-                  <th className="text-center px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium"></th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Bloqué</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Date</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Bloqueur</th>
+                  <th className="text-center px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium"></th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Bloqué</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Date</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -107,7 +107,7 @@ export default function PageAdminBlocages() {
                         <Avatar user={b.bloqueur} />
                         <div>
                           <p className="font-body text-[13px] font-medium text-text-main">{b.bloqueur.prenom} {b.bloqueur.nom}</p>
-                          <p className="font-body text-[11px] text-text-muted-brand">{b.bloqueur.email}</p>
+                          <p className="font-body text-xs text-text-muted-brand">{b.bloqueur.email}</p>
                         </div>
                       </div>
                     </td>
@@ -119,7 +119,7 @@ export default function PageAdminBlocages() {
                         <Avatar user={b.bloque} />
                         <div>
                           <p className="font-body text-[13px] font-medium text-text-main">{b.bloque.prenom} {b.bloque.nom}</p>
-                          <p className="font-body text-[11px] text-text-muted-brand">{b.bloque.email}</p>
+                          <p className="font-body text-xs text-text-muted-brand">{b.bloque.email}</p>
                         </div>
                       </div>
                     </td>
@@ -130,7 +130,7 @@ export default function PageAdminBlocages() {
                       <button
                         onClick={() => handleDebloquer(b.id)}
                         disabled={actionLoading[b.id]}
-                        className="flex items-center gap-1 px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 px-2 py-1 font-body text-xs uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors disabled:opacity-50"
                       >
                         <Unlock size={12} /> Débloquer
                       </button>
@@ -151,11 +151,11 @@ export default function PageAdminBlocages() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>

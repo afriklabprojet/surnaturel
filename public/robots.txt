@@ -12,4 +12,4 @@ Disallow: /fidelite
 Disallow: /notifications
 Disallow: /parrainage
 
-Sitemap: https://surnaturel-de-dieu.vercel.app/sitemap.xml
+Sitemap: https://lesurnatureldedieu.com/sitemap.xml

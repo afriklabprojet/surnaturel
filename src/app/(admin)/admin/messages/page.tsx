@@ -1,256 +1,534 @@
 "use client"
 
-import { Suspense, useEffect, useState, useRef, useCallback } from "react"
+import { Suspense, useState, useEffect, useCallback, useRef } from "react"
+import { useSession } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
-import { Send, Search, MessageCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-interface Conversation {
-  interlocuteur: {
-    id: string
-    nom: string
-    prenom: string
-    photoUrl: string | null
-  }
-  dernierMessage: { contenu: string; createdAt: string; expediteurId: string }
-  nonLus: number
-}
-
-interface Message {
-  id: string
-  contenu: string
-  expediteurId: string
-  createdAt: string
-}
+import { Loader2, ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
+import ListeConversations from "@/components/messagerie/ListeConversations"
+import FenetreChat from "@/components/messagerie/FenetreChatLazy"
+import { usePusherChat } from "@/lib/hooks/use-pusher"
+import type { MessageData, Interlocuteur, Conversation } from "@/types/messages"
 
 export default function AdminMessagesPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-40"><div className="h-6 w-6 border-2 border-primary-brand border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-40"><Loader2 className="h-6 w-6 animate-spin text-gold" /></div>}>
       <AdminMessagesContent />
     </Suspense>
   )
 }
 
 function AdminMessagesContent() {
+  const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const preselectedClient = searchParams.get("client")
 
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(preselectedClient)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [search, setSearch] = useState("")
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [activeInterlocuteur, setActiveInterlocuteur] = useState<Interlocuteur | null>(null)
+  const [messages, setMessages] = useState<MessageData[]>([])
+  const [loadingConvs, setLoadingConvs] = useState(true)
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const [showChat, setShowChat] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [presenceEnLigne, setPresenceEnLigne] = useState(false)
+  const [derniereVueLe, setDerniereVueLe] = useState<string | null>(null)
+  const [ephemere, setEphemere] = useState(false)
 
+  const currentUserId = session?.user?.id ?? ""
+  const activeRef = useRef(activeInterlocuteur)
+  activeRef.current = activeInterlocuteur
+
+  // ── Pusher : écoute temps réel ──────────────────────────
+  const handleNouveauMessage = useCallback(
+    (msg: MessageData) => {
+      if (msg.expediteurId === currentUserId) return
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
+      updateConversationPreview(msg)
+      if (activeRef.current && msg.expediteurId === activeRef.current.id) {
+        fetch(`/api/messages/${activeRef.current.id}/lus`, { method: "PATCH" }).catch(() => {})
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentUserId]
+  )
+
+  const handleEcritureEnCours = useCallback((actif: boolean) => { setIsTyping(actif) }, [])
+
+  const handleReactionPusher = useCallback(
+    (data: { messageId: string; reactions: { type: string; count: number }[]; userId: string }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === data.messageId
+            ? { ...m, reactions: data.reactions.flatMap((r) => Array.from({ length: r.count }, () => ({ type: r.type, userId: "" }))) }
+            : m
+        )
+      )
+    },
+    []
+  )
+
+  const handleMessageLu = useCallback(() => {
+    setMessages((prev) => prev.map((m) => m.expediteurId === currentUserId ? { ...m, lu: true } : m))
+  }, [currentUserId])
+
+  const handleMessageSupprime = useCallback(({ messageId }: { messageId: string }) => {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId))
+  }, [])
+
+  const handleMessageModifie = useCallback(({ messageId, contenu, modifieLeAt }: { messageId: string; contenu: string; modifieLeAt: string }) => {
+    setMessages((prev) => prev.map((m) => m.id === messageId ? { ...m, contenu, modifie: true, modifieLeAt } : m))
+  }, [])
+
+  const handleMessageEpingle = useCallback(({ messageId, epingle }: { messageId: string; epingle: boolean; message: MessageData | null }) => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (epingle && m.id !== messageId) return { ...m, epingle: false }
+        if (m.id === messageId) return { ...m, epingle }
+        return m
+      })
+    )
+  }, [])
+
+  usePusherChat(
+    currentUserId,
+    activeInterlocuteur?.id ?? "",
+    handleNouveauMessage,
+    handleEcritureEnCours,
+    handleReactionPusher,
+    handleMessageLu,
+    handleMessageSupprime,
+    handleMessageModifie,
+    handleMessageEpingle
+  )
+
+  // ── Charger les conversations ───────────────────────────
   const fetchConversations = useCallback(async () => {
-    const res = await fetch("/api/messages/conversations")
-    if (res.ok) {
-      const data = await res.json()
-      setConversations(data.conversations)
-    }
-    setLoading(false)
+    try {
+      const res = await fetch("/api/messages/conversations")
+      if (res.ok) {
+        const data: { conversations: Conversation[] } = await res.json()
+        setConversations(
+          Array.from(new Map(data.conversations.map((c) => [c.interlocuteur.id, c])).values())
+        )
+      }
+    } catch { /* silently fail */ }
+    finally { setLoadingConvs(false) }
   }, [])
 
   useEffect(() => {
-    fetchConversations()
-    intervalRef.current = setInterval(fetchConversations, 5000)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [fetchConversations])
+    if (status === "authenticated") fetchConversations()
+  }, [status, fetchConversations])
 
-  const fetchMessages = useCallback(async (userId: string) => {
-    const res = await fetch(`/api/messages/${userId}?limit=100`)
-    if (res.ok) {
-      const data = await res.json()
-      setMessages(data.messages.reverse())
-    }
-    // mark as read
-    await fetch(`/api/messages/${userId}/lus`, { method: "PATCH" })
+  // ── Heartbeat présence ──────────────────────────────────
+  useEffect(() => {
+    if (status !== "authenticated") return
+    const ping = () => fetch("/api/presence", { method: "POST" }).catch(() => {})
+    ping()
+    const interval = setInterval(ping, 30_000)
+    return () => clearInterval(interval)
+  }, [status])
+
+  // ── Présence de l'interlocuteur ─────────────────────────
+  const fetchPresence = useCallback(async (userId: string) => {
+    try {
+      const res = await fetch(`/api/presence/${userId}`)
+      if (res.ok) {
+        const data: { enLigne: boolean; derniereVueLe: string | null } = await res.json()
+        setPresenceEnLigne(data.enLigne)
+        setDerniereVueLe(data.derniereVueLe)
+      }
+    } catch { /* silently fail */ }
   }, [])
 
+  // ── Auto-ouvrir conversation depuis ?client=userId ──────
   useEffect(() => {
-    if (selectedId) {
-      fetchMessages(selectedId)
-      const interval = setInterval(() => fetchMessages(selectedId), 3000)
-      return () => clearInterval(interval)
+    if (!preselectedClient || status !== "authenticated" || loadingConvs) return
+    const existing = conversations.find((c) => c.interlocuteur.id === preselectedClient)
+    if (existing) {
+      handleSelectConversation(existing.interlocuteur)
+    } else {
+      fetch(`/api/communaute/profil?userId=${preselectedClient}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data) {
+            handleNewConversation({ id: data.id, nom: data.nom, prenom: data.prenom, photoUrl: data.photoUrl })
+          }
+        })
+        .catch(() => toast.error("Impossible de charger ce profil"))
     }
-  }, [selectedId, fetchMessages])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectedClient, status, loadingConvs])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  // ── Charger les messages ────────────────────────────────
+  const fetchMessages = useCallback(async (userId: string, page = 1) => {
+    if (page === 1) setLoadingMessages(true)
+    else setLoadingMore(true)
+    try {
+      const res = await fetch(`/api/messages/${userId}?page=${page}&limit=50`)
+      if (res.ok) {
+        const data: { messages: MessageData[]; pagination: { page: number; pages: number } } = await res.json()
+        if (page === 1) setMessages(data.messages)
+        else setMessages((prev) => [...data.messages, ...prev])
+        setCurrentPage(page)
+        setHasMore(page < data.pagination.pages)
+      }
+    } catch { /* silently fail */ }
+    finally { setLoadingMessages(false); setLoadingMore(false) }
+  }, [])
 
-  const handleSend = async () => {
-    if (!input.trim() || !selectedId) return
-    setSending(true)
-    await fetch("/api/messages", {
+  const loadMoreMessages = useCallback(() => {
+    if (!activeInterlocuteur || loadingMore || !hasMore) return
+    fetchMessages(activeInterlocuteur.id, currentPage + 1)
+  }, [activeInterlocuteur, loadingMore, hasMore, currentPage, fetchMessages])
+
+  // ── Sélectionner une conversation ───────────────────────
+  function handleSelectConversation(interlocuteur: Interlocuteur) {
+    setActiveInterlocuteur(interlocuteur)
+    setIsTyping(false)
+    setShowChat(true)
+    setCurrentPage(1)
+    setHasMore(false)
+    setPresenceEnLigne(false)
+    setDerniereVueLe(null)
+    fetchMessages(interlocuteur.id, 1)
+    fetchPresence(interlocuteur.id)
+    setConversations((prev) => prev.map((c) => c.interlocuteur.id === interlocuteur.id ? { ...c, nonLus: 0 } : c))
+    fetch(`/api/messages/${interlocuteur.id}/lus`, { method: "PATCH" }).catch(() => {})
+  }
+
+  function handleNewConversation(interlocuteur: Interlocuteur) {
+    setActiveInterlocuteur(interlocuteur)
+    setMessages([])
+    setIsTyping(false)
+    setShowChat(true)
+  }
+
+  const tempIdCounter = useRef(0)
+
+  // ── Envoyer un message (optimistic) ─────────────────────
+  function handleSendMessage(contenu: string, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId, expediteurId: currentUserId, destinataireId: activeInterlocuteur.id,
+      contenu, type: "TEXTE", lu: false, createdAt: new Date().toISOString(),
+      replyTo: replyToId ? (() => { const m = messages.find((x) => x.id === replyToId); return m ? { id: replyToId, contenu: m.contenu, type: m.type, expediteur: m.expediteur } : null })() : null,
+      reactions: [],
+      expediteur: { id: currentUserId, nom: session.user.nom ?? "", prenom: session.user.prenom ?? "", photoUrl: session.user.photoUrl ?? null },
+      _optimistic: true, _status: "sending", _tempId: tempId,
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    fetch("/api/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destinataireId: activeInterlocuteur.id, contenu, ...(replyToId ? { replyToId } : {}), ...(ephemere ? { ephemere: true } : {}) }),
+    })
+      .then((res) => { if (!res.ok) throw new Error("send failed"); return res.json() })
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m))
+      })
+      .catch(() => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...m, _status: "error" as const } : m))
+      })
+  }
+
+  // ── Envoyer un vocal ────────────────────────────────────
+  function handleSendVocal(file: Blob, duree: number, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId, expediteurId: currentUserId, destinataireId: activeInterlocuteur.id,
+      contenu: "🎤 Envoi en cours…", type: "VOCAL", dureeSecondes: duree, lu: false, createdAt: new Date().toISOString(),
+      replyTo: null, reactions: [],
+      expediteur: { id: currentUserId, nom: session.user.nom ?? "", prenom: session.user.prenom ?? "", photoUrl: session.user.photoUrl ?? null },
+      _optimistic: true, _status: "sending", _tempId: tempId,
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    const formData = new FormData()
+    formData.append("audio", file, "vocal.webm")
+    formData.append("destinataireId", activeInterlocuteur.id)
+    formData.append("dureeSecondes", String(duree))
+    if (replyToId) formData.append("replyToId", replyToId)
+
+    fetch("/api/messages/vocal", { method: "POST", body: formData })
+      .then((res) => { if (!res.ok) throw new Error("send failed"); return res.json() })
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m))
+      })
+      .catch(() => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...m, _status: "error" as const, contenu: "🎤 Message vocal" } : m))
+      })
+  }
+
+  // ── Envoyer une image ───────────────────────────────────
+  function handleSendImage(file: File, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const objectUrl = URL.createObjectURL(file)
+    const optimisticMsg: MessageData = {
+      id: tempId, expediteurId: currentUserId, destinataireId: activeInterlocuteur.id,
+      contenu: objectUrl, type: "MEDIA", lu: false, createdAt: new Date().toISOString(),
+      replyTo: null, reactions: [],
+      expediteur: { id: currentUserId, nom: session.user.nom ?? "", prenom: session.user.prenom ?? "", photoUrl: session.user.photoUrl ?? null },
+      _optimistic: true, _status: "sending", _tempId: tempId,
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    const formData = new FormData()
+    formData.append("image", file)
+    formData.append("destinataireId", activeInterlocuteur.id)
+    if (replyToId) formData.append("replyToId", replyToId)
+    if (ephemere) formData.append("ephemere", "true")
+
+    fetch("/api/messages/image", { method: "POST", body: formData })
+      .then((res) => { if (!res.ok) throw new Error("send failed"); return res.json() })
+      .then((data: { message: MessageData }) => {
+        URL.revokeObjectURL(objectUrl)
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m))
+      })
+      .catch(() => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...m, _status: "error" as const } : m))
+      })
+  }
+
+  // ── Envoyer un fichier ──────────────────────────────────
+  function handleSendFile(file: File, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId, expediteurId: currentUserId, destinataireId: activeInterlocuteur.id,
+      contenu: `[fichier] ${file.name}|${file.size}|`, type: "FICHIER", lu: false, createdAt: new Date().toISOString(),
+      replyTo: null, reactions: [],
+      expediteur: { id: currentUserId, nom: session.user.nom ?? "", prenom: session.user.prenom ?? "", photoUrl: session.user.photoUrl ?? null },
+      _optimistic: true, _status: "sending", _tempId: tempId,
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+    updateConversationPreview(optimisticMsg)
+
+    const formData = new FormData()
+    formData.append("fichier", file)
+    formData.append("destinataireId", activeInterlocuteur.id)
+    if (replyToId) formData.append("replyToId", replyToId)
+
+    fetch("/api/messages/fichier", { method: "POST", body: formData })
+      .then((res) => { if (!res.ok) throw new Error("send failed"); return res.json() })
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m))
+      })
+      .catch(() => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...m, _status: "error" as const } : m))
+      })
+  }
+
+  // ── Message programmé ───────────────────────────────────
+  function handleScheduleMessage(contenu: string, programmeA: Date, replyToId?: string) {
+    if (!activeInterlocuteur || !session?.user) return
+    const tempId = `_temp_${++tempIdCounter.current}_${Date.now()}`
+    const optimisticMsg: MessageData = {
+      id: tempId, expediteurId: currentUserId, destinataireId: activeInterlocuteur.id,
+      contenu, type: "TEXTE", lu: false, createdAt: new Date().toISOString(),
+      replyTo: null, reactions: [], programmeA: programmeA.toISOString(), programmeEnvoye: false,
+      expediteur: { id: currentUserId, nom: session.user.nom ?? "", prenom: session.user.prenom ?? "", photoUrl: session.user.photoUrl ?? null },
+      _optimistic: true, _status: "sending", _tempId: tempId,
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+
+    fetch("/api/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destinataireId: activeInterlocuteur.id, contenu, ...(replyToId ? { replyToId } : {}), programmeA: programmeA.toISOString() }),
+    })
+      .then((res) => { if (!res.ok) throw new Error("send failed"); return res.json() })
+      .then((data: { message: MessageData }) => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...data.message, _status: "sent" as const } : m))
+      })
+      .catch(() => {
+        setMessages((prev) => prev.map((m) => m._tempId === tempId ? { ...m, _status: "error" as const } : m))
+      })
+  }
+
+  // ── Supprimer ───────────────────────────────────────────
+  function handleSupprimerMessage(messageId: string) {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId))
+    fetch(`/api/messages/message/${messageId}`, { method: "DELETE" })
+      .then((res) => { if (!res.ok && activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1) })
+      .catch(() => { if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1) })
+  }
+
+  // ── Modifier ────────────────────────────────────────────
+  function handleEditMessage(messageId: string, nouveauContenu: string) {
+    setMessages((prev) => prev.map((m) => m.id === messageId ? { ...m, contenu: nouveauContenu, modifie: true, modifieLeAt: new Date().toISOString() } : m))
+    fetch(`/api/messages/message/${messageId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "edit", contenu: nouveauContenu }) })
+      .then((res) => { if (!res.ok && activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1) })
+      .catch(() => { if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1) })
+  }
+
+  // ── Épingler ────────────────────────────────────────────
+  function handlePinMessage(messageId: string, nouvelEtat: boolean) {
+    setMessages((prev) => prev.map((m) => {
+      if (nouvelEtat && m.id !== messageId) return { ...m, epingle: false }
+      if (m.id === messageId) return { ...m, epingle: nouvelEtat }
+      return m
+    }))
+    fetch(`/api/messages/message/${messageId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: nouvelEtat ? "pin" : "unpin" }) })
+      .then((res) => { if (!res.ok && activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1) })
+      .catch(() => { if (activeInterlocuteur) fetchMessages(activeInterlocuteur.id, 1) })
+  }
+
+  // ── Transférer ──────────────────────────────────────────
+  function handleForwardMessage(contenu: string, type: string, contactId: string) {
+    if (!contactId) return
+    if (contactId === activeInterlocuteur?.id) {
+      if (type === "TEXTE") handleSendMessage(contenu)
+      return
+    }
+    if (type !== "TEXTE") return
+    fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destinataireId: selectedId, contenu: input.trim() }),
+      body: JSON.stringify({ destinataireId: contactId, contenu }),
+    }).catch(() => {})
+  }
+
+  // ── Réagir ──────────────────────────────────────────────
+  function handleReaction(messageId: string, type: string) {
+    if (!activeInterlocuteur) return
+    fetch(`/api/messages/${activeInterlocuteur.id}/reaction`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId, type }),
     })
-    setInput("")
-    setSending(false)
-    fetchMessages(selectedId)
-    fetchConversations()
+      .then((res) => res.json())
+      .then((data: { reactions: { type: string; count: number }[] }) => {
+        setMessages((prev) => prev.map((m) =>
+          m.id === messageId
+            ? { ...m, reactions: data.reactions.flatMap((r) => Array.from({ length: r.count }, () => ({ type: r.type, userId: "" }))) }
+            : m
+        ))
+      })
+      .catch(() => toast.error("Erreur lors de l'ajout de la réaction"))
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+  // ── Renvoyer un message échoué ──────────────────────────
+  function handleRetry(tempId: string) {
+    const failedMsg = messages.find((m) => m._tempId === tempId)
+    if (!failedMsg || !activeInterlocuteur) return
+    setMessages((prev) => prev.filter((m) => m._tempId !== tempId))
+    if (failedMsg.type === "VOCAL") return
+    handleSendMessage(failedMsg.contenu, failedMsg.replyTo?.id)
+  }
+
+  // ── Mettre à jour l'aperçu de conversation ─────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  function updateConversationPreview(msg: MessageData) {
+    const interlocuteurId = msg.expediteurId === currentUserId ? msg.destinataireId : msg.expediteurId
+    setConversations((prev) => {
+      const exists = prev.find((c) => c.interlocuteur.id === interlocuteurId)
+      if (exists) {
+        const updated = prev.map((c) =>
+          c.interlocuteur.id === interlocuteurId
+            ? { ...c, dernierMessage: { contenu: msg.contenu, createdAt: msg.createdAt, expediteurId: msg.expediteurId }, nonLus: msg.expediteurId !== currentUserId && activeRef.current?.id !== interlocuteurId ? c.nonLus + 1 : c.nonLus }
+            : c
+        )
+        return updated.sort((a, b) => new Date(b.dernierMessage.createdAt).getTime() - new Date(a.dernierMessage.createdAt).getTime())
+      }
+      const interlocuteurInfo = msg.expediteurId === currentUserId
+        ? (activeRef.current ?? { id: interlocuteurId, nom: "", prenom: "", photoUrl: null })
+        : msg.expediteur
+      return Array.from(new Map([{ interlocuteur: interlocuteurInfo, dernierMessage: { contenu: msg.contenu, createdAt: msg.createdAt, expediteurId: msg.expediteurId }, nonLus: activeRef.current?.id === interlocuteurId ? 0 : 1 }, ...prev].map((c) => [c.interlocuteur.id, c])).values())
+    })
+  }
+
+  // ── Indicateur écriture ─────────────────────────────────
+  const typingDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastTypingSentRef = useRef(false)
+
+  function handleTyping(enCours: boolean) {
+    if (!activeInterlocuteur) return
+    if (enCours === lastTypingSentRef.current && enCours) return
+    if (!enCours) {
+      if (typingDebounceRef.current) clearTimeout(typingDebounceRef.current)
+      lastTypingSentRef.current = false
+      fetch("/api/messages/ecriture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ destinataireId: activeInterlocuteur.id, actif: false }) }).catch(() => {})
+      return
     }
+    if (typingDebounceRef.current) return
+    lastTypingSentRef.current = true
+    fetch("/api/messages/ecriture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ destinataireId: activeInterlocuteur.id, actif: true }) }).catch(() => {})
+    typingDebounceRef.current = setTimeout(() => { typingDebounceRef.current = null }, 3000)
   }
 
-  const selectedConv = conversations.find((c) => c.interlocuteur.id === selectedId)
-  const filtered = search
-    ? conversations.filter((c) =>
-        `${c.interlocuteur.prenom} ${c.interlocuteur.nom}`.toLowerCase().includes(search.toLowerCase())
-      )
-    : conversations
-
-  const initials = (c: Conversation["interlocuteur"]) =>
-    `${c.prenom?.[0] || ""}${c.nom?.[0] || ""}`.toUpperCase()
+  if (status === "loading" || loadingConvs) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 size={28} className="animate-spin text-gold" />
+      </div>
+    )
+  }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] border border-border-brand bg-white overflow-hidden">
-      {/* Conversations list */}
-      <div className="w-80 border-r border-border-brand flex flex-col">
-        <div className="p-3 border-b border-border-brand">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Rechercher…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-border-brand text-sm font-body focus:outline-none focus:border-primary-brand"
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="h-5 w-5 border-3 border-primary-brand border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <p className="text-center text-sm text-gray-500 font-body py-8">Aucune conversation</p>
-          ) : (
-            filtered.map((conv) => (
-              <button
-                key={conv.interlocuteur.id}
-                onClick={() => setSelectedId(conv.interlocuteur.id)}
-                className={cn(
-                  "w-full text-left px-4 py-3 border-b border-border-brand hover:bg-bg-page transition-colors",
-                  selectedId === conv.interlocuteur.id && "bg-bg-page"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  {conv.interlocuteur.photoUrl ? (
-                    <img src={conv.interlocuteur.photoUrl} alt="" className="h-9 w-9 rounded-full object-cover" />
-                  ) : (
-                    <div className="h-9 w-9 rounded-full bg-primary-brand/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-primary-brand font-body">{initials(conv.interlocuteur)}</span>
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-text-main font-body truncate">
-                        {conv.interlocuteur.prenom} {conv.interlocuteur.nom}
-                      </span>
-                      {conv.nonLus > 0 && (
-                        <span className="bg-primary-brand text-white text-[10px] h-5 min-w-[20px] flex items-center justify-center rounded-full font-body">
-                          {conv.nonLus}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500 truncate font-body mt-0.5">
-                      {conv.dernierMessage.contenu}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
+    <div className="flex border border-border-brand bg-white overflow-hidden" style={{ height: "calc(100dvh - 120px)" }}>
+      {/* Liste des conversations */}
+      <div className={`w-full border-r border-border-brand md:w-80 md:shrink-0 ${showChat ? "hidden md:flex md:flex-col" : "flex flex-col"}`}>
+        <ListeConversations
+          conversations={conversations}
+          activeUserId={activeInterlocuteur?.id ?? null}
+          currentUserId={currentUserId}
+          onSelect={handleSelectConversation}
+          onNewConversation={handleNewConversation}
+        />
       </div>
 
-      {/* Chat window */}
-      <div className="flex-1 flex flex-col">
-        {selectedId && selectedConv ? (
-          <>
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-border-brand flex items-center gap-3">
-              {selectedConv.interlocuteur.photoUrl ? (
-                <img src={selectedConv.interlocuteur.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-primary-brand/10 flex items-center justify-center">
-                  <span className="text-xs font-medium text-primary-brand font-body">{initials(selectedConv.interlocuteur)}</span>
-                </div>
-              )}
-              <div>
-                <p className="text-sm font-medium text-text-main font-body">
-                  {selectedConv.interlocuteur.prenom} {selectedConv.interlocuteur.nom}
-                </p>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.map((msg) => {
-                const isMe = msg.expediteurId !== selectedId
-                return (
-                  <div key={msg.id} className={cn("flex", isMe ? "justify-end" : "justify-start")}>
-                    <div
-                      className={cn(
-                        "max-w-[70%] px-3 py-2 text-sm font-body",
-                        isMe
-                          ? "bg-primary-brand text-white"
-                          : "bg-bg-page text-text-main border border-border-brand"
-                      )}
-                    >
-                      <p className="whitespace-pre-wrap">{msg.contenu}</p>
-                      <p className={cn("text-[10px] mt-1", isMe ? "text-white/70" : "text-gray-500")}>
-                        {new Date(msg.createdAt).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="p-3 border-t border-border-brand">
-              <div className="flex items-end gap-2">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Écrire un message…"
-                  rows={1}
-                  className="flex-1 border border-border-brand px-3 py-2 text-sm font-body resize-none focus:outline-none focus:border-primary-brand max-h-24"
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={sending || !input.trim()}
-                  className="p-2 bg-primary-brand text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <MessageCircle className="h-12 w-12 text-border-brand mx-auto mb-3" />
-              <p className="text-sm text-gray-500 font-body">Sélectionnez une conversation</p>
-            </div>
+      {/* Fenêtre de chat */}
+      <div className={`flex-1 ${showChat ? "flex flex-col" : "hidden md:flex md:flex-col"}`}>
+        {showChat && (
+          <div className="border-b border-border-brand bg-white px-5 py-2.5 md:hidden">
+            <button
+              onClick={() => setShowChat(false)}
+              className="flex items-center gap-1.5 font-body text-[12px] font-medium text-gold transition-colors duration-200 hover:text-primary-brand"
+            >
+              <ArrowLeft size={14} />
+              Conversations
+            </button>
           </div>
         )}
+        <div className="flex-1">
+          <FenetreChat
+            interlocuteur={activeInterlocuteur}
+            currentUserId={currentUserId}
+            messages={messages}
+            isTyping={isTyping}
+            onSendMessage={handleSendMessage}
+            onSendVocal={handleSendVocal}
+            onReaction={handleReaction}
+            onTyping={handleTyping}
+            onRetry={handleRetry}
+            onDelete={handleSupprimerMessage}
+            onEdit={handleEditMessage}
+            onPin={handlePinMessage}
+            onForward={handleForwardMessage}
+            onSendImage={handleSendImage}
+            onSendFile={handleSendFile}
+            onSchedule={handleScheduleMessage}
+            onLoadMore={loadMoreMessages}
+            hasMore={hasMore}
+            loadingMore={loadingMore}
+            loading={loadingMessages}
+            presenceEnLigne={presenceEnLigne}
+            derniereVueLe={derniereVueLe}
+            ephemere={ephemere}
+            onToggleEphemere={() => setEphemere((v) => !v)}
+            contacts={conversations.map((c) => c.interlocuteur).filter((c) => c.id !== activeInterlocuteur?.id)}
+          />
+        </div>
       </div>
     </div>
   )

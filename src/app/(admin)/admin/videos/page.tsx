@@ -228,7 +228,7 @@ export default function PageAdminVideos() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
         >
           <Plus size={16} />
           Ajouter une vidéo
@@ -344,16 +344,19 @@ export default function PageAdminVideos() {
 
             <div className="sm:col-span-2">
               <label className="mb-2 block font-body text-[13px] text-text-mid">
-                URL vidéo (YouTube, Vimeo...) <span className="text-red-500">*</span>
+                URL vidéo (YouTube, Cloudinary ou lien direct) <span className="text-red-500">*</span>
               </label>
               <input
                 type="url"
                 value={form.videoUrl}
                 onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder="https://www.youtube.com/watch?v=... ou URL Cloudinary"
                 className="w-full border border-border-brand px-4 py-3 font-body text-[14px] focus:border-primary-brand focus:outline-none"
                 required
               />
+              <p className="mt-1 font-body text-[11px] text-text-muted-brand">
+                Les vidéos envoyées par les clientes apparaissent automatiquement ici
+              </p>
             </div>
 
             <div className="sm:col-span-2">
@@ -434,14 +437,14 @@ export default function PageAdminVideos() {
             <div className="flex gap-4 sm:col-span-2">
               <button
                 type="submit"
-                className="bg-primary-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+                className="bg-primary-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
               >
                 {editingId ? "Modifier" : "Ajouter"}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="border border-border-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
+                className="border border-border-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
               >
                 Annuler
               </button>
@@ -511,7 +514,7 @@ export default function PageAdminVideos() {
                   </div>
                   {/* Duration */}
                   {v.duree && (
-                    <span className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 font-body text-[11px] text-white">
+                    <span className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 font-body text-xs text-white">
                       {formatDuration(v.duree)}
                     </span>
                   )}
@@ -534,7 +537,7 @@ export default function PageAdminVideos() {
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => editVideo(v)}
-                      className="flex flex-1 items-center justify-center gap-2 border border-border-brand py-2 font-body text-[11px] uppercase tracking-wider text-text-mid transition-colors hover:bg-gray-50"
+                      className="flex flex-1 items-center justify-center gap-2 border border-border-brand py-2 font-body text-xs uppercase tracking-wider text-text-mid transition-colors hover:bg-gray-50"
                     >
                       <Pencil size={14} />
                       Modifier
@@ -591,12 +594,21 @@ export default function PageAdminVideos() {
             className="aspect-video w-full max-w-4xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <iframe
-              src={previewUrl.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")}
-              className="h-full w-full"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            />
+            {previewUrl.includes("cloudinary.com") && previewUrl.includes("/video/") ? (
+              <video
+                src={previewUrl}
+                className="h-full w-full"
+                controls
+                autoPlay
+              />
+            ) : (
+              <iframe
+                src={previewUrl.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")}
+                className="h-full w-full"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            )}
           </div>
         </div>
       )}

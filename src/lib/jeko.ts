@@ -23,17 +23,23 @@ export async function creerPaiement(params: {
   montantFCFA: number
   methodePaiement: JekoPaymentMethod
   storeId: string
+  successUrl?: string
+  errorUrl?: string
 }): Promise<{ redirectUrl: string; paiementId: string }> {
   const reference = `CMD-${params.commandeId}-${Date.now()}`
 
-  // Déterminer les URLs de retour selon le type (commande ou RDV)
+  // URLs de retour : custom si fournies, sinon déterminées par le type de commandeId
   const isRDV = params.commandeId.startsWith("c") && !params.commandeId.includes("CMD")
-  const successUrl = isRDV
-    ? `${process.env.NEXTAUTH_URL}/api/rdv/acompte/confirmer?reference=${encodeURIComponent(reference)}&rdv=${encodeURIComponent(params.commandeId)}`
-    : `${process.env.NEXTAUTH_URL}/commandes/succes?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`
-  const errorUrl = isRDV
-    ? `${process.env.NEXTAUTH_URL}/mes-rdv?erreur=paiement&rdv=${encodeURIComponent(params.commandeId)}`
-    : `${process.env.NEXTAUTH_URL}/commandes/erreur?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`
+  const resolvedSuccessUrl =
+    params.successUrl ??
+    (isRDV
+      ? `${process.env.NEXTAUTH_URL}/api/rdv/acompte/confirmer?reference=${encodeURIComponent(reference)}&rdv=${encodeURIComponent(params.commandeId)}`
+      : `${process.env.NEXTAUTH_URL}/commandes/succes?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`)
+  const resolvedErrorUrl =
+    params.errorUrl ??
+    (isRDV
+      ? `${process.env.NEXTAUTH_URL}/mes-rdv?erreur=paiement&rdv=${encodeURIComponent(params.commandeId)}`
+      : `${process.env.NEXTAUTH_URL}/commandes/erreur?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`)
 
   const body = {
     storeId: params.storeId,
@@ -44,8 +50,8 @@ export async function creerPaiement(params: {
       type: "redirect",
       data: {
         paymentMethod: params.methodePaiement,
-        successUrl,
-        errorUrl,
+        successUrl: resolvedSuccessUrl,
+        errorUrl: resolvedErrorUrl,
       },
     },
   }

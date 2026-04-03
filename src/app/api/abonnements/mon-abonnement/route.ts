@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -64,7 +65,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error("Erreur mon abonnement:", error)
+    logger.error("Erreur mon abonnement:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -127,7 +128,7 @@ export async function PATCH(request: Request) {
       statut: updated.statut,
     })
   } catch (error) {
-    console.error("Erreur modification abonnement:", error)
+    logger.error("Erreur modification abonnement:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -164,7 +165,7 @@ export async function DELETE() {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur annulation abonnement:", error)
+    logger.error("Erreur annulation abonnement:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

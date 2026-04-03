@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest) {
       })),
     })
   } catch (e) {
-    console.error("[admin/communaute/stats] Erreur:", e)
+    logger.error("[admin/communaute/stats] Erreur:", e)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

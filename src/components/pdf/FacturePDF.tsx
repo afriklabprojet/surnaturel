@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer"
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider"
 
 // Enregistrer les polices (fallback sur Helvetica pour PDF)
 Font.register({
@@ -241,6 +242,7 @@ interface FacturePDFProps {
 }
 
 export default function FacturePDF({ data }: FacturePDFProps) {
+  const config = useSiteConfig()
   const formatPrix = (prix: number) =>
     prix.toLocaleString("fr") + " FCFA"
 
@@ -250,7 +252,7 @@ export default function FacturePDF({ data }: FacturePDFProps) {
         {/* En-tête */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.logo}>Le Surnaturel de Dieu</Text>
+            <Text style={styles.logo}>{config.nomCentre}</Text>
             <Text style={styles.logoSub}>Institut de beauté</Text>
           </View>
           <View style={styles.factureInfo}>
@@ -264,10 +266,10 @@ export default function FacturePDF({ data }: FacturePDFProps) {
         <View style={styles.parties}>
           <View style={styles.partyBox}>
             <Text style={styles.partyTitle}>Émetteur</Text>
-            <Text style={styles.partyName}>Le Surnaturel de Dieu</Text>
-            <Text style={styles.partyLine}>Abidjan, Côte d&apos;Ivoire</Text>
-            <Text style={styles.partyLine}>contact@surnatureldedieu.com</Text>
-            <Text style={styles.partyLine}>+225 XX XX XX XX</Text>
+            <Text style={styles.partyName}>{config.nomCentre}</Text>
+            <Text style={styles.partyLine}>{config.ville}, {config.pays}</Text>
+            <Text style={styles.partyLine}>{config.email}</Text>
+            <Text style={styles.partyLine}>{config.telephone}</Text>
           </View>
           <View style={styles.partyBox}>
             <Text style={styles.partyTitle}>Client</Text>
@@ -366,7 +368,7 @@ export default function FacturePDF({ data }: FacturePDFProps) {
         {/* Pied de page */}
         <View style={styles.footer}>
           <Text style={styles.footerLine}>
-            Le Surnaturel de Dieu - Institut de beauté
+            {config.nomCentre} - Institut de beauté
           </Text>
           <Text style={styles.footerLine}>
             Merci pour votre confiance !

@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -79,7 +80,7 @@ export async function GET(
       similaires: [...similaires, ...autresSoins],
     })
   } catch (error) {
-    console.error("Erreur API soin:", error)
+    logger.error("Erreur API soin:", error)
     return NextResponse.json({ error: "Erreur lors de la récupération du soin" }, { status: 500 })
   }
 }

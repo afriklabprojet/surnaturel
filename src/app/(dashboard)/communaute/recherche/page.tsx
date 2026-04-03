@@ -130,7 +130,7 @@ function RechercheContent() {
             className="w-full pl-10 pr-3 py-3 border border-border-brand bg-white font-body text-[13px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none transition-colors"
           />
         </div>
-        <button type="submit" disabled={loading || query.trim().length < 2} className="px-5 py-3 bg-primary-brand text-white font-body text-[11px] font-medium uppercase tracking-wider hover:bg-primary-dark transition-colors disabled:opacity-40">
+        <button type="submit" disabled={loading || query.trim().length < 2} className="px-5 py-3 bg-primary-brand text-white font-body text-xs font-medium uppercase tracking-wider hover:bg-primary-dark transition-colors disabled:opacity-40">
           {loading ? <Loader2 size={14} className="animate-spin" /> : "Rechercher"}
         </button>
       </form>
@@ -143,7 +143,7 @@ function RechercheContent() {
             <button
               key={t.key}
               onClick={() => { setType(t.key); if (searched) handleSearch() }}
-              className={`flex items-center gap-1 px-3 py-1.5 font-body text-[10px] font-medium uppercase tracking-wider whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1 px-3 py-1.5 font-body text-xs font-medium uppercase tracking-wider whitespace-nowrap transition-colors ${
                 type === t.key
                   ? "bg-primary-brand text-white"
                   : "bg-white border border-border-brand text-text-muted-brand hover:border-gold hover:text-gold"
@@ -168,14 +168,14 @@ function RechercheContent() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Search size={32} className="text-text-muted-brand/30 mb-3" />
           <p className="font-display text-[16px] font-light text-text-main">Aucun résultat</p>
-          <p className="font-body text-[11px] text-text-muted-brand mt-1">Essayez avec d&apos;autres mots-clés</p>
+          <p className="font-body text-xs text-text-muted-brand mt-1">Essayez avec d&apos;autres mots-clés</p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Membres */}
           {results.membres && results.membres.length > 0 && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
                 <Users size={13} />
                 Membres ({results.membres.length})
               </h3>
@@ -188,7 +188,7 @@ function RechercheContent() {
                         {m.prenom} {m.nom}
                         {m.pseudo && <span className="text-text-muted-brand font-normal ml-1">@{m.pseudo}</span>}
                       </p>
-                      {m.bio && <p className="font-body text-[10px] text-text-mid line-clamp-1">{m.bio}</p>}
+                      {m.bio && <p className="font-body text-xs text-text-mid line-clamp-1">{m.bio}</p>}
                     </div>
                     {m.role === "PRO_SANTE" && (
                       <span className="px-2 py-0.5 bg-primary-light font-body text-[9px] font-medium text-primary-brand uppercase tracking-wider rounded-full">Pro santé</span>
@@ -202,7 +202,7 @@ function RechercheContent() {
           {/* Groupes */}
           {results.groupes && results.groupes.length > 0 && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
                 <UsersRound size={13} />
                 Groupes ({results.groupes.length})
               </h3>
@@ -214,9 +214,9 @@ function RechercheContent() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-body text-[12px] font-medium text-text-main truncate">{g.nom}</p>
-                      {g.description && <p className="font-body text-[10px] text-text-mid line-clamp-1">{g.description}</p>}
+                      {g.description && <p className="font-body text-xs text-text-mid line-clamp-1">{g.description}</p>}
                     </div>
-                    <span className="font-body text-[10px] text-text-muted-brand shrink-0">{g.membresCount} mbr</span>
+                    <span className="font-body text-xs text-text-muted-brand shrink-0">{g.membresCount} mbr</span>
                   </Link>
                 ))}
               </div>
@@ -226,7 +226,7 @@ function RechercheContent() {
           {/* Posts */}
           {results.posts && results.posts.length > 0 && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
                 <FileText size={13} />
                 Publications ({results.posts.length})
               </h3>
@@ -235,7 +235,7 @@ function RechercheContent() {
                   <div key={p.id} className="bg-white border border-border-brand p-3">
                     <div className="flex items-center gap-2 mb-1.5">
                       <Avatar user={p.auteur} size={24} />
-                      <Link href={`/communaute/profil/${p.auteur.id}`} className="font-body text-[11px] font-medium text-text-main hover:text-gold transition-colors">{p.auteur.prenom} {p.auteur.nom}</Link>
+                      <Link href={`/communaute/profil/${p.auteur.id}`} className="font-body text-xs font-medium text-text-main hover:text-gold transition-colors">{p.auteur.prenom} {p.auteur.nom}</Link>
                       <span className="font-body text-[9px] text-text-muted-brand">{timeAgo(p.createdAt)}</span>
                     </div>
                     <p className="font-body text-[12px] text-text-mid line-clamp-3">{p.contenu}</p>
@@ -252,7 +252,7 @@ function RechercheContent() {
           {/* Hashtags */}
           {results.hashtags && results.hashtags.length > 0 && (
             <div>
-              <h3 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
+              <h3 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-2 flex items-center gap-1.5">
                 <Hash size={13} />
                 Publications avec hashtag ({results.hashtags.length})
               </h3>
@@ -261,7 +261,7 @@ function RechercheContent() {
                   <div key={p.id} className="bg-white border border-border-brand p-3">
                     <div className="flex items-center gap-2 mb-1.5">
                       <Avatar user={p.auteur} size={24} />
-                      <span className="font-body text-[11px] font-medium text-text-main">{p.auteur.prenom} {p.auteur.nom}</span>
+                      <span className="font-body text-xs font-medium text-text-main">{p.auteur.prenom} {p.auteur.nom}</span>
                       <span className="font-body text-[9px] text-text-muted-brand">{timeAgo(p.createdAt)}</span>
                     </div>
                     <p className="font-body text-[12px] text-text-mid line-clamp-3">{p.contenu}</p>

@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 const updateGalerieSchema = z.object({
   titre: z.string().min(1).optional(),
@@ -45,7 +46,7 @@ export async function GET(
 
     return NextResponse.json(photo)
   } catch (error) {
-    console.error("Erreur récupération photo:", error)
+    logger.error("Erreur récupération photo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -87,7 +88,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, photo })
   } catch (error) {
-    console.error("Erreur mise à jour photo:", error)
+    logger.error("Erreur mise à jour photo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -117,7 +118,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur suppression photo:", error)
+    logger.error("Erreur suppression photo:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

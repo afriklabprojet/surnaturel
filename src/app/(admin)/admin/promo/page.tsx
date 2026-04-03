@@ -293,7 +293,7 @@ export default function PageAdminPromo() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
         >
           <Plus size={16} />
           Nouveau code
@@ -468,7 +468,7 @@ export default function PageAdminPromo() {
                       min="0"
                       className="w-full border border-border-brand px-4 py-3 font-body text-[14px] focus:border-primary-brand focus:outline-none"
                     />
-                    <p className="mt-1 text-[11px] text-text-muted-brand">
+                    <p className="mt-1 text-xs text-text-muted-brand">
                       Limite la réduction même si le % donnerait plus
                     </p>
                   </div>
@@ -487,7 +487,7 @@ export default function PageAdminPromo() {
                         <Gift size={16} className="text-gold" />
                         Première commande uniquement
                       </span>
-                      <p className="text-[11px] text-text-muted-brand">
+                      <p className="text-xs text-text-muted-brand">
                         Valide uniquement pour les clients n'ayant jamais commandé
                       </p>
                     </div>
@@ -505,7 +505,7 @@ export default function PageAdminPromo() {
                         <Star size={16} className="text-gold" />
                         Nouveaux clients (&lt; 30 jours)
                       </span>
-                      <p className="text-[11px] text-text-muted-brand">
+                      <p className="text-xs text-text-muted-brand">
                         Réservé aux clients inscrits depuis moins de 30 jours
                       </p>
                     </div>
@@ -522,7 +522,7 @@ export default function PageAdminPromo() {
                       <span className="font-body text-[14px] text-text-main">
                         Cumulable avec d'autres codes
                       </span>
-                      <p className="text-[11px] text-text-muted-brand">
+                      <p className="text-xs text-text-muted-brand">
                         Peut être combiné avec d'autres codes promo
                       </p>
                     </div>
@@ -548,14 +548,14 @@ export default function PageAdminPromo() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                className="bg-primary-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+                className="bg-primary-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
               >
                 {editingId ? "Modifier" : "Créer"}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="border border-border-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
+                className="border border-border-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
               >
                 Annuler
               </button>
@@ -579,26 +579,73 @@ export default function PageAdminPromo() {
           </button>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+          {/* Mobile Cards */}
+          <div className="space-y-3 md:hidden">
+            {codes.map((code) => {
+              const statut = getStatut(code)
+              return (
+                <div key={code.id} className="border border-border-brand bg-white p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-medium text-primary-brand">{code.code}</span>
+                      <button onClick={() => copyCode(code.code)} className="text-text-muted-brand">
+                        {copiedCode === code.code ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleToggleActif(code.id, code.actif)}
+                      className={`text-xs font-medium ${statut.color}`}
+                    >
+                      {statut.label}
+                    </button>
+                  </div>
+                  {code.description && (
+                    <p className="mt-1 text-xs text-text-muted-brand">{code.description}</p>
+                  )}
+                  <div className="mt-3 flex items-center gap-4">
+                    <span className="inline-flex items-center gap-1 font-medium text-gold">
+                      {code.type === "MONTANT_FIXE" ? formatReduction(code) : <><Percent size={14} />{code.valeur || code.pourcentage}%</>}
+                    </span>
+                    {code.usageMax && (
+                      <span className="flex items-center gap-1 text-xs text-text-mid"><Users size={12} />{code.usageActuel}/{code.usageMax}</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {code.premiereCommande && <span className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700"><Gift size={10} />1ère</span>}
+                    {code.nouveauxClients && <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700"><Star size={10} />Nouveaux</span>}
+                    {code.cumulable && <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">Cumulable</span>}
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 border-t border-border-brand pt-3">
+                    <button onClick={() => editCode(code)} className="flex-1 py-2 text-xs font-medium uppercase tracking-widest bg-primary-brand text-white">Modifier</button>
+                    <button onClick={() => handleDelete(code.id, code.code)} className="p-2 text-red-600 hover:bg-red-50"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-border-brand">
-                <th className="p-4 text-left font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+                <th className="p-4 text-left font-body text-xs uppercase tracking-wider text-text-muted-brand">
                   Code
                 </th>
-                <th className="p-4 text-left font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+                <th className="p-4 text-left font-body text-xs uppercase tracking-wider text-text-muted-brand">
                   Réduction
                 </th>
-                <th className="hidden p-4 text-left font-body text-[11px] uppercase tracking-wider text-text-muted-brand md:table-cell">
+                <th className="hidden p-4 text-left font-body text-xs uppercase tracking-wider text-text-muted-brand md:table-cell">
                   Conditions
                 </th>
-                <th className="hidden p-4 text-left font-body text-[11px] uppercase tracking-wider text-text-muted-brand lg:table-cell">
+                <th className="hidden p-4 text-left font-body text-xs uppercase tracking-wider text-text-muted-brand lg:table-cell">
                   Validité
                 </th>
-                <th className="p-4 text-left font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+                <th className="p-4 text-left font-body text-xs uppercase tracking-wider text-text-muted-brand">
                   Statut
                 </th>
-                <th className="p-4 text-right font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+                <th className="p-4 text-right font-body text-xs uppercase tracking-wider text-text-muted-brand">
                   Actions
                 </th>
               </tr>
@@ -643,7 +690,7 @@ export default function PageAdminPromo() {
                         )}
                       </span>
                       {code.montantMax && code.type === "POURCENTAGE" && (
-                        <p className="text-[11px] text-text-muted-brand">
+                        <p className="text-xs text-text-muted-brand">
                           max {code.montantMax.toLocaleString("fr-FR")} F
                         </p>
                       )}
@@ -660,22 +707,22 @@ export default function PageAdminPromo() {
                           </div>
                         )}
                         {code.usageParUser > 1 && (
-                          <div className="text-[11px]">{code.usageParUser}x/client</div>
+                          <div className="text-xs">{code.usageParUser}x/client</div>
                         )}
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1">
                         {code.premiereCommande && (
-                          <span className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-[10px] text-amber-700">
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
                             <Gift size={10} /> 1ère commande
                           </span>
                         )}
                         {code.nouveauxClients && (
-                          <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-[10px] text-blue-700">
+                          <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
                             <Star size={10} /> Nouveaux
                           </span>
                         )}
                         {code.cumulable && (
-                          <span className="inline-flex rounded bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
+                          <span className="inline-flex rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">
                             Cumulable
                           </span>
                         )}
@@ -731,14 +778,15 @@ export default function PageAdminPromo() {
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Stats */}
       {codes.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="border border-border-brand bg-white p-4">
-            <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+            <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
               Codes actifs
             </p>
             <p className="mt-2 font-display text-[28px] text-primary-brand">
@@ -746,7 +794,7 @@ export default function PageAdminPromo() {
             </p>
           </div>
           <div className="border border-border-brand bg-white p-4">
-            <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+            <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
               Utilisations totales
             </p>
             <p className="mt-2 font-display text-[28px] text-gold">
@@ -754,7 +802,7 @@ export default function PageAdminPromo() {
             </p>
           </div>
           <div className="border border-border-brand bg-white p-4">
-            <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+            <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
               Réduction moyenne
             </p>
             <p className="mt-2 font-display text-[28px] text-text-main">

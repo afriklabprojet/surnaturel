@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Download, ArrowLeft, Loader2, MapPin, Phone } from "lucide-react"
+import { SkeletonQRCode } from "@/components/ui/skeletons"
 import QRCode from "react-qr-code"
 import { formatDate } from "@/lib/utils"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
@@ -75,11 +76,7 @@ export default function PageQRCodeRDV() {
   }
 
   if (status === "loading" || loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonQRCode />
   }
 
   if (!rdv) {
@@ -124,7 +121,7 @@ export default function PageQRCodeRDV() {
             <p className="font-display text-[20px] font-light text-white">
               Le Surnaturel de Dieu
             </p>
-            <p className="mt-1 font-body text-[10px] uppercase tracking-[0.15em] text-white/70">
+            <p className="mt-1 font-body text-xs uppercase tracking-[0.15em] text-white/70">
               Votre billet de rendez-vous
             </p>
           </div>
@@ -160,7 +157,7 @@ export default function PageQRCodeRDV() {
             </div>
 
             {/* Instructions */}
-            <p className="mt-6 font-body text-[11px] text-text-muted-brand">
+            <p className="mt-6 font-body text-xs text-text-muted-brand">
               Présentez ce QR code à votre arrivée
             </p>
           </div>
@@ -169,13 +166,13 @@ export default function PageQRCodeRDV() {
           <div className="bg-gold-light/50 px-6 py-6 text-center">
             <div className="flex items-center justify-center gap-2">
               <MapPin size={14} className="text-gold" />
-              <span className="font-body text-[11px] text-text-mid">
+              <span className="font-body text-xs text-text-mid">
                 Cocody, Riviera Palmeraie, Abidjan
               </span>
             </div>
             <div className="mt-2 flex items-center justify-center gap-2">
               <Phone size={14} className="text-gold" />
-              <span className="font-body text-[11px] text-text-mid">
+              <span className="font-body text-xs text-text-mid">
                 +225 07 XX XX XX XX
               </span>
             </div>

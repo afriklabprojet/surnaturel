@@ -14,6 +14,7 @@ import {
   Search,
   MessageSquare,
   Clock,
+  Video,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -28,6 +29,8 @@ type EmptyStateType =
   | "recherche"
   | "messages"
   | "historique"
+  | "temoignages"
+  | "videos"
 
 interface EmptyStateProps {
   type: EmptyStateType
@@ -50,65 +53,80 @@ const emptyStateConfig: Record<
     icon: Calendar,
     title: "Aucun rendez-vous",
     description:
-      "Vous n'avez pas encore de rendez-vous planifié. Prenez votre premier rendez-vous pour découvrir nos soins.",
-    defaultAction: { label: "Prendre un RDV", href: "/prise-rdv" },
+      "C'est le moment idéal pour prendre soin de vous ! Réservez votre premier soin et laissez-vous chouchouter.",
+    defaultAction: { label: "Réserver mon soin", href: "/prise-rdv" },
   },
   commandes: {
     icon: ShoppingBag,
     title: "Aucune commande",
     description:
-      "Vous n'avez pas encore passé de commande. Découvrez notre sélection de produits de beauté.",
-    defaultAction: { label: "Voir les produits", href: "/produits" },
+      "Nos produits naturels prolongent les bienfaits de vos soins à la maison. Explorez notre sélection !",
+    defaultAction: { label: "Découvrir la boutique", href: "/boutique" },
   },
   favoris: {
     icon: Heart,
     title: "Aucun favori",
     description:
-      "Vous n'avez pas encore ajouté de favoris. Explorez nos soins et produits pour créer votre liste.",
-    defaultAction: { label: "Explorer les soins", href: "/soins" },
+      "Ajoutez vos soins et produits préférés en favoris pour les retrouver facilement.",
+    defaultAction: { label: "Explorer nos soins", href: "/soins" },
   },
   avis: {
     icon: Star,
     title: "Aucun avis",
     description:
-      "Vous n'avez pas encore laissé d'avis. Partagez votre expérience après votre prochain rendez-vous !",
+      "Votre retour compte ! Après votre prochain soin, partagez votre expérience pour aider d'autres clientes.",
   },
   parrainage: {
     icon: Users,
     title: "Aucun parrainage",
     description:
-      "Vous n'avez pas encore parrainé de proches. Invitez vos amis et gagnez des points fidélité !",
+      "Partagez votre expérience avec vos proches et gagnez 200 points fidélité par parrainage !",
+    defaultAction: { label: "Parrainer une amie", href: "/parrainage" },
   },
   notifications: {
     icon: Bell,
-    title: "Aucune notification",
+    title: "Tout est calme",
     description:
-      "Vous n'avez pas de nouvelles notifications. Nous vous tiendrons informé(e) de vos rendez-vous et promotions.",
+      "Aucune notification pour le moment. Nous vous préviendrons de vos RDV et promotions.",
   },
   fidelite: {
     icon: Gift,
-    title: "Aucune activité",
+    title: "Pas encore de points",
     description:
-      "Pas encore d'historique de points. Prenez un rendez-vous pour commencer à gagner des points !",
-    defaultAction: { label: "Prendre un RDV", href: "/prise-rdv" },
+      "Chaque soin et chaque commande vous rapprochent de récompenses exclusives. Lancez-vous !",
+    defaultAction: { label: "Réserver un soin", href: "/prise-rdv" },
   },
   recherche: {
     icon: Search,
     title: "Aucun résultat",
     description:
-      "Aucun résultat ne correspond à votre recherche. Essayez avec d'autres termes.",
+      "Nous n'avons rien trouvé pour cette recherche. Essayez d'autres mots-clés ou parcourez nos catégories.",
   },
   messages: {
     icon: MessageSquare,
     title: "Aucun message",
     description:
-      "Vous n'avez pas de messages. Contactez-nous si vous avez des questions !",
-    defaultAction: { label: "Nous contacter", href: "/contact" },
+      "Vous avez une question ? N'hésitez pas à nous écrire, nous répondons rapidement !",
+    defaultAction: { label: "Nous écrire", href: "/contact" },
   },
   historique: {
     icon: Clock,
     title: "Aucun historique",
-    description: "Aucune activité passée pour le moment.",
+    description: "Votre historique d'activité apparaîtra ici après votre première visite.",
+  },
+  temoignages: {
+    icon: Star,
+    title: "Aucun avis pour le moment",
+    description:
+      "Soyez la première à partager votre expérience avec nous !",
+    defaultAction: { label: "Prendre rendez-vous", href: "/prise-rdv" },
+  },
+  videos: {
+    icon: Video,
+    title: "Aucune vidéo disponible",
+    description:
+      "Les témoignages vidéo de nos clientes arrivent bientôt. Restez connectée !",
+    defaultAction: { label: "Découvrir nos soins", href: "/soins" },
   },
 }
 

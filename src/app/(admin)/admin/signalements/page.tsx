@@ -108,27 +108,27 @@ export default function AdminSignalements() {
                   <div className="flex items-center gap-2 mb-1">
                     <AlertTriangle size={14} className="shrink-0 text-orange-500" />
                     <span className="font-body text-[13px] font-medium text-text-main">{s.raison}</span>
-                    <span className={`px-2 py-0.5 font-body text-[10px] ${badge.bg} ${badge.text}`}>
+                    <span className={`px-2 py-0.5 font-body text-xs ${badge.bg} ${badge.text}`}>
                       {badge.label}
                     </span>
                   </div>
                   {s.description && (
                     <p className="font-body text-[12px] text-text-mid mb-2">{s.description}</p>
                   )}
-                  <div className="font-body text-[11px] text-text-muted-brand">
+                  <div className="font-body text-xs text-text-muted-brand">
                     Par {s.auteur.prenom} {s.auteur.nom} · {new Date(s.createdAt).toLocaleDateString("fr", { day: "numeric", month: "short", year: "numeric" })}
                   </div>
 
                   {/* Contenu signalé */}
                   {s.post && (
                     <div className="mt-3 border-l-2 border-gold/30 pl-3 font-body text-[12px] text-text-mid">
-                      <span className="text-[10px] uppercase tracking-wider text-text-muted-brand">Post signalé :</span>
+                      <span className="text-xs uppercase tracking-wider text-text-muted-brand">Post signalé :</span>
                       <p className="mt-1 line-clamp-2">{s.post.contenu}</p>
                     </div>
                   )}
                   {s.commentaire && (
                     <div className="mt-3 border-l-2 border-gold/30 pl-3 font-body text-[12px] text-text-mid">
-                      <span className="text-[10px] uppercase tracking-wider text-text-muted-brand">Commentaire signalé :</span>
+                      <span className="text-xs uppercase tracking-wider text-text-muted-brand">Commentaire signalé :</span>
                       <p className="mt-1 line-clamp-2">{s.commentaire.contenu}</p>
                     </div>
                   )}
@@ -140,7 +140,7 @@ export default function AdminSignalements() {
                     <button
                       disabled={busy}
                       onClick={() => traiter(s.id, "REJETE")}
-                      className="flex items-center gap-1 border border-border-brand px-3 py-1.5 font-body text-[11px] text-text-mid hover:border-red-300 hover:text-red-700 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 border border-border-brand px-3 py-1.5 font-body text-xs text-text-mid hover:border-red-300 hover:text-red-700 transition-colors disabled:opacity-50"
                     >
                       <XCircle size={13} /> Rejeter
                     </button>
@@ -148,7 +148,7 @@ export default function AdminSignalements() {
                       <button
                         disabled={busy}
                         onClick={() => traiter(s.id, "RESOLU", "supprimer_post")}
-                        className="flex items-center gap-1 border border-red-300 bg-red-50 px-3 py-1.5 font-body text-[11px] text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 border border-red-300 bg-red-50 px-3 py-1.5 font-body text-xs text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         <Trash2 size={13} /> Supprimer le post
                       </button>
@@ -157,7 +157,7 @@ export default function AdminSignalements() {
                       <button
                         disabled={busy}
                         onClick={() => traiter(s.id, "RESOLU", "supprimer_commentaire")}
-                        className="flex items-center gap-1 border border-red-300 bg-red-50 px-3 py-1.5 font-body text-[11px] text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 border border-red-300 bg-red-50 px-3 py-1.5 font-body text-xs text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         <Trash2 size={13} /> Supprimer
                       </button>
@@ -165,7 +165,7 @@ export default function AdminSignalements() {
                     <button
                       disabled={busy}
                       onClick={() => traiter(s.id, "RESOLU")}
-                      className="flex items-center gap-1 bg-primary-brand px-3 py-1.5 font-body text-[11px] text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 bg-primary-brand px-3 py-1.5 font-body text-xs text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
                     >
                       {busy ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />} Résolu
                     </button>

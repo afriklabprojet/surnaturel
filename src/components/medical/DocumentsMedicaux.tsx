@@ -74,12 +74,25 @@ export default function DocumentsMedicaux() {
   }, [fetchDocuments])
 
   async function uploadToCloudinary(file: File): Promise<{ url: string; size: number }> {
+    // Obtenir la signature serveur (upload signé — pas de preset public)
+    const sigRes = await fetch("/api/upload/signe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folder: "surnaturel-de-dieu/medical", resourceType: "auto" }),
+    })
+    if (!sigRes.ok) throw new Error("Erreur de signature upload")
+    const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json()
+
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("upload_preset", "medical_docs")
+    formData.append("api_key", apiKey)
+    formData.append("timestamp", String(timestamp))
+    formData.append("signature_algorithm", "SHA256")
+    formData.append("signature", signature)
+    formData.append("folder", folder)
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
       { method: "POST", body: formData }
     )
 
@@ -175,7 +188,7 @@ export default function DocumentsMedicaux() {
         <div className="border border-border-brand border-t-2 border-t-gold bg-white p-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+              <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                 Nom du document <span className="text-red-800">*</span>
               </label>
               <input
@@ -188,7 +201,7 @@ export default function DocumentsMedicaux() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+              <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                 Type
               </label>
               <select
@@ -204,7 +217,7 @@ export default function DocumentsMedicaux() {
           </div>
 
           <div className="mt-4">
-            <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+            <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
               Fichier <span className="text-red-800">*</span>
             </label>
             <label className="flex cursor-pointer items-center gap-3 border border-dashed border-border-brand bg-bg-page px-4 py-4 transition-colors hover:border-gold">
@@ -225,7 +238,7 @@ export default function DocumentsMedicaux() {
           </div>
 
           <div className="mt-4">
-            <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+            <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
               Description (optionnel, chiffré)
             </label>
             <textarea
@@ -283,7 +296,7 @@ export default function DocumentsMedicaux() {
                   <p className="truncate font-display text-[15px] font-light text-text-main">
                     {doc.nom}
                   </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 font-body text-[11px] text-text-muted-brand">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 font-body text-xs text-text-muted-brand">
                     <span className="bg-bg-page px-2 py-0.5 font-medium uppercase tracking-[0.08em]">
                       {info.label}
                     </span>

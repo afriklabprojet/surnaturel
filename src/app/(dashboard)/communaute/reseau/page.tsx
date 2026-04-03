@@ -60,7 +60,7 @@ function UserCardItem({
   actionButton: React.ReactNode
 }) {
   return (
-    <div className="flex items-start gap-3 bg-white border border-border-brand p-4">
+    <div className="flex items-start gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-border-brand p-4">
       <Link href={`/communaute/profil/${user.id}`}>
         <Avatar user={user} />
       </Link>
@@ -69,11 +69,11 @@ function UserCardItem({
           {user.prenom} {user.nom}
           {user.pseudo && <span className="text-text-muted-brand font-normal ml-1">@{user.pseudo}</span>}
         </Link>
-        {user.bio && <p className="font-body text-[11px] text-text-mid mt-0.5 line-clamp-2">{user.bio}</p>}
+        {user.bio && <p className="font-body text-xs text-text-mid mt-0.5 line-clamp-2">{user.bio}</p>}
         {user.localisation && (
           <div className="flex items-center gap-1 mt-1">
             <MapPin size={10} className="text-text-muted-brand" />
-            <span className="font-body text-[10px] text-text-muted-brand">{user.localisation}</span>
+            <span className="font-body text-xs text-text-muted-brand">{user.localisation}</span>
           </div>
         )}
         {user.centresInteret && user.centresInteret.length > 0 && (
@@ -214,7 +214,7 @@ function PageReseauContent() {
   return (
     <section className="mx-auto max-w-2xl space-y-5">
       {/* Onglets */}
-      <div className="flex gap-1 bg-white border border-border-brand p-1">
+      <div className="flex gap-1 rounded-xl bg-bg-page ring-1 ring-border-brand p-1">
         {TABS.map((t) => {
           const Icon = t.icon
           const active = tab === t.key
@@ -222,8 +222,8 @@ function PageReseauContent() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.08em] transition-colors ${
-                active ? "bg-primary-brand text-white" : "text-text-muted-brand hover:text-text-mid hover:bg-bg-page"
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2.5 font-body text-xs font-medium transition-colors ${
+                active ? "bg-white shadow-sm text-primary-brand" : "text-text-muted-brand hover:bg-white/60"
               }`}
             >
               <Icon size={14} />
@@ -254,7 +254,7 @@ function PageReseauContent() {
                       <Link href={`/communaute/messages?to=${c.id}`} className="p-1.5 text-text-muted-brand hover:text-gold transition-colors" title="Envoyer un message">
                         <MessageCircle size={14} />
                       </Link>
-                      <Link href={`/communaute/profil/${c.id}`} className="px-3 py-1.5 border border-border-brand font-body text-[10px] font-medium uppercase tracking-wider text-text-mid hover:border-gold hover:text-gold transition-colors">
+                      <Link href={`/communaute/profil/${c.id}`} className="rounded-full px-3 py-1.5 border border-border-brand font-body text-xs font-medium text-text-mid hover:border-gold hover:text-gold transition-colors">
                         Profil
                       </Link>
                       <button
@@ -286,7 +286,7 @@ function PageReseauContent() {
                       <button
                         onClick={() => handleAccept(d.id)}
                         disabled={actionLoading[d.id]}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-primary-brand text-white font-body text-[10px] font-medium uppercase tracking-wider hover:bg-primary-dark transition-colors disabled:opacity-40"
+                        className="flex items-center gap-1 rounded-full px-3 py-1.5 bg-primary-brand text-white font-body text-xs font-medium hover:bg-primary-dark transition-colors disabled:opacity-40"
                       >
                         {actionLoading[d.id] ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                         Accepter
@@ -315,7 +315,7 @@ function PageReseauContent() {
                   key={u.id}
                   user={u}
                   actionButton={
-                    <span className="flex items-center gap-1 px-3 py-1.5 border border-gold-light bg-gold-light font-body text-[10px] font-medium uppercase tracking-wider text-gold">
+                    <span className="flex items-center gap-1 rounded-full px-3 py-1.5 border border-gold/30 bg-gold-light font-body text-xs font-medium text-gold">
                       <Clock size={12} />
                       En attente
                     </span>
@@ -338,7 +338,7 @@ function PageReseauContent() {
                     <button
                       onClick={() => handleConnect(s.id)}
                       disabled={actionLoading[s.id]}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-primary-brand text-white font-body text-[10px] font-medium uppercase tracking-wider hover:bg-primary-dark transition-colors disabled:opacity-40"
+                      className="flex items-center gap-1 rounded-full px-3 py-1.5 bg-primary-brand text-white font-body text-xs font-medium hover:bg-primary-dark transition-colors disabled:opacity-40"
                     >
                       {actionLoading[s.id] ? <Loader2 size={12} className="animate-spin" /> : <UserPlus size={12} />}
                       Connecter
@@ -361,7 +361,7 @@ function EmptyState({ icon: Icon, title, description }: { icon: typeof Users; ti
         <Icon size={24} className="text-primary-brand" />
       </div>
       <p className="font-display text-[16px] font-light text-text-main">{title}</p>
-      <p className="font-body text-[11px] text-text-muted-brand mt-1">{description}</p>
+      <p className="font-body text-xs text-text-muted-brand mt-1">{description}</p>
     </div>
   )
 }

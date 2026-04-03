@@ -17,6 +17,7 @@ export async function GET() {
   const [
     totalClients,
     rdvAujourdhui,
+    rdvEnAttente,
     commandesEnAttente,
     revenuResult,
     rdvLast7,
@@ -24,14 +25,20 @@ export async function GET() {
     soinsPopulaires,
     derniersRDV,
     dernieresCommandes,
+    signalements,
+    avisStats,
+    derniersAvis,
+    postsAujourdhui,
+    promosActives,
+    abonnesNewsletter,
+    pointsFideliteMois,
+    caRevenuMensuel,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "CLIENT" } }),
     prisma.rendezVous.count({
-      where: {
-        dateHeure: { gte: todayStart },
-        statut: { not: "ANNULE" },
-      },
+      where: { dateHeure: { gte: todayStart }, statut: { not: "ANNULE" } },
     }),
+    prisma.rendezVous.count({ where: { statut: "EN_ATTENTE" } }),
     prisma.commande.count({ where: { statut: "EN_ATTENTE" } }),
     prisma.commande.aggregate({
       _sum: { total: true },
@@ -41,10 +48,7 @@ export async function GET() {
       where: { dateHeure: { gte: sevenDaysAgo } },
       select: { dateHeure: true },
     }),
-    prisma.commande.groupBy({
-      by: ["statut"],
-      _count: { id: true },
-    }),
+    prisma.commande.groupBy({ by: ["statut"], _count: { id: true } }),
     prisma.rendezVous.groupBy({
       by: ["soinId"],
       _count: { id: true },
@@ -62,9 +66,29 @@ export async function GET() {
     prisma.commande.findMany({
       take: 10,
       orderBy: { createdAt: "desc" },
+      include: { user: { select: { nom: true, prenom: true } } },
+    }),
+    prisma.signalement.count({ where: { statut: "EN_ATTENTE" } }),
+    prisma.avis.aggregate({ _count: { id: true }, _avg: { note: true } }),
+    prisma.avis.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
       include: {
-        user: { select: { nom: true, prenom: true } },
+        user: { select: { prenom: true, nom: true } },
+        soin: { select: { nom: true } },
       },
+    }),
+    prisma.post.count({ where: { createdAt: { gte: todayStart } } }),
+    prisma.codePromo.count({ where: { actif: true } }),
+    prisma.user.count({ where: { notifNewsletter: true, role: "CLIENT" } }),
+    prisma.historiqueFidelite.aggregate({
+      _sum: { points: true },
+      where: { createdAt: { gte: monthStart }, points: { gt: 0 } },
+    }),
+    // CA des 6 derniers mois (pour graphique)
+    prisma.commande.findMany({
+      where: { createdAt: { gte: subDays(todayStart, 180) }, statut: "PAYEE" },
+      select: { createdAt: true, total: true },
     }),
   ])
 
@@ -80,6 +104,19 @@ export async function GET() {
   }
   const rdvParJour = Object.entries(rdvMap).map(([date, count]) => ({ date, count }))
 
+  // Build CA 6 derniers mois
+  const caMap: Record<string, number> = {}
+  for (let i = 5; i >= 0; i--) {
+    const d = subDays(todayStart, i * 30)
+    const key = format(d, "MM/yyyy")
+    caMap[key] = 0
+  }
+  for (const c of caRevenuMensuel) {
+    const key = format(new Date(c.createdAt), "MM/yyyy")
+    if (key in caMap) caMap[key] = (caMap[key] || 0) + c.total
+  }
+  const caParMois = Object.entries(caMap).map(([mois, ca]) => ({ mois, ca }))
+
   // Soins noms
   const soinIds = soinsPopulaires.map((s) => s.soinId)
   const soins = soinIds.length > 0
@@ -90,9 +127,18 @@ export async function GET() {
   return NextResponse.json({
     totalClients,
     rdvAujourdhui,
+    rdvEnAttente,
     commandesEnAttente,
     revenuMensuel: revenuResult._sum.total || 0,
+    signalements,
+    avisTotal: avisStats._count.id,
+    avisMoyenne: Math.round((avisStats._avg.note ?? 0) * 10) / 10,
+    postsAujourdhui,
+    promosActives,
+    abonnesNewsletter,
+    pointsFideliteMois: pointsFideliteMois._sum.points || 0,
     rdvParJour,
+    caParMois,
     commandesParStatut: commandesParStatut.map((c) => ({
       statut: c.statut,
       count: c._count.id,
@@ -114,6 +160,14 @@ export async function GET() {
       total: c.total,
       statut: c.statut,
       createdAt: c.createdAt.toISOString(),
+    })),
+    derniersAvis: derniersAvis.map((a) => ({
+      id: a.id,
+      client: `${a.user.prenom} ${a.user.nom}`,
+      soin: a.soin.nom,
+      note: a.note,
+      commentaire: a.commentaire,
+      createdAt: a.createdAt.toISOString(),
     })),
   })
 }

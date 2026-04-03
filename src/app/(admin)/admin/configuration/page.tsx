@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Settings, Copy, Check } from "lucide-react"
+import { Plus, Pencil, Trash2, Settings, Copy, Check, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useConfirm } from "@/components/ui/confirm-dialog"
 
 interface ConfigItem {
   id: string
@@ -22,6 +23,7 @@ export default function AdminConfigPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [copied, setCopied] = useState<string | null>(null)
+  const confirm = useConfirm()
 
   const fetchData = async () => {
     setLoading(true)
@@ -104,7 +106,13 @@ export default function AdminConfigPage() {
   }
 
   const handleDelete = async (cle: string) => {
-    if (!confirm(`Supprimer la configuration "${cle}" ?`)) return
+    const ok = await confirm({
+      title: "Supprimer la configuration",
+      description: `Supprimer la clé "${cle}" ? Cette action est irréversible.`,
+      confirmLabel: "Supprimer",
+      variant: "danger",
+    })
+    if (!ok) return
     await fetch(`/api/admin/config/${encodeURIComponent(cle)}`, { method: "DELETE" })
     fetchData()
   }
@@ -120,6 +128,18 @@ export default function AdminConfigPage() {
 
   return (
     <div className="space-y-6">
+      {/* Warning banner */}
+      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200">
+        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="font-body text-sm font-semibold text-amber-800">Zone technique — à manipuler avec précaution</p>
+          <p className="font-body text-xs text-amber-700 mt-0.5">
+            Ces clés pilotent le comportement de l'application. Une valeur incorrecte peut provoquer des erreurs.
+            Modifiez uniquement les clés que vous connaissez.
+          </p>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <p className="font-body text-sm text-gray-500">{configs.length} configuration(s)</p>
         <button onClick={openNew} className="flex items-center gap-2 px-4 py-2 bg-primary-brand text-white text-sm font-body hover:bg-primary-dark transition-colors">
@@ -173,12 +193,12 @@ export default function AdminConfigPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!editing && (
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Clé</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Clé</label>
                   <input required value={form.cle} onChange={(e) => setForm({ ...form, cle: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary-brand" placeholder="ex: bandeau_promo" />
                 </div>
               )}
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Valeur (JSON ou texte)</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Valeur (JSON ou texte)</label>
                 <textarea
                   required
                   rows={10}
@@ -187,7 +207,7 @@ export default function AdminConfigPage() {
                   className="w-full border border-border-brand px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary-brand"
                   placeholder='{"actif": true, "code": "BIENVENUE10"}'
                 />
-                <p className="text-[10px] text-gray-400 font-body mt-1">Entrez du JSON valide ou du texte simple</p>
+                <p className="text-xs text-gray-400 font-body mt-1">Entrez du JSON valide ou du texte simple</p>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 text-sm border border-border-brand text-gray-500 hover:bg-bg-page font-body transition-colors">Annuler</button>

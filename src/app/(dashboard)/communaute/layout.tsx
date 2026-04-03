@@ -39,8 +39,8 @@ export default function CommunauteLayout({
   return (
     <div className="space-y-5">
       {/* Sub-navigation communauté */}
-      <nav className="-mx-5 lg:-mx-8 px-5 lg:px-8 border-b border-border-brand bg-white overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-1 min-w-max">
+      <nav className="sticky top-0 z-10 -mx-5 lg:-mx-8 px-5 lg:px-8 border-b border-border-brand bg-white/95 backdrop-blur-sm overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-0.5 py-2 min-w-max">
           {TABS.map((tab) => {
             const Icon = tab.icon
             const active = isActive(tab.href, "exact" in tab ? tab.exact : undefined)
@@ -48,10 +48,10 @@ export default function CommunauteLayout({
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex items-center gap-1.5 px-3 py-3 font-body text-[11px] font-medium uppercase tracking-[0.08em] border-b-2 transition-colors whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body text-xs font-medium transition-colors whitespace-nowrap ${
                   active
-                    ? "border-gold text-gold"
-                    : "border-transparent text-text-muted-brand hover:text-text-mid hover:border-border-brand"
+                    ? "bg-primary-light text-primary-brand"
+                    : "text-text-muted-brand hover:text-text-mid hover:bg-bg-page"
                 }`}
               >
                 <Icon size={14} />

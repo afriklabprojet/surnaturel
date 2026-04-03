@@ -1,4 +1,5 @@
 // Génération de liens calendrier (Google Calendar, Apple Calendar .ics)
+import { getConfig } from "@/lib/config"
 
 interface RDVCalendrier {
   id: string
@@ -8,7 +9,7 @@ interface RDVCalendrier {
   adresse?: string
 }
 
-const ADRESSE_CENTRE = "Le Surnaturel de Dieu, Abidjan, Côte d'Ivoire"
+const ADRESSE_CENTRE = `Le Surnaturel de Dieu, Abidjan, Côte d'Ivoire`
 
 function formatDateICS(date: Date): string {
   return date
@@ -17,10 +18,12 @@ function formatDateICS(date: Date): string {
     .replace(/\.\d{3}/, "")
 }
 
-export function genererLienGoogle(rdv: RDVCalendrier): string {
+export async function genererLienGoogle(rdv: RDVCalendrier): Promise<string> {
+  const { nomCentre, ville, pays } = await getConfig()
+  const adresseCentre = `${nomCentre}, ${ville}, ${pays}`
   const debut = formatDateICS(rdv.date)
   const fin = formatDateICS(new Date(rdv.date.getTime() + rdv.duree * 60000))
-  const adresse = rdv.adresse || ADRESSE_CENTRE
+  const adresse = rdv.adresse || adresseCentre
 
   const titre = encodeURIComponent(`Soin : ${rdv.soin} — Le Surnaturel de Dieu`)
   const details = encodeURIComponent(
@@ -38,11 +41,13 @@ export function genererLienGoogle(rdv: RDVCalendrier): string {
   )
 }
 
-export function genererFichierICS(rdv: RDVCalendrier): string {
+export async function genererFichierICS(rdv: RDVCalendrier): Promise<string> {
+  const { nomCentre, ville, pays } = await getConfig()
+  const adresseCentre = `${nomCentre}, ${ville}, ${pays}`
   const debut = formatDateICS(rdv.date)
   const fin = formatDateICS(new Date(rdv.date.getTime() + rdv.duree * 60000))
   const maintenant = formatDateICS(new Date())
-  const adresse = rdv.adresse || ADRESSE_CENTRE
+  const adresse = rdv.adresse || adresseCentre
 
   return [
     "BEGIN:VCALENDAR",
@@ -64,10 +69,12 @@ export function genererFichierICS(rdv: RDVCalendrier): string {
   ].join("\r\n")
 }
 
-export function genererLienOutlook(rdv: RDVCalendrier): string {
+export async function genererLienOutlook(rdv: RDVCalendrier): Promise<string> {
+  const { nomCentre, ville, pays } = await getConfig()
+  const adresseCentre = `${nomCentre}, ${ville}, ${pays}`
   const debut = rdv.date.toISOString()
   const fin = new Date(rdv.date.getTime() + rdv.duree * 60000).toISOString()
-  const adresse = rdv.adresse || ADRESSE_CENTRE
+  const adresse = rdv.adresse || adresseCentre
 
   const titre = encodeURIComponent(`Soin : ${rdv.soin} — Le Surnaturel de Dieu`)
   const details = encodeURIComponent(

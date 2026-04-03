@@ -191,7 +191,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
 
   return (
     <section className="mx-auto max-w-2xl space-y-5">
-      <Link href="/communaute" className="inline-flex items-center gap-1.5 font-body text-[11px] text-text-muted-brand hover:text-text-mid transition-colors">
+      <Link href="/communaute" className="inline-flex items-center gap-1.5 font-body text-xs text-text-muted-brand hover:text-text-mid transition-colors">
         <ArrowLeft size={14} />
         Retour
       </Link>
@@ -230,9 +230,9 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
           {/* Infos */}
           <div className="flex flex-wrap items-center gap-3 mt-3">
             {profil.localisation && (
-              <span className="font-body text-[11px] text-text-muted-brand flex items-center gap-1"><MapPin size={12} />{profil.localisation}</span>
+              <span className="font-body text-xs text-text-muted-brand flex items-center gap-1"><MapPin size={12} />{profil.localisation}</span>
             )}
-            <span className="font-body text-[11px] text-text-muted-brand flex items-center gap-1">
+            <span className="font-body text-xs text-text-muted-brand flex items-center gap-1">
               <Calendar size={12} />
               Membre depuis {new Date(profil.createdAt).toLocaleDateString("fr", { month: "long", year: "numeric" })}
             </span>
@@ -248,7 +248,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
           {profil.centresInteret.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {profil.centresInteret.map((i) => (
-                <span key={i} className="px-2.5 py-0.5 bg-bg-page border border-border-brand font-body text-[10px] text-text-mid rounded-full">{i}</span>
+                <span key={i} className="px-2.5 py-0.5 bg-bg-page border border-border-brand font-body text-xs text-text-mid rounded-full">{i}</span>
               ))}
             </div>
           )}
@@ -257,15 +257,15 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
           <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border-brand">
             <div className="text-center">
               <p className="font-display text-[20px] font-light text-text-main">{profil.totalPosts}</p>
-              <p className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">Publications</p>
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">Publications</p>
             </div>
             <div className="text-center">
               <p className="font-display text-[20px] font-light text-text-main">{profil.totalConnexions}</p>
-              <p className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">Connexions</p>
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">Connexions</p>
             </div>
             <div className="text-center">
               <p className="font-display text-[20px] font-light text-text-main">{profil.totalAbonnes}</p>
-              <p className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">Abonnés</p>
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">Abonnés</p>
             </div>
           </div>
 
@@ -276,7 +276,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
               {profil.verificationStatus === "PROFESSIONNEL_SANTE" && (
                 <Link
                   href="/prise-rdv"
-                  className="flex items-center gap-1.5 px-4 py-2 bg-gold text-white font-body text-[11px] font-medium uppercase tracking-widest hover:bg-gold-dark transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-gold text-white font-body text-xs font-medium uppercase tracking-widest hover:bg-gold-dark transition-colors"
                 >
                   <CalendarPlus size={13} />
                   Prendre RDV
@@ -285,7 +285,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
               <button
                 onClick={handleConnect}
                 disabled={actionLoading}
-                className={`flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-widest transition-colors ${
+                className={`flex items-center gap-1.5 px-4 py-2 font-body text-xs font-medium uppercase tracking-widest transition-colors ${
                   profil.isConnected
                     ? "border border-danger text-danger hover:bg-danger hover:text-white"
                     : profil.connectionStatus === "EN_ATTENTE"
@@ -306,7 +306,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
               <button
                 onClick={handleFollow}
                 disabled={actionLoading}
-                className={`flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-widest border transition-colors ${
+                className={`flex items-center gap-1.5 px-4 py-2 font-body text-xs font-medium uppercase tracking-widest border transition-colors ${
                   profil.isFollowing
                     ? "border-gold bg-gold-light text-gold"
                     : "border-border-brand text-text-mid hover:border-gold hover:text-gold"
@@ -334,7 +334,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
           )}
           {profil.isOwn && (
             <div className="mt-4">
-              <Link href="/profil" className="inline-flex items-center gap-1.5 px-4 py-2 border border-border-brand font-body text-[11px] font-medium uppercase tracking-widest text-text-mid hover:border-gold hover:text-gold transition-colors">
+              <Link href="/profil" className="inline-flex items-center gap-1.5 px-4 py-2 border border-border-brand font-body text-xs font-medium uppercase tracking-widest text-text-mid hover:border-gold hover:text-gold transition-colors">
                 Modifier mon profil
               </Link>
             </div>
@@ -353,7 +353,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
 
         return (
           <div className="bg-white border border-border-brand p-5">
-            <h2 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-3">À propos</h2>
+            <h2 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-3">À propos</h2>
             <div className="space-y-2.5">
               {d?.ville && (
                 <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
 
       {/* Publications */}
       <div>
-        <h2 className="font-body text-[11px] font-medium uppercase tracking-wider text-text-muted-brand mb-3">Publications</h2>
+        <h2 className="font-body text-xs font-medium uppercase tracking-wider text-text-muted-brand mb-3">Publications</h2>
         {posts.length === 0 ? (
           <div className="text-center py-8 bg-white border border-border-brand">
             <p className="font-body text-[12px] text-text-muted-brand">Aucune publication</p>
@@ -427,9 +427,9 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
               <div key={post.id} className="bg-white border border-border-brand p-4">
                 <p className="font-body text-[13px] text-text-main leading-relaxed whitespace-pre-wrap line-clamp-4">{post.contenu}</p>
                 <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border-brand">
-                  <span className="font-body text-[10px] text-text-muted-brand">{timeAgo(post.createdAt)}</span>
-                  <span className="font-body text-[10px] text-text-muted-brand">{post._count?.reactions || 0} réactions</span>
-                  <span className="font-body text-[10px] text-text-muted-brand">{post._count?.commentaires || 0} commentaires</span>
+                  <span className="font-body text-xs text-text-muted-brand">{timeAgo(post.createdAt)}</span>
+                  <span className="font-body text-xs text-text-muted-brand">{post._count?.reactions || 0} réactions</span>
+                  <span className="font-body text-xs text-text-muted-brand">{post._count?.commentaires || 0} commentaires</span>
                 </div>
               </div>
             ))}

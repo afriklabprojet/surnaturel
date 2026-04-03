@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
@@ -46,7 +47,7 @@ export async function GET() {
       echangesEnCours,
     })
   } catch (error) {
-    console.error("Erreur récupération récompenses:", error)
+    logger.error("Erreur récupération récompenses:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

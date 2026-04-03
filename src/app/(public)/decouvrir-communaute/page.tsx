@@ -6,6 +6,7 @@ import { Users, CalendarDays, MessageCircle, Sparkles, ArrowRight, Heart, UserPl
 export const metadata: Metadata = {
   title: "Communauté",
   description: "Rejoignez la communauté du Surnaturel de Dieu — partagez vos expériences, découvrez des événements bien-être et échangez avec d'autres femmes d'Abidjan.",
+  alternates: { canonical: "/decouvrir-communaute" },
 }
 
 async function getStats() {
@@ -60,7 +61,7 @@ export default async function CommunautePage() {
     <div className="min-h-screen bg-bg-page">
       {/* Hero */}
       <section className="bg-primary-brand px-6 py-20 text-center lg:px-10">
-        <p className="font-body text-[10px] font-medium uppercase tracking-[0.2em] text-white/60">
+        <p className="font-body text-xs font-medium uppercase tracking-[0.2em] text-white/60">
           Notre communauté
         </p>
         <h1 className="mt-3 font-display text-[36px] font-light leading-tight text-white md:text-[48px]">
@@ -91,7 +92,7 @@ export default async function CommunautePage() {
             <div key={label} className="border border-border-brand bg-white p-5 text-center">
               <Icon size={20} className="mx-auto mb-2 text-gold" />
               <p className="font-display text-[28px] font-light text-text-main">{value}</p>
-              <p className="font-body text-[11px] text-text-muted-brand">{label}</p>
+              <p className="font-body text-xs text-text-muted-brand">{label}</p>
             </div>
           ))}
         </div>
@@ -111,14 +112,14 @@ export default async function CommunautePage() {
                     <span className="font-body text-[13px] font-medium text-text-main">
                       {post.auteur.prenom} {post.auteur.nom?.charAt(0)}.
                     </span>
-                    <span className="font-body text-[11px] text-text-muted-brand">
+                    <span className="font-body text-xs text-text-muted-brand">
                       {new Date(post.createdAt).toLocaleDateString("fr", { day: "numeric", month: "short" })}
                     </span>
                   </div>
                   <p className="font-body text-[14px] font-light text-text-mid line-clamp-2">
                     {post.contenu}
                   </p>
-                  <div className="mt-3 flex items-center gap-4 font-body text-[11px] text-text-muted-brand">
+                  <div className="mt-3 flex items-center gap-4 font-body text-xs text-text-muted-brand">
                     <span className="flex items-center gap-1"><Heart size={12} /> {post._count.reactions}</span>
                     <span className="flex items-center gap-1"><MessageCircle size={12} /> {post._count.commentaires}</span>
                   </div>
@@ -139,7 +140,7 @@ export default async function CommunautePage() {
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {events.map((ev) => (
                 <div key={ev.id} className="border border-border-brand border-t-2 border-t-gold p-5">
-                  <p className="font-body text-[10px] font-medium uppercase tracking-[0.15em] text-gold">
+                  <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-gold">
                     {new Date(ev.dateDebut).toLocaleDateString("fr", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
                   </p>
                   <h3 className="mt-2 font-display text-[18px] text-text-main">{ev.titre}</h3>

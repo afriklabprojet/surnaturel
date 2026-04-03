@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -49,7 +50,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error("Erreur formules admin:", error)
+    logger.error("Erreur formules admin:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ formule })
   } catch (error) {
-    console.error("Erreur création formule:", error)
+    logger.error("Erreur création formule:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -144,7 +145,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ formule })
   } catch (error) {
-    console.error("Erreur modification formule:", error)
+    logger.error("Erreur modification formule:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -189,7 +190,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Erreur suppression formule:", error)
+    logger.error("Erreur suppression formule:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

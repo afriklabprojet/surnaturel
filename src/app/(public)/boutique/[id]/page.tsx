@@ -26,6 +26,7 @@ export async function generateMetadata({
   return {
     title: `${produit.nom} | Le Surnaturel de Dieu`,
     description: produit.description,
+    alternates: { canonical: `/boutique/${id}` },
     openGraph: {
       title: produit.nom,
       description: produit.description,
@@ -93,8 +94,49 @@ export default async function PageDetailProduit({
 
   const tousLesSimilaires = [...similaires, ...autresProduits]
 
+  // Avis pour le rating
+  const avisAgg = await prisma.avisProduit.aggregate({
+    where: { produitId: id, publie: true },
+    _avg: { note: true },
+    _count: { note: true },
+  })
+
+  // JSON-LD Product structured data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: produit.nom,
+    description: produit.description,
+    ...(produit.imageUrl && { image: produit.imageUrl }),
+    category: produit.categorie,
+    offers: {
+      "@type": "Offer",
+      price: produit.prixPromo ?? produit.prix,
+      priceCurrency: "XOF",
+      availability:
+        produit.stock > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+    },
+    ...(avisAgg._count.note > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: avisAgg._avg.note?.toFixed(1),
+        reviewCount: avisAgg._count.note,
+      },
+    }),
+    brand: {
+      "@type": "Organization",
+      name: "Le Surnaturel de Dieu",
+    },
+  }
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="mb-8">
         <Link

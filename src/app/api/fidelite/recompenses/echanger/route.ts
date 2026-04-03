@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { nanoid } from "nanoid"
 
 const echangerSchema = z.object({
@@ -127,7 +128,7 @@ export async function POST(request: Request) {
       message: `Félicitations ! Votre récompense "${recompense.nom}" est prête. Code: ${codeUnique}`,
     })
   } catch (error) {
-    console.error("Erreur échange récompense:", error)
+    logger.error("Erreur échange récompense:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

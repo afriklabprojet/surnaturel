@@ -100,17 +100,41 @@ function ModalCreation({ onClose, onCreated }: { onClose: () => void; onCreated:
     if (!file) return
     setUploading(true)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "")
-      const resourceType = mode === "VIDEO" ? "video" : "image"
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
-        { method: "POST", body: formData }
-      )
-      if (res.ok) {
-        const data = await res.json()
-        setMediaUrl(data.secure_url)
+      if (mode !== "VIDEO") {
+        // Images : upload serveur + compression Sharp (A15)
+        const formData = new FormData()
+        formData.append("file", file)
+        formData.append("folder", "surnaturel-de-dieu/stories")
+        const res = await fetch("/api/upload/signe", { method: "POST", body: formData })
+        if (res.ok) {
+          const data: { secureUrl: string } = await res.json()
+          setMediaUrl(data.secureUrl)
+        }
+      } else {
+        // Vidéos : signature uniquement, upload direct Cloudinary (pas de compression serveur)
+        const sigRes = await fetch("/api/upload/signe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ folder: "surnaturel-de-dieu/stories", resourceType: "video" }),
+        })
+        if (!sigRes.ok) throw new Error("Erreur de signature upload")
+        const { signature, timestamp, apiKey, cloudName, folder } = await sigRes.json()
+
+        const formData = new FormData()
+        formData.append("file", file)
+        formData.append("api_key", apiKey)
+        formData.append("timestamp", String(timestamp))
+        formData.append("signature_algorithm", "SHA256")
+        formData.append("signature", signature)
+        formData.append("folder", folder)
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+          { method: "POST", body: formData }
+        )
+        if (res.ok) {
+          const data = await res.json()
+          setMediaUrl(data.secure_url)
+        }
       }
     } finally {
       setUploading(false)
@@ -167,7 +191,7 @@ function ModalCreation({ onClose, onCreated }: { onClose: () => void; onCreated:
             <button
               key={m.value}
               onClick={() => { setMode(m.value); setMediaUrl(""); setContenu("") }}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 font-body text-[11px] font-medium uppercase tracking-widest transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 font-body text-xs font-medium uppercase tracking-widest transition-colors ${
                 mode === m.value ? "text-primary-brand border-b-2 border-primary-brand" : "text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -267,12 +291,12 @@ function ModalCreation({ onClose, onCreated }: { onClose: () => void; onCreated:
 
           {/* Visibilité */}
           <div className="flex items-center gap-3">
-            <span className="font-body text-[11px] text-text-muted-brand">Visibilité :</span>
+            <span className="font-body text-xs text-text-muted-brand">Visibilité :</span>
             {(["PUBLIC", "CONNEXIONS"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setVisibilite(v)}
-                className={`px-3 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+                className={`px-3 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                   visibilite === v ? "border-primary-brand bg-primary-brand text-white" : "border-border-brand text-text-mid hover:border-gold"
                 }`}
               >
@@ -287,7 +311,7 @@ function ModalCreation({ onClose, onCreated }: { onClose: () => void; onCreated:
           <button
             onClick={handlePublier}
             disabled={!canPublier || loading}
-            className="flex items-center gap-2 bg-primary-brand px-5 py-2 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 bg-primary-brand px-5 py-2 font-body text-xs font-medium uppercase tracking-[0.15em] text-white hover:bg-primary-dark transition-colors disabled:opacity-40"
           >
             {loading ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
             Publier
@@ -441,7 +465,7 @@ function LecteurStory({
                 {groupe.auteur.prenom} {groupe.auteur.nom}
                 <BadgeVerification status={groupe.auteur.verificationStatus} size={12} className="ml-1" />
               </p>
-              <p className="font-body text-[10px] text-white/70">
+              <p className="font-body text-xs text-white/70">
                 {formatDistanceToNow(new Date(story.createdAt), { addSuffix: true, locale: fr })}
               </p>
             </div>
@@ -497,7 +521,7 @@ function LecteurStory({
           <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center">
             <button
               onClick={handleShowViewers}
-              className="flex items-center gap-1.5 px-4 py-2 bg-black/40 text-white font-body text-[11px] hover:bg-black/60 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-black/40 text-white font-body text-xs hover:bg-black/60 transition-colors"
             >
               <Eye size={14} />
               {story.viewers.length} vue{story.viewers.length !== 1 ? "s" : ""}
@@ -540,7 +564,7 @@ function LecteurStory({
                   {v.photoUrl ? (
                     <Image src={v.photoUrl} alt="" width={32} height={32} className="rounded-full object-cover" />
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-brand text-white font-body text-[10px]">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-brand text-white font-body text-xs">
                       {v.prenom[0]}{v.nom[0]}
                     </div>
                   )}
@@ -652,7 +676,7 @@ export default function StoriesBandeau({ currentUserId }: { currentUserId: strin
                 </div>
               )}
             </div>
-            <span className="font-body text-[10px] text-text-muted-brand truncate max-w-16">
+            <span className="font-body text-xs text-text-muted-brand truncate max-w-16">
               {hasOwnStories ? "Ma story" : "Ajouter"}
             </span>
           </button>
@@ -671,7 +695,7 @@ export default function StoriesBandeau({ currentUserId }: { currentUserId: strin
                     <StoryAvatar user={groupe.auteur} size={52} />
                   </div>
                 </div>
-                <span className="font-body text-[10px] text-text-muted-brand truncate max-w-16">
+                <span className="font-body text-xs text-text-muted-brand truncate max-w-16">
                   {groupe.auteur.prenom}
                 </span>
               </button>

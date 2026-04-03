@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { Star, Camera, X, Loader2, Gift } from "lucide-react"
+import { Star, Camera, X, Loader2, Gift, Video, ExternalLink } from "lucide-react"
+import { SkeletonAvisForm } from "@/components/ui/skeletons"
 import { formatDate } from "@/lib/utils"
 import { BtnArrow, BtnTextLine } from "@/components/ui/buttons"
 import { fadeInUp } from "@/lib/animations"
@@ -34,12 +36,23 @@ export default function PageAvisRDV() {
     soin: string
     date: Date
   } | null>(null)
+  const [googleReviewUrl, setGoogleReviewUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/connexion")
     }
   }, [status, router])
+
+  useEffect(() => {
+    fetch("/api/config/google_place_id")
+      .then(r => r.json())
+      .then(d => {
+        const id = d.valeur
+        if (id) setGoogleReviewUrl(`https://search.google.com/local/writereview?placeid=${id}`)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     // Charger les données du RDV depuis l'API
@@ -119,11 +132,7 @@ export default function PageAvisRDV() {
   }
 
   if (status === "loading" || !rdvData) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonAvisForm />
   }
 
   // État après soumission réussie
@@ -179,10 +188,41 @@ export default function PageAvisRDV() {
             <Gift size={20} />
             <span className="font-display text-[18px]">+30 points fidélité</span>
           </motion.div>
+
+          {/* Google Review CTA pour les notes 4-5 */}
+          {note >= 4 && googleReviewUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="mt-8 border border-gold bg-gold-light/30 p-6"
+            >
+              <p className="font-body text-[14px] text-text-mid">
+                Votre expérience vous a plu ? Un avis sur Google aiderait d&apos;autres personnes à nous découvrir.
+              </p>
+              <a
+                href={googleReviewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 bg-gold px-5 py-2.5 font-body text-xs uppercase tracking-[0.12em] text-white transition-colors hover:bg-gold-dark"
+              >
+                <ExternalLink size={14} />
+                Laisser un avis Google
+              </a>
+            </motion.div>
+          )}
           
           <p className="mt-6 font-body text-[14px] text-text-muted-brand">
             Redirection vers vos rendez-vous...
           </p>
+
+          <Link
+            href="/temoignage-video"
+            className="mt-6 inline-flex items-center gap-2 border border-primary-brand px-5 py-2.5 font-body text-xs uppercase tracking-[0.12em] text-primary-brand transition-colors hover:bg-primary-brand hover:text-white"
+          >
+            <Video size={14} />
+            Envoyer un témoignage vidéo
+          </Link>
         </motion.div>
       </div>
     )
@@ -270,7 +310,7 @@ export default function PageAvisRDV() {
               rows={5}
               className="mt-3 w-full border border-border-brand bg-white px-4 py-3 font-body text-[14px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none"
             />
-            <p className="mt-2 text-right font-body text-[11px] text-text-muted-brand">
+            <p className="mt-2 text-right font-body text-xs text-text-muted-brand">
               {commentaire.length}/500 caractères
             </p>
           </div>
@@ -299,7 +339,7 @@ export default function PageAvisRDV() {
             ) : (
               <label className="mt-3 flex h-32 w-32 cursor-pointer flex-col items-center justify-center border-2 border-dashed border-border-brand bg-white transition-colors hover:border-gold">
                 <Camera size={24} className="text-text-muted-brand" />
-                <span className="mt-2 font-body text-[11px] text-text-muted-brand">
+                <span className="mt-2 font-body text-xs text-text-muted-brand">
                   Ajouter
                 </span>
                 <input

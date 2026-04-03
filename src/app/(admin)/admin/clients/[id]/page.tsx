@@ -174,19 +174,19 @@ export default function AdminClientDetailPage() {
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm font-body">
           <div>
-            <span className="text-[11px] uppercase tracking-widest text-gray-500">Téléphone</span>
+            <span className="text-xs uppercase tracking-widest text-gray-500">Téléphone</span>
             <p className="text-text-main mt-0.5">{client.telephone || "—"}</p>
           </div>
           <div>
-            <span className="text-[11px] uppercase tracking-widest text-gray-500">Adresse</span>
+            <span className="text-xs uppercase tracking-widest text-gray-500">Adresse</span>
             <p className="text-text-main mt-0.5">{client.adresse || "—"}</p>
           </div>
           <div>
-            <span className="text-[11px] uppercase tracking-widest text-gray-500">Ville</span>
+            <span className="text-xs uppercase tracking-widest text-gray-500">Ville</span>
             <p className="text-text-main mt-0.5">{client.ville || "—"}</p>
           </div>
           <div>
-            <span className="text-[11px] uppercase tracking-widest text-gray-500">Inscrit le</span>
+            <span className="text-xs uppercase tracking-widest text-gray-500">Inscrit le</span>
             <p className="text-text-main mt-0.5">{new Date(client.createdAt).toLocaleDateString("fr")}</p>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function AdminClientDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-display text-2xl text-text-main">{s.value}</p>
-                <p className="text-[11px] uppercase tracking-widest text-gray-500 font-body mt-1">{s.label}</p>
+                <p className="text-xs uppercase tracking-widest text-gray-500 font-body mt-1">{s.label}</p>
               </div>
               <s.icon className="h-5 w-5 text-gray-500" />
             </div>
@@ -217,7 +217,7 @@ export default function AdminClientDetailPage() {
           <button
             onClick={loadResume}
             disabled={resumeLoading}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gold text-white font-body text-[11px] uppercase tracking-widest hover:bg-gold-dark disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gold text-white font-body text-xs uppercase tracking-widest hover:bg-gold-dark disabled:opacity-50 transition-colors"
           >
             {resumeLoading ? (
               <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -254,7 +254,7 @@ export default function AdminClientDetailPage() {
               <div className="border border-red-200 bg-red-50 p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <AlertTriangle size={14} className="text-red-600" />
-                  <span className="font-body text-[11px] uppercase tracking-widest text-red-600 font-medium">Alertes santé</span>
+                  <span className="font-body text-xs uppercase tracking-widest text-red-600 font-medium">Alertes santé</span>
                 </div>
                 {resume.alertesSante.map((a, i) => (
                   <p key={i} className="font-body text-[12px] text-red-700">{a}</p>
@@ -278,10 +278,10 @@ export default function AdminClientDetailPage() {
           <table className="w-full text-sm font-body">
             <thead>
               <tr className="border-b border-border-brand">
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Soin</th>
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Date</th>
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Prix</th>
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Statut</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Soin</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Date</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Prix</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Statut</th>
               </tr>
             </thead>
             <tbody>
@@ -313,9 +313,9 @@ export default function AdminClientDetailPage() {
           <table className="w-full text-sm font-body">
             <thead>
               <tr className="border-b border-border-brand">
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Date</th>
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Total</th>
-                <th className="text-left py-2 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Statut</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Date</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Total</th>
+                <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Statut</th>
               </tr>
             </thead>
             <tbody>
@@ -347,7 +347,7 @@ function MiniStat({ icon: Icon, label, value }: { icon: React.ElementType; label
     <div className="bg-bg-page border border-border-brand p-3">
       <div className="flex items-center gap-1.5 mb-1">
         <Icon size={12} className="text-gold" />
-        <span className="font-body text-[10px] uppercase tracking-widest text-gray-500">{label}</span>
+        <span className="font-body text-xs uppercase tracking-widest text-gray-500">{label}</span>
       </div>
       <p className="font-body text-[14px] font-medium text-text-main">{value}</p>
     </div>

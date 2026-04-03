@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense } from "react"
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider"
 import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { X, RefreshCcw, CreditCard, MessageCircle, Phone, Mail } from "lucide-react"
@@ -16,6 +17,7 @@ export default function PageErreur() {
 }
 
 function ErreurContent() {
+  const config = useSiteConfig()
   const searchParams = useSearchParams()
   const reference = searchParams.get("reference")
   const commande = searchParams.get("commande")
@@ -52,13 +54,13 @@ function ErreurContent() {
 
           {/* Causes possibles */}
           <motion.div variants={fadeInUp} className="mt-10 border border-border-brand bg-white p-6 text-left">
-            <h2 className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <h2 className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Causes possibles
             </h2>
             <ul className="mt-4 space-y-3">
               {causesPossibles.map((cause, i) => (
                 <li key={i} className="flex items-center gap-3">
-                  <span className="flex h-5 w-5 items-center justify-center bg-red-50 text-[10px] text-danger">
+                  <span className="flex h-5 w-5 items-center justify-center bg-red-50 text-xs text-danger">
                     ·
                   </span>
                   <span className="font-body text-[13px] text-text-mid">{cause}</span>
@@ -69,14 +71,17 @@ function ErreurContent() {
 
           {/* Actions */}
           <motion.div variants={fadeInUp} className="mt-10 flex flex-col gap-4">
-            <BtnArrow href="/checkout" className="justify-center bg-primary-brand text-white border-primary-brand hover:bg-primary-dark hover:border-primary-dark hover:text-white">
-              <RefreshCcw size={14} className="mr-2" />
-              Réessayer le paiement
-            </BtnArrow>
-            <BtnArrow href="/checkout?methode=changer" className="justify-center">
-              <CreditCard size={14} className="mr-2" />
-              Choisir autre méthode
-            </BtnArrow>
+            {commande ? (
+              <BtnArrow href={`/commandes/${commande}`} className="justify-center bg-primary-brand text-white border-primary-brand hover:bg-primary-dark hover:border-primary-dark hover:text-white">
+                <RefreshCcw size={14} className="mr-2" />
+                Réessayer le paiement
+              </BtnArrow>
+            ) : (
+              <BtnArrow href="/commandes" className="justify-center bg-primary-brand text-white border-primary-brand hover:bg-primary-dark hover:border-primary-dark hover:text-white">
+                <RefreshCcw size={14} className="mr-2" />
+                Voir mes commandes
+              </BtnArrow>
+            )}
             <BtnTextLine href="/contact" className="justify-center">
               Contacter le support
             </BtnTextLine>
@@ -89,11 +94,11 @@ function ErreurContent() {
             </h3>
             <div className="mt-4 space-y-3">
               <a
-                href="https://wa.me/2250707000000"
+                href={`https://wa.me/${config.whatsappNumber}`}
                 className="flex items-center justify-center gap-2 font-body text-[13px] text-primary-brand transition-colors hover:text-primary-dark"
               >
                 <Phone size={16} />
-                +225 07 00 00 00 00 (WhatsApp)
+                {config.whatsappDisplay} (WhatsApp)
               </a>
               <a
                 href="mailto:support@lesurnatureldedieu.com"

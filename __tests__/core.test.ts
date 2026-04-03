@@ -27,55 +27,6 @@ describe("Utility functions", () => {
   })
 })
 
-describe("soins-data", () => {
-  it("exports SOINS_DATA array", async () => {
-    const { SOINS_DATA } = await import("../src/lib/soins-data")
-    expect(Array.isArray(SOINS_DATA)).toBe(true)
-    expect(SOINS_DATA.length).toBeGreaterThan(0)
-  })
-
-  it("each soin has required fields", async () => {
-    const { SOINS_DATA } = await import("../src/lib/soins-data")
-    for (const soin of SOINS_DATA) {
-      expect(soin.slug).toBeDefined()
-      expect(soin.nom).toBeDefined()
-      expect(typeof soin.prix).toBe("number")
-      expect(soin.prix).toBeGreaterThan(0)
-    }
-  })
-
-  it("getSoinBySlug returns correct soin", async () => {
-    const { SOINS_DATA, getSoinBySlug } = await import("../src/lib/soins-data")
-    const first = SOINS_DATA[0]
-    const result = getSoinBySlug(first.slug)
-    expect(result).toBeDefined()
-    expect(result?.nom).toBe(first.nom)
-  })
-
-  it("getSoinBySlug returns undefined for unknown slug", async () => {
-    const { getSoinBySlug } = await import("../src/lib/soins-data")
-    expect(getSoinBySlug("nonexistent-soin-xxx")).toBeUndefined()
-  })
-})
-
-describe("produits-data", () => {
-  it("exports PRODUITS_DATA array", async () => {
-    const { PRODUITS_DATA } = await import("../src/lib/produits-data")
-    expect(Array.isArray(PRODUITS_DATA)).toBe(true)
-    expect(PRODUITS_DATA.length).toBeGreaterThan(0)
-  })
-
-  it("each produit has required fields", async () => {
-    const { PRODUITS_DATA } = await import("../src/lib/produits-data")
-    for (const p of PRODUITS_DATA) {
-      expect(p.id).toBeDefined()
-      expect(p.nom).toBeDefined()
-      expect(typeof p.prix).toBe("number")
-      expect(p.prix).toBeGreaterThan(0)
-    }
-  })
-})
-
 describe("i18n dictionaries", () => {
   it("fr.json has all required keys", async () => {
     const fr = await import("../src/lib/i18n/fr.json")
@@ -132,15 +83,15 @@ describe("rate-limit", () => {
     const { createRateLimiter } = await import("../src/lib/rate-limit")
     const limiter = createRateLimiter({ limit: 3, windowMs: 60_000 })
 
-    const r1 = limiter("ip-test")
+    const r1 = await Promise.resolve(limiter("ip-test"))
     expect(r1.allowed).toBe(true)
     expect(r1.remaining).toBe(2)
 
-    const r2 = limiter("ip-test")
+    const r2 = await Promise.resolve(limiter("ip-test"))
     expect(r2.allowed).toBe(true)
     expect(r2.remaining).toBe(1)
 
-    const r3 = limiter("ip-test")
+    const r3 = await Promise.resolve(limiter("ip-test"))
     expect(r3.allowed).toBe(true)
     expect(r3.remaining).toBe(0)
   })
@@ -149,10 +100,10 @@ describe("rate-limit", () => {
     const { createRateLimiter } = await import("../src/lib/rate-limit")
     const limiter = createRateLimiter({ limit: 2, windowMs: 60_000 })
 
-    limiter("ip-block")
-    limiter("ip-block")
+    await Promise.resolve(limiter("ip-block"))
+    await Promise.resolve(limiter("ip-block"))
 
-    const r3 = limiter("ip-block")
+    const r3 = await Promise.resolve(limiter("ip-block"))
     expect(r3.allowed).toBe(false)
     expect(r3.remaining).toBe(0)
     expect(r3.retryAfterSeconds).toBeGreaterThan(0)
@@ -162,11 +113,11 @@ describe("rate-limit", () => {
     const { createRateLimiter } = await import("../src/lib/rate-limit")
     const limiter = createRateLimiter({ limit: 1, windowMs: 60_000 })
 
-    limiter("ip-a")
-    const ra = limiter("ip-a")
+    await Promise.resolve(limiter("ip-a"))
+    const ra = await Promise.resolve(limiter("ip-a"))
     expect(ra.allowed).toBe(false)
 
-    const rb = limiter("ip-b")
+    const rb = await Promise.resolve(limiter("ip-b"))
     expect(rb.allowed).toBe(true)
   })
 
@@ -174,13 +125,13 @@ describe("rate-limit", () => {
     const { createRateLimiter } = await import("../src/lib/rate-limit")
     const limiter = createRateLimiter({ limit: 1, windowMs: 50 }) // 50ms window
 
-    limiter("ip-expire")
-    const blocked = limiter("ip-expire")
+    await Promise.resolve(limiter("ip-expire"))
+    const blocked = await Promise.resolve(limiter("ip-expire"))
     expect(blocked.allowed).toBe(false)
 
     await new Promise((r) => setTimeout(r, 60))
 
-    const after = limiter("ip-expire")
+    const after = await Promise.resolve(limiter("ip-expire"))
     expect(after.allowed).toBe(true)
   })
 })

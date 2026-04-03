@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { creerPaiement, type JekoPaymentMethod } from "@/lib/jeko"
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     body = await request.json()
   } catch {
     return NextResponse.json(
-      { error: "Corps de requête invalide." },
+      { error: "Les informations envoyées sont incorrectes. Veuillez réessayer." },
       { status: 400 }
     )
   }

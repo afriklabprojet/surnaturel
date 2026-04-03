@@ -22,10 +22,11 @@ import {
   Home,
   Star,
   MessagesSquare,
+  MoreHorizontal,
 } from "lucide-react"
 import Notifications from "@/components/layout/Notifications"
-import ChatBubble from "@/components/layout/ChatBubble"
 import { ConfirmProvider } from "@/components/ui/confirm-dialog"
+import { ToastProvider } from "@/components/ui/toast"
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Mon espace", icon: LayoutDashboard },
@@ -45,9 +46,18 @@ const MOBILE_NAV = [
   { href: "/dashboard", icon: Home, label: "Accueil" },
   { href: "/mes-rdv", icon: Calendar, label: "RDV" },
   { href: "/fidelite", icon: Gift, label: "Fidélité" },
-  { href: "/commandes", icon: ShoppingBag, label: "Commandes" },
   { href: "/profil", icon: User, label: "Profil" },
-] as const
+]
+
+const MORE_NAV_ITEMS = [
+  { href: "/commandes", icon: ShoppingBag, label: "Commandes" },
+  { href: "/communaute", icon: Users, label: "Communauté" },
+  { href: "/communaute/messages", icon: MessageCircle, label: "Messagerie" },
+  { href: "/favoris", icon: Heart, label: "Favoris" },
+  { href: "/avis", icon: Star, label: "Avis" },
+  { href: "/parrainage", icon: MessagesSquare, label: "Parrainage" },
+  { href: "/suivi-medical", icon: Lock, label: "Médical" },
+]
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Mon espace",
@@ -79,8 +89,10 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const [points, setPoints] = useState(0)
   const [profileProgress, setProfileProgress] = useState(0)
+  const [isNewUser, setIsNewUser] = useState(false)
 
   const user = session?.user
   const initiales = user
@@ -93,9 +105,11 @@ export default function DashboardLayout({
       const fideliteRes = await fetch("/api/fidelite")
       if (fideliteRes.ok) {
         const data = await fideliteRes.json()
-        setPoints(data.points || 0)
+        const pts = data.points || 0
+        setPoints(pts)
+        // Heuristique : 0 point → aucun soin complété, utilisatrice nouvelle
+        setIsNewUser(pts === 0)
       }
-      // Calculate profile progress
       if (user) {
         let progress = 0
         if (user.prenom) progress += 20
@@ -145,7 +159,7 @@ export default function DashboardLayout({
             <p className="truncate font-display text-[16px] font-light text-text-main">
               {user?.prenom} {user?.nom}
             </p>
-            <p className="truncate font-body text-[11px] text-text-muted-brand">
+            <p className="truncate font-body text-xs text-text-muted-brand">
               {user?.email}
             </p>
           </div>
@@ -153,8 +167,8 @@ export default function DashboardLayout({
         {/* Barre progression profil */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-1">
-            <span className="font-body text-[10px] text-text-muted-brand">Profil complété</span>
-            <span className="font-body text-[10px] font-medium text-gold">{profileProgress}%</span>
+            <span className="font-body text-xs text-text-muted-brand">Profil complété</span>
+            <span className="font-body text-xs font-medium text-gold">{profileProgress}%</span>
           </div>
           <div className="h-1.5 w-full bg-border-brand overflow-hidden">
             <div 
@@ -167,10 +181,23 @@ export default function DashboardLayout({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {/* Bandeau premier pas — visible seulement pour les nouvelles utilisatrices */}
+        {isNewUser && (
+          <div className="mb-4 px-3 py-3 bg-primary-light border-l-2 border-primary-brand">
+            <p className="font-body text-[11px] font-medium text-primary-brand uppercase tracking-wider mb-1">
+              Commencez ici
+            </p>
+            <p className="font-body text-[11px] text-text-mid leading-snug">
+              Prenez votre premier rendez-vous pour débloquer toutes les fonctionnalités.
+            </p>
+          </div>
+        )}
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
             const active = isActive(item.href)
+            // L'espace médical n'est pertinent qu'après un premier soin
+            const isMedical = item.href === "/suivi-medical"
             return (
               <li key={item.href}>
                 <Link
@@ -183,7 +210,12 @@ export default function DashboardLayout({
                   }`}
                 >
                   <Icon size={17} />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {isMedical && isNewUser && (
+                    <span className="font-body text-[9px] uppercase tracking-wider text-text-muted-brand border border-border-brand px-1.5 py-0.5 shrink-0">
+                      1er soin requis
+                    </span>
+                  )}
                 </Link>
               </li>
             )
@@ -197,13 +229,13 @@ export default function DashboardLayout({
         <div className="flex items-center justify-center gap-2 py-2">
           <Star size={16} className="text-gold" />
           <span className="font-display text-[18px] font-light text-gold">{points}</span>
-          <span className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">pts</span>
+          <span className="font-body text-xs uppercase tracking-wider text-text-muted-brand">pts</span>
         </div>
         
         <Link
           href="/prise-rdv"
           onClick={() => setSidebarOpen(false)}
-          className="flex w-full items-center justify-center gap-2 bg-primary-brand px-4 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+          className="flex w-full items-center justify-center gap-2 bg-primary-brand px-4 py-2.5 font-body text-xs font-medium uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
         >
           <Plus size={14} />
           Prendre un RDV
@@ -228,6 +260,7 @@ export default function DashboardLayout({
 
   return (
     <ConfirmProvider>
+      <ToastProvider>
     <div className="flex min-h-screen bg-bg-page">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-border-brand">
@@ -245,7 +278,8 @@ export default function DashboardLayout({
             <div className="flex items-center justify-end px-4 pt-3">
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="p-1 text-text-muted-brand hover:text-text-main"
+                className="flex h-11 w-11 items-center justify-center text-text-muted-brand hover:text-text-main"
+                aria-label="Fermer le menu"
               >
                 <X size={20} />
               </button>
@@ -262,7 +296,8 @@ export default function DashboardLayout({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-text-mid"
+              className="flex h-11 w-11 items-center justify-center lg:hidden text-text-mid"
+              aria-label="Ouvrir le menu"
             >
               <Menu size={22} />
             </button>
@@ -270,7 +305,7 @@ export default function DashboardLayout({
               <h1 className="font-display text-[24px] font-light text-text-main">
                 {pageTitle}
               </h1>
-              <span className="hidden sm:block font-body text-[10px] uppercase tracking-[0.15em] text-gold">
+              <span className="hidden sm:block font-body text-xs uppercase tracking-[0.15em] text-gold">
                 ——— Espace personnel ———
               </span>
             </div>
@@ -287,7 +322,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-brand bg-white py-2 safe-area-pb lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-brand bg-white py-1 safe-area-pb lg:hidden">
         {MOBILE_NAV.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
@@ -295,7 +330,7 @@ export default function DashboardLayout({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px] ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-2 min-w-14 min-h-11 ${
                 active ? "text-primary-brand" : "text-text-muted-brand"
               }`}
             >
@@ -309,10 +344,63 @@ export default function DashboardLayout({
             </Link>
           )
         })}
+        <button
+          onClick={() => setMoreMenuOpen(true)}
+          className="flex flex-col items-center gap-0.5 px-3 py-2 min-w-14 min-h-11 text-text-muted-brand"
+          aria-label="Plus de navigation"
+        >
+          <MoreHorizontal size={20} />
+          <span className="font-body text-[9px]">Plus</span>
+        </button>
       </nav>
 
-      <ChatBubble />
+      {/* More menu drawer */}
+      {moreMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 lg:hidden"
+          onClick={() => setMoreMenuOpen(false)}
+        >
+          <div className="absolute inset-0 bg-black/30" />
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-white border-t border-border-brand"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border-brand">
+              <span className="font-display text-[16px] font-light text-text-main">Navigation</span>
+              <button
+                onClick={() => setMoreMenuOpen(false)}
+                className="flex h-9 w-9 items-center justify-center text-text-muted-brand hover:text-text-main"
+                aria-label="Fermer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-1 p-4">
+              {MORE_NAV_ITEMS.map((item) => {
+                const active = isActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMoreMenuOpen(false)}
+                    className={`flex flex-col items-center gap-1.5 p-3 ${
+                      active
+                        ? "text-primary-brand bg-bg-page"
+                        : "text-text-mid hover:bg-bg-page"
+                    }`}
+                  >
+                    <item.icon size={20} />
+                    <span className="font-body text-[9px] text-center leading-tight">{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+      </ToastProvider>
     </ConfirmProvider>
   )
 }

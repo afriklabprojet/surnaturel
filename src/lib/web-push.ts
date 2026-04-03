@@ -1,15 +1,20 @@
 // ── Service lib pour les notifications push (Web Push API) ─────────────
 import webPush from "web-push"
+import { getConfig } from "@/lib/config"
 
 // Configuration VAPID (Voluntary Application Server Identification)
 // Les clés doivent être générées avec: npx web-push generate-vapid-keys
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ""
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ""
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:contact@surnatureldedieu.com"
 
-// Configuration de web-push
-if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-  webPush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+let webPushInitialized = false
+
+async function ensureWebPushConfigured() {
+  if (webPushInitialized || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return
+  const { email } = await getConfig()
+  const subject = process.env.VAPID_SUBJECT || `mailto:${email}`
+  webPush.setVapidDetails(subject, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+  webPushInitialized = true
 }
 
 export type PushPayload = {
@@ -50,6 +55,8 @@ export async function envoyerPushNotification(
     return false
   }
 
+  await ensureWebPushConfigured()
+
   try {
     const payloadString = JSON.stringify({
       ...payload,
@@ -63,7 +70,6 @@ export async function envoyerPushNotification(
     const err = error as { statusCode?: number }
     // 410 Gone = subscription expirée, devrait être supprimée
     if (err.statusCode === 410) {
-      console.log("[PUSH] Subscription expirée")
       return false
     }
     console.error("[PUSH] Erreur envoi:", error)

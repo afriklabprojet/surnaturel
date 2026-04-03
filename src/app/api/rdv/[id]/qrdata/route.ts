@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -62,7 +63,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error("Erreur API QR data:", error)
+    logger.error("Erreur API QR data:", error)
     return NextResponse.json(
       { error: "Erreur lors de la récupération des données" },
       { status: 500 }

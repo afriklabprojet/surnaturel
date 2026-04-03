@@ -3,14 +3,15 @@
 import { Suspense, useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Shield, Lock, Loader2, FileText, Stethoscope, MessageSquare, Activity, FolderOpen } from "lucide-react"
+import { Shield, Lock, FileText, Stethoscope, MessageSquare, Activity, FolderOpen } from "lucide-react"
+import { SkeletonSuiviMedical } from "@/components/ui/skeletons"
 import DossierMedical from "@/components/medical/DossierMedical"
 import MesConsultations from "@/components/medical/MesConsultations"
 import MessagerieMedicale from "@/components/medical/MessagerieMedicale"
 import MesuresSante from "@/components/medical/MesuresSante"
 import DocumentsMedicaux from "@/components/medical/DocumentsMedicaux"
 
-const ALLOWED_ROLES = ["CLIENT", "ACCOMPAGNATEUR_MEDICAL"]
+const ALLOWED_ROLES = ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"]
 
 const TABS = [
   { id: "dossier", label: "Mon dossier", icon: FileText },
@@ -24,7 +25,7 @@ type TabId = (typeof TABS)[number]["id"]
 
 export default function PageSuiviMedical() {
   return (
-    <Suspense fallback={<div className="flex min-h-[40vh] items-center justify-center"><Loader2 size={24} className="animate-spin text-gold" /></div>}>
+    <Suspense fallback={<SkeletonSuiviMedical />}>
       <SuiviMedicalContent />
     </Suspense>
   )
@@ -49,11 +50,7 @@ function SuiviMedicalContent() {
   }, [status, session, router])
 
   if (status === "loading") {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonSuiviMedical />
   }
 
   if (!session || !ALLOWED_ROLES.includes(session.user.role)) {
@@ -67,10 +64,10 @@ function SuiviMedicalContent() {
         <div className="flex items-center gap-3">
           <Shield size={20} className="text-gold shrink-0" />
           <div>
-            <p className="font-body text-[11px] font-medium uppercase tracking-[0.15em] text-gold">
+            <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-gold">
               Espace confidentiel
             </p>
-            <p className="font-body text-[11px] text-text-muted-brand">
+            <p className="font-body text-xs text-text-muted-brand">
               Vos données sont chiffrées et sécurisées (AES-256)
             </p>
           </div>
@@ -103,7 +100,7 @@ function SuiviMedicalContent() {
       <div className="bg-white border border-border-brand border-t-2 border-t-gold p-6">
         <div className="flex items-center gap-2 mb-4">
           <Lock size={14} className="text-gold" />
-          <span className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand">
+          <span className="font-body text-xs uppercase tracking-widest text-text-muted-brand">
             Confidentiel
           </span>
         </div>

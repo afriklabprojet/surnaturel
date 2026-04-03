@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth, verifyActiveJti } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { encrypt, decrypt } from "@/lib/crypto"
 import { z } from "zod/v4"
@@ -15,6 +15,14 @@ export async function GET() {
   const session = await auth()
   if (!session?.user) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  }
+
+  // Vérifier que la session n'a pas été révoquée (jti check)
+  if (session.jti) {
+    const active = await verifyActiveJti(session.jti)
+    if (!active) {
+      return NextResponse.json({ error: "Session révoquée. Reconnectez-vous." }, { status: 401 })
+    }
   }
 
   if (!verifyMedicalAccess(session.user.role)) {
@@ -34,10 +42,6 @@ export async function GET() {
     try { return decrypt(val) } catch { return "" }
   }
 
-  console.log(
-    `[MEDICAL] dossier:read userId:${session.user.id} at:${new Date().toISOString()}`
-  )
-
   return NextResponse.json({
     dossier: {
       id: dossier.id,
@@ -46,7 +50,7 @@ export async function GET() {
       allergies: safeDecrypt(dossier.allergies),
       antecedents: safeDecrypt(dossier.antecedents),
       medicaments: safeDecrypt(dossier.medicaments),
-      groupeSanguin: dossier.groupeSanguin ?? "",
+      groupeSanguin: safeDecrypt(dossier.groupeSanguin),
       contactUrgence: safeDecrypt(dossier.contactUrgence),
       updatedAt: dossier.updatedAt,
     },
@@ -80,7 +84,7 @@ export async function PATCH(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = dossierSchema.safeParse(body)
@@ -103,7 +107,7 @@ export async function PATCH(req: NextRequest) {
       allergies: encryptOpt(d.allergies),
       antecedents: encryptOpt(d.antecedents),
       medicaments: encryptOpt(d.medicaments),
-      groupeSanguin: d.groupeSanguin || null,
+      groupeSanguin: d.groupeSanguin ? encrypt(d.groupeSanguin) : null,
       contactUrgence: encryptOpt(d.contactUrgence),
     },
     update: {
@@ -112,14 +116,10 @@ export async function PATCH(req: NextRequest) {
       allergies: encryptOpt(d.allergies),
       antecedents: encryptOpt(d.antecedents),
       medicaments: encryptOpt(d.medicaments),
-      groupeSanguin: d.groupeSanguin || null,
+      groupeSanguin: d.groupeSanguin ? encrypt(d.groupeSanguin) : null,
       contactUrgence: encryptOpt(d.contactUrgence),
     },
   })
-
-  console.log(
-    `[MEDICAL] dossier:update userId:${session.user.id} at:${new Date().toISOString()}`
-  )
 
   return NextResponse.json({
     success: true,

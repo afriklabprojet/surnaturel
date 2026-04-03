@@ -186,7 +186,7 @@ export default function PageNotifications() {
             <Bell size={22} className="text-primary-brand" />
             <h2 className="font-display text-[20px] font-light text-text-main">Notifications</h2>
             {totalNonLues > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center bg-primary-brand px-1.5 font-body text-[10px] font-medium text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center bg-primary-brand px-1.5 font-body text-xs font-medium text-white">
                 {totalNonLues}
               </span>
             )}
@@ -196,7 +196,7 @@ export default function PageNotifications() {
               <button
                 onClick={marquerToutesLues}
                 disabled={markingAll}
-                className="flex items-center gap-1.5 font-body text-[11px] font-medium uppercase tracking-widest text-primary-brand hover:text-primary-dark transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 font-body text-xs font-medium uppercase tracking-widest text-primary-brand hover:text-primary-dark transition-colors disabled:opacity-50"
               >
                 {markingAll ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                 Tout marquer lu
@@ -204,7 +204,7 @@ export default function PageNotifications() {
             )}
             <Link
               href="/profil/modifier"
-              className="flex items-center gap-1.5 font-body text-[11px] text-text-muted-brand hover:text-text-mid transition-colors"
+              className="flex items-center gap-1.5 font-body text-xs text-text-muted-brand hover:text-text-mid transition-colors"
             >
               <Settings size={13} />
               Préférences
@@ -218,7 +218,7 @@ export default function PageNotifications() {
             <button
               key={f.value}
               onClick={() => setFiltre(f.value)}
-              className={`px-3 py-1.5 font-body text-[11px] font-medium uppercase tracking-[0.08em] transition-colors border ${
+              className={`px-3 py-1.5 font-body text-xs font-medium uppercase tracking-[0.08em] transition-colors border ${
                 filtre === f.value
                   ? "border-primary-brand bg-primary-brand text-white"
                   : "border-border-brand bg-white text-text-mid hover:border-gold hover:text-gold"
@@ -265,7 +265,7 @@ export default function PageNotifications() {
                 <p className="mt-0.5 font-body text-[12px] text-text-muted-brand line-clamp-2">
                   {notif.message}
                 </p>
-                <p className="mt-1 font-body text-[10px] text-text-muted-brand">
+                <p className="mt-1 font-body text-xs text-text-muted-brand">
                   {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: fr })}
                 </p>
               </div>
@@ -285,7 +285,7 @@ export default function PageNotifications() {
           <button
             onClick={() => fetchNotifications(page + 1, true)}
             disabled={loadingMore}
-            className="flex items-center gap-2 border border-border-brand bg-white px-6 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-mid hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 border border-border-brand bg-white px-6 py-2.5 font-body text-xs font-medium uppercase tracking-[0.12em] text-text-mid hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
           >
             {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
             Voir plus

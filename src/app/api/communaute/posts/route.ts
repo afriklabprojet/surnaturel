@@ -92,7 +92,13 @@ export async function GET(req: NextRequest) {
           take: 3,
           include: { auteur: { select: auteurSelect } },
         },
-        reactions: { select: { userId: true, type: true } },
+        // Charger uniquement la réaction de l'utilisateur courant — pas toutes
+        // les réactions (posts viraux = milliers de lignes inutiles en RAM)
+        reactions: {
+          where: { userId: session.user.id },
+          select: { type: true },
+          take: 1,
+        },
         sauvegardes: { where: { userId: session.user.id }, select: { id: true } },
         _count: { select: { commentaires: true, reactions: true, partages: true } },
         partageDe: {
@@ -107,19 +113,13 @@ export async function GET(req: NextRequest) {
   ])
 
   const enriched = posts.map((post) => {
-    const userReaction = post.reactions.find((r) => r.userId === session.user.id)
-    // Compter les réactions par type
-    const reactionCounts: Record<string, number> = {}
-    for (const r of post.reactions) {
-      reactionCounts[r.type] = (reactionCounts[r.type] || 0) + 1
-    }
     return {
       ...post,
       reactions: undefined,
       sauvegardes: undefined,
-      userReaction: userReaction?.type ?? null,
-      reactionCounts,
+      userReaction: post.reactions[0]?.type ?? null,
       reactionsCount: post._count.reactions,
+      reactionCounts: {} as Record<string, number>,
       commentairesCount: post._count.commentaires,
       partagesCount: post._count.partages,
       saved: post.sauvegardes.length > 0,
@@ -149,6 +149,8 @@ export async function POST(req: NextRequest) {
   if (groupeId) {
     const membre = await prisma.membreGroupe.findUnique({
       where: { groupeId_userId: { groupeId, userId: session.user.id } },
+      // Récupérer role + mutedUntil en UNE seule requête — évite le doublon plus bas
+      select: { role: true, mutedUntil: true },
     })
     if (!membre) {
       return NextResponse.json({ error: "Vous n'êtes pas membre de ce groupe" }, { status: 403 })
@@ -164,6 +166,9 @@ export async function POST(req: NextRequest) {
     if (motTrouve && motTrouve.action === "supprimer") {
       return NextResponse.json({ error: "Votre message contient un mot interdit" }, { status: 400 })
     }
+    // Stocker le role pour l'utiliser dans la décision de modération ci-dessous
+    // (évite un second appel membreGroupe.findUnique)
+    Object.assign(rest, { __membreRole: membre.role })
   }
 
   // Vérifier le post original si c'est un partage
@@ -177,18 +182,13 @@ export async function POST(req: NextRequest) {
   const format = rest.format || (rest.videoUrl ? "VIDEO" : rest.images?.length || rest.imageUrl ? "IMAGE" : rest.lienUrl ? "LIEN" : rest.documentUrl ? "DOCUMENT" : "TEXTE")
 
   // Déterminer le statut du post (modération pré-publication)
+  // Utilise __membreRole déjà en mémoire — pas de second appel DB
   let postStatus: "PUBLIE" | "EN_ATTENTE_MODERATION" = "PUBLIE"
   if (groupeId) {
     const groupe = await prisma.groupe.findUnique({ where: { id: groupeId }, select: { approvalRequired: true } })
-    if (groupe?.approvalRequired) {
-      const membreRole = await prisma.membreGroupe.findUnique({
-        where: { groupeId_userId: { groupeId, userId: session.user.id } },
-        select: { role: true },
-      })
-      // Les admins et modérateurs publient directement
-      if (membreRole && !["ADMIN", "MODERATEUR"].includes(membreRole.role)) {
-        postStatus = "EN_ATTENTE_MODERATION"
-      }
+    const membreRoleCached = (rest as Record<string, unknown>).__membreRole as string | undefined
+    if (groupe?.approvalRequired && membreRoleCached && !["ADMIN", "MODERATEUR"].includes(membreRoleCached)) {
+      postStatus = "EN_ATTENTE_MODERATION"
     }
   }
 

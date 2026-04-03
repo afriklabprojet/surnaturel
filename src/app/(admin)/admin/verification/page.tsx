@@ -101,7 +101,7 @@ export default function PageAdminVerification() {
             <button
               key={s}
               onClick={() => { setFiltreStatut(s); setPage(1) }}
-              className={`px-2.5 py-1 font-body text-[10px] uppercase tracking-widest border transition-colors ${
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
                 filtreStatut === s ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
               }`}
             >
@@ -119,16 +119,59 @@ export default function PageAdminVerification() {
           <Loader2 className="h-8 w-8 animate-spin text-primary-brand" />
         </div>
       ) : (
-        <div className="bg-white border border-border-brand overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <>
+          {/* Mobile Cards */}
+          <div className="space-y-3 md:hidden">
+            {users.map((u) => {
+              const status = STATUS_LABELS[u.verificationStatus] || STATUS_LABELS.AUCUNE
+              return (
+                <div key={u.id} className="bg-white border border-border-brand p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar user={u} size={40} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-body text-[13px] font-medium text-text-main truncate">{u.prenom} {u.nom}</p>
+                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 text-xs ${status.bg} ${status.text}`}>
+                          <status.icon size={10} />
+                        </span>
+                      </div>
+                      <p className="font-body text-xs text-text-muted-brand truncate">{u.email}</p>
+                      <p className="font-body text-xs text-text-muted-brand mt-1">{u.nbRdv} RDV · {u.nbCommandes} cmd · {u.nbPosts} posts</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border-brand">
+                    {u.verificationStatus !== "MEMBRE_VERIFIE" && (
+                      <button onClick={() => changeStatus(u.id, "MEMBRE_VERIFIE")} disabled={actionLoading[u.id]} className="flex-1 py-2 text-xs uppercase tracking-widest bg-primary-brand text-white disabled:opacity-50">Vérifier</button>
+                    )}
+                    {u.verificationStatus !== "PROFESSIONNEL_SANTE" && u.role !== "CLIENT" && (
+                      <button onClick={() => changeStatus(u.id, "PROFESSIONNEL_SANTE")} disabled={actionLoading[u.id]} className="flex-1 py-2 text-xs uppercase tracking-widest bg-gold text-white disabled:opacity-50">Pro santé</button>
+                    )}
+                    {u.verificationStatus !== "AUCUNE" && (
+                      <button onClick={() => changeStatus(u.id, "AUCUNE")} disabled={actionLoading[u.id]} className="flex-1 py-2 text-xs uppercase tracking-widest border border-border-brand text-text-muted-brand disabled:opacity-50">Retirer</button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+            {users.length === 0 && (
+              <div className="bg-white border border-border-brand p-8 text-center">
+                <BadgeCheck className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-text-muted-brand font-body">Aucun utilisateur</p>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white border border-border-brand overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
               <thead className="bg-bg-page">
                 <tr>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Utilisateur</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Rôle</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Activité</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Statut</th>
-                  <th className="text-left px-4 py-3 font-body text-[11px] uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Utilisateur</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Rôle</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Activité</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Statut</th>
+                  <th className="text-left px-4 py-3 font-body text-xs uppercase tracking-widest text-text-muted-brand font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -141,18 +184,18 @@ export default function PageAdminVerification() {
                           <Avatar user={u} size={32} />
                           <div>
                             <p className="font-body text-[13px] font-medium text-text-main">{u.prenom} {u.nom}</p>
-                            <p className="font-body text-[11px] text-text-muted-brand">{u.email}</p>
+                            <p className="font-body text-xs text-text-muted-brand">{u.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3 font-body text-[12px] text-text-mid">{u.role}</td>
                       <td className="px-4 py-3">
-                        <div className="font-body text-[11px] text-text-muted-brand space-y-0.5">
+                        <div className="font-body text-xs text-text-muted-brand space-y-0.5">
                           <p>{u.nbRdv} RDV · {u.nbCommandes} cmd · {u.nbPosts} posts</p>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-[10px] uppercase tracking-widest ${status.bg} ${status.text}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-xs uppercase tracking-widest ${status.bg} ${status.text}`}>
                           <status.icon size={12} /> {status.label}
                         </span>
                       </td>
@@ -162,7 +205,7 @@ export default function PageAdminVerification() {
                             <button
                               onClick={() => changeStatus(u.id, "MEMBRE_VERIFIE")}
                               disabled={actionLoading[u.id]}
-                              className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors disabled:opacity-50"
+                              className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-primary-brand text-primary-brand hover:bg-primary-light transition-colors disabled:opacity-50"
                             >
                               Vérifier
                             </button>
@@ -171,7 +214,7 @@ export default function PageAdminVerification() {
                             <button
                               onClick={() => changeStatus(u.id, "PROFESSIONNEL_SANTE")}
                               disabled={actionLoading[u.id]}
-                              className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-gold text-gold-dark hover:bg-gold-light transition-colors disabled:opacity-50"
+                              className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-gold text-gold-dark hover:bg-gold-light transition-colors disabled:opacity-50"
                             >
                               Pro santé
                             </button>
@@ -180,7 +223,7 @@ export default function PageAdminVerification() {
                             <button
                               onClick={() => changeStatus(u.id, "AUCUNE")}
                               disabled={actionLoading[u.id]}
-                              className="px-2 py-1 font-body text-[10px] uppercase tracking-widest border border-border-brand text-text-muted-brand hover:bg-bg-page transition-colors disabled:opacity-50"
+                              className="px-2 py-1 font-body text-xs uppercase tracking-widest border border-border-brand text-text-muted-brand hover:bg-bg-page transition-colors disabled:opacity-50"
                             >
                               Retirer
                             </button>
@@ -198,17 +241,18 @@ export default function PageAdminVerification() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>

@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import {
@@ -108,7 +109,7 @@ export async function GET(request: Request) {
       details,
     })
   } catch (error) {
-    console.error("Erreur CRON rappels WhatsApp:", error)
+    logger.error("Erreur CRON rappels WhatsApp:", error)
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

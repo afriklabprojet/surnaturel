@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
+import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { staggerContainer, staggerItem, fadeInUp } from "@/lib/animations"
 import {
@@ -8,12 +9,14 @@ import {
   Sparkles,
   Calendar,
   Gift,
-  Loader2,
   ChevronDown,
   Edit2,
   Trash2,
+  Loader2,
 } from "lucide-react"
 import EmptyState from "@/components/ui/empty-states"
+import { useFetch } from "@/lib/hooks/use-fetch"
+import { SkeletonAvis } from "@/components/ui/skeletons"
 import Image from "next/image"
 
 interface Soin {
@@ -47,32 +50,13 @@ interface AvisData {
 }
 
 export default function AvisPage() {
-  const [data, setData] = useState<AvisData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, loading, mutate: fetchData } = useFetch<AvisData>("/api/avis?mesAvis=true")
   const [formOpen, setFormOpen] = useState<string | null>(null)
   const [note, setNote] = useState(5)
   const [commentaire, setCommentaire] = useState("")
   const [soumettant, setSoumettant] = useState(false)
   const [editant, setEditant] = useState<string | null>(null)
   const [supprimant, setSupprimant] = useState<string | null>(null)
-
-  const fetchData = useCallback(async () => {
-    try {
-      const res = await fetch("/api/avis?mesAvis=true")
-      if (res.ok) {
-        const json = await res.json()
-        setData(json)
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
 
   async function soumettre(rdvId: string) {
     if (soumettant) return
@@ -94,9 +78,12 @@ export default function AvisPage() {
         setNote(5)
         setCommentaire("")
         fetchData()
+      } else {
+        const json = await res.json()
+        toast.error(json.error || "Erreur lors de l'envoi de l'avis")
       }
     } catch {
-      // silently fail
+      toast.error("Erreur réseau")
     } finally {
       setSoumettant(false)
     }
@@ -122,9 +109,12 @@ export default function AvisPage() {
         setNote(5)
         setCommentaire("")
         fetchData()
+      } else {
+        const json = await res.json()
+        toast.error(json.error || "Erreur lors de la modification")
       }
     } catch {
-      // silently fail
+      toast.error("Erreur réseau")
     } finally {
       setSoumettant(false)
     }
@@ -141,9 +131,11 @@ export default function AvisPage() {
 
       if (res.ok) {
         fetchData()
+      } else {
+        toast.error("Erreur lors de la suppression")
       }
     } catch {
-      // silently fail
+      toast.error("Erreur réseau")
     } finally {
       setSupprimant(null)
     }
@@ -181,11 +173,7 @@ export default function AvisPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonAvis />
   }
 
   const avis = data?.avis || []
@@ -220,7 +208,7 @@ export default function AvisPage() {
             <h2 className="font-display text-[18px] font-light text-text-main">
               En attente de votre avis
             </h2>
-            <span className="bg-gold/10 px-2 py-0.5 font-body text-[11px] font-medium text-gold">
+            <span className="bg-gold/10 px-2 py-0.5 font-body text-xs font-medium text-gold">
               +30 pts
             </span>
           </div>
@@ -259,7 +247,7 @@ export default function AvisPage() {
                       </p>
                       <div className="mt-1 flex items-center gap-1 text-text-muted-brand">
                         <Calendar size={12} />
-                        <span className="font-body text-[11px]">
+                        <span className="font-body text-xs">
                           {new Date(rdv.date).toLocaleDateString("fr", {
                             day: "2-digit",
                             month: "long",
@@ -291,7 +279,7 @@ export default function AvisPage() {
                       <div className="space-y-4">
                         {/* Note */}
                         <div>
-                          <p className="mb-2 font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                          <p className="mb-2 font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                             Votre note
                           </p>
                           {renderStars(note, true)}
@@ -299,7 +287,7 @@ export default function AvisPage() {
 
                         {/* Commentaire */}
                         <div>
-                          <label className="mb-2 block font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                          <label className="mb-2 block font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                             Commentaire (optionnel)
                           </label>
                           <textarea
@@ -365,13 +353,13 @@ export default function AvisPage() {
                   // Mode édition
                   <div className="space-y-4">
                     <div>
-                      <p className="mb-2 font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                      <p className="mb-2 font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                         Votre note
                       </p>
                       {renderStars(note, true)}
                     </div>
                     <div>
-                      <label className="mb-2 block font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                      <label className="mb-2 block font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                         Commentaire (optionnel)
                       </label>
                       <textarea
@@ -462,7 +450,7 @@ export default function AvisPage() {
                       </p>
                     )}
 
-                    <p className="mt-3 font-body text-[11px] text-text-muted-brand">
+                    <p className="mt-3 font-body text-xs text-text-muted-brand">
                       Publié le{" "}
                       {new Date(a.createdAt).toLocaleDateString("fr", {
                         day: "2-digit",

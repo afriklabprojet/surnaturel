@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -36,7 +37,7 @@ export async function GET(
     }
 
     // Générer le fichier ICS
-    const icsContent = genererFichierICS({
+    const icsContent = await genererFichierICS({
       id: rdv.id,
       soin: rdv.soin?.nom || "Rendez-vous",
       date: rdv.dateHeure,
@@ -52,7 +53,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error("Erreur génération ICS:", error)
+    logger.error("Erreur génération ICS:", error)
     return NextResponse.json(
       { error: "Erreur lors de la génération du fichier calendrier" },
       { status: 500 }

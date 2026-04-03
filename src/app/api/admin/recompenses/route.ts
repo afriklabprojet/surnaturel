@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 const recompenseSchema = z.object({
   nom: z.string().min(1, "Nom requis"),
@@ -57,7 +58,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error("Erreur récupération récompenses admin:", error)
+    logger.error("Erreur récupération récompenses admin:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, recompense }, { status: 201 })
   } catch (error) {
-    console.error("Erreur création récompense:", error)
+    logger.error("Erreur création récompense:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

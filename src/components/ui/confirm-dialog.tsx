@@ -93,13 +93,13 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => handleClose(false)}
-                className="px-5 py-2.5 border border-border-brand font-body text-[11px] uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+                className="px-5 py-2.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
               >
                 {state.options.cancelLabel ?? "Annuler"}
               </button>
               <button
                 onClick={() => handleClose(true)}
-                className={`px-5 py-2.5 font-body text-[11px] uppercase tracking-widest text-white transition-colors ${
+                className={`px-5 py-2.5 font-body text-xs uppercase tracking-widest text-white transition-colors ${
                   variant === "danger"
                     ? "bg-danger hover:bg-red-700"
                     : variant === "warning"

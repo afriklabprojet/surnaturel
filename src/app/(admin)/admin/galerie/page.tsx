@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2, Pencil, Image, Check, X, Eye, EyeOff, ArrowUpDown } from "lucide-react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { Plus, Trash2, Pencil, Image, Check, X, Eye, EyeOff, ArrowUpDown, Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { useConfirm } from "@/components/ui/confirm-dialog"
 
@@ -32,6 +32,12 @@ export default function PageAdminGalerie() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [previewPhoto, setPreviewPhoto] = useState<GaleriePhoto | null>(null)
   const confirm = useConfirm()
+  const fileAvantRef = useRef<HTMLInputElement>(null)
+  const fileApresRef = useRef<HTMLInputElement>(null)
+  const [uploadingAvant, setUploadingAvant] = useState(false)
+  const [uploadingApres, setUploadingApres] = useState(false)
+  const [dragOverAvant, setDragOverAvant] = useState(false)
+  const [dragOverApres, setDragOverApres] = useState(false)
 
   const [form, setForm] = useState({
     titre: "",
@@ -62,6 +68,43 @@ export default function PageAdminGalerie() {
   useEffect(() => {
     loadPhotos()
   }, [loadPhotos])
+
+  async function uploadImage(file: File, champ: "imageAvantUrl" | "imageApresUrl") {
+    if (champ === "imageAvantUrl") setUploadingAvant(true)
+    else setUploadingApres(true)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      if (res.ok) {
+        const data = await res.json()
+        setForm((prev) => ({ ...prev, [champ]: data.url }))
+        toast.success("Image importée")
+      } else {
+        toast.error("Erreur d’import")
+      }
+    } catch {
+      toast.error("Erreur réseau")
+    } finally {
+      if (champ === "imageAvantUrl") setUploadingAvant(false)
+      else setUploadingApres(false)
+    }
+  }
+
+  function handleDrop(e: React.DragEvent, champ: "imageAvantUrl" | "imageApresUrl") {
+    e.preventDefault()
+    if (champ === "imageAvantUrl") setDragOverAvant(false)
+    else setDragOverApres(false)
+    const file = e.dataTransfer.files[0]
+    if (file && file.type.startsWith("image/")) uploadImage(file, champ)
+    else toast.error("Fichier image requis")
+  }
+
+  function handleFileInput(e: React.ChangeEvent<HTMLInputElement>, champ: "imageAvantUrl" | "imageApresUrl") {
+    const file = e.target.files?.[0]
+    if (file) uploadImage(file, champ)
+    e.target.value = ""
+  }
 
   function resetForm() {
     setForm({
@@ -190,7 +233,7 @@ export default function PageAdminGalerie() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
         >
           <Plus size={16} />
           Ajouter une photo
@@ -292,30 +335,74 @@ export default function PageAdminGalerie() {
 
             <div>
               <label className="mb-2 block font-body text-[13px] text-text-mid">
-                URL image AVANT <span className="text-red-500">*</span>
+                Image AVANT <span className="text-red-500">*</span>
               </label>
-              <input
-                type="url"
-                value={form.imageAvantUrl}
-                onChange={(e) => setForm({ ...form, imageAvantUrl: e.target.value })}
-                placeholder="https://..."
-                className="w-full border border-border-brand px-4 py-3 font-body text-[14px] focus:border-primary-brand focus:outline-none"
-                required
-              />
+              <input ref={fileAvantRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileInput(e, "imageAvantUrl")} />
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Zone de dépôt image avant"
+                onClick={() => !uploadingAvant && fileAvantRef.current?.click()}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && !uploadingAvant && fileAvantRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDragOverAvant(true) }}
+                onDragLeave={() => setDragOverAvant(false)}
+                onDrop={(e) => handleDrop(e, "imageAvantUrl")}
+                className={`flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed transition-colors ${
+                  dragOverAvant ? "border-primary-brand bg-primary-light" : form.imageAvantUrl ? "border-border-brand bg-bg-page" : "border-border-brand hover:border-primary-brand hover:bg-primary-light/40"
+                }`}
+              >
+                {uploadingAvant ? (
+                  <><Loader2 size={24} className="animate-spin text-primary-brand" /><p className="font-body text-xs text-text-muted-brand">Import en cours…</p></>
+                ) : form.imageAvantUrl ? (
+                  <div className="relative w-full">
+                    <img src={form.imageAvantUrl} alt="Avant" className="max-h-40 w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setForm((prev) => ({ ...prev, imageAvantUrl: "" })) }}
+                      className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center bg-white/90 text-red-600 shadow hover:bg-red-50"
+                      aria-label="Supprimer l’image avant"
+                    ><X size={12} /></button>
+                  </div>
+                ) : (
+                  <><Upload size={20} className="text-text-muted-brand" /><p className="font-body text-[12px] text-text-muted-brand">Glisser ou cliquer pour importer</p></>
+                )}
+              </div>
             </div>
 
             <div>
               <label className="mb-2 block font-body text-[13px] text-text-mid">
-                URL image APRÈS <span className="text-red-500">*</span>
+                Image APRÈS <span className="text-red-500">*</span>
               </label>
-              <input
-                type="url"
-                value={form.imageApresUrl}
-                onChange={(e) => setForm({ ...form, imageApresUrl: e.target.value })}
-                placeholder="https://..."
-                className="w-full border border-border-brand px-4 py-3 font-body text-[14px] focus:border-primary-brand focus:outline-none"
-                required
-              />
+              <input ref={fileApresRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileInput(e, "imageApresUrl")} />
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Zone de dépôt image après"
+                onClick={() => !uploadingApres && fileApresRef.current?.click()}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && !uploadingApres && fileApresRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDragOverApres(true) }}
+                onDragLeave={() => setDragOverApres(false)}
+                onDrop={(e) => handleDrop(e, "imageApresUrl")}
+                className={`flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed transition-colors ${
+                  dragOverApres ? "border-primary-brand bg-primary-light" : form.imageApresUrl ? "border-border-brand bg-bg-page" : "border-border-brand hover:border-primary-brand hover:bg-primary-light/40"
+                }`}
+              >
+                {uploadingApres ? (
+                  <><Loader2 size={24} className="animate-spin text-primary-brand" /><p className="font-body text-xs text-text-muted-brand">Import en cours…</p></>
+                ) : form.imageApresUrl ? (
+                  <div className="relative w-full">
+                    <img src={form.imageApresUrl} alt="Après" className="max-h-40 w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setForm((prev) => ({ ...prev, imageApresUrl: "" })) }}
+                      className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center bg-white/90 text-red-600 shadow hover:bg-red-50"
+                      aria-label="Supprimer l’image après"
+                    ><X size={12} /></button>
+                  </div>
+                ) : (
+                  <><Upload size={20} className="text-text-muted-brand" /><p className="font-body text-[12px] text-text-muted-brand">Glisser ou cliquer pour importer</p></>
+                )}
+              </div>
             </div>
 
             <div>
@@ -359,14 +446,14 @@ export default function PageAdminGalerie() {
             <div className="flex gap-4 sm:col-span-2">
               <button
                 type="submit"
-                className="bg-primary-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+                className="bg-primary-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
               >
                 {editingId ? "Modifier" : "Ajouter"}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="border border-border-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
+                className="border border-border-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
               >
                 Annuler
               </button>
@@ -404,7 +491,7 @@ export default function PageAdminGalerie() {
                     alt="Avant"
                     className="h-full w-full object-cover"
                   />
-                  <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 font-body text-[10px] uppercase text-white">
+                  <span className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 font-body text-xs uppercase text-white">
                     Avant
                   </span>
                 </div>
@@ -415,7 +502,7 @@ export default function PageAdminGalerie() {
                     alt="Après"
                     className="h-full w-full object-cover"
                   />
-                  <span className="absolute bottom-2 left-2 bg-primary-brand/80 px-2 py-1 font-body text-[10px] uppercase text-white">
+                  <span className="absolute bottom-2 left-2 bg-primary-brand/80 px-2 py-1 font-body text-xs uppercase text-white">
                     Après
                   </span>
                 </div>
@@ -451,7 +538,7 @@ export default function PageAdminGalerie() {
                 <div className="mt-4 flex gap-2">
                   <button
                     onClick={() => setPreviewPhoto(p)}
-                    className="flex flex-1 items-center justify-center gap-2 border border-border-brand py-2 font-body text-[11px] uppercase tracking-wider text-text-mid transition-colors hover:bg-gray-50"
+                    className="flex flex-1 items-center justify-center gap-2 border border-border-brand py-2 font-body text-xs uppercase tracking-wider text-text-mid transition-colors hover:bg-gray-50"
                   >
                     <Eye size={14} />
                     Aperçu

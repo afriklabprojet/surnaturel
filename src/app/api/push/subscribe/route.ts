@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -23,12 +24,12 @@ export async function POST(request: Request) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Corps invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = subscriptionSchema.safeParse(body)
   if (!result.success) {
-    return NextResponse.json({ error: result.error.flatten() }, { status: 400 })
+    return NextResponse.json({ error: z.flattenError(result.error) }, { status: 400 })
   }
 
   const { endpoint, keys, userAgent } = result.data
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, id: subscription.id }, { status: 201 })
   } catch (error) {
-    console.error("[PUSH] Erreur enregistrement subscription:", error)
+    logger.error("[PUSH] Erreur enregistrement subscription:", error)
     return NextResponse.json(
       { error: "Erreur lors de l'enregistrement" },
       { status: 500 }
@@ -73,7 +74,7 @@ export async function DELETE(request: Request) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Corps invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   if (!body.endpoint) {
@@ -90,7 +91,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error("[PUSH] Erreur suppression subscription:", error)
+    logger.error("[PUSH] Erreur suppression subscription:", error)
     return NextResponse.json(
       { error: "Erreur lors de la suppression" },
       { status: 500 }

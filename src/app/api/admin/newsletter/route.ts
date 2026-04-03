@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -179,7 +180,7 @@ export async function POST(request: Request) {
             )
             envoyes++
           } catch (error) {
-            console.error(`Erreur envoi à ${abonne.email}:`, error)
+            logger.error(`Erreur envoi à ${abonne.email}:`, error)
             erreurs++
           }
         })
@@ -211,7 +212,7 @@ export async function POST(request: Request) {
       nbDestinataires: abonnes.length,
     })
   } catch (error) {
-    console.error("Erreur création newsletter:", error)
+    logger.error("Erreur création newsletter:", error)
     return NextResponse.json(
       { error: "Erreur lors de la création de la newsletter" },
       { status: 500 }

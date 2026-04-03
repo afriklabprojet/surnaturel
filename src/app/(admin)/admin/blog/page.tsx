@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react"
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Article {
@@ -50,57 +50,90 @@ export default function AdminBlogPage() {
         </Link>
       </div>
 
-      <div className="bg-white border border-border-brand overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="h-6 w-6 border-4 border-primary-brand border-t-transparent rounded-full animate-spin" />
+      {loading ? (
+        <div className="flex items-center justify-center h-32 bg-white border border-border-brand">
+          <div className="h-6 w-6 border-4 border-primary-brand border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <>
+          {/* Mobile Cards */}
+          <div className="space-y-3 md:hidden">
+            {articles.map((article) => (
+              <div key={article.id} className="bg-white border border-border-brand p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-body text-[13px] font-medium text-text-main line-clamp-2">{article.titre}</h3>
+                  <span className={cn("shrink-0 px-2 py-0.5 text-xs font-medium", article.publie ? "bg-primary-brand/10 text-primary-brand" : "bg-gray-100 text-gray-500")}>
+                    {article.publie ? "Publié" : "Brouillon"}
+                  </span>
+                </div>
+                <p className="font-body text-xs text-gray-500 mt-1">{new Date(article.createdAt).toLocaleDateString("fr")}</p>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-brand">
+                  <Link href={`/admin/blog/${article.id}`} className="flex-1 py-2 text-center text-xs font-medium uppercase tracking-widest bg-primary-brand text-white">Modifier</Link>
+                  <button onClick={() => togglePublie(article.id, article.publie)} className={cn("p-2 transition-colors", article.publie ? "bg-gold/10 text-gold" : "bg-primary-brand/10 text-primary-brand")}>
+                    {article.publie ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                  <button onClick={() => handleDelete(article.id)} className="p-2 bg-red-50 text-red-600">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {articles.length === 0 && (
+              <div className="bg-white border border-border-brand p-8 text-center">
+                <FileText className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500 font-body">Aucun article</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm font-body">
-              <thead className="bg-bg-page">
-                <tr>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Titre</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Date</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Statut</th>
-                  <th className="text-left px-4 py-3 text-[11px] uppercase tracking-widest text-gray-500 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {articles.map((article) => (
-                  <tr key={article.id} className="border-t border-border-brand hover:bg-bg-page transition-colors">
-                    <td className="px-4 py-3 font-medium text-text-main">{article.titre}</td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {new Date(article.createdAt).toLocaleDateString("fr")}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={cn("px-2 py-0.5 text-xs font-medium", article.publie ? "bg-primary-brand/10 text-primary-brand" : "bg-gray-100 text-gray-500")}>
-                        {article.publie ? "Publié" : "Brouillon"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <Link href={`/admin/blog/${article.id}`} className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                        <button onClick={() => togglePublie(article.id, article.publie)} className={cn("p-1.5 transition-colors", article.publie ? "bg-gold/10 text-gold hover:bg-gold/20" : "bg-primary-brand/10 text-primary-brand hover:bg-primary-brand/20")} title={article.publie ? "Dépublier" : "Publier"}>
-                          {article.publie ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                        <button onClick={() => handleDelete(article.id)} className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white border border-border-brand overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm font-body">
+                <thead className="bg-bg-page">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-gray-500 font-medium">Titre</th>
+                    <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-gray-500 font-medium">Date</th>
+                    <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-gray-500 font-medium">Statut</th>
+                    <th className="text-left px-4 py-3 text-xs uppercase tracking-widest text-gray-500 font-medium">Actions</th>
                   </tr>
-                ))}
-                {articles.length === 0 && (
-                  <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">Aucun article</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {articles.map((article) => (
+                    <tr key={article.id} className="border-t border-border-brand hover:bg-bg-page transition-colors">
+                      <td className="px-4 py-3 font-medium text-text-main">{article.titre}</td>
+                      <td className="px-4 py-3 text-gray-500">
+                        {new Date(article.createdAt).toLocaleDateString("fr")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={cn("px-2 py-0.5 text-xs font-medium", article.publie ? "bg-primary-brand/10 text-primary-brand" : "bg-gray-100 text-gray-500")}>
+                          {article.publie ? "Publié" : "Brouillon"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <Link href={`/admin/blog/${article.id}`} className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                          <button onClick={() => togglePublie(article.id, article.publie)} className={cn("p-1.5 transition-colors", article.publie ? "bg-gold/10 text-gold hover:bg-gold/20" : "bg-primary-brand/10 text-primary-brand hover:bg-primary-brand/20")} title={article.publie ? "Dépublier" : "Publier"}>
+                            {article.publie ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                          <button onClick={() => handleDelete(article.id)} className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {articles.length === 0 && (
+                    <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">Aucun article</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   )
 }

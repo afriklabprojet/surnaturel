@@ -35,40 +35,106 @@ import {
   Percent,
   Mail,
   Heart,
+  FileText,
+  ShoppingCart,
+  AlertTriangle,
+  TrendingUp,
+  ChevronDown,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ConfirmProvider } from "@/components/ui/confirm-dialog"
 
-const navItems = [
-  { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/admin/sage-femme", label: "Espace Sage-Femme", icon: Heart },
-  { href: "/admin/rdv", label: "Rendez-vous", icon: Calendar },
-  { href: "/admin/clients", label: "Clients", icon: Users },
-  { href: "/admin/soins", label: "Soins", icon: Sparkles },
-  { href: "/admin/forfaits", label: "Forfaits", icon: Package },
-  { href: "/admin/equipe", label: "Équipe", icon: UserCircle },
-  { href: "/admin/faq", label: "FAQ", icon: HelpCircle },
-  { href: "/admin/categories", label: "Catégories", icon: Tag },
-  { href: "/admin/boutique", label: "Boutique", icon: ShoppingBag },
-  { href: "/admin/promo", label: "Codes Promo", icon: Percent },
-  { href: "/admin/galerie", label: "Galerie Avant/Après", icon: ImageIcon },
-  { href: "/admin/videos", label: "Témoignages Vidéo", icon: PlayCircle },
-  { href: "/admin/blog", label: "Blog", icon: BookOpen },
-  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
-  { href: "/admin/messages", label: "Messages", icon: MessageCircle },
-  { href: "/admin/communaute", label: "Communauté", icon: UsersRound },
-  { href: "/admin/avis", label: "Avis", icon: Star },
-  { href: "/admin/groupes", label: "Groupes", icon: UsersRound },
-  { href: "/admin/evenements", label: "Événements", icon: CalendarDays },
-  { href: "/admin/verification", label: "Vérification", icon: BadgeCheck },
-  { href: "/admin/parrainages", label: "Parrainages", icon: Gift },
-  { href: "/admin/fidelite", label: "Fidélité", icon: Coins },
-  { href: "/admin/recompenses", label: "Récompenses", icon: Award },
-  { href: "/admin/blocages", label: "Blocages", icon: Ban },
-  { href: "/admin/professionnels", label: "Professionnels", icon: Stethoscope },
-  { href: "/admin/rapports", label: "Rapports", icon: BarChart3 },
-  { href: "/admin/configuration", label: "Configuration", icon: Wrench },
-  { href: "/admin/parametres", label: "Paramètres", icon: Settings },
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> }
+type NavGroup = { id: string; label: string; icon: React.ComponentType<{ className?: string }>; items: NavItem[] }
+
+const navGroups: NavGroup[] = [
+  {
+    id: "commercial",
+    label: "Activité commerciale",
+    icon: TrendingUp,
+    items: [
+      { href: "/admin/rdv", label: "Rendez-vous", icon: Calendar },
+      { href: "/admin/commandes", label: "Commandes", icon: ShoppingCart },
+      { href: "/admin/soins", label: "Soins", icon: Sparkles },
+      { href: "/admin/boutique", label: "Boutique", icon: ShoppingBag },
+      { href: "/admin/forfaits", label: "Forfaits", icon: Package },
+      { href: "/admin/promo", label: "Codes Promo", icon: Percent },
+    ],
+  },
+  {
+    id: "clients",
+    label: "Clients",
+    icon: Users,
+    items: [
+      { href: "/admin/clients", label: "Clients", icon: Users },
+      { href: "/admin/blocages", label: "Blocages", icon: Ban },
+      { href: "/admin/verification", label: "Vérification", icon: BadgeCheck },
+      { href: "/admin/professionnels", label: "Professionnels", icon: Stethoscope },
+    ],
+  },
+  {
+    id: "contenu",
+    label: "Contenu",
+    icon: BookOpen,
+    items: [
+      { href: "/admin/blog", label: "Blog", icon: BookOpen },
+      { href: "/admin/videos", label: "Témoignages Vidéo", icon: PlayCircle },
+      { href: "/admin/galerie", label: "Galerie", icon: ImageIcon },
+      { href: "/admin/faq", label: "FAQ", icon: HelpCircle },
+      { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
+      { href: "/admin/messages", label: "Messages", icon: MessageCircle },
+    ],
+  },
+  {
+    id: "moderation",
+    label: "Avis & Modération",
+    icon: Star,
+    items: [
+      { href: "/admin/avis", label: "Avis", icon: Star },
+      { href: "/admin/signalements", label: "Signalements", icon: AlertTriangle },
+    ],
+  },
+  {
+    id: "communaute",
+    label: "Communauté",
+    icon: UsersRound,
+    items: [
+      { href: "/admin/communaute", label: "Communauté", icon: UsersRound },
+      { href: "/admin/groupes", label: "Groupes", icon: UsersRound },
+      { href: "/admin/evenements", label: "Événements", icon: CalendarDays },
+    ],
+  },
+  {
+    id: "fidelite",
+    label: "Fidélité & Parrainage",
+    icon: Coins,
+    items: [
+      { href: "/admin/fidelite", label: "Fidélité", icon: Coins },
+      { href: "/admin/parrainages", label: "Parrainages", icon: Gift },
+      { href: "/admin/recompenses", label: "Récompenses", icon: Award },
+    ],
+  },
+  {
+    id: "equipe",
+    label: "Équipe & Expertise",
+    icon: UserCircle,
+    items: [
+      { href: "/admin/equipe", label: "Équipe", icon: UserCircle },
+      { href: "/admin/sage-femme", label: "Espace Sage-Femme", icon: Heart },
+    ],
+  },
+  {
+    id: "config",
+    label: "Configuration",
+    icon: Settings,
+    items: [
+      { href: "/admin/categories", label: "Catégories", icon: Tag },
+      { href: "/admin/contenu", label: "Contenu du site", icon: FileText },
+      { href: "/admin/rapports", label: "Rapports", icon: BarChart3 },
+      { href: "/admin/configuration", label: "Config. avancée", icon: Wrench },
+      { href: "/admin/parametres", label: "Paramètres", icon: Settings },
+    ],
+  },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -81,7 +147,7 @@ const pageTitles: Record<string, string> = {
   "/admin/equipe": "Équipe",
   "/admin/faq": "FAQ",
   "/admin/categories": "Catégories",
-  "/admin/configuration": "Configuration",
+  "/admin/configuration": "Config. avancée",
   "/admin/boutique": "Boutique",
   "/admin/promo": "Codes Promo",
   "/admin/galerie": "Galerie Avant/Après",
@@ -92,6 +158,7 @@ const pageTitles: Record<string, string> = {
   "/admin/messages": "Messages",
   "/admin/communaute": "Communauté",
   "/admin/avis": "Avis",
+  "/admin/signalements": "Signalements",
   "/admin/groupes": "Groupes",
   "/admin/evenements": "Événements",
   "/admin/verification": "Vérification",
@@ -101,6 +168,7 @@ const pageTitles: Record<string, string> = {
   "/admin/blocages": "Blocages",
   "/admin/professionnels": "Professionnels",
   "/admin/rapports": "Rapports",
+  "/admin/contenu": "Contenu du site",
   "/admin/parametres": "Paramètres",
 }
 
@@ -113,10 +181,42 @@ export default function AdminLayout({
   const { data: session } = useSession()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // Auto-open the group containing the current active page
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
+    const activeGroup = navGroups.find((g) =>
+      g.items.some((item) => pathname.startsWith(item.href))
+    )
+    return new Set(activeGroup ? [activeGroup.id] : [])
+  })
+
   const isLoginPage = pathname === "/admin/login"
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href)
+
+  // Auto-open group when navigating to a page in it
+  useEffect(() => {
+    const activeGroup = navGroups.find((g) =>
+      g.items.some((item) => pathname.startsWith(item.href))
+    )
+    if (activeGroup) {
+      setOpenGroups((prev) => {
+        if (prev.has(activeGroup.id)) return prev
+        const next = new Set(prev)
+        next.add(activeGroup.id)
+        return next
+      })
+    }
+  }, [pathname])
+
+  const toggleGroup = (id: string) => {
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const currentTitle =
     Object.entries(pageTitles).find(
@@ -149,7 +249,7 @@ export default function AdminLayout({
         }`}
       >
         {/* Logo */}
-        <div className="px-6 pt-6 pb-4">
+        <div className="px-6 pt-6 pb-4 relative">
           <Link href="/admin" className="block">
             <span className="font-display text-[17px] font-light text-white tracking-wide leading-tight block">
               Le Surnaturel de Dieu
@@ -168,37 +268,82 @@ export default function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = isActive(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 font-body text-[12px] uppercase tracking-widest font-medium transition-colors ${
-                  active
-                    ? "bg-white/15 text-white border-l-[3px] border-white"
-                    : "text-white/70 hover:bg-white/8 hover:text-white border-l-[3px] border-transparent"
-                }`}
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 px-3 py-2 overflow-y-auto">
+          {/* Dashboard — standalone top link */}
+          <Link
+            href="/admin"
+            onClick={() => setSidebarOpen(false)}
+            className={`flex items-center gap-3 px-3 py-2.5 mb-3 font-body text-[12px] uppercase tracking-widest font-medium transition-colors ${
+              pathname === "/admin"
+                ? "bg-white/15 text-white border-l-[3px] border-white"
+                : "text-white/70 hover:bg-white/8 hover:text-white border-l-[3px] border-transparent"
+            }`}
+          >
+            <LayoutDashboard className="h-4 w-4 shrink-0" />
+            Tableau de bord
+          </Link>
+
+          {/* Grouped sections */}
+          <div className="space-y-0.5">
+            {navGroups.map((group) => {
+              const isOpen = openGroups.has(group.id)
+              const hasActive = group.items.some((item) => isActive(item.href))
+              return (
+                <div key={group.id}>
+                  {/* Group header button */}
+                  <button
+                    onClick={() => toggleGroup(group.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 font-body text-[10px] uppercase tracking-[0.15em] font-semibold transition-colors ${
+                      hasActive ? "text-gold" : "text-white/40 hover:text-white/60"
+                    }`}
+                  >
+                    <group.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1 text-left">{group.label}</span>
+                    <ChevronDown
+                      className={`h-3 w-3 shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {/* Group items */}
+                  {isOpen && (
+                    <div className="pl-2 mb-1">
+                      {group.items.map((item) => {
+                        const active = isActive(item.href)
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2 font-body text-[11px] uppercase tracking-widest font-medium transition-colors ${
+                              active
+                                ? "bg-white/15 text-white border-l-[3px] border-white"
+                                : "text-white/60 hover:bg-white/8 hover:text-white border-l-[3px] border-transparent"
+                            }`}
+                          >
+                            <item.icon className="h-3.5 w-3.5 shrink-0" />
+                            {item.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </nav>
 
         {/* Bas sidebar — Nom admin + déconnexion */}
         <div className="p-4 border-t border-white/15 space-y-2">
           {adminName && (
-            <p className="font-body text-[11px] text-white/60 truncate px-1">
+            <p className="font-body text-xs text-white/60 truncate px-1">
               {adminName}
             </p>
           )}
           <button
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="flex items-center gap-2 px-3 py-2 font-body text-[11px] uppercase tracking-widest text-red-300 hover:text-red-200 hover:bg-white/8 w-full transition-colors"
+            className="flex items-center gap-2 px-3 py-2 font-body text-xs uppercase tracking-widest text-red-300 hover:text-red-200 hover:bg-white/8 w-full transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Déconnexion
@@ -226,7 +371,7 @@ export default function AdminLayout({
               <span className="font-body text-[13px] text-text-mid hidden sm:block">
                 {adminName}
               </span>
-              <div className="h-8 w-8 rounded-full bg-primary-brand flex items-center justify-center text-white font-body text-[11px] uppercase">
+              <div className="h-8 w-8 rounded-full bg-primary-brand flex items-center justify-center text-white font-body text-xs uppercase">
                 {(session.user.prenom?.[0] || "A")}
                 {(session.user.nom?.[0] || "")}
               </div>

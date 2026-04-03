@@ -8,6 +8,8 @@ const articleSchema = z.object({
   contenu: z.string().min(1),
   imageUrl: z.string().url().nullable().optional(),
   publie: z.boolean().optional(),
+  auteur: z.string().optional(),
+  auteurRole: z.string().optional(),
 })
 
 export async function GET() {
@@ -56,6 +58,8 @@ export async function POST(req: Request) {
       contenu: result.data.contenu,
       imageUrl: result.data.imageUrl ?? null,
       publie: result.data.publie ?? false,
+      auteur: result.data.auteur ?? "Équipe éditoriale",
+      auteurRole: result.data.auteurRole ?? "Équipe du Surnaturel de Dieu",
     },
   })
 

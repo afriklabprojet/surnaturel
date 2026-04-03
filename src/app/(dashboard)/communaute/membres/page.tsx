@@ -124,7 +124,7 @@ export default function PageMembres() {
   return (
     <section className="mx-auto max-w-3xl space-y-5">
       {/* En-tête */}
-      <div className="bg-white border border-border-brand p-5">
+      <div className="rounded-2xl bg-white shadow-sm ring-1 ring-border-brand p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="font-display text-[20px] font-light text-text-main">
@@ -143,7 +143,7 @@ export default function PageMembres() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher un membre par nom, prénom ou pseudo..."
-            className="w-full border border-border-brand bg-bg-page pl-9 pr-8 py-2.5 font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none transition-colors"
+            className="w-full rounded-full border border-border-brand bg-bg-page pl-9 pr-8 py-2.5 font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:border-gold focus:outline-none transition-colors"
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted-brand hover:text-danger transition-colors">
@@ -158,7 +158,7 @@ export default function PageMembres() {
             <button
               key={interet}
               onClick={() => setSelectedInteret(selectedInteret === interet ? "" : interet)}
-              className={`px-2.5 py-1 font-body text-[10px] border transition-colors ${
+              className={`rounded-full px-3 py-1.5 font-body text-xs border transition-colors ${
                 selectedInteret === interet
                   ? "border-gold bg-gold-light text-gold font-medium"
                   : "border-border-brand text-text-muted-brand hover:border-gold hover:text-gold"
@@ -193,7 +193,7 @@ export default function PageMembres() {
             <Link
               key={membre.id}
               href={`/communaute/profil/${membre.id}`}
-              className="bg-white border border-border-brand p-4 hover:border-gold transition-colors group"
+              className="rounded-2xl bg-white shadow-sm ring-1 ring-border-brand p-4 hover:ring-gold hover:shadow-md transition-all group"
             >
               <div className="flex gap-3">
                 <Avatar membre={membre} size={48} />
@@ -203,14 +203,14 @@ export default function PageMembres() {
                     <BadgeVerification status={membre.verificationStatus} size={12} className="ml-1" />
                   </p>
                   {membre.pseudo && (
-                    <p className="font-body text-[11px] text-text-muted-brand truncate">
+                    <p className="font-body text-xs text-text-muted-brand truncate">
                       @{membre.pseudo}
                     </p>
                   )}
                   {membre.localisation && (
                     <div className="flex items-center gap-1 mt-1">
                       <MapPin size={10} className="text-text-muted-brand shrink-0" />
-                      <span className="font-body text-[10px] text-text-muted-brand truncate">
+                      <span className="font-body text-xs text-text-muted-brand truncate">
                         {membre.localisation}
                       </span>
                     </div>
@@ -219,7 +219,7 @@ export default function PageMembres() {
               </div>
 
               {membre.bio && (
-                <p className="font-body text-[11px] text-text-mid leading-relaxed mt-2.5 line-clamp-2">
+                <p className="font-body text-xs text-text-mid leading-relaxed mt-2.5 line-clamp-2">
                   {membre.bio}
                 </p>
               )}
@@ -229,7 +229,7 @@ export default function PageMembres() {
                   {membre.centresInteret.slice(0, 3).map((ci) => (
                     <span
                       key={ci}
-                      className="px-2 py-0.5 bg-bg-page border border-border-brand font-body text-[9px] text-text-muted-brand"
+                      className="rounded-full px-2 py-0.5 bg-primary-light font-body text-[9px] text-primary-brand"
                     >
                       {ci}
                     </span>
@@ -252,12 +252,12 @@ export default function PageMembres() {
                 </span>
                 <div className="flex items-center gap-1">
                   <FileText size={10} className="text-text-muted-brand" />
-                  <span className="font-body text-[10px] text-text-muted-brand">
+                  <span className="font-body text-xs text-text-muted-brand">
                     {membre.postsCount} publication{membre.postsCount > 1 ? "s" : ""}
                   </span>
                 </div>
                 {membre.statutProfil && (
-                  <span className="font-body text-[10px] text-primary-brand truncate">
+                  <span className="font-body text-xs text-primary-brand truncate">
                     {membre.statutProfil}
                   </span>
                 )}
@@ -273,7 +273,7 @@ export default function PageMembres() {
           <button
             onClick={() => fetchMembres(page + 1, true)}
             disabled={loadingMore}
-            className="flex items-center gap-2 border border-border-brand bg-white px-6 py-2.5 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-mid hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 rounded-full border border-border-brand bg-white px-6 py-2.5 font-body text-xs font-medium text-text-mid hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
           >
             {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
             Voir plus

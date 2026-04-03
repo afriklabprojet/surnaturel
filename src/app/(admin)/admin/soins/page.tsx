@@ -168,7 +168,7 @@ export default function AdminSoinsPage() {
               <div className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-base text-text-main">{soin.nom}</h3>
-                  <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body">
+                  <span className="text-xs uppercase tracking-widest px-2 py-0.5 bg-primary-brand/10 text-primary-brand font-body">
                     {getCategorieLabel(soin.categorie)}
                   </span>
                 </div>
@@ -204,32 +204,32 @@ export default function AdminSoinsPage() {
             {error && <p className="text-sm text-red-600 mb-3 font-body">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Nom</label>
                 <input required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Description</label>
                 <textarea required rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Prix (FCFA)</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Prix (FCFA)</label>
                   <input required type="number" min="0" value={form.prix} onChange={(e) => setForm({ ...form, prix: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Durée (min)</label>
+                  <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Durée (min)</label>
                   <input required type="number" min="1" value={form.duree} onChange={(e) => setForm({ ...form, duree: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
                 <select required value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand">
                   <option value="">Sélectionner…</option>
                   {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] uppercase tracking-widest text-gray-500 font-body mb-1">Image</label>
+                <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Image</label>
                 <div className="flex items-center gap-2">
                   <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="flex-1 border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="URL Cloudinary…" />
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
@@ -238,6 +238,11 @@ export default function AdminSoinsPage() {
                   </button>
                 </div>
                 {uploading && <p className="text-xs text-gold mt-1 font-body">Téléversement en cours…</p>}
+                {form.imageUrl && !uploading && (
+                  <div className="mt-2">
+                    <img src={form.imageUrl} alt="Aperçu" className="h-24 w-24 object-cover border border-border-brand" />
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 text-sm border border-border-brand text-gray-500 hover:bg-bg-page font-body transition-colors">Annuler</button>

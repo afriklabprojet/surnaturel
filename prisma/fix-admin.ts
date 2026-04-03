@@ -36,7 +36,7 @@ async function main() {
   } else {
     console.log('Admin trouvé:', { id: user.id, email: user.email, role: user.role })
     // Verify password
-    const match = await bcrypt.compare('Admin@2025', user.passwordHash)
+    const match = user.passwordHash ? await bcrypt.compare('Admin@2025', user.passwordHash) : false
     console.log('Mot de passe "Admin@2025" valide ?', match)
     if (!match) {
       console.log('🔄 Reset du mot de passe...')

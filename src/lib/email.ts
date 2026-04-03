@@ -1,8 +1,23 @@
 import { Resend } from "resend"
+import { getConfig } from "@/lib/config"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM = "Le Surnaturel de Dieu <rdv@surnatureldedieu.com>"
+/** Échappe les caractères HTML dangereux dans les données utilisateur.
+ *  Empêche les injections HTML/XSS dans les emails transactionnels. */
+function e(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+}
+
+async function getFrom(): Promise<string> {
+  const { nomCentre, emailRdv } = await getConfig()
+  return `${nomCentre} <${emailRdv}>`
+}
 
 export async function envoyerEmailConfirmationRDV(params: {
   destinataire: string
@@ -13,7 +28,7 @@ export async function envoyerEmailConfirmationRDV(params: {
   prix: string
 }) {
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: "Votre rendez-vous est confirmé — Le Surnaturel de Dieu",
     html: `
@@ -25,24 +40,24 @@ export async function envoyerEmailConfirmationRDV(params: {
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.nom}</strong>,</p>
+          <p>Bonjour <strong>${e(params.nom)}</strong>,</p>
           <p>Votre rendez-vous a bien été enregistré.</p>
           <table style="width:100%;border-collapse:collapse;margin:16px 0;">
             <tr style="background:#E8F5E3;">
               <td style="padding:10px;font-weight:600;">Soin</td>
-              <td style="padding:10px;">${params.soin}</td>
+              <td style="padding:10px;">${e(params.soin)}</td>
             </tr>
             <tr>
               <td style="padding:10px;font-weight:600;">Date</td>
-              <td style="padding:10px;">${params.date}</td>
+              <td style="padding:10px;">${e(params.date)}</td>
             </tr>
             <tr style="background:#E8F5E3;">
               <td style="padding:10px;font-weight:600;">Heure</td>
-              <td style="padding:10px;">${params.heure}</td>
+              <td style="padding:10px;">${e(params.heure)}</td>
             </tr>
             <tr>
               <td style="padding:10px;font-weight:600;">Prix</td>
-              <td style="padding:10px;">${params.prix}</td>
+              <td style="padding:10px;">${e(params.prix)}</td>
             </tr>
           </table>
           <p>À bientôt au centre <strong>Le Surnaturel de Dieu</strong>, Abidjan.</p>
@@ -63,7 +78,7 @@ export async function envoyerEmailInscription(params: {
 }) {
   const lienVerification = `${process.env.NEXTAUTH_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: "Confirmez votre email — Le Surnaturel de Dieu",
     html: `
@@ -75,7 +90,7 @@ export async function envoyerEmailInscription(params: {
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Bonjour <strong>${e(params.prenom)}</strong>,</p>
           <p>Bienvenue au <strong>Surnaturel de Dieu</strong> !</p>
           <p>Pour activer votre compte, veuillez confirmer votre adresse
              email en cliquant sur le bouton ci-dessous :</p>
@@ -102,7 +117,7 @@ export async function envoyerEmailMessageMedical(params: {
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: "Nouveau message médical — Le Surnaturel de Dieu",
     html: `
@@ -114,9 +129,9 @@ export async function envoyerEmailMessageMedical(params: {
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenomDestinataire}</strong>,</p>
+          <p>Bonjour <strong>${e(params.prenomDestinataire)}</strong>,</p>
           <p>Vous avez reçu un nouveau message confidentiel de
-             <strong>${params.prenomExpediteur}</strong>.</p>
+             <strong>${e(params.prenomExpediteur)}</strong>.</p>
           <p style="color:#6B7280;font-size:13px;">
             Pour des raisons de confidentialité, le contenu n'est pas affiché
             dans cet email.</p>
@@ -139,9 +154,9 @@ export async function envoyerEmailInvitationParrainage(params: {
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
-    subject: `${params.prenomParrain} vous invite au Surnaturel de Dieu`,
+    subject: `${e(params.prenomParrain)} vous invite au Surnaturel de Dieu`,
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
         <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
@@ -152,7 +167,7 @@ export async function envoyerEmailInvitationParrainage(params: {
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
           <p>Bonjour,</p>
-          <p><strong>${params.prenomParrain}</strong> vous invite à rejoindre
+          <p><strong>${e(params.prenomParrain)}</strong> vous invite à rejoindre
              <strong>Le Surnaturel de Dieu</strong>, l'institut de bien-être
              d'Abidjan.</p>
           <p>En vous inscrivant via ce lien, vous et votre parrain bénéficiez
@@ -181,7 +196,7 @@ export async function envoyerEmailRappelRDV(params: {
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: "Rappel : votre rendez-vous demain — Le Surnaturel de Dieu",
     html: `
@@ -193,20 +208,20 @@ export async function envoyerEmailRappelRDV(params: {
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.nom}</strong>,</p>
+          <p>Bonjour <strong>${e(params.nom)}</strong>,</p>
           <p>Nous vous rappelons que vous avez un rendez-vous <strong>demain</strong>.</p>
           <table style="width:100%;border-collapse:collapse;margin:16px 0;">
             <tr style="background:#E8F5E3;">
               <td style="padding:10px;font-weight:600;">Soin</td>
-              <td style="padding:10px;">${params.soin}</td>
+              <td style="padding:10px;">${e(params.soin)}</td>
             </tr>
             <tr>
               <td style="padding:10px;font-weight:600;">Date</td>
-              <td style="padding:10px;">${params.date}</td>
+              <td style="padding:10px;">${e(params.date)}</td>
             </tr>
             <tr style="background:#E8F5E3;">
               <td style="padding:10px;font-weight:600;">Heure</td>
-              <td style="padding:10px;">${params.heure}</td>
+              <td style="padding:10px;">${e(params.heure)}</td>
             </tr>
           </table>
           <p>À bientôt au centre <strong>Le Surnaturel de Dieu</strong>, Abidjan.</p>
@@ -287,7 +302,7 @@ export async function envoyerEmailCommandePayee(params: {
     : ""
 
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: `Reçu de paiement #${ref} — Le Surnaturel de Dieu`,
     html: `
@@ -299,7 +314,7 @@ export async function envoyerEmailCommandePayee(params: {
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Bonjour <strong>${e(params.prenom)}</strong>,</p>
           <p>Votre paiement a été reçu et confirmé. Voici votre reçu :</p>
 
           <table style="width:100%;border-collapse:collapse;margin:16px 0;">
@@ -371,7 +386,7 @@ export async function envoyerEmailConfirmationCommande(params: {
     .join("")
 
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: `Commande #${ref} enregistrée — Le Surnaturel de Dieu`,
     html: `
@@ -383,7 +398,7 @@ export async function envoyerEmailConfirmationCommande(params: {
         </div>
         <div style="background:#fff;border:1px solid #E5E7EB;
           border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Bonjour <strong>${e(params.prenom)}</strong>,</p>
           <p>Votre commande <strong>#${ref}</strong> a été enregistrée.
              Elle sera validée dès réception de votre paiement.</p>
 
@@ -425,7 +440,7 @@ export async function envoyerEmailResetMotDePasse(params: {
   lienReset: string
 }) {
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: "Réinitialisation de votre mot de passe — Le Surnaturel de Dieu",
     html: `
@@ -477,7 +492,7 @@ export async function envoyerEmailInvitationAvis(params: {
 }) {
   const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: params.destinataire,
     subject: "Comment s'est passé votre soin ? — Le Surnaturel de Dieu",
     html: `
@@ -609,7 +624,7 @@ export async function envoyerEmailNewsletter(
   ` : ''
 
   await resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: email,
     subject: '🌿 Les actualités du Surnaturel de Dieu',
     html: `
@@ -868,10 +883,129 @@ export async function envoyerEmailOnboarding({ destinataire, prenom, step }: Onb
   }
 
   return resend.emails.send({
-    from: FROM,
+    from: await getFrom(),
     to: destinataire,
     subject: emailConfig.subject,
     html: emailConfig.getHtml(prenom, baseUrl),
   })
 }
 
+export async function envoyerEmailRenouvellementAbonnement(params: {
+  destinataire: string
+  prenom: string
+  formule: string
+  montant: number
+  prochainPaiement: string
+}) {
+  const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+  const montantFormate = new Intl.NumberFormat("fr-CI", {
+    style: "currency",
+    currency: "XOF",
+    minimumFractionDigits: 0,
+  }).format(params.montant)
+
+  return resend.emails.send({
+    from: await getFrom(),
+    to: params.destinataire,
+    subject: "Renouvellement de votre abonnement — Le Surnaturel de Dieu",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
+        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
+          <h1 style="color:#fff;margin:0;font-size:20px;">
+            Abonnement renouvelé
+          </h1>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;
+          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
+          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Votre abonnement <strong>${params.formule}</strong> a été renouvelé avec succès.
+             Vos soins mensuels ont été réinitialisés.</p>
+
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr style="background:#E8F5E3;">
+              <td style="padding:10px;font-weight:600;">Formule</td>
+              <td style="padding:10px;">${params.formule}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;font-weight:600;">Montant</td>
+              <td style="padding:10px;font-weight:700;color:#2D7A1F;">${montantFormate}</td>
+            </tr>
+            <tr style="background:#E8F5E3;">
+              <td style="padding:10px;font-weight:600;">Prochain paiement</td>
+              <td style="padding:10px;">${params.prochainPaiement}</td>
+            </tr>
+          </table>
+
+          <a href="${appUrl}/abonnements"
+             style="display:inline-block;background:#2D7A1F;color:#fff;
+             padding:12px 24px;border-radius:8px;text-decoration:none;
+             margin-top:16px;">
+            Voir mon abonnement
+          </a>
+
+          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
+            Si vous souhaitez modifier ou annuler votre abonnement, rendez-vous
+            dans votre espace personnel.
+          </p>
+        </div>
+      </div>
+    `,
+  })
+}
+
+export async function envoyerEmailReactivation(params: {
+  destinataire: string
+  prenom: string
+  derniersSoins: string[]
+  pointsFidelite: number
+}) {
+  const appUrl = process.env.NEXTAUTH_URL || "https://surnatureldedieu.com"
+
+  const soinsHtml = params.derniersSoins.length > 0
+    ? `<p>Vos derniers soins consultés :</p>
+       <ul style="padding-left:20px;">${params.derniersSoins.map((s) => `<li style="margin:4px 0;">${s}</li>`).join("")}</ul>`
+    : ""
+
+  const pointsHtml = params.pointsFidelite > 0
+    ? `<div style="background:#F5EDD6;padding:16px;border-radius:8px;margin:16px 0;text-align:center;">
+         <p style="margin:0;font-size:14px;color:#1F2937;">Vous avez <strong style="color:#9A7B22;font-size:20px;">${params.pointsFidelite} points fidélité</strong> en attente !</p>
+       </div>`
+    : ""
+
+  return resend.emails.send({
+    from: await getFrom(),
+    to: params.destinataire,
+    subject: "Vous nous manquez ! — Le Surnaturel de Dieu",
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
+        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
+          <h1 style="color:#fff;margin:0;font-size:20px;">
+            Nous pensons à vous ✨
+          </h1>
+        </div>
+        <div style="background:#fff;border:1px solid #E5E7EB;
+          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
+          <p>Bonjour <strong>${params.prenom}</strong>,</p>
+          <p>Cela fait un moment que nous ne vous avons pas vue à l'institut.
+             Votre bien-être nous tient à cœur et nous serions ravies de vous retrouver.</p>
+
+          ${soinsHtml}
+          ${pointsHtml}
+
+          <a href="${appUrl}/prise-rdv"
+             style="display:inline-block;background:#2D7A1F;color:#fff;
+             padding:12px 24px;border-radius:8px;text-decoration:none;
+             margin-top:16px;">
+            Réserver un soin
+          </a>
+
+          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
+            Si vous ne souhaitez plus recevoir ces emails, vous pouvez
+            désactiver les notifications dans votre
+            <a href="${appUrl}/profil" style="color:#2D7A1F;">espace personnel</a>.
+          </p>
+        </div>
+      </div>
+    `,
+  })
+}

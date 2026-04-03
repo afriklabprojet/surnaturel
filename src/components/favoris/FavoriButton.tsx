@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface FavoriButtonProps {
   soinId?: string
@@ -66,6 +67,8 @@ export default function FavoriButton({
 
         if (res.ok) {
           setIsFavori(false)
+        } else {
+          toast.error("Impossible de retirer ce favori. Réessayez.")
         }
       } else {
         // Ajouter aux favoris
@@ -77,10 +80,12 @@ export default function FavoriButton({
 
         if (res.ok) {
           setIsFavori(true)
+        } else {
+          toast.error("Impossible d'ajouter ce favori. Réessayez.")
         }
       }
     } catch {
-      // silently fail
+      toast.error("Erreur réseau")
     } finally {
       setLoading(false)
     }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { fadeInUp, staggerContainer, staggerItem, progressBar } from "@/lib/animations"
+import { SkeletonFidelite } from "@/components/ui/skeletons"
 import { Star, Lock, Unlock, Gift, TrendingUp, TrendingDown, Loader2, ShoppingBag, Percent, Sparkles, Package } from "lucide-react"
 import { BtnArrow } from "@/components/ui/buttons"
 import { toast } from "sonner"
@@ -89,7 +90,7 @@ export default function FidelitePage() {
         setEchangesEnCours(json.echangesEnCours || [])
       }
     } catch {
-      // silently fail
+      toast.error("Erreur lors du chargement des données")
     } finally {
       setLoading(false)
     }
@@ -114,10 +115,14 @@ export default function FidelitePage() {
       })
 
       if (res.ok) {
+        toast.success("Récompense utilisée !")
         fetchData()
+      } else {
+        const json = await res.json()
+        toast.error(json.error || "Erreur lors de l'utilisation")
       }
     } catch {
-      // silently fail
+      toast.error("Erreur réseau")
     } finally {
       setUtilisant(null)
     }
@@ -150,11 +155,7 @@ export default function FidelitePage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gold" />
-      </div>
-    )
+    return <SkeletonFidelite />
   }
 
   if (!data) {
@@ -179,7 +180,7 @@ export default function FidelitePage() {
         variants={staggerItem}
         className="border border-border-brand border-t-2 border-t-gold bg-white p-8 text-center"
       >
-        <p className="font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+        <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
           Vos points fidélité
         </p>
         <p className="mt-2 font-display text-[56px] font-light leading-none text-gold">
@@ -202,7 +203,7 @@ export default function FidelitePage() {
         {/* Barre de progression */}
         {data.progression.prochain && (
           <div className="mx-auto mt-6 max-w-md">
-            <div className="flex items-center justify-between font-body text-[11px] text-text-muted-brand">
+            <div className="flex items-center justify-between font-body text-xs text-text-muted-brand">
               <span>{data.palierActuel?.nom || "Débutant"}</span>
               <span>{data.progression.prochain.nom}</span>
             </div>
@@ -260,7 +261,7 @@ export default function FidelitePage() {
                       <Lock size={18} className="text-text-muted-brand" />
                     )}
                   </div>
-                  <span className="font-body text-[11px] font-medium text-gold">
+                  <span className="font-body text-xs font-medium text-gold">
                     {palier.points.toLocaleString("fr")} pts
                   </span>
                 </div>
@@ -317,7 +318,7 @@ export default function FidelitePage() {
                       </p>
                     </div>
                     {e.dateExpiration && (
-                      <p className="font-body text-[11px] text-text-muted-brand">
+                      <p className="font-body text-xs text-text-muted-brand">
                         Expire le {new Date(e.dateExpiration).toLocaleDateString("fr")}
                       </p>
                     )}
@@ -379,7 +380,7 @@ export default function FidelitePage() {
                         <p className="font-display text-[24px] font-medium text-gold">
                           {r.pointsRequis.toLocaleString("fr")}
                         </p>
-                        <p className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">
+                        <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                           points
                         </p>
                       </div>
@@ -388,7 +389,7 @@ export default function FidelitePage() {
                         <button
                           onClick={() => echangerRecompense(r)}
                           disabled={estEchange}
-                          className="bg-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-wider text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+                          className="bg-primary-brand px-4 py-2 font-body text-xs uppercase tracking-wider text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
                         >
                           {estEchange ? (
                             <Loader2 size={14} className="animate-spin" />
@@ -397,7 +398,7 @@ export default function FidelitePage() {
                           )}
                         </button>
                       ) : (
-                        <p className="font-body text-[11px] text-text-muted-brand">
+                        <p className="font-body text-xs text-text-muted-brand">
                           {!r.disponible
                             ? "Indisponible"
                             : `${r.pointsManquants.toLocaleString("fr")} pts manquants`}
@@ -427,7 +428,7 @@ export default function FidelitePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 +50 points
               </p>
-              <p className="font-body text-[11px] text-text-muted-brand">
+              <p className="font-body text-xs text-text-muted-brand">
                 par rendez-vous terminé
               </p>
             </div>
@@ -438,7 +439,7 @@ export default function FidelitePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 +1 point / 100 FCFA
               </p>
-              <p className="font-body text-[11px] text-text-muted-brand">
+              <p className="font-body text-xs text-text-muted-brand">
                 sur vos commandes
               </p>
             </div>
@@ -449,7 +450,7 @@ export default function FidelitePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 +30 points
               </p>
-              <p className="font-body text-[11px] text-text-muted-brand">
+              <p className="font-body text-xs text-text-muted-brand">
                 par avis laissé
               </p>
             </div>
@@ -460,7 +461,7 @@ export default function FidelitePage() {
               <p className="font-body text-[13px] font-medium text-text-main">
                 +200 points
               </p>
-              <p className="font-body text-[11px] text-text-muted-brand">
+              <p className="font-body text-xs text-text-muted-brand">
                 par parrainage actif
               </p>
             </div>
@@ -489,13 +490,13 @@ export default function FidelitePage() {
             <table className="w-full">
               <thead className="border-b border-border-brand bg-bg-page">
                 <tr>
-                  <th className="px-4 py-3 text-left font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                  <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                     Date
                   </th>
-                  <th className="px-4 py-3 text-left font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                  <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                     Raison
                   </th>
-                  <th className="px-4 py-3 text-right font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+                  <th className="px-4 py-3 text-right font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
                     Points
                   </th>
                 </tr>

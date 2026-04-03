@@ -5,8 +5,10 @@ import {
   useContext,
   useReducer,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react"
+import { useSession } from "next-auth/react"
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -43,10 +45,13 @@ function computeTotals(items: CartItem[]): CartState {
 }
 
 const STORAGE_KEY = "surnaturel-panier"
+const STORAGE_TS_KEY = "surnaturel-panier-ts"
+const CART_EXPIRY_MS = 72 * 60 * 60 * 1000 // 72h
 
 function persistCart(items: CartItem[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    localStorage.setItem(STORAGE_TS_KEY, new Date().toISOString())
   } catch {
     // localStorage indisponible (SSR, quota dépassé, etc.)
   }
@@ -54,6 +59,16 @@ function persistCart(items: CartItem[]) {
 
 function loadCart(): CartItem[] {
   try {
+    // Vérifier expiration
+    const ts = localStorage.getItem(STORAGE_TS_KEY)
+    if (ts) {
+      const age = Date.now() - new Date(ts).getTime()
+      if (age > CART_EXPIRY_MS) {
+        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(STORAGE_TS_KEY)
+        return []
+      }
+    }
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
@@ -134,13 +149,69 @@ const CartContext = createContext<CartContextValue | null>(null)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, computeTotals([]))
+  const { data: session, status } = useSession()
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const initializedRef = useRef(false)
 
-  useEffect(() => {
-    const stored = loadCart()
-    if (stored.length > 0) {
-      dispatch({ type: "HYDRATE", payload: stored })
+  // Sync cart vers serveur (debounced)
+  function syncToServer(items: CartItem[]) {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current)
     }
-  }, [])
+    syncTimeoutRef.current = setTimeout(() => {
+      if (session?.user) {
+        fetch("/api/panier", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(items),
+        }).catch(() => {})
+      }
+    }, 500)
+  }
+
+  // Charger le panier au démarrage
+  useEffect(() => {
+    if (initializedRef.current) return
+    
+    async function initCart() {
+      const localItems = loadCart()
+      
+      // Si utilisateur connecté, fusionner avec serveur
+      if (status === "authenticated" && session?.user) {
+        try {
+          const res = await fetch("/api/panier")
+          if (res.ok) {
+            const data: { items: CartItem[] } = await res.json()
+            const serverItems = data.items || []
+            
+            // Si panier local non vide, il a priorité (plus récent)
+            if (localItems.length > 0) {
+              dispatch({ type: "HYDRATE", payload: localItems })
+              // Sync le panier local vers le serveur
+              syncToServer(localItems)
+            } else if (serverItems.length > 0) {
+              // Sinon, utiliser le panier serveur
+              dispatch({ type: "HYDRATE", payload: serverItems })
+              persistCart(serverItems)
+            }
+          }
+        } catch {
+          // En cas d'erreur, utiliser le panier local
+          if (localItems.length > 0) {
+            dispatch({ type: "HYDRATE", payload: localItems })
+          }
+        }
+      } else if (localItems.length > 0) {
+        dispatch({ type: "HYDRATE", payload: localItems })
+      }
+      
+      initializedRef.current = true
+    }
+    
+    if (status !== "loading") {
+      initCart()
+    }
+  }, [status, session])
 
   function addItem(item: CartItem) {
     dispatch({ type: "ADD_ITEM", payload: item })
@@ -156,7 +227,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function clearCart() {
     dispatch({ type: "CLEAR_CART" })
+    if (session?.user) {
+      fetch("/api/panier", { method: "DELETE" }).catch(() => {})
+    }
   }
+
+  // Sync vers serveur quand le panier change (après initialisation)
+  useEffect(() => {
+    if (initializedRef.current && session?.user && state.items.length >= 0) {
+      syncToServer(state.items)
+    }
+  }, [state.items, session])
 
   return (
     <CartContext.Provider

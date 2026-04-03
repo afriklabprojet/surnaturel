@@ -1,24 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Search, Plus, X, Loader2, MessageSquare } from "lucide-react"
-
-interface Interlocuteur {
-  id: string
-  nom: string
-  prenom: string
-  photoUrl: string | null
-}
-
-interface Conversation {
-  interlocuteur: Interlocuteur
-  dernierMessage: {
-    contenu: string
-    createdAt: string
-    expediteurId: string
-  }
-  nonLus: number
-}
+import type { Interlocuteur, Conversation } from "@/types/messages"
 
 interface ListeConversationsProps {
   conversations: Conversation[]
@@ -41,7 +25,7 @@ const AVATAR_COLORS = [
   { bg: "#F0FDF4", text: "var(--color-primary-dark)" }, // vert foncé clair
 ]
 
-function getAvatarStyle(name: string) {
+export function getAvatarStyle(name: string) {
   let hash = 0
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)
@@ -52,11 +36,13 @@ function getAvatarStyle(name: string) {
 export function Avatar({
   nom,
   prenom,
+  photoUrl,
   size = 36,
   enLigne,
 }: {
   nom: string
   prenom: string
+  photoUrl?: string | null
   size?: number
   enLigne?: boolean
 }) {
@@ -65,21 +51,30 @@ export function Avatar({
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <div
-        className="flex h-full w-full items-center justify-center rounded-full"
-        style={{ backgroundColor: style.bg, color: style.text }}
-      >
-        <span
-          className="font-body font-medium"
-          style={{ fontSize: size * 0.33 }}
+      {photoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photoUrl}
+          alt={`${prenom} ${nom}`}
+          className="h-full w-full rounded-full object-cover"
+        />
+      ) : (
+        <div
+          className="flex h-full w-full items-center justify-center rounded-full"
+          style={{ backgroundColor: style.bg, color: style.text }}
         >
-          {initiales}
-        </span>
-      </div>
+          <span
+            className="font-body font-medium"
+            style={{ fontSize: size * 0.33 }}
+          >
+            {initiales}
+          </span>
+        </div>
+      )}
       {enLigne && (
         <span
           className="absolute bottom-0 right-0 block rounded-full bg-primary-brand ring-2 ring-white"
-          style={{ width: 9, height: 9 }}
+          style={{ width: size >= 40 ? 11 : 9, height: size >= 40 ? 11 : 9 }}
         />
       )}
     </div>
@@ -116,7 +111,11 @@ export default function ListeConversations({
   const [recherche, setRecherche] = useState("")
   const [showNewModal, setShowNewModal] = useState(false)
 
-  const filtered = conversations.filter((c) => {
+  const unique = Array.from(
+    new Map(conversations.map((c) => [c.interlocuteur.id, c])).values()
+  )
+
+  const filtered = unique.filter((c) => {
     const fullName =
       `${c.interlocuteur.prenom} ${c.interlocuteur.nom}`.toLowerCase()
     return fullName.includes(recherche.toLowerCase())
@@ -126,49 +125,55 @@ export default function ListeConversations({
     <div className="flex h-full flex-col bg-white">
       {/* ─── En-tête sidebar ─── */}
       <div className="border-b border-border-brand px-4 py-4">
-        <h2 className="font-display text-[20px] font-normal text-text-main">
-          Communauté
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display text-[18px] font-normal text-text-main">
+            Messages
+          </h2>
+          {/* Nouvelle conversation */}
+          <button
+            onClick={() => setShowNewModal(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-brand text-white transition-colors duration-200 hover:bg-primary-dark"
+            title="Nouvelle conversation"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
 
         {/* Recherche */}
-        <div className="relative mt-3">
+        <div className="relative">
           <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-brand"
+            size={13}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted-brand"
           />
           <input
             type="text"
             value={recherche}
             onChange={(e) => setRecherche(e.target.value)}
-            placeholder="Rechercher une conversation..."
-            className="w-full border border-border-brand bg-bg-page py-2 pl-8 pr-3 font-body text-[12px] font-light text-text-main outline-none placeholder:text-text-muted-brand/60 focus:border-gold transition-colors duration-200"
+            placeholder="Rechercher…"
+            className="w-full rounded-full border border-border-brand bg-bg-page py-2 pl-9 pr-4 font-body text-[12px] font-light text-text-main outline-none placeholder:text-text-muted-brand/60 focus:border-gold focus:ring-2 focus:ring-gold/10 transition-all duration-200"
           />
         </div>
-
-        {/* Nouvelle conversation */}
-        <button
-          onClick={() => setShowNewModal(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 border border-primary-brand px-4 py-2 font-body text-[11px] uppercase tracking-widest text-primary-brand transition-colors duration-200 hover:bg-primary-brand hover:text-white"
-        >
-          <Plus size={14} />
-          Nouvelle conversation
-        </button>
       </div>
 
       {/* ─── Liste conversations ─── */}
       <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-            <MessageSquare size={32} className="text-border-brand" />
-            <p className="mt-3 font-body text-[12px] font-light text-text-muted-brand">
-              {recherche ? "Aucun résultat" : "Aucune conversation"}
+          <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-page mb-4">
+              <MessageSquare size={22} className="text-text-muted-brand" />
+            </div>
+            <p className="font-body text-[13px] font-medium text-text-main">
+              {recherche ? "Aucun résultat" : "Aucun message"}
+            </p>
+            <p className="mt-1 font-body text-[12px] font-light text-text-muted-brand max-w-45">
+              {recherche ? "Essayez un autre nom" : "Commencez une conversation avec un membre"}
             </p>
           </div>
         ) : (
           <>
             {/* Label section */}
-            <div className="px-4 pt-4 pb-2">
-              <span className="font-body text-[9px] uppercase tracking-[0.2em] text-text-muted-brand">
+            <div className="px-4 pt-3 pb-1.5">
+              <span className="font-body text-[11px] uppercase tracking-[0.15em] text-text-muted-brand/70">
                 Récentes
               </span>
             </div>
@@ -177,40 +182,51 @@ export default function ListeConversations({
               const isActive = activeUserId === conv.interlocuteur.id
               const isMine =
                 conv.dernierMessage.expediteurId === currentUserId
+              const contenu = conv.dernierMessage.contenu
+              const apercuTexte = contenu.startsWith("[fichier] ")
+                ? "📎 Fichier"
+                : contenu.startsWith("[image] ") || contenu.startsWith("[IMAGE]")
+                ? "🖼️ Image"
+                : contenu === "[vocal]" || contenu.startsWith("[VOCAL]")
+                ? "🎤 Vocal"
+                : contenu
               const apercu =
-                conv.dernierMessage.contenu.slice(0, 40) +
-                (conv.dernierMessage.contenu.length > 40 ? "…" : "")
+                apercuTexte.slice(0, 38) +
+                (apercuTexte.length > 38 ? "…" : "")
 
               return (
                 <button
                   key={conv.interlocuteur.id}
                   onClick={() => onSelect(conv.interlocuteur)}
-                  className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-200 border-l-2 ${
+                  className={`group flex w-full items-center gap-3 px-3 py-3.5 text-left transition-colors duration-150 ${
                     isActive
-                      ? "border-l-gold bg-bg-page"
-                      : "border-l-transparent hover:bg-bg-page"
+                      ? "bg-primary-light"
+                      : "hover:bg-[#F3F0EB]"
                   }`}
                 >
                   <Avatar
                     nom={conv.interlocuteur.nom}
                     prenom={conv.interlocuteur.prenom}
-                    size={36}
-                    enLigne
+                    photoUrl={conv.interlocuteur.photoUrl}
+                    size={42}
+                    enLigne={conv.interlocuteur.enLigne}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="truncate font-display text-[14px] font-normal text-text-main">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`truncate font-display text-[14px] font-normal ${
+                        conv.nonLus > 0 ? "text-text-main" : "text-text-main"
+                      }`}>
                         {conv.interlocuteur.prenom} {conv.interlocuteur.nom}
                       </span>
-                      <span className="shrink-0 font-body text-[10px] text-text-muted-brand">
+                      <span className="shrink-0 font-body text-[11px] text-text-muted-brand">
                         {formatHeure(conv.dernierMessage.createdAt)}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center justify-between">
+                    <div className="mt-0.5 flex items-center justify-between gap-1">
                       <span
-                        className={`truncate font-body text-[11px] leading-relaxed ${
+                        className={`truncate font-body text-[12px] leading-relaxed ${
                           conv.nonLus > 0
-                            ? "font-normal text-text-main"
+                            ? "font-medium text-text-mid"
                             : "font-light text-text-muted-brand"
                         }`}
                       >
@@ -218,7 +234,7 @@ export default function ListeConversations({
                         {apercu}
                       </span>
                       {conv.nonLus > 0 && (
-                        <span className="ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary-brand px-1.5 font-body text-[10px] font-medium text-white">
+                        <span className="ml-1 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary-brand px-1.5 font-body text-[11px] font-semibold text-white">
                           {conv.nonLus > 99 ? "99+" : conv.nonLus}
                         </span>
                       )}
@@ -263,16 +279,16 @@ function NouvelleConversationModal({
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<Interlocuteur[]>([])
   const [loading, setLoading] = useState(false)
-  const debounceRef = useState<ReturnType<typeof setTimeout> | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function handleSearch(q: string) {
     setQuery(q)
-    if (debounceRef[0]) clearTimeout(debounceRef[0])
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     if (q.length < 2) {
       setResults([])
       return
     }
-    debounceRef[0] = setTimeout(async () => {
+    debounceRef.current = setTimeout(async () => {
       setLoading(true)
       try {
         const res = await fetch(
@@ -341,9 +357,9 @@ function NouvelleConversationModal({
               <button
                 key={u.id}
                 onClick={() => onSelect(u)}
-                className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors duration-200 hover:bg-bg-page"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors duration-200 hover:bg-bg-page"
               >
-                <Avatar nom={u.nom} prenom={u.prenom} size={36} />
+                <Avatar nom={u.nom} prenom={u.prenom} photoUrl={u.photoUrl} size={40} />
                 <div>
                   <span className="font-display text-[14px] font-normal text-text-main">
                     {u.prenom} {u.nom}

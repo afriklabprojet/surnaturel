@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { Fingerprint } from "lucide-react"
 import { fadeInLeft, fadeInRight, staggerContainer, staggerItem, buttonHover } from "@/lib/animations"
+import { isPlatformAuthenticatorAvailable, authenticateWithPasskey } from "@/lib/webauthn"
 
 // ─── Schema ──────────────────────────────────────────────────────
 
@@ -31,6 +33,8 @@ export default function ConnexionForm() {
   const [emailPourRenvoi, setEmailPourRenvoi] = useState("")
   const [renvoiEnCours, setRenvoiEnCours] = useState(false)
   const [renvoiOk, setRenvoiOk] = useState(false)
+  const [biometricAvailable, setBiometricAvailable] = useState(false)
+  const [biometricLoading, setBiometricLoading] = useState(false)
 
   const {
     register,
@@ -40,6 +44,28 @@ export default function ConnexionForm() {
   } = useForm<ConnexionData>({
     resolver: zodResolver(schemaConnexion),
   })
+
+  // Check biometric availability on mount
+  useEffect(() => {
+    isPlatformAuthenticatorAvailable().then(setBiometricAvailable)
+  }, [])
+
+  async function handleBiometricLogin() {
+    setBiometricLoading(true)
+    setErreur("")
+    try {
+      const result = await authenticateWithPasskey()
+      if (result.success) {
+        router.push("/dashboard")
+        router.refresh()
+      } else {
+        setErreur(result.error || "Authentification biométrique échouée")
+      }
+    } catch {
+      setErreur("L'authentification biométrique n'a pas fonctionné. Essayez avec votre mot de passe.")
+    }
+    setBiometricLoading(false)
+  }
 
   async function renvoyerVerification() {
     setRenvoiEnCours(true)
@@ -65,9 +91,21 @@ export default function ConnexionForm() {
         redirect: false,
       })
       if (result?.error) {
-        if (result.error.includes("EMAIL_NON_VERIFIE")) {
+        if (result.code === "EMAIL_NON_VERIFIE" || result.error.includes("EMAIL_NON_VERIFIE")) {
           setEmailNonVerifie(true)
           setEmailPourRenvoi(data.email)
+        } else if (result.code === "2FA_REQUIRED" || result.error.includes("2FA_REQUIRED")) {
+          // Extract userId from error message (format: 2FA_REQUIRED:userId)
+          const match = result.error.match(/2FA_REQUIRED:(\w+)/)
+          const userId = match?.[1]
+          if (userId) {
+            // Store email temporarily and redirect to 2FA verification
+            sessionStorage.setItem("2fa_email", data.email)
+            sessionStorage.setItem("2fa_password", data.motDePasse)
+            router.push(`/verification-2fa?userId=${userId}`)
+          } else {
+            setErreur("Erreur de configuration 2FA")
+          }
         } else {
           setErreur("Email ou mot de passe incorrect")
         }
@@ -153,11 +191,11 @@ export default function ConnexionForm() {
         animate="animate"
         className="flex items-center justify-center px-6 py-10 md:px-12"
       >
-        <div className="w-full max-w-[400px]">
+        <div className="w-full max-w-100">
           {/* Tag or */}
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-6 bg-gold" />
-            <span className="font-body text-[10px] font-medium uppercase tracking-[0.2em] text-gold">
+            <span className="font-body text-xs font-medium uppercase tracking-[0.2em] text-gold">
               Accès membre
             </span>
             <span className="h-px w-6 bg-gold" />
@@ -179,24 +217,24 @@ export default function ConnexionForm() {
 
           {/* Succès inscription */}
           {inscriptionOk && (
-            <div className="mt-6 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-3 font-body text-[11px] text-primary-brand">
+            <div className="mt-6 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-3 font-body text-xs text-primary-brand">
               Compte créé ! Vérifiez votre email pour activer votre compte.
             </div>
           )}
 
           {/* Statut vérification email */}
           {verification === "ok" && (
-            <div className="mt-6 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-3 font-body text-[11px] text-primary-brand">
+            <div className="mt-6 border-l-2 border-primary-brand bg-primary-light/50 px-4 py-3 font-body text-xs text-primary-brand">
               Email vérifié avec succès ! Vous pouvez maintenant vous connecter.
             </div>
           )}
           {verification === "expired" && (
-            <div className="mt-6 border-l-2 border-gold bg-gold-light/50 px-4 py-3 font-body text-[11px] text-text-mid">
+            <div className="mt-6 border-l-2 border-gold bg-gold-light/50 px-4 py-3 font-body text-xs text-text-mid">
               Le lien de vérification a expiré. Connectez-vous pour recevoir un nouveau lien.
             </div>
           )}
           {verification === "invalid" && (
-            <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-[11px] text-danger-deep">
+            <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-xs text-danger-deep">
               Lien de vérification invalide ou déjà utilisé.
             </div>
           )}
@@ -204,7 +242,7 @@ export default function ConnexionForm() {
           {/* Email non vérifié */}
           {emailNonVerifie && (
             <div className="mt-6 border-l-2 border-gold bg-gold-light/50 px-4 py-3">
-              <p className="font-body text-[11px] text-text-mid">
+              <p className="font-body text-xs text-text-mid">
                 Votre adresse email n&apos;a pas encore été vérifiée.
                 Consultez votre boîte de réception.
               </p>
@@ -212,7 +250,7 @@ export default function ConnexionForm() {
                 type="button"
                 onClick={renvoyerVerification}
                 disabled={renvoiEnCours || renvoiOk}
-                className="mt-2 font-body text-[11px] font-medium text-primary-brand underline transition-colors hover:text-primary-dark disabled:opacity-50 disabled:no-underline"
+                className="mt-2 font-body text-xs font-medium text-primary-brand underline transition-colors hover:text-primary-dark disabled:opacity-50 disabled:no-underline"
               >
                 {renvoiOk
                   ? "Email envoyé !"
@@ -225,7 +263,7 @@ export default function ConnexionForm() {
 
           {/* Erreur */}
           {erreur && (
-            <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-[11px] text-danger-deep">
+            <div className="mt-6 border-l-2 border-danger-deep px-4 py-3 font-body text-xs text-danger-deep">
               {erreur}
             </div>
           )}
@@ -239,7 +277,7 @@ export default function ConnexionForm() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.2em] text-text-mid"
+                className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.2em] text-text-mid"
               >
                 Adresse email
               </label>
@@ -252,7 +290,7 @@ export default function ConnexionForm() {
                 className="w-full border border-border-brand bg-bg-page px-4 py-3 font-body text-[14px] text-text-main outline-none transition-all duration-300 placeholder:text-text-muted-brand/50 focus:border-gold focus:bg-white"
               />
               {errors.email && (
-                <p className="mt-1.5 font-body text-[10px] text-danger-deep">
+                <p className="mt-1.5 font-body text-xs text-danger-deep">
                   {errors.email.message}
                 </p>
               )}
@@ -262,7 +300,7 @@ export default function ConnexionForm() {
             <div>
               <label
                 htmlFor="motDePasse"
-                className="mb-2 block font-body text-[10px] font-medium uppercase tracking-[0.2em] text-text-mid"
+                className="mb-2 block font-body text-xs font-medium uppercase tracking-[0.2em] text-text-mid"
               >
                 Mot de passe
               </label>
@@ -275,14 +313,14 @@ export default function ConnexionForm() {
                 className="w-full border border-border-brand bg-bg-page px-4 py-3 font-body text-[14px] text-text-main outline-none transition-all duration-300 placeholder:text-text-muted-brand/50 focus:border-gold focus:bg-white"
               />
               {errors.motDePasse && (
-                <p className="mt-1.5 font-body text-[10px] text-danger-deep">
+                <p className="mt-1.5 font-body text-xs text-danger-deep">
                   {errors.motDePasse.message}
                 </p>
               )}
               <div className="mt-1.5 text-right">
                 <Link
                   href="/mot-de-passe-oublie"
-                  className="font-body text-[11px] text-text-muted-brand transition-colors duration-300 hover:text-text-mid"
+                  className="font-body text-xs text-text-muted-brand transition-colors duration-300 hover:text-text-mid"
                 >
                   Mot de passe oublié ?
                 </Link>
@@ -293,7 +331,7 @@ export default function ConnexionForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 bg-primary-brand py-3.5 font-body text-[11px] font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-70"
+              className="flex w-full items-center justify-center gap-2 bg-primary-brand py-3.5 font-body text-xs font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-primary-dark disabled:opacity-70"
             >
               {isSubmitting && (
                 <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -305,14 +343,14 @@ export default function ConnexionForm() {
           {/* Séparateur */}
           <div className="my-6 flex items-center gap-3">
             <span className="h-px flex-1 bg-border-brand" />
-            <span className="font-body text-[10px] text-text-muted-brand">ou</span>
+            <span className="font-body text-xs text-text-muted-brand">ou</span>
             <span className="h-px flex-1 bg-border-brand" />
           </div>
 
           {/* Google */}
           <button
             type="button"
-            onClick={() => signIn("google")}
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             className="flex w-full items-center justify-center gap-3 border border-border-brand bg-white py-3 font-body text-[12px] text-text-mid transition-colors duration-300 hover:bg-bg-page"
           >
             <svg
@@ -340,6 +378,23 @@ export default function ConnexionForm() {
             </svg>
             Continuer avec Google
           </button>
+
+          {/* Face ID / Touch ID — Visible uniquement si disponible */}
+          {biometricAvailable && (
+            <button
+              type="button"
+              onClick={handleBiometricLogin}
+              disabled={biometricLoading}
+              className="mt-3 flex w-full items-center justify-center gap-3 border border-gold bg-gold-light/50 py-3 font-body text-[12px] text-gold-dark transition-colors duration-300 hover:bg-gold-light disabled:opacity-70"
+            >
+              {biometricLoading ? (
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
+              ) : (
+                <Fingerprint size={18} className="text-gold" />
+              )}
+              {biometricLoading ? "Vérification..." : "Face ID / Touch ID"}
+            </button>
+          )}
 
           {/* Lien bas */}
           <p className="mt-8 text-center font-body text-[12px] text-text-muted-brand">

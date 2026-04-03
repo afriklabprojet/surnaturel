@@ -1,3 +1,4 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -143,7 +144,7 @@ export async function GET(request: NextRequest) {
       query: q,
     })
   } catch (error) {
-    console.error("[API Search] Erreur:", error)
+    logger.error("[API Search] Erreur:", error)
     return NextResponse.json(
       { error: "Erreur lors de la recherche" },
       { status: 500 }

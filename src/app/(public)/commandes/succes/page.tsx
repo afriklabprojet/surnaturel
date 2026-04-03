@@ -108,7 +108,7 @@ function SuccesContent() {
 
           {/* Récapitulatif commande */}
           <motion.div variants={fadeInUp} className="mt-10 border border-gold bg-white p-6 text-left">
-            <h2 className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <h2 className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Récapitulatif
             </h2>
             <div className="mt-4 space-y-3">
@@ -141,7 +141,7 @@ function SuccesContent() {
 
           {/* Prochaines étapes */}
           <motion.div variants={fadeInUp} className="mt-10">
-            <h3 className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <h3 className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Prochaines étapes
             </h3>
             <div className="mt-6 grid gap-6 sm:grid-cols-3">

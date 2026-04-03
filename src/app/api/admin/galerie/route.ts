@@ -1,7 +1,8 @@
+import { typedLogger as logger } from "@/lib/logger"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 const galerieSchema = z.object({
   titre: z.string().min(1, "Titre requis"),
@@ -46,7 +47,7 @@ export async function GET() {
       stats: { total, approuvees, enAttente },
     })
   } catch (error) {
-    console.error("Erreur récupération galerie admin:", error)
+    logger.error("Erreur récupération galerie admin:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, photo }, { status: 201 })
   } catch (error) {
-    console.error("Erreur création photo galerie:", error)
+    logger.error("Erreur création photo galerie:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

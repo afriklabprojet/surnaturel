@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { ChevronLeft, ChevronRight, Clock, Coffee } from "lucide-react"
+import { toast } from "sonner"
 
 const JOURS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
 const JOURS_COMPLETS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+// Abbreviated for landscape/compact views
+const JOURS_ABBREV = ["L", "M", "M", "J", "V", "S", "D"]
 const MOIS = [
   "Janvier",
   "Février",
@@ -27,6 +30,8 @@ const CRENEAUX_APRES_MIDI = [14, 15, 16, 17]
 interface CalendrierRDVProps {
   soinId: string
   soinDuree?: number // durée du soin en minutes
+  creneauxMatin?: number[]    // heures début créneaux matin (depuis AppConfig)
+  creneauxApresMidi?: number[] // heures début créneaux après-midi (depuis AppConfig)
   selectedDate: string | null
   selectedHeure: number | null
   onSelectDate: (date: string) => void
@@ -57,6 +62,8 @@ function formatDateHumaine(dateStr: string): string {
 export default function CalendrierRDV({
   soinId,
   soinDuree = 60,
+  creneauxMatin: creneauxMatinProp,
+  creneauxApresMidi: creneauxApresMidiProp,
   selectedDate,
   selectedHeure,
   onSelectDate,
@@ -71,10 +78,10 @@ export default function CalendrierRDV({
   // Filtrer les créneaux selon la durée du soin
   const creneauxDisponibles = useCallback(() => {
     const dureeHeures = Math.ceil(soinDuree / 60)
-    const matin = CRENEAUX_MATIN.filter((h) => h + dureeHeures <= 12)
-    const apresMidi = CRENEAUX_APRES_MIDI.filter((h) => h + dureeHeures <= 18)
+    const matin = (creneauxMatinProp ?? CRENEAUX_MATIN).filter((h) => h + dureeHeures <= 12)
+    const apresMidi = (creneauxApresMidiProp ?? CRENEAUX_APRES_MIDI).filter((h) => h + dureeHeures <= 18)
     return { matin, apresMidi }
-  }, [soinDuree])
+  }, [soinDuree, creneauxMatinProp, creneauxApresMidiProp])
 
   const fetchDisponibilites = useCallback(
     async (date: string) => {
@@ -89,6 +96,7 @@ export default function CalendrierRDV({
         }
       } catch {
         setHeuresReservees([])
+        toast.error("Impossible de charger les créneaux. Veuillez réessayer.")
       } finally {
         setLoadingCreneaux(false)
       }
@@ -153,45 +161,46 @@ export default function CalendrierRDV({
   ).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 landscape:space-y-3 landscape:md:space-y-6">
       {/* Calendrier mensuel */}
-      <div className="border border-border-brand bg-white p-4 sm:p-5">
+      <div className="border border-border-brand bg-white p-3 landscape:p-2 sm:p-5">
         {/* Header mois */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 landscape:mb-2 flex items-center justify-between">
           <button
             onClick={prevMonth}
             disabled={isPrevDisabled()}
-            className="flex h-10 w-10 items-center justify-center transition-colors duration-200 hover:bg-primary-light disabled:opacity-30"
+            className="flex h-10 w-10 landscape:h-9 landscape:w-9 items-center justify-center transition-colors duration-200 hover:bg-primary-light disabled:opacity-30"
             aria-label="Mois précédent"
           >
             <ChevronLeft size={18} />
           </button>
-          <h3 className="font-display text-lg font-light text-text-main">
+          <h3 className="font-display text-base landscape:text-sm sm:text-lg font-light text-text-main">
             {MOIS[currentMonth]} {currentYear}
           </h3>
           <button
             onClick={nextMonth}
-            className="flex h-10 w-10 items-center justify-center transition-colors duration-200 hover:bg-primary-light"
+            className="flex h-10 w-10 landscape:h-9 landscape:w-9 items-center justify-center transition-colors duration-200 hover:bg-primary-light"
             aria-label="Mois suivant"
           >
             <ChevronRight size={18} />
           </button>
         </div>
 
-        {/* Jours de la semaine */}
-        <div className="mb-2 grid grid-cols-7 gap-1">
-          {JOURS.map((jour) => (
+        {/* Jours de la semaine — abbrevié en landscape mobile */}
+        <div className="mb-1.5 landscape:mb-1 grid grid-cols-7 gap-0.5 landscape:gap-0">
+          {JOURS.map((jour, idx) => (
             <div
               key={jour}
-              className="py-1.5 text-center font-body text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.1em] text-text-muted-brand"
+              className="py-1 landscape:py-0.5 text-center font-body text-[10px] landscape:text-[9px] sm:text-xs font-medium uppercase tracking-[0.1em] text-text-muted-brand"
             >
-              {jour}
+              <span className="hidden landscape:inline sm:hidden">{JOURS_ABBREV[idx]}</span>
+              <span className="landscape:hidden sm:inline">{jour}</span>
             </div>
           ))}
         </div>
 
-        {/* Grille jours — taille tactile 44px min */}
-        <div className="grid grid-cols-7 gap-1">
+        {/* Grille jours — taille tactile 44px min, réduite en landscape */}
+        <div className="grid grid-cols-7 gap-0.5 landscape:gap-0">
           {Array.from({ length: firstDay }, (_, i) => (
             <div key={`empty-${i}`} />
           ))}
@@ -210,7 +219,7 @@ export default function CalendrierRDV({
                 key={day}
                 disabled={past || isSunday}
                 onClick={() => onSelectDate(dateStr)}
-                className={`flex h-11 w-full items-center justify-center font-body text-[13px] sm:text-sm font-medium transition-all duration-200 ${
+                className={`flex h-10 landscape:h-8 sm:h-11 w-full items-center justify-center font-body text-[12px] landscape:text-[11px] sm:text-sm font-medium transition-all duration-200 ${
                   isSelected
                     ? "bg-primary-brand text-white"
                     : todayDay
@@ -237,12 +246,12 @@ export default function CalendrierRDV({
                 {formatDateHumaine(selectedDate)}
               </h3>
               <div className="mt-1 flex items-center gap-3">
-                <span className="flex items-center gap-1.5 font-body text-[11px] text-text-muted-brand">
+                <span className="flex items-center gap-1.5 font-body text-xs text-text-muted-brand">
                   <Clock size={12} />
                   Durée : {soinDuree} min
                 </span>
                 {!loadingCreneaux && (
-                  <span className="font-body text-[11px] text-primary-brand">
+                  <span className="font-body text-xs text-primary-brand">
                     {creneauxLibres} créneau{creneauxLibres > 1 ? "x" : ""} disponible{creneauxLibres > 1 ? "s" : ""}
                   </span>
                 )}
@@ -255,14 +264,14 @@ export default function CalendrierRDV({
               <div className="h-6 w-6 animate-spin border-2 border-primary-brand border-t-transparent" />
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-4 landscape:space-y-2">
               {/* Matin */}
               {matin.length > 0 && (
                 <div>
-                  <p className="mb-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-muted-brand">
+                  <p className="mb-1.5 landscape:mb-1 font-body text-[11px] landscape:text-[10px] sm:text-xs font-medium uppercase tracking-[0.12em] text-text-muted-brand">
                     Matin
                   </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 landscape:grid-cols-4 gap-1.5 landscape:gap-1 sm:grid-cols-4 sm:gap-2">
                     {matin.map((heure) => {
                       const reserve = heuresReservees.includes(heure)
                       const isSelected = selectedHeure === heure
@@ -287,7 +296,7 @@ export default function CalendrierRDV({
                           aria-label={`Créneau de ${heureStr} à ${finStr}${reserve ? " — réservé" : ""}`}
                         >
                           <span className="text-[14px] font-medium">{heureStr}</span>
-                          <span className={`text-[10px] ${isSelected ? "text-white/70" : "text-text-muted-brand"}`}>
+                          <span className={`text-xs ${isSelected ? "text-white/70" : "text-text-muted-brand"}`}>
                             → {finStr}
                           </span>
                         </button>
@@ -298,11 +307,12 @@ export default function CalendrierRDV({
               )}
 
               {/* Pause déjeuner */}
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 landscape:gap-1.5 py-0.5">
                 <div className="h-px flex-1 bg-border-brand" />
-                <span className="flex items-center gap-1.5 font-body text-[10px] uppercase tracking-[0.12em] text-text-muted-brand">
-                  <Coffee size={12} className="text-gold" />
-                  Pause 12h — 14h
+                <span className="flex items-center gap-1 font-body text-[10px] landscape:text-[9px] sm:text-xs uppercase tracking-[0.12em] text-text-muted-brand">
+                  <Coffee size={10} className="text-gold landscape:hidden sm:block" />
+                  <span className="hidden landscape:inline">12h–14h</span>
+                  <span className="landscape:hidden">Pause 12h — 14h</span>
                 </span>
                 <div className="h-px flex-1 bg-border-brand" />
               </div>
@@ -310,10 +320,10 @@ export default function CalendrierRDV({
               {/* Après-midi */}
               {apresMidi.length > 0 && (
                 <div>
-                  <p className="mb-2 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-text-muted-brand">
+                  <p className="mb-1.5 landscape:mb-1 font-body text-[11px] landscape:text-[10px] sm:text-xs font-medium uppercase tracking-[0.12em] text-text-muted-brand">
                     Après-midi
                   </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 landscape:grid-cols-4 gap-1.5 landscape:gap-1 sm:grid-cols-4 sm:gap-2">
                     {apresMidi.map((heure) => {
                       const reserve = heuresReservees.includes(heure)
                       const isSelected = selectedHeure === heure
@@ -328,7 +338,7 @@ export default function CalendrierRDV({
                           key={heure}
                           disabled={reserve}
                           onClick={() => onSelectHeure(heure)}
-                          className={`flex flex-col items-center gap-0.5 border px-3 py-3 font-body transition-all duration-200 ${
+                          className={`flex flex-col items-center gap-0.5 border px-2 py-2.5 landscape:py-1.5 sm:px-3 sm:py-3 font-body transition-all duration-200 ${
                             isSelected
                               ? "border-primary-brand bg-primary-brand text-white"
                               : reserve
@@ -337,8 +347,8 @@ export default function CalendrierRDV({
                           }`}
                           aria-label={`Créneau de ${heureStr} à ${finStr}${reserve ? " — réservé" : ""}`}
                         >
-                          <span className="text-[14px] font-medium">{heureStr}</span>
-                          <span className={`text-[10px] ${isSelected ? "text-white/70" : "text-text-muted-brand"}`}>
+                          <span className="text-[13px] landscape:text-[12px] sm:text-[14px] font-medium">{heureStr}</span>
+                          <span className={`text-[10px] landscape:text-[9px] sm:text-xs ${isSelected ? "text-white/70" : "text-text-muted-brand"}`}>
                             → {finStr}
                           </span>
                         </button>

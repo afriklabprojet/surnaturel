@@ -37,6 +37,7 @@ enum StatutRDV {
 
 enum StatutCommande {
   EN_ATTENTE
+  PAIEMENT_EN_COURS
   PAYEE
   EN_PREPARATION
   EXPEDIEE
@@ -66,7 +67,7 @@ enum StoryVisibilite {
 model User {
   id                   String           @id @default(cuid())
   email                String           @unique
-  passwordHash         String
+  passwordHash         String?
   nom                  String
   prenom               String
   name                 String?          // nom complet (NextAuth)
@@ -109,7 +110,6 @@ model User {
   // ─── Relations réseau social
   posts                Post[]
   commentaires         Commentaire[]
-  likes                Like[]
   reactions            Reaction[]
   postsSauvegardes     PostSauvegarde[]
   connexionsEnvoyees   Connexion[]      @relation("Demandeur")
@@ -126,6 +126,8 @@ model User {
   mentionsConcernees   Mention[]        @relation("MentionsConcernees")
   mentionsEmises       Mention[]        @relation("MentionsEmises")
   stories              Story[]
+  conversationsA       Conversation[]   @relation("ConvA")
+  conversationsB       Conversation[]   @relation("ConvB")
   verificationStatus   VerificationStatus @default(AUCUNE)
   profilDetail         ProfilDetail?
   // ─── Reset mot de passe
@@ -138,6 +140,7 @@ model User {
   // ─── Onboarding email sequence
   onboardingStep       Int              @default(0) // 0=welcome, 1=soins, 2=boutique, 3=communauté
   lastOnboardingEmail  DateTime?
+  derniereVueAt        DateTime?        // présence en ligne
   // ─── Messages médicaux (table séparée)
   messagesMedicauxEnvoyes  MessageMedical[] @relation("MessagesMedicauxEnvoyes")
   messagesMedicauxRecus    MessageMedical[] @relation("MessagesMedicauxRecus")
@@ -154,6 +157,60 @@ model User {
   abonnementsMensuels  AbonnementMensuel[]
   // ─── Avis produits
   avisProduits         AvisProduit[]
+  // ─── WebAuthn / Passkeys (Face ID, Touch ID)
+  webAuthnCredentials  WebAuthnCredential[]
+  // ─── 2FA / Two-Factor Authentication
+  totpSecret           String?          // Encrypted TOTP secret
+  totpEnabled          Boolean          @default(false)
+  totpBackupCodes      String[]         // Hashed backup codes
+  totpVerifiedAt       DateTime?        // When 2FA was enabled
+  // ─── Session tracking
+  authSessions         AuthSession[]
+  lastLoginAt          DateTime?
+  lastLoginIp          String?
+  lastLoginDevice      String?
+  // ─── Accès Communauté (abonnement payant ou essai gratuit)
+  accesCommuaute          Boolean   @default(false)
+  accesCommuauteExpireAt  DateTime?
+  essaiCommuauteUtilise   Boolean   @default(false)
+}
+
+// ─── WebAuthn Credentials (Passkeys) ─────────────────────────────
+model WebAuthnCredential {
+  id                String   @id @default(cuid())
+  userId            String
+  credentialId      String   @unique // Base64url encoded credential ID
+  credentialPublicKey Bytes  // CBOR encoded public key
+  counter           BigInt   @default(0) // Signature counter for replay attack prevention
+  transports        String[] // Array of transport hints (usb, nfc, ble, internal)
+  deviceName        String?  // User-friendly device name
+  createdAt         DateTime @default(now())
+  lastUsedAt        DateTime?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Auth Sessions (Track active sessions for 2FA/session mgmt) ──
+model AuthSession {
+  id            String    @id @default(cuid())
+  userId        String
+  tokenHash     String    @unique  // Hash of session token for lookup
+  ipAddress     String?
+  userAgent     String?
+  deviceName    String?            // Parsed device name (iPhone 15, Chrome Windows, etc.)
+  deviceType    String?            // mobile, desktop, tablet
+  location      String?            // Geo location from IP
+  isCurrentSession Boolean @default(false)
+  lastActiveAt  DateTime  @default(now())
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+  revokedAt     DateTime?          // If session was manually revoked
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
 }
 
 // ─── Push Subscriptions (Web Push API) ───────────────────────────
@@ -200,6 +257,7 @@ model RendezVous {
   userId          String
   soinId          String
   dateHeure       DateTime
+  creneauCle      String?   // Format: "soinId_YYYY-MM-DD_HH" pour contrainte unique
   statut          StatutRDV @default(EN_ATTENTE)
   notes           String?
   montantAcompte  Float?
@@ -212,6 +270,10 @@ model RendezVous {
   soin            Soin      @relation(fields: [soinId], references: [id])
   avis            Avis?
   createdAt       DateTime  @default(now())
+
+  // Contrainte unique sur creneauCle (null ignoré = RDV annulés)
+  @@unique([creneauCle])
+  @@index([soinId, dateHeure])
 }
 
 model Produit {
@@ -255,17 +317,28 @@ model AvisProduit {
 }
 
 model Commande {
-  id              String         @id @default(cuid())
-  userId          String
-  total           Float
-  codePromo       String?
-  reduction       Float          @default(0)
-  statut          StatutCommande @default(EN_ATTENTE)
-  paiementId      String?
-  webhookTraite   Boolean        @default(false)
-  user            User           @relation(fields: [userId], references: [id])
-  lignes          LigneCommande[]
-  createdAt       DateTime       @default(now())
+  id                 String         @id @default(cuid())
+  userId             String
+  total              Float
+  codePromo          String?
+  reduction          Float          @default(0)
+  fraisLivraison     Float          @default(0)
+  zoneLivraison      String?
+  nomDestinataire    String?
+  adresseLivraison   String?
+  telephoneLivraison String?
+  statut             StatutCommande @default(EN_ATTENTE)
+  paiementId        String?
+  webhookTraite     Boolean        @default(false)
+  methodePaiement   String?
+  tentativesPaiement Int           @default(0)
+  dernierEchecAt    DateTime?
+  relanceSmsEnvoyee Boolean        @default(false)
+  user              User           @relation(fields: [userId], references: [id])
+  lignes            LigneCommande[]
+  createdAt         DateTime       @default(now())
+
+  @@index([statut, dernierEchecAt])
 }
 
 model LigneCommande {
@@ -282,12 +355,36 @@ enum MessageType {
   TEXTE
   VOCAL
   MEDIA
+  FICHIER
+}
+
+// ─── Conversation ────────────────────────────────────────────────
+// Remplace le DISTINCT ON $queryRaw : 1 row par conversation, mise à jour sur
+// chaque nouveau message. participantAId < participantBId (tri lexicographique).
+model Conversation {
+  id             String    @id @default(cuid())
+  participantAId String
+  participantBId String
+  lastMessageId  String?   // id du dernier message (dénormalisé pour rapidité)
+  lastMessageAt  DateTime  @default(now())
+  nonLusA        Int       @default(0)  // non-lus pour participantA
+  nonLusB        Int       @default(0)  // non-lus pour participantB
+  participantA   User      @relation("ConvA", fields: [participantAId], references: [id])
+  participantB   User      @relation("ConvB", fields: [participantBId], references: [id])
+  messages       Message[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([participantAId, participantBId])
+  @@index([participantAId, lastMessageAt])
+  @@index([participantBId, lastMessageAt])
 }
 
 model Message {
-  id             String      @id @default(cuid())
+  id             String       @id @default(cuid())
   expediteurId   String
   destinataireId String
+  conversationId String?
   contenu        String
   type           MessageType @default(TEXTE)
   dureeSecondes  Int?        // durée audio pour VOCAL
@@ -296,8 +393,16 @@ model Message {
   replyTo        Message?    @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
   replies        Message[]   @relation("MessageReply")
   reactions      Reaction[]  @relation("MessageReactions")
-  expediteur     User        @relation(fields: [expediteurId], references: [id])
-  createdAt      DateTime    @default(now())
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  expediteur     User          @relation(fields: [expediteurId], references: [id])
+  createdAt      DateTime      @default(now())
+  modifie        Boolean     @default(false)
+  modifieLeAt    DateTime?
+  luLe           DateTime?   // horodatage de lecture
+  epingle        Boolean     @default(false)
+  expiresAt      DateTime?   // messages éphémères
+  programmeA     DateTime?   // message programmé — date d'envoi
+  programmeEnvoye Boolean    @default(false) // true quand le cron a envoyé
 
   @@index([expediteurId, destinataireId])
   @@index([destinataireId, lu])          // conversations: comptage non-lus
@@ -397,6 +502,8 @@ model Article {
   slug         String   @unique
   contenu      String
   categorie    String   @default("Bien-être")
+  auteur       String   @default("Équipe éditoriale")
+  auteurRole   String   @default("Équipe du Surnaturel de Dieu")
   tempsLecture Int      @default(3)
   imageUrl     String?
   publie       Boolean  @default(false)
@@ -450,11 +557,15 @@ model Notification {
   lu        Boolean   @default(false)
   lien      String?
   sourceId  String?
+  compteur  Int       @default(1)
   user      User      @relation(fields: [userId], references: [id])
   createdAt DateTime  @default(now())
 
   @@index([userId, lu])
   @@index([userId, createdAt])
+  // Déduplication : un seul enregistrement par (user, type, sourcePost/Message)
+  // NULL sourceId = notifications sans source (RDV, etc.) → pas de dédup (NULLs distincts en PG)
+  @@unique([userId, type, sourceId], name: "notif_dedup")
 }
 
 model PointsFidelite {
@@ -558,6 +669,14 @@ model Newsletter {
   createdAt       DateTime @default(now())
 }
 
+// Abonnés newsletter (visiteurs non connectés)
+model AbonneNewsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
 model Favori {
   id        String   @id @default(cuid())
   userId    String
@@ -654,13 +773,7 @@ enum StatutProfil {
   PRO_SANTE
 }
 
-enum TypeReaction {
-  JAIME
-  SOUTIEN
-  ENCOURAGEMENT
-  BRAVO
-  INSPIRATION
-}
+// TypeReaction remplacé par String pour supporter tout emoji
 
 enum FormatPost {
   TEXTE
@@ -766,7 +879,6 @@ model Post {
   partages     Post[]      @relation("Partage")
   mentions     Mention[]
   commentaires Commentaire[]
-  likes        Like[]
   reactions    Reaction[]
   sauvegardes  PostSauvegarde[]
   signalements Signalement[]
@@ -810,23 +922,12 @@ model Mention {
   @@index([postId])
 }
 
-model Like {
-  id        String   @id @default(cuid())
-  postId    String
-  userId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-
-  @@unique([postId, userId])
-}
-
 model Reaction {
-  id        String       @id @default(cuid())
+  id        String   @id @default(cuid())
   postId    String?
   messageId String?
   userId    String
-  type      TypeReaction
+  type      String   // emoji libre ou ancien type (JAIME, SOUTIEN, ...)
   post      Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
   message   Message?     @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
   user      User         @relation(fields: [userId], references: [id])

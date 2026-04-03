@@ -48,8 +48,10 @@ describe("Crypto — AES-256-GCM encryption", () => {
   it("rejects tampered ciphertext", () => {
     const chiffre = encrypt("Données protégées")
     const parts = chiffre.split(":")
-    // Tamper with the cipher data
-    const tampered = `${parts[0]}:${parts[1]}:${parts[2].replace(/.$/, "0")}`
+    // Tamper with the cipher data — flip last char to guarantee change
+    const lastChar = parts[2].slice(-1)
+    const flipped = lastChar === "0" ? "1" : "0"
+    const tampered = `${parts[0]}:${parts[1]}:${parts[2].slice(0, -1)}${flipped}`
 
     expect(() => decrypt(tampered)).toThrow()
   })

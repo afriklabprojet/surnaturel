@@ -236,7 +236,7 @@ export default function SageFemmeDashboard() {
         <div className="border border-border-brand bg-white p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                 RDV aujourd&apos;hui
               </p>
               <p className="mt-2 font-display text-[32px] text-primary-brand">
@@ -254,7 +254,7 @@ export default function SageFemmeDashboard() {
         <div className="border border-border-brand bg-white p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                 Temps de soins
               </p>
               <p className="mt-2 font-display text-[32px] text-gold">
@@ -271,7 +271,7 @@ export default function SageFemmeDashboard() {
         <div className="border border-border-brand bg-white p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                 Revenus prévus
               </p>
               <p className="mt-2 font-display text-[32px] text-text-main">
@@ -285,7 +285,7 @@ export default function SageFemmeDashboard() {
         <div className="border border-border-brand bg-white p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+              <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                 Patients actifs
               </p>
               <p className="mt-2 font-display text-[32px] text-primary-brand">
@@ -312,7 +312,7 @@ export default function SageFemmeDashboard() {
                 <Clock size={24} />
               </div>
               <div>
-                <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+                <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                   Prochain rendez-vous
                 </p>
                 <p className="font-display text-[18px] text-primary-brand">
@@ -362,7 +362,7 @@ export default function SageFemmeDashboard() {
             >
               {tab.label}
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-[11px]">
+                <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs">
                   {tab.count}
                 </span>
               )}
@@ -429,7 +429,7 @@ export default function SageFemmeDashboard() {
                           <span className="font-display text-[18px] text-primary-brand">
                             {formatHeure(rdv.dateHeure).split(":")[0]}
                           </span>
-                          <span className="text-[11px] text-text-muted-brand">
+                          <span className="text-xs text-text-muted-brand">
                             :{formatHeure(rdv.dateHeure).split(":")[1]}
                           </span>
                         </div>
@@ -441,7 +441,7 @@ export default function SageFemmeDashboard() {
                               {rdv.client.prenom} {rdv.client.nom}
                             </h3>
                             <span
-                              className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] ${config.color}`}
+                              className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs ${config.color}`}
                             >
                               <StatusIcon size={12} />
                               {config.label}

@@ -67,7 +67,7 @@ function Avatar({ user, size = 36 }: { user: { prenom: string; nom: string; phot
 }
 
 function Badge({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-[10px] uppercase tracking-widest ${className}`}>{children}</span>
+  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 font-body text-xs uppercase tracking-widest ${className}`}>{children}</span>
 }
 
 function getRoleInfo(role: string) {
@@ -270,7 +270,7 @@ export default function PageAdminProfessionnels() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-border-brand font-body text-[11px] uppercase tracking-widest hover:bg-bg-page transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-border-brand font-body text-xs uppercase tracking-widest hover:bg-bg-page transition-colors disabled:opacity-50"
         >
           {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
           Exporter CSV
@@ -283,7 +283,7 @@ export default function PageAdminProfessionnels() {
           <button
             key={t.value}
             onClick={() => { setTab(t.value); setPage(1) }}
-            className={`px-4 py-2 font-body text-[11px] uppercase tracking-widest border-b-2 transition-colors ${
+            className={`px-4 py-2 font-body text-xs uppercase tracking-widest border-b-2 transition-colors ${
               tab === t.value
                 ? "border-primary-brand text-primary-brand"
                 : "border-transparent text-text-muted-brand hover:text-text-mid"
@@ -339,8 +339,8 @@ export default function PageAdminProfessionnels() {
 
                 {/* Contact */}
                 <div className="space-y-1 text-text-muted-brand">
-                  <p className="font-body text-[11px] flex items-center gap-1.5"><Mail size={11} /> {u.email}</p>
-                  {u.telephone && <p className="font-body text-[11px] flex items-center gap-1.5"><Phone size={11} /> {u.telephone}</p>}
+                  <p className="font-body text-xs flex items-center gap-1.5"><Mail size={11} /> {u.email}</p>
+                  {u.telephone && <p className="font-body text-xs flex items-center gap-1.5"><Phone size={11} /> {u.telephone}</p>}
                 </div>
 
                 {/* Profil professionnel */}
@@ -348,7 +348,7 @@ export default function PageAdminProfessionnels() {
                   <p className="font-body text-[12px] text-text-mid flex items-center gap-1.5"><Stethoscope size={12} /> {p.specialite}</p>
                 )}
                 {p?.numeroOrdre && (
-                  <p className="font-body text-[11px] text-text-muted-brand flex items-center gap-1.5"><FileText size={11} /> N° Ordre : {p.numeroOrdre}</p>
+                  <p className="font-body text-xs text-text-muted-brand flex items-center gap-1.5"><FileText size={11} /> N° Ordre : {p.numeroOrdre}</p>
                 )}
 
                 {/* Planning résumé */}
@@ -363,40 +363,40 @@ export default function PageAdminProfessionnels() {
                   </div>
                 )}
                 {p?.horairesDisponibilite && (
-                  <p className="font-body text-[11px] text-text-muted-brand flex items-center gap-1.5"><Clock size={11} /> {p.horairesDisponibilite}</p>
+                  <p className="font-body text-xs text-text-muted-brand flex items-center gap-1.5"><Clock size={11} /> {p.horairesDisponibilite}</p>
                 )}
                 {p?.languesConsultation && p.languesConsultation.length > 0 && (
-                  <p className="font-body text-[11px] text-text-muted-brand flex items-center gap-1.5"><Globe size={11} /> {p.languesConsultation.join(", ")}</p>
+                  <p className="font-body text-xs text-text-muted-brand flex items-center gap-1.5"><Globe size={11} /> {p.languesConsultation.join(", ")}</p>
                 )}
 
                 {!p && (
-                  <p className="font-body text-[11px] text-text-muted-brand italic">Profil professionnel non renseigné</p>
+                  <p className="font-body text-xs text-text-muted-brand italic">Profil professionnel non renseigné</p>
                 )}
 
                 {/* Stats */}
                 <div className="flex items-center gap-4 pt-1 border-t border-border-brand">
                   <div className="flex items-center gap-1.5">
                     <Calendar size={11} className="text-text-muted-brand" />
-                    <span className="font-body text-[11px] text-text-mid">{u._count.rendezVous} RDV</span>
+                    <span className="font-body text-xs text-text-mid">{u._count.rendezVous} RDV</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <FileText size={11} className="text-text-muted-brand" />
-                    <span className="font-body text-[11px] text-text-mid">{u._count.messagesMedicauxEnvoyes} msg méd.</span>
+                    <span className="font-body text-xs text-text-mid">{u._count.messagesMedicauxEnvoyes} msg méd.</span>
                   </div>
-                  <span className="font-body text-[10px] text-text-muted-brand ml-auto">
+                  <span className="font-body text-xs text-text-muted-brand ml-auto">
                     Inscrit le {new Date(u.createdAt).toLocaleDateString("fr")}
                   </span>
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-1">
-                  <button onClick={() => openEdit(u)} className="flex-1 py-1.5 flex items-center justify-center gap-1 border border-border-brand font-body text-[10px] uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors">
+                  <button onClick={() => openEdit(u)} className="flex-1 py-1.5 flex items-center justify-center gap-1 border border-border-brand font-body text-xs uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors">
                     <Edit size={12} /> Profil
                   </button>
-                  <button onClick={() => openRoleModal(u)} className="flex-1 py-1.5 flex items-center justify-center gap-1 border border-border-brand font-body text-[10px] uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors">
+                  <button onClick={() => openRoleModal(u)} className="flex-1 py-1.5 flex items-center justify-center gap-1 border border-border-brand font-body text-xs uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors">
                     <UserCog size={12} /> Rôle
                   </button>
-                  <button onClick={() => openVerifModal(u)} className="flex-1 py-1.5 flex items-center justify-center gap-1 border border-border-brand font-body text-[10px] uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors">
+                  <button onClick={() => openVerifModal(u)} className="flex-1 py-1.5 flex items-center justify-center gap-1 border border-border-brand font-body text-xs uppercase tracking-widest text-text-muted-brand hover:text-primary-brand hover:border-primary-brand transition-colors">
                     <BadgeCheck size={12} /> Vérif.
                   </button>
                 </div>
@@ -412,11 +412,11 @@ export default function PageAdminProfessionnels() {
       {/* ── Pagination ── */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             <ChevronLeft size={14} /> Préc.
           </button>
           <span className="font-body text-[12px] text-text-muted-brand">{page} / {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-[11px] uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="flex items-center gap-1 px-3 py-1.5 font-body text-xs uppercase tracking-widest border border-border-brand hover:bg-bg-page disabled:opacity-40 transition-colors">
             Suiv. <ChevronRight size={14} />
           </button>
         </div>
@@ -434,7 +434,7 @@ export default function PageAdminProfessionnels() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Spécialité</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Spécialité</label>
               <input
                 type="text"
                 value={form.specialite}
@@ -445,7 +445,7 @@ export default function PageAdminProfessionnels() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">N° Ordre</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">N° Ordre</label>
               <input
                 type="text"
                 value={form.numeroOrdre}
@@ -455,14 +455,14 @@ export default function PageAdminProfessionnels() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Jours de disponibilité</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Jours de disponibilité</label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {JOURS.map((j) => (
                   <button
                     key={j}
                     type="button"
                     onClick={() => toggleJour(j)}
-                    className={`px-2 py-1 font-body text-[11px] border transition-colors ${
+                    className={`px-2 py-1 font-body text-xs border transition-colors ${
                       form.joursDisponibilite.includes(j)
                         ? "border-primary-brand bg-primary-light text-primary-brand"
                         : "border-border-brand text-text-muted-brand hover:text-text-mid"
@@ -475,7 +475,7 @@ export default function PageAdminProfessionnels() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Horaires</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Horaires</label>
               <input
                 type="text"
                 value={form.horairesDisponibilite}
@@ -486,10 +486,10 @@ export default function PageAdminProfessionnels() {
             </div>
 
             <div>
-              <label className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Langues de consultation</label>
+              <label className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Langues de consultation</label>
               <div className="flex flex-wrap gap-1 mt-1">
                 {form.languesConsultation.map((l) => (
-                  <span key={l} className="inline-flex items-center gap-1 px-2 py-0.5 font-body text-[11px] bg-bg-page text-text-mid border border-border-brand">
+                  <span key={l} className="inline-flex items-center gap-1 px-2 py-0.5 font-body text-xs bg-bg-page text-text-mid border border-border-brand">
                     {l}
                     <button type="button" onClick={() => setForm((f) => ({ ...f, languesConsultation: f.languesConsultation.filter((x) => x !== l) }))} className="text-text-muted-brand hover:text-red-500">
                       <X size={10} />
@@ -506,14 +506,14 @@ export default function PageAdminProfessionnels() {
                   className="flex-1 px-3 py-2 border border-border-brand font-body text-[13px] focus:outline-none focus:border-primary-brand"
                   placeholder="Ajouter une langue"
                 />
-                <button type="button" onClick={addLangue} className="px-3 py-2 border border-border-brand font-body text-[11px] text-text-muted-brand hover:bg-bg-page transition-colors">+</button>
+                <button type="button" onClick={addLangue} className="px-3 py-2 border border-border-brand font-body text-xs text-text-muted-brand hover:bg-bg-page transition-colors">+</button>
               </div>
             </div>
 
             <button
               onClick={handleSaveProfile}
               disabled={saving}
-              className="w-full py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Enregistrer
             </button>
@@ -559,7 +559,7 @@ export default function PageAdminProfessionnels() {
             <button
               onClick={handleChangeRole}
               disabled={saving || selectedRole === selected.role}
-              className="w-full py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <UserCog size={14} />} Appliquer le rôle
             </button>
@@ -609,7 +609,7 @@ export default function PageAdminProfessionnels() {
             <button
               onClick={handleChangeVerification}
               disabled={saving || selectedVerif === selected.verificationStatus}
-              className="w-full py-2 bg-primary-brand text-white font-body text-[11px] uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-primary-brand text-white font-body text-xs uppercase tracking-widest hover:bg-primary-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {saving ? <Loader2 size={14} className="animate-spin" /> : <BadgeCheck size={14} />} Appliquer la vérification
             </button>

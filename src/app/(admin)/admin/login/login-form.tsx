@@ -133,7 +133,7 @@ export default function AdminLoginForm({ stats }: Props) {
                   <mod.icon className="h-3.5 w-3.5 text-primary-brand" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-body text-[11px] text-white/50 leading-tight truncate">
+                  <p className="font-body text-xs text-white/50 leading-tight truncate">
                     {mod.label}
                   </p>
                 </div>
@@ -148,7 +148,7 @@ export default function AdminLoginForm({ stats }: Props) {
         {/* Note de sécurité */}
         <div className="flex items-start gap-2 p-3 bg-[rgba(255,255,255,0.02)]">
           <Lock className="h-3.5 w-3.5 text-white/25 mt-0.5 shrink-0" />
-          <p className="font-body text-[10px] text-white/25 leading-relaxed">
+          <p className="font-body text-xs text-white/25 leading-relaxed">
             Connexion sécurisée SSL — Accès strictement réservé au personnel
             habilité du centre.
           </p>
@@ -161,7 +161,7 @@ export default function AdminLoginForm({ stats }: Props) {
           {/* Tag or */}
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-gold" />
-            <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
               Accès sécurisé
             </span>
             <div className="h-px flex-1 bg-gold" />
@@ -181,7 +181,7 @@ export default function AdminLoginForm({ stats }: Props) {
           {error && (
             <div className="flex items-start gap-2 p-3 bg-red-50 border-l-2 border-danger-deep">
               <span className="w-1.5 h-1.5 rounded-full bg-danger-deep mt-1.5 shrink-0" />
-              <p className="font-body text-[11px] text-red-900">{error}</p>
+              <p className="font-body text-xs text-red-900">{error}</p>
             </div>
           )}
 
@@ -189,7 +189,7 @@ export default function AdminLoginForm({ stats }: Props) {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="font-body text-[10px] uppercase tracking-[0.18em] text-text-muted-brand block">
+              <label className="font-body text-xs uppercase tracking-[0.18em] text-text-muted-brand block">
                 Adresse email
               </label>
               <input
@@ -205,7 +205,7 @@ export default function AdminLoginForm({ stats }: Props) {
 
             {/* Mot de passe */}
             <div className="space-y-1.5">
-              <label className="font-body text-[10px] uppercase tracking-[0.18em] text-text-muted-brand block">
+              <label className="font-body text-xs uppercase tracking-[0.18em] text-text-muted-brand block">
                 Mot de passe
               </label>
               <div className="relative">
@@ -267,7 +267,7 @@ export default function AdminLoginForm({ stats }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-admin-panel-dark text-white font-body text-[11px] uppercase tracking-[0.22em] hover:bg-primary-brand disabled:opacity-50 transition-colors"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-admin-panel-dark text-white font-body text-xs uppercase tracking-[0.22em] hover:bg-primary-brand disabled:opacity-50 transition-colors"
             >
               <span>{loading ? "Connexion en cours..." : "Accéder au panel"}</span>
               <ArrowRight className="h-3.5 w-3.5 text-gold" />
@@ -278,7 +278,7 @@ export default function AdminLoginForm({ stats }: Props) {
           <p className="text-center">
             <button
               type="button"
-              className="font-body text-[11px] text-text-muted-brand hover:text-text-mid transition-colors"
+              className="font-body text-xs text-text-muted-brand hover:text-text-mid transition-colors"
             >
               Mot de passe oublié ?
             </button>

@@ -182,7 +182,7 @@ export default function MesuresSante() {
                 </div>
                 <a
                   href="/prise-rdv"
-                  className="shrink-0 font-body text-[11px] font-medium uppercase tracking-widest text-orange-700 underline hover:text-orange-900"
+                  className="shrink-0 font-body text-xs font-medium uppercase tracking-widest text-orange-700 underline hover:text-orange-900"
                 >
                   Prendre RDV
                 </a>
@@ -231,7 +231,7 @@ export default function MesuresSante() {
       {/* Graphique d'évolution */}
       {showChart && chartData.length >= 2 && (
         <div className="border border-border-brand border-t-2 border-t-gold bg-white p-5">
-          <p className="mb-4 font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+          <p className="mb-4 font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
             Évolution — {chartTypeInfo.label} ({chartTypeInfo.unite})
           </p>
           <ResponsiveContainer width="100%" height={220}>
@@ -268,7 +268,7 @@ export default function MesuresSante() {
         <div className="border border-border-brand border-t-2 border-t-gold bg-white p-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+              <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                 Type
               </label>
               <select
@@ -282,7 +282,7 @@ export default function MesuresSante() {
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+              <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                 Valeur <span className="text-red-800">*</span>
               </label>
               <input
@@ -294,7 +294,7 @@ export default function MesuresSante() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+              <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                 Unité
               </label>
               <input
@@ -305,7 +305,7 @@ export default function MesuresSante() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block font-body text-[10px] font-medium uppercase tracking-[0.15em] text-text-muted-brand">
+              <label className="mb-1.5 block font-body text-xs font-medium uppercase tracking-[0.15em] text-text-muted-brand">
                 Commentaire
               </label>
               <input
@@ -366,7 +366,7 @@ export default function MesuresSante() {
                     {m.unite && (
                       <span className="font-body text-[12px] text-text-muted-brand">{m.unite}</span>
                     )}
-                    <span className="font-body text-[11px] font-medium uppercase tracking-widest text-text-mid">
+                    <span className="font-body text-xs font-medium uppercase tracking-widest text-text-mid">
                       {info.label}
                     </span>
                   </div>
@@ -376,7 +376,7 @@ export default function MesuresSante() {
                     </p>
                   )}
                 </div>
-                <span className="shrink-0 font-body text-[11px] text-text-muted-brand">
+                <span className="shrink-0 font-body text-xs text-text-muted-brand">
                   {new Date(m.createdAt).toLocaleDateString("fr", {
                     day: "numeric",
                     month: "short",

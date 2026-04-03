@@ -1,0 +1,132 @@
+name: Deploy → Hostinger
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      skip_migrations:
+        description: "Ignorer les migrations Prisma"
+        required: false
+        default: "false"
+        type: boolean
+
+# Un seul déploiement à la fois — annule le précédent si en cours
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Hostinger
+    runs-on: ubuntu-latest
+    # Ne déploie qu'après que la CI soit verte
+    # Si vous lancez via workflow_dispatch, la CI ne bloque pas
+    environment: production
+
+    steps:
+      # ──────────────────────────────────────────────────────────────────────
+      # 1. Connexion SSH et déploiement
+      # ──────────────────────────────────────────────────────────────────────
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          script_stop: true
+          # Timeout 10 min (build peut prendre du temps)
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            echo "══════════════════════════════════════════"
+            echo "  Déploiement — Le Surnaturel de Dieu"
+            echo "  $(date '+%Y-%m-%d %H:%M:%S %Z')"
+            echo "══════════════════════════════════════════"
+
+            # ── Aller dans le répertoire du projet ─────────────────────────
+            cd ${{ secrets.PROJECT_PATH }}
+
+            # ── Récupérer la dernière version ──────────────────────────────
+            echo ""
+            echo "▶ 1/6 Pull GitHub…"
+            git pull origin main --ff-only
+            echo "  ✓ Code à jour : $(git log -1 --pretty='%h %s')"
+
+            # ── Installer les dépendances ──────────────────────────────────
+            echo ""
+            echo "▶ 2/6 Installation dépendances…"
+            npm ci --omit=dev --legacy-peer-deps
+            echo "  ✓ npm ci terminé"
+
+            # ── Générer le client Prisma ───────────────────────────────────
+            echo ""
+            echo "▶ 3/6 Prisma generate…"
+            npx prisma generate
+            echo "  ✓ Prisma client généré"
+
+            # ── Migrations base de données ─────────────────────────────────
+            echo ""
+            if [[ "${{ inputs.skip_migrations }}" == "true" ]]; then
+              echo "▶ 4/6 Migrations — IGNORÉES (skip_migrations=true)"
+            else
+              echo "▶ 4/6 Migrations base de données…"
+              npx prisma migrate deploy
+              echo "  ✓ Migrations appliquées"
+            fi
+
+            # ── Build Next.js ──────────────────────────────────────────────
+            echo ""
+            echo "▶ 5/6 Build Next.js…"
+            NODE_ENV=production npm run build
+            echo "  ✓ Build terminé"
+
+            # ── Redémarrage PM2 ───────────────────────────────────────────
+            echo ""
+            echo "▶ 6/6 Redémarrage PM2…"
+            if pm2 list | grep -q "surnaturel"; then
+              pm2 reload ecosystem.config.js --env production
+            else
+              pm2 start ecosystem.config.js --env production
+            fi
+            pm2 save
+            echo "  ✓ PM2 opérationnel"
+
+            # ── Résumé ────────────────────────────────────────────────────
+            echo ""
+            echo "══════════════════════════════════════════"
+            echo "  ✅ Déploiement terminé avec succès"
+            echo "══════════════════════════════════════════"
+            pm2 list
+
+      # ──────────────────────────────────────────────────────────────────────
+      # 2. Vérification santé post-déploiement
+      # ──────────────────────────────────────────────────────────────────────
+      - name: Health check
+        run: |
+          SITE_URL="${{ secrets.NEXTAUTH_URL }}"
+          echo "Health check sur ${SITE_URL}…"
+
+          # Attendre que l'app soit prête (max 60s)
+          for i in {1..12}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SITE_URL}" || echo "000")
+            if [[ "$STATUS" == "200" || "$STATUS" == "301" || "$STATUS" == "302" ]]; then
+              echo "✓ Site opérationnel — HTTP ${STATUS}"
+              exit 0
+            fi
+            echo "  Tentative ${i}/12 — HTTP ${STATUS} — attente 5s…"
+            sleep 5
+          done
+
+          echo "✗ Health check échoué après 60s"
+          exit 1
+
+      # ──────────────────────────────────────────────────────────────────────
+      # 3. Notification en cas d'échec (optionnel — via email GitHub)
+      # ──────────────────────────────────────────────────────────────────────
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Déploiement échoué — voir les logs ci-dessus"
+          echo "Vérifiez : pm2 logs surnaturel (sur le serveur Hostinger)"

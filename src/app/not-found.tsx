@@ -21,7 +21,7 @@ export default function NotFound() {
       <div className="mt-8 flex items-center gap-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors"
+          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-2.5 font-body text-xs uppercase tracking-[0.12em] text-white hover:bg-primary-dark transition-colors"
         >
           <Home size={14} />
           Accueil
@@ -29,7 +29,7 @@ export default function NotFound() {
 
         <Link
           href="/soins"
-          className="inline-flex items-center gap-2 border border-border-brand bg-white px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.12em] text-text-main hover:border-gold transition-colors"
+          className="inline-flex items-center gap-2 border border-border-brand bg-white px-5 py-2.5 font-body text-xs uppercase tracking-[0.12em] text-text-main hover:border-gold transition-colors"
         >
           <Search size={14} />
           Nos soins

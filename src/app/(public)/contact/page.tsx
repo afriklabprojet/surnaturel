@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { fadeInUp, fadeInLeft, fadeInRight } from "@/lib/animations"
+import { useSiteConfig } from "@/components/providers/SiteConfigProvider"
 
 interface FormData {
   nom: string
@@ -31,6 +32,7 @@ const INITIAL_FORM: FormData = {
 }
 
 export default function PageContact() {
+  const config = useSiteConfig()
   const [form, setForm] = useState<FormData>(INITIAL_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -100,7 +102,7 @@ export default function PageContact() {
           animate="animate"
           className="mx-auto max-w-4xl text-center"
         >
-          <span className="font-body text-[11px] uppercase tracking-[0.2em] text-gold">
+          <span className="font-body text-xs uppercase tracking-[0.2em] text-gold">
             Nous écrire
           </span>
           <h1 className="mt-4 font-display text-[44px] font-light text-white">
@@ -129,22 +131,22 @@ export default function PageContact() {
                 <div className="flex items-start gap-3">
                   <MapPin size={16} className="mt-0.5 shrink-0 text-primary-brand" />
                   <div>
-                    <p className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Adresse</p>
-                    <p className="font-body text-[14px] text-text-main">Cocody Angré, Abidjan, Côte d&apos;Ivoire</p>
+                    <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Adresse</p>
+                    <p className="font-body text-[14px] text-text-main">{config.adresse}, {config.ville}, {config.pays}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Phone size={16} className="mt-0.5 shrink-0 text-primary-brand" />
                   <div>
-                    <p className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Téléphone</p>
-                    <p className="font-body text-[14px] text-text-main">+225 07 09 00 00 00</p>
+                    <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Téléphone</p>
+                    <p className="font-body text-[14px] text-text-main">{config.telephone}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Mail size={16} className="mt-0.5 shrink-0 text-primary-brand" />
                   <div>
-                    <p className="font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Email</p>
-                    <p className="font-body text-[14px] text-text-main">contact@surnatureldedieu.com</p>
+                    <p className="font-body text-xs uppercase tracking-widest text-text-muted-brand">Email</p>
+                    <p className="font-body text-[14px] text-text-main">{config.email}</p>
                   </div>
                 </div>
               </div>
@@ -154,25 +156,37 @@ export default function PageContact() {
               <h3 className="font-display text-[20px] text-text-main mb-4">Horaires</h3>
               <table className="w-full">
                 <tbody>
-                  <tr className="border-b border-border-brand">
-                    <td className="py-3 font-body text-[13px] text-text-mid">Lundi — Vendredi</td>
-                    <td className="py-3 text-right font-body text-[13px] font-medium text-primary-brand">08h00 — 18h00</td>
-                  </tr>
-                  <tr className="border-b border-border-brand">
-                    <td className="py-3 font-body text-[13px] text-text-mid">Samedi</td>
-                    <td className="py-3 text-right font-body text-[13px] font-medium text-primary-brand">09h00 — 16h00</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 font-body text-[13px] text-text-mid">Dimanche</td>
-                    <td className="py-3 text-right font-body text-[13px] font-medium text-danger">Fermé</td>
-                  </tr>
+                  {config.horaires.split("\n").map((ligne, i, arr) => {
+                    const sep = ligne.indexOf(" : ")
+                    const jour = sep !== -1 ? ligne.substring(0, sep) : ligne
+                    const heures = sep !== -1 ? ligne.substring(sep + 3) : ""
+                    const ferme = heures.toLowerCase().startsWith("ferm")
+                    return (
+                      <tr key={i} className={i < arr.length - 1 ? "border-b border-border-brand" : ""}>
+                        <td className="py-3 font-body text-[13px] text-text-mid">{jour}</td>
+                        <td className={`py-3 text-right font-body text-[13px] font-medium ${ferme ? "text-danger" : "text-primary-brand"}`}>
+                          {heures || "—"}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="flex h-48 items-center justify-center border border-border-brand bg-primary-light">
-              <span className="font-body text-[12px] text-primary-brand/50">Google Maps</span>
+            {/* Google Maps */}
+            <div className="overflow-hidden border border-border-brand">
+              <iframe
+                title={`Localisation ${config.adresse}, ${config.ville}`}
+                src={`https://maps.google.com/maps?q=${config.latitude},${config.longitude}&z=16&output=embed`}
+                width="100%"
+                height="192"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-48 w-full"
+              />
             </div>
           </motion.div>
 
@@ -187,7 +201,7 @@ export default function PageContact() {
             <form onSubmit={handleSubmit} className="border border-border-brand bg-white p-6 sm:p-8">
               <div className="flex items-center gap-4 mb-6">
                 <div className="h-px flex-1 bg-gold" />
-                <span className="font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+                <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">
                   Envoyer un message
                 </span>
                 <div className="h-px flex-1 bg-gold" />
@@ -204,47 +218,47 @@ export default function PageContact() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="nom" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
+                  <label htmlFor="nom" className="mb-1.5 block font-body text-xs uppercase tracking-widest text-text-muted-brand">
                     Nom complet <span className="text-danger">*</span>
                   </label>
                   <input id="nom" type="text" value={form.nom} onChange={(e) => handleChange("nom", e.target.value)} maxLength={100} className={inputCls(!!errors.nom)} placeholder="Votre nom" />
-                  {errors.nom && <p className="mt-1 font-body text-[11px] text-danger">{errors.nom}</p>}
+                  {errors.nom && <p className="mt-1 font-body text-xs text-danger">{errors.nom}</p>}
                 </div>
                 <div>
-                  <label htmlFor="email" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
+                  <label htmlFor="email" className="mb-1.5 block font-body text-xs uppercase tracking-widest text-text-muted-brand">
                     Email <span className="text-danger">*</span>
                   </label>
                   <input id="email" type="email" value={form.email} onChange={(e) => handleChange("email", e.target.value)} maxLength={200} className={inputCls(!!errors.email)} placeholder="votre@email.com" />
-                  {errors.email && <p className="mt-1 font-body text-[11px] text-danger">{errors.email}</p>}
+                  {errors.email && <p className="mt-1 font-body text-xs text-danger">{errors.email}</p>}
                 </div>
                 <div>
-                  <label htmlFor="telephone" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">Téléphone</label>
+                  <label htmlFor="telephone" className="mb-1.5 block font-body text-xs uppercase tracking-widest text-text-muted-brand">Téléphone</label>
                   <input id="telephone" type="tel" value={form.telephone} onChange={(e) => handleChange("telephone", e.target.value)} maxLength={20} className={inputCls(false)} placeholder="+225 XX XX XX XX XX" />
                 </div>
                 <div>
-                  <label htmlFor="sujet" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
+                  <label htmlFor="sujet" className="mb-1.5 block font-body text-xs uppercase tracking-widest text-text-muted-brand">
                     Sujet <span className="text-danger">*</span>
                   </label>
                   <input id="sujet" type="text" value={form.sujet} onChange={(e) => handleChange("sujet", e.target.value)} maxLength={200} className={inputCls(!!errors.sujet)} placeholder="Objet de votre message" />
-                  {errors.sujet && <p className="mt-1 font-body text-[11px] text-danger">{errors.sujet}</p>}
+                  {errors.sujet && <p className="mt-1 font-body text-xs text-danger">{errors.sujet}</p>}
                 </div>
               </div>
 
               <div className="mt-4">
-                <label htmlFor="message" className="mb-1.5 block font-body text-[11px] uppercase tracking-widest text-text-muted-brand">
+                <label htmlFor="message" className="mb-1.5 block font-body text-xs uppercase tracking-widest text-text-muted-brand">
                   Message <span className="text-danger">*</span>
                 </label>
                 <textarea id="message" value={form.message} onChange={(e) => handleChange("message", e.target.value)} rows={5} maxLength={3000}
                   className={`w-full border bg-bg-page px-4 py-3 font-body text-[14px] text-text-main outline-none placeholder:text-text-muted-brand focus:border-gold ${errors.message ? "border-danger" : "border-border-brand"}`}
                   placeholder="Votre message…"
                 />
-                {errors.message && <p className="mt-1 font-body text-[11px] text-danger">{errors.message}</p>}
+                {errors.message && <p className="mt-1 font-body text-xs text-danger">{errors.message}</p>}
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-6 flex items-center gap-2 bg-primary-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+                className="mt-6 flex items-center gap-2 bg-primary-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
               >
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                 Envoyer le message

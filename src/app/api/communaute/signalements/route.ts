@@ -72,23 +72,45 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 })
   }
 
-  const { signalementId, statut, noteAdmin, action } = await req.json()
+  const patchSchema = z.object({
+    signalementId: z.string().min(1),
+    statut: z.enum(["EN_COURS", "RESOLU", "REJETE"]),
+    noteAdmin: z.string().max(1000).optional(),
+    // Whitelist explicite des actions — empêche la suppression arbitraire
+    action: z.enum(["supprimer_post", "supprimer_commentaire", "bannir_user"]).nullable().optional(),
+  })
 
-  if (!signalementId || !["EN_COURS", "RESOLU", "REJETE"].includes(statut)) {
-    return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 })
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Données invalides" }, { status: 400 })
   }
+
+  const result = patchSchema.safeParse(body)
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 })
+  }
+
+  const { signalementId, statut, noteAdmin, action } = result.data
 
   const signalement = await prisma.signalement.update({
     where: { id: signalementId },
     data: { statut, noteAdmin },
   })
 
-  // Actions supplémentaires
+  // Actions supplémentaires — uniquement via whitelist Zod
   if (action === "supprimer_post" && signalement.postId) {
     await prisma.post.delete({ where: { id: signalement.postId } }).catch(() => {})
   }
   if (action === "supprimer_commentaire" && signalement.commentaireId) {
     await prisma.commentaire.delete({ where: { id: signalement.commentaireId } }).catch(() => {})
+  }
+  if (action === "bannir_user" && signalement.signaleUserId) {
+    await prisma.user.update({
+      where: { id: signalement.signaleUserId },
+      data: { statutProfil: "EN_PAUSE" },
+    }).catch(() => {})
   }
 
   return NextResponse.json(signalement)

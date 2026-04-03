@@ -200,7 +200,7 @@ export default function PageAdminRecompenses() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+          className="inline-flex items-center gap-2 bg-primary-brand px-5 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
         >
           <Plus size={16} />
           Nouvelle récompense
@@ -386,14 +386,14 @@ export default function PageAdminRecompenses() {
             <div className="flex gap-4 sm:col-span-2">
               <button
                 type="submit"
-                className="bg-primary-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
+                className="bg-primary-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-primary-dark"
               >
                 {editingId ? "Modifier" : "Créer"}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="border border-border-brand px-6 py-3 font-body text-[11px] uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
+                className="border border-border-brand px-6 py-3 font-body text-xs uppercase tracking-[0.15em] text-text-mid transition-colors hover:bg-gray-50"
               >
                 Annuler
               </button>
@@ -425,7 +425,7 @@ export default function PageAdminRecompenses() {
                 }`}
               >
                 {/* Image ou placeholder */}
-                <div className="relative aspect-[2/1] bg-primary-light/20">
+                <div className="relative aspect-2/1 bg-primary-light/20">
                   {r.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -439,12 +439,12 @@ export default function PageAdminRecompenses() {
                     </div>
                   )}
                   {/* Badge type */}
-                  <span className="absolute left-3 top-3 bg-white/90 px-2 py-1 font-body text-[11px] uppercase tracking-wider text-text-mid">
+                  <span className="absolute left-3 top-3 bg-white/90 px-2 py-1 font-body text-xs uppercase tracking-wider text-text-mid">
                     {TYPE_LABELS[r.type]?.label}
                   </span>
                   {/* Badge inactif */}
                   {!r.actif && (
-                    <span className="absolute right-3 top-3 bg-red-100 px-2 py-1 font-body text-[11px] uppercase tracking-wider text-red-600">
+                    <span className="absolute right-3 top-3 bg-red-100 px-2 py-1 font-body text-xs uppercase tracking-wider text-red-600">
                       Inactif
                     </span>
                   )}
@@ -463,7 +463,7 @@ export default function PageAdminRecompenses() {
                       <p className="font-display text-[24px] font-medium text-gold">
                         {r.pointsRequis.toLocaleString()}
                       </p>
-                      <p className="font-body text-[11px] uppercase tracking-wider text-text-muted-brand">
+                      <p className="font-body text-xs uppercase tracking-wider text-text-muted-brand">
                         points
                       </p>
                     </div>
@@ -481,14 +481,14 @@ export default function PageAdminRecompenses() {
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => editRecompense(r)}
-                      className="flex flex-1 items-center justify-center gap-2 border border-border-brand py-2 font-body text-[11px] uppercase tracking-wider text-text-mid transition-colors hover:bg-gray-50"
+                      className="flex flex-1 items-center justify-center gap-2 border border-border-brand py-2 font-body text-xs uppercase tracking-wider text-text-mid transition-colors hover:bg-gray-50"
                     >
                       <Pencil size={14} />
                       Modifier
                     </button>
                     <button
                       onClick={() => handleToggleActif(r.id, r.actif)}
-                      className={`flex-1 py-2 font-body text-[11px] uppercase tracking-wider transition-colors ${
+                      className={`flex-1 py-2 font-body text-xs uppercase tracking-wider transition-colors ${
                         r.actif
                           ? "border border-orange-200 text-orange-600 hover:bg-orange-50"
                           : "border border-primary-brand text-primary-brand hover:bg-primary-light"

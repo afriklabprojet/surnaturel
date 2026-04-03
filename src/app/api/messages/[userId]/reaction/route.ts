@@ -9,7 +9,8 @@ interface Params { params: Promise<{ userId: string }> }
 
 const reactionSchema = z.object({
   messageId: z.string().min(1),
-  type: z.enum(["JAIME", "SOUTIEN", "ENCOURAGEMENT", "BRAVO", "INSPIRATION"]),
+  // Accepte tout emoji ou ancien type (JAIME, SOUTIEN, etc.) pour rétrocompatibilité
+  type: z.string().min(1).max(20),
 })
 
 // POST — Ajouter / changer / retirer une réaction sur un message
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   let body: unknown
   try { body = await req.json() } catch {
-    return NextResponse.json({ error: "JSON invalide" }, { status: 400 })
+    return NextResponse.json({ error: "Les informations envoyées sont incorrectes. Veuillez réessayer." }, { status: 400 })
   }
 
   const result = reactionSchema.safeParse(body)

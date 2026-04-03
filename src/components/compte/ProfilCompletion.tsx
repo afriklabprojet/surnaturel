@@ -50,7 +50,7 @@ export default function ProfilCompletionComponent({
               <p className="font-body text-[12px] font-medium text-text-main">
                 Profil {pourcentage}%
               </p>
-              <p className="font-body text-[11px] text-text-muted-brand">
+              <p className="font-body text-xs text-text-muted-brand">
                 {message}
               </p>
             </div>
@@ -60,7 +60,7 @@ export default function ProfilCompletionComponent({
               href="/compte/profil"
               className="flex items-center gap-1 text-gold transition-colors hover:text-gold/80"
             >
-              <span className="font-body text-[11px] font-medium">Compléter</span>
+              <span className="font-body text-xs font-medium">Compléter</span>
               <ChevronRight size={14} />
             </Link>
           )}
@@ -134,14 +134,14 @@ export default function ProfilCompletionComponent({
       {/* Champs manquants */}
       {champManquants.length > 0 && (
         <div className="mt-4">
-          <p className="font-body text-[11px] font-medium uppercase tracking-widest text-text-muted-brand">
+          <p className="font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">
             À compléter
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {champManquants.map((champ) => (
               <span
                 key={champ}
-                className="border border-border-brand bg-bg-page px-3 py-1 font-body text-[11px] text-text-muted-brand"
+                className="border border-border-brand bg-bg-page px-3 py-1 font-body text-xs text-text-muted-brand"
               >
                 {champ}
               </span>

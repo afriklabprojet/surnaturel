@@ -27,6 +27,7 @@ export async function generateMetadata({
   return {
     title: `${soin.nom} — Le Surnaturel de Dieu`,
     description: soin.description,
+    alternates: { canonical: `/soins/${slug}` },
   }
 }
 
@@ -68,8 +69,26 @@ export default async function PageDetailSoin({ params }: PageProps) {
 
   const SoinIcon = getIcon(soin.icon)
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: soin.nom,
+    description: soin.description,
+    provider: {
+      "@type": "HealthAndBeautyBusiness",
+      name: "Le Surnaturel de Dieu",
+    },
+    offers: {
+      "@type": "Offer",
+      price: soin.prix,
+      priceCurrency: "XOF",
+    },
+    ...(soin.imageUrl && { image: soin.imageUrl }),
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero Section — Design raffiné */}
       <section className="relative w-full overflow-hidden bg-primary-dark">
         {/* Fond — image ou gradient */}
@@ -104,7 +123,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
         {/* Contenu du hero */}
         <div className="relative mx-auto max-w-7xl px-6 pb-14 pt-10 lg:px-10 lg:pb-16 lg:pt-12">
           {/* Fil d'Ariane */}
-          <nav className="mb-10 flex items-center gap-2 font-body text-[11px] text-white/50 lg:mb-14">
+          <nav className="mb-10 flex items-center gap-2 font-body text-xs text-white/50 lg:mb-14">
             <Link href="/" className="transition-colors hover:text-white/80">Accueil</Link>
             <ChevronRight size={10} className="text-gold/50" />
             <Link href="/soins" className="transition-colors hover:text-white/80">Soins &amp; Services</Link>
@@ -118,12 +137,12 @@ export default async function PageDetailSoin({ params }: PageProps) {
             <div className="max-w-2xl">
               {/* Badges */}
               <div className="mb-5 flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 border border-gold/40 bg-gold/10 backdrop-blur-sm px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.18em] text-gold">
+                <span className="inline-flex items-center gap-2 border border-gold/40 bg-gold/10 backdrop-blur-sm px-4 py-1.5 font-body text-xs uppercase tracking-[0.18em] text-gold">
                   <Tag size={10} />
                   {soin.categorie.replace(/_/g, " ")}
                 </span>
                 {soin.badge && (
-                  <span className="inline-flex items-center gap-2 border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-1.5 font-body text-[10px] uppercase tracking-[0.18em] text-white">
+                  <span className="inline-flex items-center gap-2 border border-white/20 bg-white/10 backdrop-blur-sm px-4 py-1.5 font-body text-xs uppercase tracking-[0.18em] text-white">
                     <Gift size={10} />
                     {soin.badge}
                   </span>
@@ -150,14 +169,14 @@ export default async function PageDetailSoin({ params }: PageProps) {
               <div className="flex items-center gap-3 border border-white/15 bg-white/5 backdrop-blur-sm px-5 py-3">
                 <Clock size={16} className="text-gold" />
                 <div>
-                  <span className="block font-body text-[10px] uppercase tracking-widest text-white/40">Durée</span>
+                  <span className="block font-body text-xs uppercase tracking-widest text-white/40">Durée</span>
                   <span className="font-display text-[20px] font-light text-white">{soin.duree} <span className="text-[14px] text-white/60">min</span></span>
                 </div>
               </div>
               <div className="h-10 w-px bg-gold/30" />
               <div className="flex items-center gap-3 border border-gold/30 bg-gold/10 backdrop-blur-sm px-5 py-3">
                 <div>
-                  <span className="block font-body text-[10px] uppercase tracking-widest text-gold/60">Prix</span>
+                  <span className="block font-body text-xs uppercase tracking-widest text-gold/60">Prix</span>
                   <span className="font-display text-[20px] font-light text-gold">{formatPrix(soin.prix)}</span>
                 </div>
               </div>
@@ -175,7 +194,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-16">
             {/* Description */}
             <div>
-              <div className="flex items-center gap-3 font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+              <div className="flex items-center gap-3 font-body text-xs uppercase tracking-[0.15em] text-gold">
                 <span className="h-px w-8 bg-gold" />Description<span className="h-px w-8 bg-gold" />
               </div>
               <p className="mt-6 font-body text-[15px] font-light leading-[1.9] text-text-mid">
@@ -186,7 +205,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
             {/* Déroulement */}
             {etapes.length > 0 && (
               <div>
-                <div className="flex items-center gap-3 font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+                <div className="flex items-center gap-3 font-body text-xs uppercase tracking-[0.15em] text-gold">
                   <span className="h-px w-8 bg-gold" />Déroulement du soin<span className="h-px w-8 bg-gold" />
                 </div>
                 <div className="mt-8 space-y-6">
@@ -209,7 +228,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
             {/* Bienfaits */}
             {bienfaits.length > 0 && (
               <div>
-                <div className="flex items-center gap-3 font-body text-[11px] uppercase tracking-[0.15em] text-gold">
+                <div className="flex items-center gap-3 font-body text-xs uppercase tracking-[0.15em] text-gold">
                   <span className="h-px w-8 bg-gold" />Bienfaits<span className="h-px w-8 bg-gold" />
                 </div>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -228,7 +247,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
           <div className="lg:col-span-1">
             <div className="sticky top-24 border border-gold border-t-[3px] bg-white p-6">
               <div className="text-center">
-                <span className="font-body text-[10px] uppercase tracking-widest text-text-muted-brand">À partir de</span>
+                <span className="font-body text-xs uppercase tracking-widest text-text-muted-brand">À partir de</span>
                 <p className="mt-1 font-display text-[36px] font-light text-primary-brand">{formatPrix(soin.prix)}</p>
               </div>
               <div className="mt-6 space-y-3 border-t border-b border-border-brand py-6">
@@ -249,7 +268,7 @@ export default async function PageDetailSoin({ params }: PageProps) {
                 {/* CTA Offrir - plus visible */}
                 <Link
                   href={`/prise-rdv?soin=${soin.slug}&cadeau=true`}
-                  className="flex w-full items-center justify-center gap-2 border-2 border-gold bg-gold/5 py-3 font-body text-[11px] uppercase tracking-widest text-gold transition-colors duration-300 hover:bg-gold hover:text-white"
+                  className="flex w-full items-center justify-center gap-2 border-2 border-gold bg-gold/5 py-3 font-body text-xs uppercase tracking-widest text-gold transition-colors duration-300 hover:bg-gold hover:text-white"
                 >
                   <Gift size={14} />
                   Offrir ce soin en cadeau
@@ -259,10 +278,10 @@ export default async function PageDetailSoin({ params }: PageProps) {
               {/* Code promo rappel */}
               {promo?.actif && (
               <div className="mt-4 border border-dashed border-gold/40 bg-gold/5 p-3 text-center">
-                <p className="font-body text-[11px] text-gold">
+                <p className="font-body text-xs text-gold">
                   Code <span className="font-semibold tracking-widest">{promo.code}</span>
                 </p>
-                <p className="font-body text-[10px] text-text-muted-brand">{promo.texte}</p>
+                <p className="font-body text-xs text-text-muted-brand">{promo.texte}</p>
               </div>
               )}
             </div>

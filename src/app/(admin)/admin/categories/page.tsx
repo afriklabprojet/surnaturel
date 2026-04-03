@@ -137,7 +137,7 @@ export default function AdminCategoriesPage() {
               <div className="flex items-center gap-2">
                 <Icon className="h-5 w-5 text-gold" />
                 <h2 className="font-display text-base text-text-main">{section.label}</h2>
-                <span className="text-[10px] bg-primary-brand/10 text-primary-brand px-2 py-0.5 font-body">{cats.length}</span>
+                <span className="text-xs bg-primary-brand/10 text-primary-brand px-2 py-0.5 font-body">{cats.length}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -167,7 +167,7 @@ export default function AdminCategoriesPage() {
               <p className="text-sm text-gray-400 font-body text-center py-4">Aucune catégorie. Cliquez sur « Ajouter » pour commencer.</p>
             ) : (
               <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_1fr_40px] gap-2 text-[10px] uppercase tracking-widest text-gray-400 font-body px-1">
+                <div className="grid grid-cols-[1fr_1fr_40px] gap-2 text-xs uppercase tracking-widest text-gray-400 font-body px-1">
                   <span>Label (affiché)</span>
                   <span>Valeur (technique)</span>
                   <span />

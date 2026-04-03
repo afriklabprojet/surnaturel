@@ -131,7 +131,7 @@ export default function PagePublicationsPlanifiees() {
 
   return (
     <section className="mx-auto max-w-2xl space-y-5">
-      <Link href="/communaute" className="inline-flex items-center gap-1.5 font-body text-[11px] text-text-muted-brand hover:text-text-mid transition-colors">
+      <Link href="/communaute" className="inline-flex items-center gap-1.5 font-body text-xs text-text-muted-brand hover:text-text-mid transition-colors">
         <ArrowLeft size={14} />
         Retour à la communauté
       </Link>
@@ -143,7 +143,7 @@ export default function PagePublicationsPlanifiees() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 px-4 py-2 font-body text-[11px] font-medium uppercase tracking-widest bg-primary-brand text-white hover:bg-primary-dark transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 font-body text-xs font-medium uppercase tracking-widest bg-primary-brand text-white hover:bg-primary-dark transition-colors"
         >
           <Clock size={13} />Planifier
         </button>
@@ -162,7 +162,7 @@ export default function PagePublicationsPlanifiees() {
           />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-body text-[11px] text-text-muted-brand uppercase tracking-wider block mb-1">Date et heure</label>
+              <label className="font-body text-xs text-text-muted-brand uppercase tracking-wider block mb-1">Date et heure</label>
               <input
                 type="datetime-local"
                 value={scheduledAt}
@@ -173,7 +173,7 @@ export default function PagePublicationsPlanifiees() {
               />
             </div>
             <div>
-              <label className="font-body text-[11px] text-text-muted-brand uppercase tracking-wider block mb-1">Groupe (optionnel)</label>
+              <label className="font-body text-xs text-text-muted-brand uppercase tracking-wider block mb-1">Groupe (optionnel)</label>
               <select
                 value={groupeId}
                 onChange={(e) => setGroupeId(e.target.value)}
@@ -187,10 +187,10 @@ export default function PagePublicationsPlanifiees() {
             </div>
           </div>
           <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => setShowForm(false)} className="px-3 py-1.5 font-body text-[11px] text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">
+            <button type="button" onClick={() => setShowForm(false)} className="px-3 py-1.5 font-body text-xs text-text-muted-brand border border-border-brand hover:bg-bg-page transition-colors">
               Annuler
             </button>
-            <button type="submit" disabled={!contenu.trim() || !scheduledAt || submitting} className="px-4 py-1.5 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark disabled:opacity-50 transition-colors uppercase tracking-widest flex items-center gap-1.5">
+            <button type="submit" disabled={!contenu.trim() || !scheduledAt || submitting} className="px-4 py-1.5 font-body text-xs text-white bg-primary-brand hover:bg-primary-dark disabled:opacity-50 transition-colors uppercase tracking-widest flex items-center gap-1.5">
               {submitting ? <Loader2 size={12} className="animate-spin" /> : <Calendar size={12} />}
               Planifier
             </button>
@@ -224,8 +224,8 @@ export default function PagePublicationsPlanifiees() {
                     className="w-full border border-border-brand px-3 py-2 font-body text-[12px] text-text-main focus:outline-none focus:border-primary-brand"
                   />
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => setEditId(null)} className="px-3 py-1.5 font-body text-[11px] text-text-muted-brand border border-border-brand">Annuler</button>
-                    <button onClick={() => handleUpdate(post.id)} className="px-3 py-1.5 font-body text-[11px] text-white bg-primary-brand hover:bg-primary-dark uppercase tracking-[0.08em]">Enregistrer</button>
+                    <button onClick={() => setEditId(null)} className="px-3 py-1.5 font-body text-xs text-text-muted-brand border border-border-brand">Annuler</button>
+                    <button onClick={() => handleUpdate(post.id)} className="px-3 py-1.5 font-body text-xs text-white bg-primary-brand hover:bg-primary-dark uppercase tracking-[0.08em]">Enregistrer</button>
                   </div>
                 </>
               ) : (
@@ -244,12 +244,12 @@ export default function PagePublicationsPlanifiees() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 pt-2 border-t border-border-brand">
-                    <span className="font-body text-[10px] text-gold flex items-center gap-1">
+                    <span className="font-body text-xs text-gold flex items-center gap-1">
                       <Clock size={11} />
                       {new Date(post.scheduledAt).toLocaleDateString("fr", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </span>
                     {post.groupe && (
-                      <span className="font-body text-[10px] text-primary-brand flex items-center gap-1">
+                      <span className="font-body text-xs text-primary-brand flex items-center gap-1">
                         <Users size={11} />{post.groupe.nom}
                       </span>
                     )}
