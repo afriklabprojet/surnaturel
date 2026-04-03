@@ -45,9 +45,11 @@ module.exports = {
       // ── Variables d'environnement ───────────────────────────────────────
       // Ne pas mettre les secrets ici — les déclarer dans .env.production
       // ou via le panneau d'environnement Hostinger.
+      node_args: "-r dotenv/config",
       env_production: {
         NODE_ENV: "production",
         PORT: 3000,
+        DOTENV_CONFIG_PATH: ".env.production",
       },
 
       // ── Comportement ───────────────────────────────────────────────────
@@ -79,8 +81,10 @@ module.exports = {
       autorestart: true,
       max_restarts: 5,
       min_uptime: "10s",
+      node_args: "-r dotenv/config",
       env_production: {
         NODE_ENV: "production",
+        DOTENV_CONFIG_PATH: ".env.production",
       },
       out_file: "./logs/cron-out.log",
       error_file: "./logs/cron-error.log",
