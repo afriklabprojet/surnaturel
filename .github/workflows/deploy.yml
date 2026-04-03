@@ -1,5 +1,12 @@
-name: Deploy → Hostinger
+name: CI → Deploy → Hostinger
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Pipeline complet : push sur main → CI verte → déploiement automatique
+# Tu n'as rien à faire : git push et c'est réglé.
+#
+# Ordre forcé : typecheck + lint + test (parallèle) → build → deploy
+# Si n'importe quelle étape échoue, le déploiement ne part pas.
+# ─────────────────────────────────────────────────────────────────────────────
 on:
   push:
     branches: ["main"]
@@ -10,23 +17,130 @@ on:
         required: false
         default: "false"
         type: boolean
+      skip_ci:
+        description: "Sauter la CI (urgence uniquement)"
+        required: false
+        default: "false"
+        type: boolean
 
-# Un seul déploiement à la fois — annule le précédent si en cours
+# Un seul pipeline à la fois — annule le précédent si en cours
 concurrency:
   group: deploy-production
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: "20"
+
 jobs:
+  # ────────────────────────────────────────────────────────────────────────
+  # 1. Vérification TypeScript
+  # ────────────────────────────────────────────────────────────────────────
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_ci != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --legacy-peer-deps
+      - run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: npx tsc --noEmit
+
+  # ────────────────────────────────────────────────────────────────────────
+  # 2. Lint ESLint
+  # ────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_ci != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --legacy-peer-deps
+      - run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: npm run lint
+
+  # ────────────────────────────────────────────────────────────────────────
+  # 3. Tests unitaires (Vitest)
+  # ────────────────────────────────────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_ci != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --legacy-peer-deps
+      - run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: npm test
+        env:
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          NODE_ENV: test
+
+  # ────────────────────────────────────────────────────────────────────────
+  # 4. Build de vérification
+  # ────────────────────────────────────────────────────────────────────────
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint, test]
+    if: ${{ always() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci --legacy-peer-deps
+      - run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME }}
+          NEXT_PUBLIC_PUSHER_KEY: ${{ secrets.NEXT_PUBLIC_PUSHER_KEY }}
+          NEXT_PUBLIC_PUSHER_CLUSTER: ${{ secrets.NEXT_PUBLIC_PUSHER_CLUSTER }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          CRON_SECRET: "ci-placeholder"
+
+  # ────────────────────────────────────────────────────────────────────────
+  # 5. Déploiement (seulement si tout est vert)
+  # ────────────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy to Hostinger
     runs-on: ubuntu-latest
-    # Ne déploie qu'après que la CI soit verte
-    # Si vous lancez via workflow_dispatch, la CI ne bloque pas
+    needs: [build]
     environment: production
 
     steps:
       # ──────────────────────────────────────────────────────────────────────
-      # 1. Connexion SSH et déploiement
+      # Connexion SSH et déploiement
       # ──────────────────────────────────────────────────────────────────────
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
