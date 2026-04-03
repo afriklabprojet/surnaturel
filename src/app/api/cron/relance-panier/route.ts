@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerSms } from "@/lib/sms"
-import { Resend } from "resend"
+import { getResend } from "@/lib/email"
 import { getConfig } from "@/lib/config"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Relance les utilisateurs avec un panier abandonné depuis > 2h et < 48h
 // Exécuté toutes les 2h via Vercel CRON
@@ -81,7 +79,7 @@ export async function GET(req: NextRequest) {
     // Envoyer email de relance
     try {
       const config = await getConfig()
-      await resend.emails.send({
+      await getResend().emails.send({
         from: `${config.nomCentre} <${config.emailRdv}>`,
         to: user.email,
         subject: "Votre panier vous attend — Le Surnaturel de Dieu",

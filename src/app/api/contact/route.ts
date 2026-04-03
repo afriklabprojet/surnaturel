@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod/v4"
-import { Resend } from "resend"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { getResend } from "@/lib/email"
 
 const contactSchema = z.object({
   nom: z.string().min(2).max(100),
@@ -31,7 +29,7 @@ export async function POST(req: NextRequest) {
   const { nom, email, telephone, sujet, message } = result.data
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: "Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>",
       to: "infos@lesurnatureldedieu.com",
       replyTo: email,

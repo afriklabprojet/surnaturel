@@ -9,10 +9,9 @@ import { fr } from "date-fns/locale"
 import { formatPrix } from "@/lib/utils"
 import { notifierRDVConfirme, notifierRDVAnnule } from "@/lib/notifications"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
-import { Resend } from "resend"
+import { getResend } from "@/lib/email"
 import type { StatutRDV } from "@/generated/prisma/client"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = "Le Surnaturel de Dieu <infos@lesurnatureldedieu.com>"
 
 const patchSchema = z.object({
@@ -99,7 +98,7 @@ export async function PATCH(
       }
     }
     
-    resend.emails.send({
+    getResend().emails.send({
       from: FROM,
       to: rdv.user.email,
       subject: "Votre rendez-vous a été annulé — Le Surnaturel de Dieu",
@@ -121,7 +120,7 @@ export async function PATCH(
   }
 
   if (result.data.statut === "TERMINE") {
-    resend.emails.send({
+    getResend().emails.send({
       from: FROM,
       to: rdv.user.email,
       subject: "Merci pour votre visite — Le Surnaturel de Dieu",
