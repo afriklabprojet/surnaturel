@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod/v4"
 import { signIn } from "next-auth/react"
+import { publicLoginAction } from "./actions"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -85,26 +86,17 @@ export default function ConnexionForm() {
     setErreur("")
     setEmailNonVerifie(false)
     try {
-      const result = await signIn("credentials", {
-        email: data.email.trim().toLowerCase(),
-        password: data.motDePasse,
-        redirect: false,
-      })
+      const result = await publicLoginAction(
+        data.email.trim().toLowerCase(),
+        data.motDePasse,
+      )
 
-      if (!result) {
-        setErreur("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
-        return
-      }
-
-      if (result.error || !result.ok) {
-        const errCode = (result as { code?: string }).code ?? result.error ?? ""
-
-        if (errCode.includes("EMAIL_NON_VERIFIE")) {
+      if (!result.ok) {
+        if (result.code === "EMAIL_NON_VERIFIE") {
           setEmailNonVerifie(true)
           setEmailPourRenvoi(data.email)
-        } else if (errCode.includes("2FA_REQUIRED")) {
-          const match = errCode.match(/2FA_REQUIRED:(\w+)/)
-          const userId = match?.[1]
+        } else if (result.code === "2FA_REQUIRED") {
+          const userId = result.userId
           if (userId) {
             sessionStorage.setItem("2fa_email", data.email)
             sessionStorage.setItem("2fa_password", data.motDePasse)
@@ -112,14 +104,10 @@ export default function ConnexionForm() {
           } else {
             setErreur("La double authentification est activée mais l'identifiant 2FA est manquant. Contactez le support.")
           }
-        } else if (result.status === 429) {
-          setErreur("Trop de tentatives de connexion. Attendez quelques minutes avant de réessayer.")
-        } else if (result.status && result.status >= 500) {
-          setErreur(`Erreur serveur (${result.status}). Réessayez dans quelques instants.`)
-        } else if (errCode) {
-          setErreur("Email ou mot de passe incorrect.")
+        } else if (result.code === "SERVER_ERROR") {
+          setErreur(`Erreur serveur : ${result.detail}. Réessayez dans quelques instants.`)
         } else {
-          setErreur("Connexion impossible. Vérifiez vos identifiants.")
+          setErreur("Email ou mot de passe incorrect.")
         }
       } else {
         // Respecter le callbackUrl s'il est présent

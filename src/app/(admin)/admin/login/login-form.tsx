@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { signIn, signOut } from "next-auth/react"
+import { signOut } from "next-auth/react"
+import { adminLoginAction } from "./actions"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -54,42 +55,28 @@ export default function AdminLoginForm({ stats }: Props) {
     }
 
     try {
-      let result: Awaited<ReturnType<typeof signIn>> | undefined
+      let loginResult: Awaited<ReturnType<typeof adminLoginAction>>
 
       try {
-        result = await signIn("credentials", {
-          email: email.trim().toLowerCase(),
+        loginResult = await adminLoginAction(
+          email.trim().toLowerCase(),
           password,
-          redirect: false,
-        })
+        )
       } catch (signInError) {
-        // signIn peut lancer si le serveur est inaccessible
         const msg = signInError instanceof Error ? signInError.message : String(signInError)
         setError(`Impossible de contacter le serveur d'authentification. (${msg})`)
         return
       }
 
-      if (!result) {
-        setError("Aucune réponse du serveur d'authentification. Vérifiez votre connexion internet.")
-        return
-      }
-
-      if (!result.ok) {
-        // Détecter le code d'erreur — NextAuth v5 peut le passer dans .error ou .code
-        const errCode = (result as { code?: string }).code ?? result.error ?? ""
-
-        if (errCode.includes("EMAIL_NON_VERIFIE")) {
+      if (!loginResult.ok) {
+        if (loginResult.code === "EMAIL_NON_VERIFIE") {
           setError("Votre adresse email n'est pas vérifiée. Consultez votre boîte de réception et cliquez sur le lien d'activation.")
-        } else if (errCode.includes("2FA_REQUIRED")) {
+        } else if (loginResult.code === "2FA_REQUIRED") {
           setError("La double authentification (2FA) est activée sur ce compte. Utilisez la page de connexion principale.")
-        } else if (errCode.includes("CredentialsSignin") || errCode === "CredentialsSignin") {
-          setError("Email ou mot de passe incorrect. Vérifiez vos identifiants administrateur.")
-        } else if (result.status === 429) {
-          setError("Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.")
-        } else if (result.status && result.status >= 500) {
-          setError(`Erreur serveur (${result.status}). La base de données est peut-être indisponible. Contactez le support.`)
+        } else if (loginResult.code === "SERVER_ERROR") {
+          setError(`Erreur serveur : ${loginResult.detail}. La base de données est peut-être indisponible. Contactez le support.`)
         } else {
-          setError(`Connexion impossible (code : ${errCode || result.status || "inconnu"}). Contactez le support si le problème persiste.`)
+          setError("Email ou mot de passe incorrect. Vérifiez vos identifiants administrateur.")
         }
         return
       }
