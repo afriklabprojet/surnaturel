@@ -30,6 +30,7 @@ async function main() {
         prenom: 'Marie',
         role: 'ADMIN',
         passwordHash: hash,
+        emailVerifie: true,
       },
     })
     console.log('✅ Admin créé:', created.id)
@@ -43,9 +44,16 @@ async function main() {
       const newHash = await bcrypt.hash('Admin@2025', 12)
       await prisma.user.update({
         where: { email: 'admin@lesurnatureldedieu.com' },
-        data: { passwordHash: newHash },
+        data: { passwordHash: newHash, emailVerifie: true },
       })
       console.log('✅ Mot de passe réinitialisé à "Admin@2025"')
+    } else {
+      // S'assurer que emailVerifie est true même si le mot de passe est correct
+      await prisma.user.update({
+        where: { email: 'admin@lesurnatureldedieu.com' },
+        data: { emailVerifie: true },
+      })
+      console.log('✅ emailVerifie forcé à true')
     }
   }
 

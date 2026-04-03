@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { signIn, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -39,31 +39,37 @@ export default function AdminLoginForm({ stats }: Props) {
     setLoading(true)
     setError("")
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    })
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
 
-    if (!result?.ok) {
-      setError("Identifiants incorrects ou accès non autorisé.")
+      if (!result?.ok) {
+        const msg = result?.error === "EMAIL_NON_VERIFIE"
+          ? "Votre adresse email n'est pas vérifiée. Consultez votre boîte mail."
+          : "Identifiants incorrects ou accès non autorisé."
+        setError(msg)
+        return
+      }
+
+      // Vérifier le rôle ADMIN via la session
+      const sessionRes = await fetch("/api/auth/session")
+      const session = await sessionRes.json()
+
+      if (session?.user?.role !== "ADMIN") {
+        setError("Identifiants incorrects ou accès non autorisé.")
+        await signOut({ redirect: false })
+        return
+      }
+
+      router.push("/admin")
+    } catch {
+      setError("Une erreur est survenue. Veuillez réessayer.")
+    } finally {
       setLoading(false)
-      return
     }
-
-    // Verify ADMIN role via session
-    const sessionRes = await fetch("/api/auth/session")
-    const session = await sessionRes.json()
-
-    if (session?.user?.role !== "ADMIN") {
-      setError("Identifiants incorrects ou accès non autorisé.")
-      // Sign out the non-admin user
-      await signIn("credentials", { redirect: false })
-      setLoading(false)
-      return
-    }
-
-    router.push("/admin")
   }
 
   const statModules = [
