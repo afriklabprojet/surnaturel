@@ -65,18 +65,52 @@ export const prismaMock = {
   },
   appConfig: {
     findUnique: vi.fn(),
+    upsert: vi.fn(),
+    deleteMany: vi.fn(),
   },
   blocage: { findMany: vi.fn() },
   membreGroupe: { findUnique: vi.fn() },
   mention: { createMany: vi.fn() },
   postSauvegarde: { findMany: vi.fn() },
-  notification: { create: vi.fn() },
+  notification: {
+    create: vi.fn(),
+    findMany: vi.fn(),
+    count: vi.fn(),
+    updateMany: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
   codePromo: {
     findUnique: vi.fn(),
     update: vi.fn(),
   },
   utilisationCode: {
     create: vi.fn(),
+  },
+  favori: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    delete: vi.fn(),
+  },
+  pointsFidelite: {
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    upsert: vi.fn(),
+  },
+  abonneNewsletter: {
+    findUnique: vi.fn(),
+    update: vi.fn(),
+    create: vi.fn(),
+  },
+  avis: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn(),
   },
   $transaction: vi.fn((fn: (tx: typeof prismaMock) => Promise<unknown>) =>
     fn(prismaMock)
@@ -135,12 +169,32 @@ vi.mock("@/lib/notifications", () => ({
   creerNotification: vi.fn().mockResolvedValue(undefined),
   notifierRDVConfirme: vi.fn().mockResolvedValue(undefined),
   notifierCommandePayee: vi.fn().mockResolvedValue(undefined),
+  notifierPointsFidelite: vi.fn().mockResolvedValue(undefined),
+  notifierRecompenseFidelite: vi.fn().mockResolvedValue(undefined),
 }))
 
 /* ───── Fidélité ────────────────────────────────────────────────────── */
 vi.mock("@/lib/fidelite", () => ({
   crediterCommande: vi.fn().mockResolvedValue(undefined),
   crediterParrainage: vi.fn().mockResolvedValue(undefined),
+  crediterAvis: vi.fn().mockResolvedValue(undefined),
+  PALIERS: [
+    { points: 500, nom: "Bronze", recompense: "10% sur prochain soin" },
+    { points: 1000, nom: "Argent", recompense: "Soin gommage offert" },
+    { points: 2000, nom: "Or", recompense: "Hammam + gommage offerts" },
+    { points: 5000, nom: "Platine", recompense: "Soin VIP complet offert" },
+  ],
+  getPalierActuel: vi.fn().mockReturnValue(null),
+  getProgressionPalier: vi.fn().mockReturnValue({ pourcentage: 0, restant: 500, prochain: { points: 500, nom: "Bronze" } }),
+}))
+
+/* ───── Resend (email API for contact form) ───────────────────────── */
+vi.mock("resend", () => ({
+  Resend: vi.fn().mockImplementation(() => ({
+    emails: {
+      send: vi.fn().mockResolvedValue({ id: "email_mock_id" }),
+    },
+  })),
 }))
 
 /* ───── Sentry ────────────────────────────────────────────────────── */

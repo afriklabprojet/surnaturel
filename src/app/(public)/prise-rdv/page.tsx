@@ -194,8 +194,6 @@ function PriseRDVContent() {
     }
   }
 
-  }
-
   return (
     <>
     {/* Hero */}
