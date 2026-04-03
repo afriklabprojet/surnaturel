@@ -14,6 +14,7 @@ import {
   EyeOff,
   ArrowRight,
   ArrowLeft,
+  AlertCircle,
 } from "lucide-react"
 
 interface Props {
@@ -39,34 +40,91 @@ export default function AdminLoginForm({ stats }: Props) {
     setLoading(true)
     setError("")
 
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
+    // Validation côté client
+    if (!email.trim()) {
+      setError("L'adresse email est requise.")
+      setLoading(false)
+      return
+    }
+    if (!password) {
+      setError("Le mot de passe est requis.")
+      setLoading(false)
+      return
+    }
 
-      if (!result?.ok) {
-        const msg = result?.error === "EMAIL_NON_VERIFIE"
-          ? "Votre adresse email n'est pas vérifiée. Consultez votre boîte mail."
-          : "Identifiants incorrects ou accès non autorisé."
-        setError(msg)
+    try {
+      let result: Awaited<ReturnType<typeof signIn>> | undefined
+
+      try {
+        result = await signIn("credentials", {
+          email: email.trim().toLowerCase(),
+          password,
+          redirect: false,
+        })
+      } catch (signInError) {
+        // signIn peut lancer si le serveur est inaccessible
+        const msg = signInError instanceof Error ? signInError.message : String(signInError)
+        setError(`Impossible de contacter le serveur d'authentification. (${msg})`)
         return
       }
 
-      // Vérifier le rôle ADMIN via la session
-      const sessionRes = await fetch("/api/auth/session")
-      const session = await sessionRes.json()
+      if (!result) {
+        setError("Aucune réponse du serveur d'authentification. Vérifiez votre connexion internet.")
+        return
+      }
 
-      if (session?.user?.role !== "ADMIN") {
-        setError("Identifiants incorrects ou accès non autorisé.")
+      if (!result.ok) {
+        // Détecter le code d'erreur — NextAuth v5 peut le passer dans .error ou .code
+        const errCode = (result as { code?: string }).code ?? result.error ?? ""
+
+        if (errCode.includes("EMAIL_NON_VERIFIE")) {
+          setError("Votre adresse email n'est pas vérifiée. Consultez votre boîte de réception et cliquez sur le lien d'activation.")
+        } else if (errCode.includes("2FA_REQUIRED")) {
+          setError("La double authentification (2FA) est activée sur ce compte. Utilisez la page de connexion principale.")
+        } else if (errCode.includes("CredentialsSignin") || errCode === "CredentialsSignin") {
+          setError("Email ou mot de passe incorrect. Vérifiez vos identifiants administrateur.")
+        } else if (result.status === 429) {
+          setError("Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.")
+        } else if (result.status && result.status >= 500) {
+          setError(`Erreur serveur (${result.status}). La base de données est peut-être indisponible. Contactez le support.`)
+        } else {
+          setError(`Connexion impossible (code : ${errCode || result.status || "inconnu"}). Contactez le support si le problème persiste.`)
+        }
+        return
+      }
+
+      // Connexion réussie — vérifier le rôle ADMIN
+      let session: { user?: { role?: string } } = {}
+      try {
+        const sessionRes = await fetch("/api/auth/session")
+        if (!sessionRes.ok) {
+          setError(`Impossible de récupérer la session (HTTP ${sessionRes.status}). Essayez de recharger la page.`)
+          await signOut({ redirect: false })
+          return
+        }
+        session = await sessionRes.json()
+      } catch {
+        setError("Connexion établie mais la session est illisible. Rechargez la page.")
+        return
+      }
+
+      if (!session?.user?.role) {
+        setError("Session invalide : aucun rôle utilisateur. Réessayez ou contactez le support.")
         await signOut({ redirect: false })
         return
       }
 
+      if (session.user.role !== "ADMIN") {
+        setError(`Accès refusé : votre compte a le rôle "${session.user.role}", pas "ADMIN". Contactez l'administrateur système.`)
+        await signOut({ redirect: false })
+        return
+      }
+
+      // Tout est OK — redirection vers le panel
       router.push("/admin")
-    } catch {
-      setError("Une erreur est survenue. Veuillez réessayer.")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(`Une erreur inattendue s'est produite : ${msg}. Rechargez la page et réessayez.`)
     } finally {
       setLoading(false)
     }
@@ -185,9 +243,14 @@ export default function AdminLoginForm({ stats }: Props) {
 
           {/* Erreur */}
           {error && (
-            <div className="flex items-start gap-2 p-3 bg-red-50 border-l-2 border-danger-deep">
-              <span className="w-1.5 h-1.5 rounded-full bg-danger-deep mt-1.5 shrink-0" />
-              <p className="font-body text-xs text-red-900">{error}</p>
+            <div className="flex items-start gap-3 border border-red-300 bg-red-50 p-4">
+              <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-red-700 mb-1">
+                  Erreur de connexion
+                </p>
+                <p className="font-body text-xs text-red-900 leading-relaxed">{error}</p>
+              </div>
             </div>
           )}
 

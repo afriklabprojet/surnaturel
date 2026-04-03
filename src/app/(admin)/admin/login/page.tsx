@@ -7,7 +7,13 @@ export const metadata = {
 }
 
 export default async function AdminLoginPage() {
-  const stats = await getLoginStats()
+  // Wrap stats in try/catch — si la DB est hors-ligne, la page doit quand même s'afficher
+  let stats = { rdvAujourdhui: 0, clientsActifs: 0, commandesEnAttente: 0, articlesPublies: 0 }
+  try {
+    stats = await getLoginStats()
+  } catch {
+    // La page s'affiche même si les stats sont indisponibles
+  }
 
   return <AdminLoginForm stats={stats} />
 }

@@ -86,35 +86,50 @@ export default function ConnexionForm() {
     setEmailNonVerifie(false)
     try {
       const result = await signIn("credentials", {
-        email: data.email,
+        email: data.email.trim().toLowerCase(),
         password: data.motDePasse,
         redirect: false,
       })
-      if (result?.error) {
-        if (result.code === "EMAIL_NON_VERIFIE" || result.error.includes("EMAIL_NON_VERIFIE")) {
+
+      if (!result) {
+        setErreur("Impossible de contacter le serveur. Vérifiez votre connexion internet.")
+        return
+      }
+
+      if (result.error || !result.ok) {
+        const errCode = (result as { code?: string }).code ?? result.error ?? ""
+
+        if (errCode.includes("EMAIL_NON_VERIFIE")) {
           setEmailNonVerifie(true)
           setEmailPourRenvoi(data.email)
-        } else if (result.code === "2FA_REQUIRED" || result.error.includes("2FA_REQUIRED")) {
-          // Extract userId from error message (format: 2FA_REQUIRED:userId)
-          const match = result.error.match(/2FA_REQUIRED:(\w+)/)
+        } else if (errCode.includes("2FA_REQUIRED")) {
+          const match = errCode.match(/2FA_REQUIRED:(\w+)/)
           const userId = match?.[1]
           if (userId) {
-            // Store email temporarily and redirect to 2FA verification
             sessionStorage.setItem("2fa_email", data.email)
             sessionStorage.setItem("2fa_password", data.motDePasse)
             router.push(`/verification-2fa?userId=${userId}`)
           } else {
-            setErreur("Erreur de configuration 2FA")
+            setErreur("La double authentification est activée mais l'identifiant 2FA est manquant. Contactez le support.")
           }
+        } else if (result.status === 429) {
+          setErreur("Trop de tentatives de connexion. Attendez quelques minutes avant de réessayer.")
+        } else if (result.status && result.status >= 500) {
+          setErreur(`Erreur serveur (${result.status}). Réessayez dans quelques instants.`)
+        } else if (errCode) {
+          setErreur("Email ou mot de passe incorrect.")
         } else {
-          setErreur("Email ou mot de passe incorrect")
+          setErreur("Connexion impossible. Vérifiez vos identifiants.")
         }
       } else {
-        router.push("/dashboard")
+        // Respecter le callbackUrl s'il est présent
+        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+        router.push(callbackUrl)
         router.refresh()
       }
-    } catch {
-      setErreur("Une erreur est survenue. Veuillez réessayer.")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur réseau"
+      setErreur(`Une erreur est survenue (${msg}). Rechargez la page et réessayez.`)
     }
   }
 
