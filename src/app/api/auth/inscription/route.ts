@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     destinataire: email,
     prenom,
     tokenVerification: emailVerifToken,
-  }).catch(() => null)
+  }).catch((err) => console.error("[INSCRIPTION] Erreur envoi email:", err))
 
   return NextResponse.json(
     { message: "Compte créé. Vérifiez votre boîte email pour activer votre compte." },
