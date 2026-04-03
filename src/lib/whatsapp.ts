@@ -8,6 +8,8 @@
  * - WHATSAPP_BUSINESS_ID: ID du compte WhatsApp Business (optionnel)
  */
 
+import { typedLogger as logger } from "@/lib/logger"
+
 const WHATSAPP_API_URL = "https://graph.facebook.com/v18.0"
 const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN
@@ -60,7 +62,7 @@ export async function envoyerWhatsAppTexte(
   message: string
 ): Promise<MessageResult> {
   if (!PHONE_NUMBER_ID || !ACCESS_TOKEN) {
-    console.error("WhatsApp: Credentials manquantes")
+    logger.error("WhatsApp: Credentials manquantes")
     return { success: false, error: "Configuration WhatsApp manquante" }
   }
 
@@ -89,14 +91,14 @@ export async function envoyerWhatsAppTexte(
 
     if (!response.ok) {
       const error = data as WhatsAppError
-      console.error("WhatsApp API Error:", error)
+      logger.error("WhatsApp API Error:", error)
       return { success: false, error: error.error?.message || "Erreur API WhatsApp" }
     }
 
     const result = data as WhatsAppMessageResponse
     return { success: true, messageId: result.messages[0]?.id || "" }
   } catch (error) {
-    console.error("WhatsApp send error:", error)
+    logger.error("WhatsApp send error:", error)
     return { success: false, error: "Erreur d'envoi WhatsApp" }
   }
 }
@@ -265,7 +267,7 @@ export async function envoyerWhatsAppTemplate(
     const result = data as WhatsAppMessageResponse
     return { success: true, messageId: result.messages[0]?.id || "" }
   } catch (error) {
-    console.error("WhatsApp template error:", error)
+    logger.error("WhatsApp template error:", error)
     return { success: false, error: "Erreur d'envoi template WhatsApp" }
   }
 }

@@ -14,6 +14,7 @@
 // silencieusement (pas d'erreur bloquante).
 
 import { getConfig } from "@/lib/config"
+import { typedLogger as logger } from "@/lib/logger"
 
 const AT_API_KEY = process.env.AT_API_KEY
 const AT_USERNAME = process.env.AT_USERNAME
@@ -25,7 +26,7 @@ function isSmsConfigured(): boolean {
 
 export async function envoyerSms(to: string, body: string): Promise<boolean> {
   if (!isSmsConfigured()) {
-    console.warn("[SMS] Africa's Talking non configuré — SMS ignoré")
+    logger.warn("[SMS] Africa's Talking non configuré — SMS ignoré")
     return false
   }
 
@@ -64,7 +65,7 @@ export async function envoyerSms(to: string, body: string): Promise<boolean> {
 
     if (!res.ok) {
       const err = await res.text()
-      console.error("[SMS] Erreur Africa's Talking:", res.status, err)
+      logger.error("[SMS] Erreur Africa's Talking: " + res.status, err)
       return false
     }
 
@@ -75,10 +76,10 @@ export async function envoyerSms(to: string, body: string): Promise<boolean> {
       return true
     }
 
-    console.error("[SMS] Envoi échoué:", JSON.stringify(data?.SMSMessageData))
+    logger.error("[SMS] Envoi échoué: " + JSON.stringify(data?.SMSMessageData))
     return false
   } catch (error) {
-    console.error("[SMS] Erreur envoi:", error)
+    logger.error("[SMS] Erreur envoi:", error)
     return false
   }
 }

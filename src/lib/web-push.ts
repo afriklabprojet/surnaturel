@@ -1,6 +1,7 @@
 // ── Service lib pour les notifications push (Web Push API) ─────────────
 import webPush from "web-push"
 import { getConfig } from "@/lib/config"
+import { typedLogger as logger } from "@/lib/logger"
 
 // Configuration VAPID (Voluntary Application Server Identification)
 // Les clés doivent être générées avec: npx web-push generate-vapid-keys
@@ -51,7 +52,7 @@ export async function envoyerPushNotification(
   payload: PushPayload
 ): Promise<boolean> {
   if (!isPushConfigured()) {
-    console.warn("[PUSH] Web Push non configuré — notification ignorée")
+    logger.warn("[PUSH] Web Push non configuré — notification ignorée")
     return false
   }
 
@@ -72,7 +73,7 @@ export async function envoyerPushNotification(
     if (err.statusCode === 410) {
       return false
     }
-    console.error("[PUSH] Erreur envoi:", error)
+    logger.error("[PUSH] Erreur envoi:", error)
     return false
   }
 }

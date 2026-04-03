@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { typedLogger as logger } from "@/lib/logger"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import { enfileNotification } from "@/lib/queue"
 import type { NotifType } from "@/generated/prisma/client"
@@ -78,7 +79,7 @@ export async function creerNotification(params: CreerNotificationParams) {
       notif
     )
   } catch (error) {
-    console.error("Erreur Pusher notification:", error)
+    logger.error("Erreur Pusher notification:", error)
   }
 
   return notif
