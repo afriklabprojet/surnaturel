@@ -245,6 +245,8 @@ vi.mock("@/lib/rate-limit", () => ({
 // NOT mocked — used for realistic password hashing assertions
 
 /* ───── Helper: build a Request object for route handlers ─────────── */
+import { NextRequest } from "next/server"
+
 export function buildRequest(
   url: string,
   options?: RequestInit & { searchParams?: Record<string, string> }
@@ -255,7 +257,7 @@ export function buildRequest(
       u.searchParams.set(k, v)
     }
   }
-  return new Request(u.toString(), options)
+  return new NextRequest(u.toString(), options)
 }
 
 export function buildJsonRequest(

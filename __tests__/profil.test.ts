@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import bcrypt from "bcryptjs"
+import { NextRequest } from "next/server"
 import { prismaMock, mockAuth, buildJsonRequest, buildRequest } from "./setup"
 
 const { GET, PATCH, PUT } = await import("@/app/api/profil/route")
@@ -75,7 +76,7 @@ describe("Profil — PATCH /api/profil", () => {
   })
 
   it("rejects malformed JSON (400)", async () => {
-    const req = new Request("http://localhost:3000/api/profil", {
+    const req = new NextRequest("http://localhost:3000/api/profil", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: "bad json",

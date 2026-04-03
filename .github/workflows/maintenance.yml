@@ -1,0 +1,153 @@
+name: Maintenance Production
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Déclencher manuellement depuis GitHub :
+#   GitHub → onglet "Actions" → "Maintenance Production" → "Run workflow"
+# ──────────────────────────────────────────────────────────────────────────────
+on:
+  workflow_dispatch:
+    inputs:
+      commande:
+        description: "Commande à exécuter"
+        required: true
+        type: choice
+        options:
+          - "migrations"
+          - "seed-complet"
+          - "seed-produits"
+          - "seed-config"
+          - "creer-admins"
+          - "restart-pm2"
+          - "logs-pm2"
+          - "status-pm2"
+          - "verifier-db"
+          - "vider-cache-next"
+          - "update-experience"
+
+jobs:
+  maintenance:
+    name: "${{ github.event.inputs.commande }}"
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Exécuter — ${{ github.event.inputs.commande }}
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd ${{ secrets.PROJECT_PATH }}
+
+            # Charger les variables d'environnement de production
+            if [[ -f ".env.production" ]]; then
+              set -a; source .env.production; set +a
+            fi
+
+            echo "══════════════════════════════════════════════════"
+            echo "  Maintenance — Le Surnaturel de Dieu"
+            echo "  Commande : ${{ github.event.inputs.commande }}"
+            echo "  Déclenché par : ${{ github.actor }}"
+            echo "  $(date '+%Y-%m-%d %H:%M:%S %Z')"
+            echo "══════════════════════════════════════════════════"
+
+            case "${{ github.event.inputs.commande }}" in
+
+              # ── Appliquer les migrations Prisma ──────────────────────────
+              migrations)
+                echo "▶ Prisma migrate deploy…"
+                npx prisma migrate deploy
+                echo "✅ Migrations appliquées"
+                ;;
+
+              # ── Seed complet (données initiales + produits + config) ──────
+              seed-complet)
+                echo "▶ Seed complet…"
+                npx tsx prisma/seed.ts
+                echo "✅ Seed complet terminé"
+                ;;
+
+              # ── Seed produits uniquement ──────────────────────────────────
+              seed-produits)
+                echo "▶ Seed produits…"
+                npx tsx prisma/seed-produits.ts
+                echo "✅ Seed produits terminé"
+                ;;
+
+              # ── Seed configuration uniquement ─────────────────────────────
+              seed-config)
+                echo "▶ Seed config…"
+                npx tsx prisma/seed-config-only.ts
+                echo "✅ Seed config terminé"
+                ;;
+
+              # ── Créer / mettre à jour les comptes admins ──────────────────
+              creer-admins)
+                echo "▶ Création des admins…"
+                npx tsx prisma/create-admins.ts
+                echo "✅ Admins créés / mis à jour"
+                ;;
+
+              # ── Redémarrer PM2 ────────────────────────────────────────────
+              restart-pm2)
+                echo "▶ Redémarrage PM2…"
+                pm2 reload ecosystem.config.js --env production
+                pm2 save
+                echo "✅ PM2 redémarré"
+                ;;
+
+              # ── Afficher les 200 dernières lignes de logs ─────────────────
+              logs-pm2)
+                echo "▶ Logs PM2 (200 dernières lignes)…"
+                pm2 logs surnaturel --lines 200 --nostream || true
+                ;;
+
+              # ── Statut PM2 ────────────────────────────────────────────────
+              status-pm2)
+                echo "▶ Statut PM2…"
+                pm2 status
+                pm2 show surnaturel || true
+                ;;
+
+              # ── Vérifier la connexion à la base de données ────────────────
+              verifier-db)
+                echo "▶ Vérification base de données…"
+                npx prisma db execute --stdin <<'SQL'
+                  SELECT
+                    (SELECT COUNT(*) FROM "User")          AS utilisateurs,
+                    (SELECT COUNT(*) FROM "RendezVous")    AS rendez_vous,
+                    (SELECT COUNT(*) FROM "Produit")       AS produits,
+                    (SELECT COUNT(*) FROM "Commande")      AS commandes;
+SQL
+                echo "✅ Base de données accessible"
+                ;;
+
+              # ── Vider le cache Next.js (force rebuild au prochain démarrage)
+              vider-cache-next)
+                echo "▶ Suppression du cache .next…"
+                rm -rf .next/cache
+                echo "✅ Cache supprimé — redémarrez PM2 pour rebuildé si nécessaire"
+                ;;
+
+              # ── Mettre à jour les niveaux d'expérience ────────────────────
+              update-experience)
+                echo "▶ Mise à jour expérience utilisateurs…"
+                npx tsx prisma/update-experience.ts
+                echo "✅ Expérience mise à jour"
+                ;;
+
+              *)
+                echo "❌ Commande inconnue : ${{ github.event.inputs.commande }}"
+                exit 1
+                ;;
+            esac
+
+            echo ""
+            echo "══════════════════════════════════════════════════"
+            echo "  ✅ Terminé"
+            echo "══════════════════════════════════════════════════"
