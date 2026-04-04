@@ -34,13 +34,31 @@ export async function POST(request: Request) {
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
+    select: { id: true, emailVerifie: true, createdAt: true },
   })
 
   if (existingUser) {
-    return NextResponse.json(
-      { error: "Cette adresse email est déjà utilisée." },
-      { status: 409 }
-    )
+    const deuxMinutes = 2 * 60 * 1000
+    const ageDuCompte = Date.now() - existingUser.createdAt.getTime()
+
+    if (existingUser.emailVerifie) {
+      // Compte actif → refus définitif
+      return NextResponse.json(
+        { error: "Cette adresse email est déjà utilisée." },
+        { status: 409 }
+      )
+    }
+
+    if (ageDuCompte <= deuxMinutes) {
+      // Inscription récente non confirmée → renvoyer l'email, ne pas écraser
+      return NextResponse.json(
+        { error: "Un email de confirmation vient d'être envoyé. Vérifiez votre boîte (et vos spams) puis cliquez sur le lien." },
+        { status: 409 }
+      )
+    }
+
+    // Inscription expirée (> 2 min, non vérifiée) → supprimer et recommencer
+    await prisma.user.delete({ where: { id: existingUser.id } })
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
