@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerSms } from "@/lib/sms"
 import { SITE_URL } from "@/lib/site"
+import { capturePaymentError } from "@/lib/sentry"
 
 // Relance par SMS les commandes dont le paiement a échoué
 // Exécuté toutes les 30 minutes via Vercel CRON
