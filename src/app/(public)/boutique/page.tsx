@@ -1,6 +1,16 @@
 import { Suspense } from "react"
+import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import { HeroBoutique, BoutiqueCatalogue } from "@/components/boutique/BoutiqueClientSections"
+
+export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: "Boutique Naturelle | Le Surnaturel de Dieu — Abidjan",
+  description:
+    "Découvrez notre boutique de produits naturels à Abidjan : huiles, soins du corps, cosmétiques bio et produits de bien-être sélectionnés avec soin.",
+  alternates: { canonical: "/boutique" },
+}
 
 export default async function PageBoutique() {
   const LIMIT = 8

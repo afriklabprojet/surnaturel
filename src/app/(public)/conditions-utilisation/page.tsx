@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { getConfig } from "@/lib/config"
+import { SITE_URL, SITE_DOMAIN } from "@/lib/site"
 
 export const metadata: Metadata = {
   title: "Conditions générales d'utilisation | Le Surnaturel de Dieu",
@@ -29,8 +30,8 @@ export default async function ConditionsUtilisation() {
             Les présentes conditions générales d&apos;utilisation (CGU) régissent l&apos;accès et
             l&apos;utilisation du site <strong>Le Surnaturel de Dieu</strong> (ci-après « le Site »),
             accessible à l&apos;adresse{" "}
-            <a href="https://lesurnatureldedieu.ci" className="text-primary-brand hover:underline">
-              lesurnatureldedieu.ci
+            <a href={SITE_URL} className="text-primary-brand hover:underline">
+              {SITE_DOMAIN}
             </a>.
             En accédant au Site, vous acceptez sans réserve les présentes CGU.
           </p>

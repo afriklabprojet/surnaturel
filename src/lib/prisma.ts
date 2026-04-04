@@ -2,8 +2,14 @@ import { PrismaClient } from "@/generated/prisma/client"
 import { PrismaNeon } from "@prisma/adapter-neon"
 import { neonConfig } from "@neondatabase/serverless"
 import ws from "ws"
+import { validateEnv } from "@/lib/env"
 
 neonConfig.webSocketConstructor = ws
+
+// Valider les env vars au premier import — échoue rapidement avec un message clair
+if (process.env.NODE_ENV !== "test") {
+  validateEnv()
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined

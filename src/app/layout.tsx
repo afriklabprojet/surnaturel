@@ -47,12 +47,21 @@ export const metadata: Metadata = {
     siteName: "Le Surnaturel de Dieu",
     locale: "fr_CI",
     type: "website",
+    images: [
+      {
+        url: `${APP_URL}/images/hero.jpg`,
+        width: 1200,
+        height: 630,
+        alt: "Le Surnaturel de Dieu — Institut de Bien-Être à Abidjan",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Le Surnaturel de Dieu — Institut de Bien-Être à Abidjan",
     description:
       "Hammam, gommage, soins du visage, post-accouchement, sage-femme et boutique à Abidjan.",
+    images: [`${APP_URL}/images/hero.jpg`],
   },
   icons: {
     icon: "/favicon.ico",

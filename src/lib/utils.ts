@@ -28,13 +28,6 @@ export function formatDate(date: Date): string {
   }).format(date)
 }
 
-export const TIMEZONE = "Africa/Abidjan"
-
-/**
- * Génère une clé unique pour un créneau de RDV
- * Format: "soinId_YYYY-MM-DD_HH" (ex: "clxxxx_2026-03-29_10")
- * Cette clé est utilisée pour la contrainte unique en DB
- */
 export function genererCreneauCle(soinId: string, dateHeure: Date): string {
   const date = dateHeure.toISOString().split("T")[0] // YYYY-MM-DD
   const heure = dateHeure.getUTCHours().toString().padStart(2, "0")

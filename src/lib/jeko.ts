@@ -2,10 +2,14 @@ import { SITE_URL } from "@/lib/site"
 
 const JEKO_API_URL = "https://api.jeko.africa/partner_api"
 
-const jekoHeaders = {
-  "X-API-KEY": process.env.JEKO_API_KEY!,
-  "X-API-KEY-ID": process.env.JEKO_API_KEY_ID!,
-  "Content-Type": "application/json",
+function getJekoHeaders(): HeadersInit {
+  if (!process.env.JEKO_API_KEY) throw new Error("JEKO_API_KEY is not configured")
+  if (!process.env.JEKO_API_KEY_ID) throw new Error("JEKO_API_KEY_ID is not configured")
+  return {
+    "X-API-KEY": process.env.JEKO_API_KEY,
+    "X-API-KEY-ID": process.env.JEKO_API_KEY_ID,
+    "Content-Type": "application/json",
+  }
 }
 
 export type JekoPaymentMethod = "wave" | "orange" | "mtn" | "moov" | "djamo"
@@ -60,7 +64,7 @@ export async function creerPaiement(params: {
 
   const res = await fetch(`${JEKO_API_URL}/payment_requests`, {
     method: "POST",
-    headers: jekoHeaders,
+    headers: getJekoHeaders(),
     body: JSON.stringify(body),
   })
 
@@ -77,7 +81,7 @@ export async function verifierStatutPaiement(
 ): Promise<JekoPaymentStatus> {
   const res = await fetch(
     `${JEKO_API_URL}/payment_requests/${encodeURIComponent(paiementId)}`,
-    { headers: jekoHeaders }
+    { headers: getJekoHeaders() }
   )
 
   if (!res.ok) {

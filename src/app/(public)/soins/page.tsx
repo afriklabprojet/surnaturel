@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/soins" },
 }
 
+export const revalidate = 300
+
 export default async function PageSoins() {
   // Un seul aller-retour DB — toutes les données en parallèle
   const [soinsData, forfaitsData, faqData, avantagesConfig, categoriesConfig, promoConfig, heroIconesConfig] =

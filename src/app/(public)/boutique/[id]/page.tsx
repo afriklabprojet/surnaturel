@@ -1,10 +1,16 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import { cache } from "react"
 import { ArrowLeft, Package } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import ProduitDetailClient from "@/components/boutique/ProduitDetailClient"
 import AvisProduit from "@/components/boutique/AvisProduit"
 import type { Metadata } from "next"
+
+// Évite une double requête entre generateMetadata et le composant page
+const getProduit = cache((id: string) =>
+  prisma.produit.findUnique({ where: { id } })
+)
 
 // ─── Metadata dynamique pour le SEO ──────────────────────────────
 
@@ -14,10 +20,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const produit = await prisma.produit.findUnique({
-    where: { id },
-    select: { nom: true, description: true, imageUrl: true },
-  })
+  const produit = await getProduit(id)
 
   if (!produit) {
     return { title: "Produit introuvable | Le Surnaturel de Dieu" }
@@ -44,9 +47,7 @@ export default async function PageDetailProduit({
 }) {
   const { id } = await params
 
-  const produit = await prisma.produit.findUnique({
-    where: { id },
-  })
+  const produit = await getProduit(id)
 
   if (!produit || !produit.actif) {
     notFound()

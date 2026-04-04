@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { cache } from "react"
 import { notFound } from "next/navigation"
 import { Clock, Tag, Check, ArrowLeft, Gift, ChevronRight } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
@@ -11,6 +12,11 @@ import StarRating from "@/components/soins/StarRating"
 import SoinAvis from "@/components/soins/SoinAvis"
 import type { Metadata } from "next"
 
+// Évite une double requête entre generateMetadata et le composant page
+const getSoin = cache((slug: string) =>
+  prisma.soin.findUnique({ where: { slug } })
+)
+
 // ─── Métadonnées dynamiques ──────────────────────────────────────
 
 interface PageProps {
@@ -21,7 +27,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const soin = await prisma.soin.findUnique({ where: { slug }, select: { nom: true, description: true } })
+  const soin = await getSoin(slug)
   if (!soin) return { title: "Soin introuvable" }
 
   return {
@@ -35,7 +41,7 @@ export async function generateMetadata({
 
 export default async function PageDetailSoin({ params }: PageProps) {
   const { slug } = await params
-  const soin = await prisma.soin.findUnique({ where: { slug } })
+  const soin = await getSoin(slug)
 
   if (!soin || !soin.actif) {
     notFound()

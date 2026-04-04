@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   title: "Blog Bien-être & Beauté | Le Surnaturel de Dieu — Abidjan",
   description:
     "Conseils santé, beauté, nutrition et bien-être par les experts du Surnaturel de Dieu. Articles sur les soins du corps, la maternité et la beauté naturelle.",
+  alternates: { canonical: "/blog" },
 }
 
 async function getArticles(categorie?: string) {
