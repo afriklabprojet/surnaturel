@@ -70,16 +70,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // Pages dynamiques — Soins
-  const soins = await prisma.soin.findMany({
-    where: { actif: true },
-    select: { slug: true },
-  })
-  const soinPages: MetadataRoute.Sitemap = soins.map((soin) => ({
-    url: `${BASE_URL}/soins/${soin.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  }))
+  let soinPages: MetadataRoute.Sitemap = []
+  try {
+    const soins = await prisma.soin.findMany({
+      where: { actif: true },
+      select: { slug: true },
+    })
+    soinPages = soins.map((soin) => ({
+      url: `${BASE_URL}/soins/${soin.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    }))
+  } catch {
+    // DB non disponible au build — pages dynamiques omises
+  }
 
   // Pages dynamiques — Produits
   let produitPages: MetadataRoute.Sitemap = []
