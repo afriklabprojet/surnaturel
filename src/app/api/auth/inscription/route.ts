@@ -59,21 +59,28 @@ export async function POST(request: Request) {
     },
   })
 
-  // Email de vérification (non bloquant)
-  envoyerEmailInscription({
-    destinataire: email,
-    prenom,
-    tokenVerification: emailVerifToken,
-  }).catch((err) => {
-    console.error("[INSCRIPTION] Erreur envoi email Resend:", {
-      message: err?.message ?? String(err),
-      statusCode: err?.statusCode,
-      name: err?.name,
+  // Email de vérification
+  let emailEnvoye = true
+  try {
+    await envoyerEmailInscription({
+      destinataire: email,
+      prenom,
+      tokenVerification: emailVerifToken,
     })
-  })
+  } catch (err) {
+    emailEnvoye = false
+    console.error("[INSCRIPTION] Erreur envoi email Resend:", {
+      message: (err as Error)?.message ?? String(err),
+      statusCode: (err as { statusCode?: number })?.statusCode,
+    })
+  }
 
   return NextResponse.json(
-    { message: "Compte créé. Vérifiez votre boîte email pour activer votre compte." },
+    {
+      message: emailEnvoye
+        ? "Compte créé. Vérifiez votre boîte email pour activer votre compte."
+        : "Compte créé, mais l'email de vérification n'a pas pu être envoyé. Utilisez « Renvoyer l'email » sur la page de connexion.",
+    },
     { status: 201 }
   )
 }
