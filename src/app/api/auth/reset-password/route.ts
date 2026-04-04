@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ message: "Mot de passe réinitialisé avec succès." })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const msg = error.issues[0]?.message || "Données invalides"
+      const msg = error.issues[0].message
       return NextResponse.json({ error: msg }, { status: 400 })
     }
     captureAuthError(error, undefined, { action: "confirm-reset" })

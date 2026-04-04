@@ -62,151 +62,170 @@ enum StoryVisibilite {
   CONNEXIONS
 }
 
+enum IntentionRencontre {
+  AMITIE
+  RELATION_SERIEUSE
+  MARIAGE
+}
+
+enum TypeLike {
+  LIKE
+  SUPER_LIKE
+  PASS
+}
+
 // ─── Modèles ─────────────────────────────────────────────────────
 
 model User {
-  id                   String           @id @default(cuid())
-  email                String           @unique
-  passwordHash         String?
-  nom                  String
-  prenom               String
-  name                 String?          // nom complet (NextAuth)
-  telephone            String?
-  adresse              String?
-  role                 Role             @default(CLIENT)
-  photoUrl             String?
-  image                String?          // avatar (NextAuth)
-  ville                String?
-  codeParrainage       String?          @unique
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  id                      String                   @id @default(cuid())
+  email                   String                   @unique
+  passwordHash            String?
+  nom                     String
+  prenom                  String
+  name                    String? // nom complet (NextAuth)
+  telephone               String?
+  adresse                 String?
+  role                    Role                     @default(CLIENT)
+  photoUrl                String?
+  image                   String? // avatar (NextAuth)
+  ville                   String?
+  codeParrainage          String?                  @unique
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
   // ─── Profil étendu réseau social
-  bio                  String?
-  centresInteret       String[]
-  couvertureUrl        String?
-  profilPublic         Boolean          @default(true)
-  pseudo               String?          @unique
-  localisation         String?
-  statutProfil         StatutProfil     @default(ACTIF)
+  bio                     String?
+  centresInteret          String[]
+  couvertureUrl           String?
+  profilPublic            Boolean                  @default(true)
+  pseudo                  String?                  @unique
+  localisation            String?
+  statutProfil            StatutProfil             @default(ACTIF)
   // ─── Préférences notifications
-  notifLikes           Boolean          @default(true)
-  notifCommentaires    Boolean          @default(true)
-  notifConnexions      Boolean          @default(true)
-  notifMessages        Boolean          @default(true)
-  notifEvenements      Boolean          @default(true)
-  notifGroupes         Boolean          @default(true)
-  notifNewsletter      Boolean          @default(true)
+  notifLikes              Boolean                  @default(true)
+  notifCommentaires       Boolean                  @default(true)
+  notifConnexions         Boolean                  @default(true)
+  notifMessages           Boolean                  @default(true)
+  notifEvenements         Boolean                  @default(true)
+  notifGroupes            Boolean                  @default(true)
+  notifNewsletter         Boolean                  @default(true)
   // ─── Relations existantes
-  rendezVous           RendezVous[]
-  commandes            Commande[]
-  messages             Message[]
-  dossierMedical       DossierMedical?
-  notifications        Notification[]
-  pointsFidelite       PointsFidelite?
-  favoris              Favori[]
-  parrainagesParrain   Parrainage[]     @relation("Parrain")
-  parrainagesFilleul   Parrainage[]     @relation("Filleul")
-  avis                 Avis[]
+  rendezVous              RendezVous[]
+  commandes               Commande[]
+  messages                Message[]
+  dossierMedical          DossierMedical?
+  notifications           Notification[]
+  pointsFidelite          PointsFidelite?
+  favoris                 Favori[]
+  parrainagesParrain      Parrainage[]             @relation("Parrain")
+  parrainagesFilleul      Parrainage[]             @relation("Filleul")
+  avis                    Avis[]
   // ─── Relations réseau social
-  posts                Post[]
-  commentaires         Commentaire[]
-  reactions            Reaction[]
-  postsSauvegardes     PostSauvegarde[]
-  connexionsEnvoyees   Connexion[]      @relation("Demandeur")
-  connexionsRecues     Connexion[]      @relation("Destinataire")
-  abonnements          Abonnement[]     @relation("Abonne")
-  abonnes              Abonnement[]     @relation("Suivi")
-  groupesMembres       MembreGroupe[]
-  evenementsCreateur   Evenement[]      @relation("CreateurEvenement")
-  participations       ParticipationEvenement[]
-  signalementsEmis     Signalement[]    @relation("Signaleur")
-  signalementsRecus    Signalement[]    @relation("Signale")
-  blocagesEmis         Blocage[]        @relation("Bloqueur")
-  blocagesRecus        Blocage[]        @relation("Bloque")
-  mentionsConcernees   Mention[]        @relation("MentionsConcernees")
-  mentionsEmises       Mention[]        @relation("MentionsEmises")
-  stories              Story[]
-  conversationsA       Conversation[]   @relation("ConvA")
-  conversationsB       Conversation[]   @relation("ConvB")
-  verificationStatus   VerificationStatus @default(AUCUNE)
-  profilDetail         ProfilDetail?
+  posts                   Post[]
+  commentaires            Commentaire[]
+  reactions               Reaction[]
+  postsSauvegardes        PostSauvegarde[]
+  connexionsEnvoyees      Connexion[]              @relation("Demandeur")
+  connexionsRecues        Connexion[]              @relation("Destinataire")
+  abonnements             Abonnement[]             @relation("Abonne")
+  abonnes                 Abonnement[]             @relation("Suivi")
+  groupesMembres          MembreGroupe[]
+  evenementsCreateur      Evenement[]              @relation("CreateurEvenement")
+  participations          ParticipationEvenement[]
+  signalementsEmis        Signalement[]            @relation("Signaleur")
+  signalementsRecus       Signalement[]            @relation("Signale")
+  blocagesEmis            Blocage[]                @relation("Bloqueur")
+  blocagesRecus           Blocage[]                @relation("Bloque")
+  mentionsConcernees      Mention[]                @relation("MentionsConcernees")
+  mentionsEmises          Mention[]                @relation("MentionsEmises")
+  stories                 Story[]
+  conversationsA          Conversation[]           @relation("ConvA")
+  conversationsB          Conversation[]           @relation("ConvB")
+  verificationStatus      VerificationStatus       @default(AUCUNE)
+  profilDetail            ProfilDetail?
   // ─── Reset mot de passe
-  resetToken           String?          @unique
-  resetTokenExpiry     DateTime?
+  resetToken              String?                  @unique
+  resetTokenExpiry        DateTime?
   // ─── Vérification email
-  emailVerifie         Boolean          @default(false)
-  emailVerifToken      String?          @unique
-  emailVerifExpiry     DateTime?
+  emailVerifie            Boolean                  @default(false)
+  emailVerifToken         String?                  @unique
+  emailVerifExpiry        DateTime?
   // ─── Onboarding email sequence
-  onboardingStep       Int              @default(0) // 0=welcome, 1=soins, 2=boutique, 3=communauté
-  lastOnboardingEmail  DateTime?
-  derniereVueAt        DateTime?        // présence en ligne
+  onboardingStep          Int                      @default(0) // 0=welcome, 1=soins, 2=boutique, 3=communauté
+  lastOnboardingEmail     DateTime?
+  derniereVueAt           DateTime? // présence en ligne
+  dateNaissance           DateTime? // pour filtrage par âge (rencontres)
+  // ─── Rencontres
+  rencontrePreference     RencontrePreference?
+  likesEnvoyes            RencontreLike[]          @relation("LikesEnvoyes")
+  likesRecus              RencontreLike[]          @relation("LikesRecus")
+  matchesA                RencontreMatch[]         @relation("MatchesA")
+  matchesB                RencontreMatch[]         @relation("MatchesB")
   // ─── Messages médicaux (table séparée)
-  messagesMedicauxEnvoyes  MessageMedical[] @relation("MessagesMedicauxEnvoyes")
-  messagesMedicauxRecus    MessageMedical[] @relation("MessagesMedicauxRecus")
+  messagesMedicauxEnvoyes MessageMedical[]         @relation("MessagesMedicauxEnvoyes")
+  messagesMedicauxRecus   MessageMedical[]         @relation("MessagesMedicauxRecus")
   // ─── Push subscriptions
-  pushSubscriptions    PushSubscription[]
+  pushSubscriptions       PushSubscription[]
   // ─── Échanges de récompenses fidélité
-  echangesRecompenses  EchangeRecompense[]
+  echangesRecompenses     EchangeRecompense[]
   // ─── Utilisations de codes promo
-  utilisationsCodePromo UtilisationCodePromo[]
+  utilisationsCodePromo   UtilisationCodePromo[]
   // ─── Notes sage-femme
-  notesRecues          NotePro[]      @relation("NoteClient")
-  notesEcrites         NotePro[]      @relation("NoteAuteur")
+  notesRecues             NotePro[]                @relation("NoteClient")
+  notesEcrites            NotePro[]                @relation("NoteAuteur")
   // ─── Abonnements mensuels
-  abonnementsMensuels  AbonnementMensuel[]
+  abonnementsMensuels     AbonnementMensuel[]
   // ─── Avis produits
-  avisProduits         AvisProduit[]
+  avisProduits            AvisProduit[]
   // ─── WebAuthn / Passkeys (Face ID, Touch ID)
-  webAuthnCredentials  WebAuthnCredential[]
+  webAuthnCredentials     WebAuthnCredential[]
   // ─── 2FA / Two-Factor Authentication
-  totpSecret           String?          // Encrypted TOTP secret
-  totpEnabled          Boolean          @default(false)
-  totpBackupCodes      String[]         // Hashed backup codes
-  totpVerifiedAt       DateTime?        // When 2FA was enabled
+  totpSecret              String? // Encrypted TOTP secret
+  totpEnabled             Boolean                  @default(false)
+  totpBackupCodes         String[] // Hashed backup codes
+  totpVerifiedAt          DateTime? // When 2FA was enabled
   // ─── Session tracking
-  authSessions         AuthSession[]
-  lastLoginAt          DateTime?
-  lastLoginIp          String?
-  lastLoginDevice      String?
+  authSessions            AuthSession[]
+  lastLoginAt             DateTime?
+  lastLoginIp             String?
+  lastLoginDevice         String?
   // ─── Accès Communauté (abonnement payant ou essai gratuit)
-  accesCommuaute          Boolean   @default(false)
+  accesCommuaute          Boolean                  @default(false)
   accesCommuauteExpireAt  DateTime?
-  essaiCommuauteUtilise   Boolean   @default(false)
+  essaiCommuauteUtilise   Boolean                  @default(false)
 }
 
 // ─── WebAuthn Credentials (Passkeys) ─────────────────────────────
 model WebAuthnCredential {
-  id                String   @id @default(cuid())
-  userId            String
-  credentialId      String   @unique // Base64url encoded credential ID
-  credentialPublicKey Bytes  // CBOR encoded public key
-  counter           BigInt   @default(0) // Signature counter for replay attack prevention
-  transports        String[] // Array of transport hints (usb, nfc, ble, internal)
-  deviceName        String?  // User-friendly device name
-  createdAt         DateTime @default(now())
-  lastUsedAt        DateTime?
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String    @id @default(cuid())
+  userId              String
+  credentialId        String    @unique // Base64url encoded credential ID
+  credentialPublicKey Bytes // CBOR encoded public key
+  counter             BigInt    @default(0) // Signature counter for replay attack prevention
+  transports          String[] // Array of transport hints (usb, nfc, ble, internal)
+  deviceName          String? // User-friendly device name
+  createdAt           DateTime  @default(now())
+  lastUsedAt          DateTime?
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 // ─── Auth Sessions (Track active sessions for 2FA/session mgmt) ──
 model AuthSession {
-  id            String    @id @default(cuid())
-  userId        String
-  tokenHash     String    @unique  // Hash of session token for lookup
-  ipAddress     String?
-  userAgent     String?
-  deviceName    String?            // Parsed device name (iPhone 15, Chrome Windows, etc.)
-  deviceType    String?            // mobile, desktop, tablet
-  location      String?            // Geo location from IP
-  isCurrentSession Boolean @default(false)
-  lastActiveAt  DateTime  @default(now())
-  expiresAt     DateTime
-  createdAt     DateTime  @default(now())
-  revokedAt     DateTime?          // If session was manually revoked
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String    @id @default(cuid())
+  userId           String
+  tokenHash        String    @unique // Hash of session token for lookup
+  ipAddress        String?
+  userAgent        String?
+  deviceName       String? // Parsed device name (iPhone 15, Chrome Windows, etc.)
+  deviceType       String? // mobile, desktop, tablet
+  location         String? // Geo location from IP
+  isCurrentSession Boolean   @default(false)
+  lastActiveAt     DateTime  @default(now())
+  expiresAt        DateTime
+  createdAt        DateTime  @default(now())
+  revokedAt        DateTime? // If session was manually revoked
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tokenHash])
@@ -215,41 +234,41 @@ model AuthSession {
 
 // ─── Push Subscriptions (Web Push API) ───────────────────────────
 model PushSubscription {
-  id          String   @id @default(cuid())
-  userId      String
-  endpoint    String   @unique
-  p256dh      String   // clé publique
-  auth        String   // secret d'authentification
-  userAgent   String?  // pour identifier l'appareil
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String // clé publique
+  auth      String // secret d'authentification
+  userAgent String? // pour identifier l'appareil
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Soin {
-  id               String        @id @default(cuid())
-  nom              String
-  slug             String        @unique
-  description      String
+  id                String        @id @default(cuid())
+  nom               String
+  slug              String        @unique
+  description       String
   descriptionLongue String?
-  deroulement      String?
-  bienfaits        String[]
-  etapes           Json?         // [{titre, description}]
-  prix             Float
-  duree            Int           // en minutes
-  categorie        CategorieSoin
-  icon             String?       // nom lucide-react ex: "Flame"
-  badge            String?       // ex: "Populaire", "Nouveau"
-  imageUrl         String?
-  ordre            Int           @default(0)
-  actif            Boolean       @default(true)
-  rendezVous       RendezVous[]
-  favoris          Favori[]
-  avis             Avis[]
-  forfaitSoins     ForfaitSoin[]
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  deroulement       String?
+  bienfaits         String[]
+  etapes            Json? // [{titre, description}]
+  prix              Float
+  duree             Int // en minutes
+  categorie         CategorieSoin
+  icon              String? // nom lucide-react ex: "Flame"
+  badge             String? // ex: "Populaire", "Nouveau"
+  imageUrl          String?
+  ordre             Int           @default(0)
+  actif             Boolean       @default(true)
+  rendezVous        RendezVous[]
+  favoris           Favori[]
+  avis              Avis[]
+  forfaitSoins      ForfaitSoin[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 model RendezVous {
@@ -257,7 +276,7 @@ model RendezVous {
   userId          String
   soinId          String
   dateHeure       DateTime
-  creneauCle      String?   // Format: "soinId_YYYY-MM-DD_HH" pour contrainte unique
+  creneauCle      String? // Format: "soinId_YYYY-MM-DD_HH" pour contrainte unique
   statut          StatutRDV @default(EN_ATTENTE)
   notes           String?
   montantAcompte  Float?
@@ -277,20 +296,20 @@ model RendezVous {
 }
 
 model Produit {
-  id              String          @id @default(cuid())
-  nom             String
-  description     String
+  id                String          @id @default(cuid())
+  nom               String
+  description       String
   descriptionLongue String?
-  prix            Float
-  prixPromo       Float?
-  stock           Int             @default(0)
-  imageUrl        String?
-  categorie       String
-  actif           Boolean         @default(true)
-  lignesCommande  LigneCommande[]
-  favoris         Favori[]
-  avisProduits    AvisProduit[]
-  createdAt       DateTime        @default(now())
+  prix              Float
+  prixPromo         Float?
+  stock             Int             @default(0)
+  imageUrl          String?
+  categorie         String
+  actif             Boolean         @default(true)
+  lignesCommande    LigneCommande[]
+  favoris           Favori[]
+  avisProduits      AvisProduit[]
+  createdAt         DateTime        @default(now())
 }
 
 // ─── Avis Produits ───────────────────────────────────────────────
@@ -299,8 +318,8 @@ model AvisProduit {
   id          String   @id @default(cuid())
   userId      String
   produitId   String
-  commandeId  String?  // Optionnel: lié à une commande pour vérification achat
-  note        Int      // 1-5 étoiles
+  commandeId  String? // Optionnel: lié à une commande pour vérification achat
+  note        Int // 1-5 étoiles
   titre       String?
   commentaire String?
   utile       Int      @default(0) // Votes "utile"
@@ -317,26 +336,26 @@ model AvisProduit {
 }
 
 model Commande {
-  id                 String         @id @default(cuid())
+  id                 String          @id @default(cuid())
   userId             String
   total              Float
   codePromo          String?
-  reduction          Float          @default(0)
-  fraisLivraison     Float          @default(0)
+  reduction          Float           @default(0)
+  fraisLivraison     Float           @default(0)
   zoneLivraison      String?
   nomDestinataire    String?
   adresseLivraison   String?
   telephoneLivraison String?
-  statut             StatutCommande @default(EN_ATTENTE)
-  paiementId        String?
-  webhookTraite     Boolean        @default(false)
-  methodePaiement   String?
-  tentativesPaiement Int           @default(0)
-  dernierEchecAt    DateTime?
-  relanceSmsEnvoyee Boolean        @default(false)
-  user              User           @relation(fields: [userId], references: [id])
-  lignes            LigneCommande[]
-  createdAt         DateTime       @default(now())
+  statut             StatutCommande  @default(EN_ATTENTE)
+  paiementId         String?
+  webhookTraite      Boolean         @default(false)
+  methodePaiement    String?
+  tentativesPaiement Int             @default(0)
+  dernierEchecAt     DateTime?
+  relanceSmsEnvoyee  Boolean         @default(false)
+  user               User            @relation(fields: [userId], references: [id])
+  lignes             LigneCommande[]
+  createdAt          DateTime        @default(now())
 
   @@index([statut, dernierEchecAt])
 }
@@ -362,18 +381,19 @@ enum MessageType {
 // Remplace le DISTINCT ON $queryRaw : 1 row par conversation, mise à jour sur
 // chaque nouveau message. participantAId < participantBId (tri lexicographique).
 model Conversation {
-  id             String    @id @default(cuid())
+  id             String          @id @default(cuid())
   participantAId String
   participantBId String
-  lastMessageId  String?   // id du dernier message (dénormalisé pour rapidité)
-  lastMessageAt  DateTime  @default(now())
-  nonLusA        Int       @default(0)  // non-lus pour participantA
-  nonLusB        Int       @default(0)  // non-lus pour participantB
-  participantA   User      @relation("ConvA", fields: [participantAId], references: [id])
-  participantB   User      @relation("ConvB", fields: [participantBId], references: [id])
+  lastMessageId  String? // id du dernier message (dénormalisé pour rapidité)
+  lastMessageAt  DateTime        @default(now())
+  nonLusA        Int             @default(0) // non-lus pour participantA
+  nonLusB        Int             @default(0) // non-lus pour participantB
+  participantA   User            @relation("ConvA", fields: [participantAId], references: [id])
+  participantB   User            @relation("ConvB", fields: [participantBId], references: [id])
   messages       Message[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  matchRencontre RencontreMatch?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@unique([participantAId, participantBId])
   @@index([participantAId, lastMessageAt])
@@ -381,33 +401,33 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(cuid())
-  expediteurId   String
-  destinataireId String
-  conversationId String?
-  contenu        String
-  type           MessageType @default(TEXTE)
-  dureeSecondes  Int?        // durée audio pour VOCAL
-  lu             Boolean     @default(false)
-  replyToId      String?
-  replyTo        Message?    @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
-  replies        Message[]   @relation("MessageReply")
-  reactions      Reaction[]  @relation("MessageReactions")
-  conversation   Conversation? @relation(fields: [conversationId], references: [id])
-  expediteur     User          @relation(fields: [expediteurId], references: [id])
-  createdAt      DateTime      @default(now())
-  modifie        Boolean     @default(false)
-  modifieLeAt    DateTime?
-  luLe           DateTime?   // horodatage de lecture
-  epingle        Boolean     @default(false)
-  expiresAt      DateTime?   // messages éphémères
-  programmeA     DateTime?   // message programmé — date d'envoi
-  programmeEnvoye Boolean    @default(false) // true quand le cron a envoyé
+  id              String        @id @default(cuid())
+  expediteurId    String
+  destinataireId  String
+  conversationId  String?
+  contenu         String
+  type            MessageType   @default(TEXTE)
+  dureeSecondes   Int? // durée audio pour VOCAL
+  lu              Boolean       @default(false)
+  replyToId       String?
+  replyTo         Message?      @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies         Message[]     @relation("MessageReply")
+  reactions       Reaction[]    @relation("MessageReactions")
+  conversation    Conversation? @relation(fields: [conversationId], references: [id])
+  expediteur      User          @relation(fields: [expediteurId], references: [id])
+  createdAt       DateTime      @default(now())
+  modifie         Boolean       @default(false)
+  modifieLeAt     DateTime?
+  luLe            DateTime? // horodatage de lecture
+  epingle         Boolean       @default(false)
+  expiresAt       DateTime? // messages éphémères
+  programmeA      DateTime? // message programmé — date d'envoi
+  programmeEnvoye Boolean       @default(false) // true quand le cron a envoyé
 
   @@index([expediteurId, destinataireId])
-  @@index([destinataireId, lu])          // conversations: comptage non-lus
-  @@index([expediteurId, createdAt])     // conversations: tri par date
-  @@index([destinataireId, createdAt])   // historique: pagination
+  @@index([destinataireId, lu]) // conversations: comptage non-lus
+  @@index([expediteurId, createdAt]) // conversations: tri par date
+  @@index([destinataireId, createdAt]) // historique: pagination
 }
 
 // ─── Messages médicaux (table dédiée, totalement isolée) ─────────
@@ -416,7 +436,7 @@ model MessageMedical {
   id             String   @id @default(cuid())
   expediteurId   String
   destinataireId String
-  contenu        String   // TOUJOURS chiffré (AES-256-GCM)
+  contenu        String // TOUJOURS chiffré (AES-256-GCM)
   lu             Boolean  @default(false)
   expediteur     User     @relation("MessagesMedicauxEnvoyes", fields: [expediteurId], references: [id])
   destinataire   User     @relation("MessagesMedicauxRecus", fields: [destinataireId], references: [id])
@@ -429,19 +449,19 @@ model MessageMedical {
 }
 
 model DossierMedical {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  pathologie    String?  // chiffré
-  notes         String?  // chiffré
-  allergies     String?  // chiffré
-  antecedents   String?  // chiffré (chirurgies, maladies passées)
-  medicaments   String?  // chiffré (traitements en cours)
-  groupeSanguin String?
+  id             String            @id @default(cuid())
+  userId         String            @unique
+  pathologie     String? // chiffré
+  notes          String? // chiffré
+  allergies      String? // chiffré
+  antecedents    String? // chiffré (chirurgies, maladies passées)
+  medicaments    String? // chiffré (traitements en cours)
+  groupeSanguin  String?
   contactUrgence String? // chiffré
-  user          User     @relation(fields: [userId], references: [id])
-  mesures       MesureSante[]
-  documents     DocumentMedical[]
-  updatedAt     DateTime @updatedAt
+  user           User              @relation(fields: [userId], references: [id])
+  mesures        MesureSante[]
+  documents      DocumentMedical[]
+  updatedAt      DateTime          @updatedAt
 }
 
 // ─── Mesures de santé / Suivi vital ──────────────────────────────
@@ -457,14 +477,14 @@ enum TypeMesure {
 }
 
 model MesureSante {
-  id           String       @id @default(cuid())
-  dossierId    String
-  type         TypeMesure
-  valeur       String       // ex: "75", "12/8", "37.2"
-  unite        String       // ex: "kg", "mmHg", "°C"
-  commentaire  String?
-  dossier      DossierMedical @relation(fields: [dossierId], references: [id])
-  createdAt    DateTime     @default(now())
+  id          String         @id @default(cuid())
+  dossierId   String
+  type        TypeMesure
+  valeur      String // ex: "75", "12/8", "37.2"
+  unite       String // ex: "kg", "mmHg", "°C"
+  commentaire String?
+  dossier     DossierMedical @relation(fields: [dossierId], references: [id])
+  createdAt   DateTime       @default(now())
 
   @@index([dossierId, type])
   @@index([dossierId, createdAt])
@@ -482,15 +502,15 @@ enum TypeDocument {
 }
 
 model DocumentMedical {
-  id           String       @id @default(cuid())
-  dossierId    String
-  nom          String
-  type         TypeDocument
-  fileUrl      String       // URL Cloudinary
-  taille       Int?         // en octets
-  description  String?      // chiffré
-  dossier      DossierMedical @relation(fields: [dossierId], references: [id])
-  createdAt    DateTime     @default(now())
+  id          String         @id @default(cuid())
+  dossierId   String
+  nom         String
+  type        TypeDocument
+  fileUrl     String // URL Cloudinary
+  taille      Int? // en octets
+  description String? // chiffré
+  dossier     DossierMedical @relation(fields: [dossierId], references: [id])
+  createdAt   DateTime       @default(now())
 
   @@index([dossierId, type])
   @@index([dossierId, createdAt])
@@ -561,11 +581,11 @@ model Notification {
   user      User      @relation(fields: [userId], references: [id])
   createdAt DateTime  @default(now())
 
-  @@index([userId, lu])
-  @@index([userId, createdAt])
   // Déduplication : un seul enregistrement par (user, type, sourcePost/Message)
   // NULL sourceId = notifications sans source (RDV, etc.) → pas de dédup (NULLs distincts en PG)
   @@unique([userId, type, sourceId], name: "notif_dedup")
+  @@index([userId, lu])
+  @@index([userId, createdAt])
 }
 
 model PointsFidelite {
@@ -595,31 +615,31 @@ enum TypeRecompense {
 }
 
 model Recompense {
-  id           String         @id @default(cuid())
+  id           String              @id @default(cuid())
   nom          String
   description  String
   pointsRequis Int
   type         TypeRecompense
-  valeur       Int?           // Pourcentage réduction ou valeur en euros
+  valeur       Int? // Pourcentage réduction ou valeur en euros
   imageUrl     String?
-  stock        Int?           // null = illimité
-  actif        Boolean        @default(true)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  stock        Int? // null = illimité
+  actif        Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   echanges     EchangeRecompense[]
 }
 
 model EchangeRecompense {
-  id           String     @id @default(cuid())
-  userId       String
-  recompenseId String
+  id             String     @id @default(cuid())
+  userId         String
+  recompenseId   String
   pointsUtilises Int
-  statut       String     @default("EN_COURS") // EN_COURS, UTILISE, EXPIRE
-  codeUnique   String     @unique
+  statut         String     @default("EN_COURS") // EN_COURS, UTILISE, EXPIRE
+  codeUnique     String     @unique
   dateExpiration DateTime?
-  user         User       @relation(fields: [userId], references: [id])
-  recompense   Recompense @relation(fields: [recompenseId], references: [id])
-  createdAt    DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+  recompense     Recompense @relation(fields: [recompenseId], references: [id])
+  createdAt      DateTime   @default(now())
 }
 
 // ─── Galerie Avant/Après ──────────────────────────────────────────
@@ -627,7 +647,7 @@ model GaleriePhoto {
   id                 String   @id @default(cuid())
   titre              String
   description        String?
-  soinNom            String   // Nom du soin (pas de relation FK pour flexibilité)
+  soinNom            String // Nom du soin (pas de relation FK pour flexibilité)
   imageAvantUrl      String
   imageApresUrl      String
   consentementClient Boolean  @default(false)
@@ -641,11 +661,11 @@ model GaleriePhoto {
 model TemoignageVideo {
   id                 String   @id @default(cuid())
   titre              String
-  clientNom          String   // Prénom de la cliente
-  soinNom            String?  // Soin concerné (optionnel)
-  videoUrl           String   // URL YouTube, Vimeo, etc.
-  thumbnailUrl       String?  // Miniature personnalisée
-  duree              Int?     // Durée en secondes
+  clientNom          String // Prénom de la cliente
+  soinNom            String? // Soin concerné (optionnel)
+  videoUrl           String // URL YouTube, Vimeo, etc.
+  thumbnailUrl       String? // Miniature personnalisée
+  duree              Int? // Durée en secondes
   description        String?
   consentementClient Boolean  @default(false)
   approuve           Boolean  @default(false)
@@ -657,16 +677,16 @@ model TemoignageVideo {
 
 // ─── Newsletter ───────────────────────────────────────────────────
 model Newsletter {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   sujet           String
-  contenu         String   // HTML du contenu
-  type            String   @default("HEBDOMADAIRE") // HEBDOMADAIRE, PROMO, EVENEMENT
-  nbDestinataires Int      @default(0)
-  nbOuvertures    Int      @default(0)
-  nbClics         Int      @default(0)
-  envoye          Boolean  @default(false)
+  contenu         String // HTML du contenu
+  type            String    @default("HEBDOMADAIRE") // HEBDOMADAIRE, PROMO, EVENEMENT
+  nbDestinataires Int       @default(0)
+  nbOuvertures    Int       @default(0)
+  nbClics         Int       @default(0)
+  envoye          Boolean   @default(false)
   dateEnvoi       DateTime?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
 }
 
 // Abonnés newsletter (visiteurs non connectés)
@@ -724,42 +744,42 @@ enum TypeReduction {
 }
 
 model CodePromo {
-  id              String              @id @default(cuid())
-  code            String              @unique
-  description     String?
-  type            TypeReduction       @default(POURCENTAGE)
-  valeur          Float               // Pourcentage (1-100) ou montant fixe en FCFA
-  montantMin      Float?              // Montant minimum du panier pour appliquer
-  montantMax      Float?              // Réduction max applicable (pour pourcentage)
-  usageMax        Int?                // Nombre max d'utilisations global (null = illimité)
-  usageActuel     Int                 @default(0)
-  usageParUser    Int                 @default(1) // Combien de fois un même user peut l'utiliser
-  debutValidite   DateTime?
-  finValidite     DateTime?
-  premiereCommande Boolean            @default(false) // Valide uniquement pour la 1ère commande
-  nouveauxClients Boolean             @default(false) // Clients inscrits < 30 jours
-  categoriesProduits String[]         // IDs catégories ciblées (vide = toutes)
-  produitsExclus  String[]            // IDs produits exclus
-  cumulable       Boolean             @default(false) // Peut être combiné avec d'autres codes
-  actif           Boolean             @default(true)
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                 String                 @id @default(cuid())
+  code               String                 @unique
+  description        String?
+  type               TypeReduction          @default(POURCENTAGE)
+  valeur             Float // Pourcentage (1-100) ou montant fixe en FCFA
+  montantMin         Float? // Montant minimum du panier pour appliquer
+  montantMax         Float? // Réduction max applicable (pour pourcentage)
+  usageMax           Int? // Nombre max d'utilisations global (null = illimité)
+  usageActuel        Int                    @default(0)
+  usageParUser       Int                    @default(1) // Combien de fois un même user peut l'utiliser
+  debutValidite      DateTime?
+  finValidite        DateTime?
+  premiereCommande   Boolean                @default(false) // Valide uniquement pour la 1ère commande
+  nouveauxClients    Boolean                @default(false) // Clients inscrits < 30 jours
+  categoriesProduits String[] // IDs catégories ciblées (vide = toutes)
+  produitsExclus     String[] // IDs produits exclus
+  cumulable          Boolean                @default(false) // Peut être combiné avec d'autres codes
+  actif              Boolean                @default(true)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
   // Tracking des utilisations
-  utilisations    UtilisationCodePromo[]
-  
+  utilisations       UtilisationCodePromo[]
+
   // Compatibilité ancienne version
-  pourcentage     Int?                // DEPRECATED - utiliser valeur
+  pourcentage Int? // DEPRECATED - utiliser valeur
 }
 
 model UtilisationCodePromo {
-  id          String    @id @default(cuid())
-  codePromoId String
-  userId      String
-  commandeId  String?
-  montantReduit Float    // Montant de la réduction appliquée
-  codePromo   CodePromo @relation(fields: [codePromoId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
+  id            String    @id @default(cuid())
+  codePromoId   String
+  userId        String
+  commandeId    String?
+  montantReduit Float // Montant de la réduction appliquée
+  codePromo     CodePromo @relation(fields: [codePromoId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
 
   @@index([codePromoId])
   @@index([userId])
@@ -848,42 +868,42 @@ enum StatutParticipation {
 }
 
 model Post {
-  id           String      @id @default(cuid())
-  auteurId     String
-  contenu      String
-  imageUrl     String?
-  images       String[]
-  videoUrl     String?
-  lienUrl      String?
-  lienTitre    String?
-  lienDescription String?
-  lienImage    String?
-  documentUrl  String?
-  documentNom  String?
-  gifUrl       String?
-  masque       Boolean     @default(false)
-  format       FormatPost  @default(TEXTE)
-  hashtags     String[]
-  epingle      Boolean     @default(false)
-  isAnnonce    Boolean     @default(false)
-  status       PostStatus  @default(PUBLIE)
-  scheduledAt  DateTime?
-  groupeId     String?
+  id                 String           @id @default(cuid())
+  auteurId           String
+  contenu            String
+  imageUrl           String?
+  images             String[]
+  videoUrl           String?
+  lienUrl            String?
+  lienTitre          String?
+  lienDescription    String?
+  lienImage          String?
+  documentUrl        String?
+  documentNom        String?
+  gifUrl             String?
+  masque             Boolean          @default(false)
+  format             FormatPost       @default(TEXTE)
+  hashtags           String[]
+  epingle            Boolean          @default(false)
+  isAnnonce          Boolean          @default(false)
+  status             PostStatus       @default(PUBLIE)
+  scheduledAt        DateTime?
+  groupeId           String?
   // ─── Partage / repost
-  partageDeId  String?
+  partageDeId        String?
   commentairePartage String?
   // ─── Relations
-  auteur       User        @relation(fields: [auteurId], references: [id])
-  groupe       Groupe?     @relation(fields: [groupeId], references: [id])
-  partageDe    Post?       @relation("Partage", fields: [partageDeId], references: [id], onDelete: SetNull)
-  partages     Post[]      @relation("Partage")
-  mentions     Mention[]
-  commentaires Commentaire[]
-  reactions    Reaction[]
-  sauvegardes  PostSauvegarde[]
-  signalements Signalement[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  auteur             User             @relation(fields: [auteurId], references: [id])
+  groupe             Groupe?          @relation(fields: [groupeId], references: [id])
+  partageDe          Post?            @relation("Partage", fields: [partageDeId], references: [id], onDelete: SetNull)
+  partages           Post[]           @relation("Partage")
+  mentions           Mention[]
+  commentaires       Commentaire[]
+  reactions          Reaction[]
+  sauvegardes        PostSauvegarde[]
+  signalements       Signalement[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@index([auteurId, createdAt])
   @@index([groupeId, createdAt])
@@ -907,16 +927,16 @@ model Commentaire {
 }
 
 model Mention {
-  id              String       @id @default(cuid())
-  userId          String
-  postId          String?
-  commentaireId   String?
-  mentionneurId   String
-  user            User         @relation("MentionsConcernees", fields: [userId], references: [id])
-  mentionneur     User         @relation("MentionsEmises", fields: [mentionneurId], references: [id])
-  post            Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
-  commentaire     Commentaire? @relation(fields: [commentaireId], references: [id], onDelete: Cascade)
-  createdAt       DateTime     @default(now())
+  id            String       @id @default(cuid())
+  userId        String
+  postId        String?
+  commentaireId String?
+  mentionneurId String
+  user          User         @relation("MentionsConcernees", fields: [userId], references: [id])
+  mentionneur   User         @relation("MentionsEmises", fields: [mentionneurId], references: [id])
+  post          Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentaire   Commentaire? @relation(fields: [commentaireId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
 
   @@index([userId])
   @@index([postId])
@@ -927,11 +947,11 @@ model Reaction {
   postId    String?
   messageId String?
   userId    String
-  type      String   // emoji libre ou ancien type (JAIME, SOUTIEN, ...)
-  post      Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
-  message   Message?     @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
-  user      User         @relation(fields: [userId], references: [id])
-  createdAt DateTime     @default(now())
+  type      String // emoji libre ou ancien type (JAIME, SOUTIEN, ...)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  message   Message? @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 
   @@unique([postId, userId])
   @@unique([messageId, userId])
@@ -951,14 +971,14 @@ model PostSauvegarde {
 // ─── Connexions & Abonnements ────────────────────────────────────
 
 model Connexion {
-  id            String          @id @default(cuid())
-  demandeurId   String
+  id             String          @id @default(cuid())
+  demandeurId    String
   destinataireId String
-  statut        StatutConnexion @default(EN_ATTENTE)
-  demandeur     User            @relation("Demandeur", fields: [demandeurId], references: [id])
-  destinataire  User            @relation("Destinataire", fields: [destinataireId], references: [id])
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  statut         StatutConnexion @default(EN_ATTENTE)
+  demandeur      User            @relation("Demandeur", fields: [demandeurId], references: [id])
+  destinataire   User            @relation("Destinataire", fields: [destinataireId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@unique([demandeurId, destinataireId])
 }
@@ -977,31 +997,31 @@ model Abonnement {
 // ─── Groupes de discussion ───────────────────────────────────────
 
 model Groupe {
-  id                    String             @id @default(cuid())
+  id                    String              @id @default(cuid())
   nom                   String
-  slug                  String             @unique
+  slug                  String              @unique
   description           String?
   imageUrl              String?
-  visibilite            VisibiliteGroupe   @default(PUBLIC)
+  visibilite            VisibiliteGroupe    @default(PUBLIC)
   regles                String?
-  categorie             CategorieGroupe    @default(AUTRE)
-  approvalRequired      Boolean            @default(false) // Modération des publications
-  inviteCode            String?            @unique
-  tags                  String[]           // Mots-clés / tags du groupe
-  archivee              Boolean            @default(false)
+  categorie             CategorieGroupe     @default(AUTRE)
+  approvalRequired      Boolean             @default(false) // Modération des publications
+  inviteCode            String?             @unique
+  tags                  String[] // Mots-clés / tags du groupe
+  archivee              Boolean             @default(false)
   // ── Paramètres granulaires
-  quiPeutPublier        String             @default("TOUS")    // TOUS | ADMINS_SEULEMENT
-  quiPeutCommenter      String             @default("TOUS")    // TOUS | MEMBRES_SEULEMENT
-  reactionsActivees     Boolean            @default(true)
-  invitationsParMembres Boolean            @default(true)
-  suggestionsActivees   Boolean            @default(true)
-  partagesExternes      Boolean            @default(true)
-  slowModeMinutes       Int                @default(0)         // 0 = désactivé
-  badgesActifs          Boolean            @default(true)
+  quiPeutPublier        String              @default("TOUS") // TOUS | ADMINS_SEULEMENT
+  quiPeutCommenter      String              @default("TOUS") // TOUS | MEMBRES_SEULEMENT
+  reactionsActivees     Boolean             @default(true)
+  invitationsParMembres Boolean             @default(true)
+  suggestionsActivees   Boolean             @default(true)
+  partagesExternes      Boolean             @default(true)
+  slowModeMinutes       Int                 @default(0) // 0 = désactivé
+  badgesActifs          Boolean             @default(true)
   // ── Sous-groupe
   parentGroupeId        String?
-  parentGroupe          Groupe?            @relation("SousGroupes", fields: [parentGroupeId], references: [id], onDelete: SetNull)
-  sousGroupes           Groupe[]           @relation("SousGroupes")
+  parentGroupe          Groupe?             @relation("SousGroupes", fields: [parentGroupeId], references: [id], onDelete: SetNull)
+  sousGroupes           Groupe[]            @relation("SousGroupes")
   // ── Relations
   membres               MembreGroupe[]
   posts                 Post[]
@@ -1014,8 +1034,8 @@ model Groupe {
   badgesGroupe          BadgeGroupe[]
   journalModeration     JournalModeration[]
   notifPrefsGroupes     NotifPrefGroupe[]
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 }
 
 model MembreGroupe {
@@ -1025,9 +1045,9 @@ model MembreGroupe {
   role       RoleGroupe        @default(MEMBRE)
   approuve   Boolean           @default(true)
   banni      Boolean           @default(false)
-  badge      String?           // Badge spécial : "contributeur", "veteran", "expert"…
-  mutedUntil DateTime?         // Muté jusqu'à cette date
-  invitePar  String?           // userId de qui a invité
+  badge      String? // Badge spécial : "contributeur", "veteran", "expert"…
+  mutedUntil DateTime? // Muté jusqu'à cette date
+  invitePar  String? // userId de qui a invité
   groupe     Groupe            @relation(fields: [groupeId], references: [id], onDelete: Cascade)
   user       User              @relation(fields: [userId], references: [id])
   reponses   ReponseAdhesion[]
@@ -1039,24 +1059,24 @@ model MembreGroupe {
 // ─── Questions & réponses d'adhésion ─────────────────────────────
 
 model QuestionAdhesion {
-  id        String            @id @default(cuid())
-  groupeId  String
-  texte     String
-  ordre     Int               @default(0)
-  groupe    Groupe            @relation(fields: [groupeId], references: [id], onDelete: Cascade)
-  reponses  ReponseAdhesion[]
+  id       String            @id @default(cuid())
+  groupeId String
+  texte    String
+  ordre    Int               @default(0)
+  groupe   Groupe            @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  reponses ReponseAdhesion[]
 
   @@index([groupeId, ordre])
 }
 
 model ReponseAdhesion {
-  id           String           @id @default(cuid())
-  membreId     String
-  questionId   String
-  reponse      String
-  membre       MembreGroupe     @relation(fields: [membreId], references: [id], onDelete: Cascade)
-  question     QuestionAdhesion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  createdAt    DateTime         @default(now())
+  id         String           @id @default(cuid())
+  membreId   String
+  questionId String
+  reponse    String
+  membre     MembreGroupe     @relation(fields: [membreId], references: [id], onDelete: Cascade)
+  question   QuestionAdhesion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
 
   @@unique([membreId, questionId])
 }
@@ -1064,27 +1084,27 @@ model ReponseAdhesion {
 // ─── Sondages ────────────────────────────────────────────────────
 
 model Sondage {
-  id           String          @id @default(cuid())
-  groupeId     String
-  createurId   String
-  question     String
-  multiChoix   Boolean         @default(false)
-  anonyme      Boolean         @default(false)
-  expireAt     DateTime?
-  groupe       Groupe          @relation(fields: [groupeId], references: [id], onDelete: Cascade)
-  options      OptionSondage[]
-  createdAt    DateTime        @default(now())
+  id         String          @id @default(cuid())
+  groupeId   String
+  createurId String
+  question   String
+  multiChoix Boolean         @default(false)
+  anonyme    Boolean         @default(false)
+  expireAt   DateTime?
+  groupe     Groupe          @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  options    OptionSondage[]
+  createdAt  DateTime        @default(now())
 
   @@index([groupeId, createdAt])
 }
 
 model OptionSondage {
-  id         String       @id @default(cuid())
-  sondageId  String
-  texte      String
-  ordre      Int          @default(0)
-  sondage    Sondage      @relation(fields: [sondageId], references: [id], onDelete: Cascade)
-  votes      VoteSondage[]
+  id        String        @id @default(cuid())
+  sondageId String
+  texte     String
+  ordre     Int           @default(0)
+  sondage   Sondage       @relation(fields: [sondageId], references: [id], onDelete: Cascade)
+  votes     VoteSondage[]
 }
 
 model VoteSondage {
@@ -1100,18 +1120,18 @@ model VoteSondage {
 // ─── Modération : Sanctions & Mots bloqués ───────────────────────
 
 model Sanction {
-  id            String       @id @default(cuid())
-  groupeId      String
-  userId        String       // Membre sanctionné
-  moderateurId  String       // Qui a sanctionné
-  type          TypeSanction
-  raison        String
-  duree         Int?         // En heures (null = permanent)
-  dateDebut     DateTime     @default(now())
-  dateFin       DateTime?
-  actif         Boolean      @default(true)
-  groupe        Groupe       @relation(fields: [groupeId], references: [id], onDelete: Cascade)
-  createdAt     DateTime     @default(now())
+  id           String       @id @default(cuid())
+  groupeId     String
+  userId       String // Membre sanctionné
+  moderateurId String // Qui a sanctionné
+  type         TypeSanction
+  raison       String
+  duree        Int? // En heures (null = permanent)
+  dateDebut    DateTime     @default(now())
+  dateFin      DateTime?
+  actif        Boolean      @default(true)
+  groupe       Groupe       @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
 
   @@index([groupeId, userId])
   @@index([userId, actif])
@@ -1131,22 +1151,22 @@ model MotBloque {
 // ─── Événements communautaires ───────────────────────────────────
 
 model Evenement {
-  id            String          @id @default(cuid())
-  titre         String
-  description   String
-  imageUrl      String?
-  lieu          String?
-  lienEnLigne   String?         // Lien visio (Zoom, Meet, etc.)
-  dateDebut     DateTime
-  dateFin       DateTime?
-  createurId    String
-  groupeId      String?
+  id              String                   @id @default(cuid())
+  titre           String
+  description     String
+  imageUrl        String?
+  lieu            String?
+  lienEnLigne     String? // Lien visio (Zoom, Meet, etc.)
+  dateDebut       DateTime
+  dateFin         DateTime?
+  createurId      String
+  groupeId        String?
   maxParticipants Int?
-  createur      User            @relation("CreateurEvenement", fields: [createurId], references: [id])
-  groupe        Groupe?         @relation(fields: [groupeId], references: [id])
-  participations ParticipationEvenement[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createur        User                     @relation("CreateurEvenement", fields: [createurId], references: [id])
+  groupe          Groupe?                  @relation(fields: [groupeId], references: [id])
+  participations  ParticipationEvenement[]
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
 }
 
 model ParticipationEvenement {
@@ -1164,7 +1184,7 @@ model ParticipationEvenement {
 // ─── Modération & Sécurité ───────────────────────────────────────
 
 model Signalement {
-  id            String           @id @default(cuid())
+  id            String            @id @default(cuid())
   signaleurId   String
   signaleUserId String?
   postId        String?
@@ -1174,12 +1194,12 @@ model Signalement {
   description   String?
   statut        StatutSignalement @default(EN_ATTENTE)
   noteAdmin     String?
-  signaleur     User             @relation("Signaleur", fields: [signaleurId], references: [id])
-  signaleUser   User?            @relation("Signale", fields: [signaleUserId], references: [id])
-  post          Post?            @relation(fields: [postId], references: [id], onDelete: SetNull)
-  commentaire   Commentaire?     @relation(fields: [commentaireId], references: [id], onDelete: SetNull)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  signaleur     User              @relation("Signaleur", fields: [signaleurId], references: [id])
+  signaleUser   User?             @relation("Signale", fields: [signaleUserId], references: [id])
+  post          Post?             @relation(fields: [postId], references: [id], onDelete: SetNull)
+  commentaire   Commentaire?      @relation(fields: [commentaireId], references: [id], onDelete: SetNull)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
 
 model Blocage {
@@ -1200,9 +1220,9 @@ model ProfilDetail {
   languesParlees        String[]
   // Champs professionnels (visibles uniquement si PROFESSIONNEL_SANTE)
   specialite            String?
-  numeroOrdre           String?  // masqué publiquement, visible par admin
+  numeroOrdre           String? // masqué publiquement, visible par admin
   joursDisponibilite    String[] // ex: ["Lundi", "Mardi"]
-  horairesDisponibilite String?  // ex: "09:00 - 17:00"
+  horairesDisponibilite String? // ex: "09:00 - 17:00"
   languesConsultation   String[]
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   updatedAt             DateTime @updatedAt
@@ -1212,11 +1232,11 @@ model Story {
   id          String          @id @default(cuid())
   auteurId    String
   type        StoryType
-  contenu     String?         // texte ou URL média
-  mediaUrl    String?         // URL Cloudinary
-  couleurFond String?         // hex pour stories textuelles
+  contenu     String? // texte ou URL média
+  mediaUrl    String? // URL Cloudinary
+  couleurFond String? // hex pour stories textuelles
   visibilite  StoryVisibilite @default(PUBLIC)
-  viewers     String[]        // IDs des utilisateurs ayant visionné
+  viewers     String[] // IDs des utilisateurs ayant visionné
   auteur      User            @relation(fields: [auteurId], references: [id])
   createdAt   DateTime        @default(now())
   expiresAt   DateTime
@@ -1242,15 +1262,15 @@ model RegleGroupe {
 // ─── Badges de groupe ────────────────────────────────────────────
 
 model BadgeGroupe {
-  id           String   @id @default(cuid())
-  groupeId     String
-  nom          String
-  description  String?
-  icone        String?  // emoji ou URL
-  automatique  Boolean  @default(false)
-  critere      String?  // ex: "posts>=10", "membre>=30j", "veteran>=90j"
-  groupe       Groupe   @relation(fields: [groupeId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  groupeId    String
+  nom         String
+  description String?
+  icone       String? // emoji ou URL
+  automatique Boolean  @default(false)
+  critere     String? // ex: "posts>=10", "membre>=30j", "veteran>=90j"
+  groupe      Groupe   @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 
   @@unique([groupeId, nom])
 }
@@ -1258,16 +1278,16 @@ model BadgeGroupe {
 // ─── Journal de modération ───────────────────────────────────────
 
 model JournalModeration {
-  id            String   @id @default(cuid())
-  groupeId      String
-  moderateurId  String
-  action        String   // ex: "BAN", "KICK", "DELETE_POST", "DELETE_COMMENT", "HIDE_COMMENT", "MUTE", "ROLE_CHANGE", "APPROVE_POST"
-  cibleUserId   String?
-  ciblePostId   String?
+  id             String   @id @default(cuid())
+  groupeId       String
+  moderateurId   String
+  action         String // ex: "BAN", "KICK", "DELETE_POST", "DELETE_COMMENT", "HIDE_COMMENT", "MUTE", "ROLE_CHANGE", "APPROVE_POST"
+  cibleUserId    String?
+  ciblePostId    String?
   cibleCommentId String?
-  details       String?
-  groupe        Groupe   @relation(fields: [groupeId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
+  details        String?
+  groupe         Groupe   @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
 
   @@index([groupeId, createdAt])
 }
@@ -1275,13 +1295,13 @@ model JournalModeration {
 // ─── Préférences de notification par groupe ──────────────────────
 
 model NotifPrefGroupe {
-  id           String   @id @default(cuid())
-  groupeId     String
-  userId       String
-  niveau       String   @default("TOUTES") // TOUTES | AMIS_SEULEMENT | ANNONCES_SEULEMENT | AUCUNE
-  groupe       Groupe   @relation(fields: [groupeId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(cuid())
+  groupeId  String
+  userId    String
+  niveau    String   @default("TOUTES") // TOUTES | AMIS_SEULEMENT | ANNONCES_SEULEMENT | AUCUNE
+  groupe    Groupe   @relation(fields: [groupeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([groupeId, userId])
 }
@@ -1341,8 +1361,8 @@ model Faq {
 // ─── Configuration de l'application ──────────────────────────────
 
 model AppConfig {
-  id    String @id @default(cuid())
-  cle   String @unique
+  id     String @id @default(cuid())
+  cle    String @unique
   valeur String // JSON stringifié
 }
 
@@ -1380,45 +1400,45 @@ enum FrequenceAbonnement {
 
 // Définition des formules d'abonnement
 model FormuleAbonnement {
-  id                String               @id @default(cuid())
-  nom               String
-  slug              String               @unique
-  description       String
-  prixMensuel       Float
-  nbSoinsParMois    Int                  // Nombre de soins inclus par mois
-  soinsInclus       String[]             // IDs des soins autorisés (vide = tous)
-  avantages         String[]             // Liste des avantages
-  populaire         Boolean              @default(false)
-  actif             Boolean              @default(true)
-  ordre             Int                  @default(0)
-  abonnements       AbonnementMensuel[]
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  id             String              @id @default(cuid())
+  nom            String
+  slug           String              @unique
+  description    String
+  prixMensuel    Float
+  nbSoinsParMois Int // Nombre de soins inclus par mois
+  soinsInclus    String[] // IDs des soins autorisés (vide = tous)
+  avantages      String[] // Liste des avantages
+  populaire      Boolean             @default(false)
+  actif          Boolean             @default(true)
+  ordre          Int                 @default(0)
+  abonnements    AbonnementMensuel[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 }
 
 // Abonnement d'un client
 model AbonnementMensuel {
-  id                  String                   @id @default(cuid())
-  userId              String
-  formuleId           String
-  statut              StatutAbonnementMensuel  @default(ACTIF)
-  frequence           FrequenceAbonnement      @default(MENSUEL)
-  dateDebut           DateTime
-  dateFin             DateTime?
+  id                   String                  @id @default(cuid())
+  userId               String
+  formuleId            String
+  statut               StatutAbonnementMensuel @default(ACTIF)
+  frequence            FrequenceAbonnement     @default(MENSUEL)
+  dateDebut            DateTime
+  dateFin              DateTime?
   dateProchainPaiement DateTime
   // Compteurs du mois en cours
-  soinsRestantsMois   Int
-  moisEnCours         DateTime                 @default(now())
+  soinsRestantsMois    Int
+  moisEnCours          DateTime                @default(now())
   // Paiement automatique
-  moyenPaiement       String?                  // mobile_money, carte, etc.
-  referencePaiement   String?                  // ID pour paiement récurrent
+  moyenPaiement        String? // mobile_money, carte, etc.
+  referencePaiement    String? // ID pour paiement récurrent
   // Relations
-  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  formule             FormuleAbonnement        @relation(fields: [formuleId], references: [id])
-  paiements           PaiementAbonnement[]
-  utilisations        UtilisationAbonnement[]
-  createdAt           DateTime                 @default(now())
-  updatedAt           DateTime                 @updatedAt
+  user                 User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formule              FormuleAbonnement       @relation(fields: [formuleId], references: [id])
+  paiements            PaiementAbonnement[]
+  utilisations         UtilisationAbonnement[]
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
 
   @@index([userId])
   @@index([statut])
@@ -1426,15 +1446,15 @@ model AbonnementMensuel {
 
 // Historique des paiements d'abonnement
 model PaiementAbonnement {
-  id              String            @id @default(cuid())
-  abonnementId    String
-  montant         Float
-  statut          String            @default("EN_ATTENTE") // EN_ATTENTE, PAYE, ECHEC
-  moisConcerne    DateTime          // Mois couvert par ce paiement
-  transactionId   String?           // ID transaction Jeko
-  erreur          String?
-  abonnement      AbonnementMensuel @relation(fields: [abonnementId], references: [id], onDelete: Cascade)
-  createdAt       DateTime          @default(now())
+  id            String            @id @default(cuid())
+  abonnementId  String
+  montant       Float
+  statut        String            @default("EN_ATTENTE") // EN_ATTENTE, PAYE, ECHEC
+  moisConcerne  DateTime // Mois couvert par ce paiement
+  transactionId String? // ID transaction Jeko
+  erreur        String?
+  abonnement    AbonnementMensuel @relation(fields: [abonnementId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
 
   @@index([abonnementId])
 }
@@ -1449,4 +1469,47 @@ model UtilisationAbonnement {
   abonnement      AbonnementMensuel @relation(fields: [abonnementId], references: [id], onDelete: Cascade)
 
   @@index([abonnementId])
+}
+
+// ─── Module Rencontres ───────────────────────────────────────────
+
+model RencontrePreference {
+  id         String             @id @default(cuid())
+  userId     String             @unique
+  intention  IntentionRencontre @default(RELATION_SERIEUSE)
+  ageMin     Int                @default(18)
+  ageMax     Int                @default(50)
+  distanceKm Int                @default(50)
+  actif      Boolean            @default(true)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt  DateTime           @updatedAt
+}
+
+model RencontreLike {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  type       TypeLike @default(LIKE)
+  fromUser   User     @relation("LikesEnvoyes", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User     @relation("LikesRecus", fields: [toUserId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+}
+
+model RencontreMatch {
+  id             String        @id @default(cuid())
+  userAId        String
+  userBId        String
+  conversationId String?       @unique
+  actif          Boolean       @default(true)
+  userA          User          @relation("MatchesA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB          User          @relation("MatchesB", fields: [userBId], references: [id], onDelete: Cascade)
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime      @default(now())
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
 }

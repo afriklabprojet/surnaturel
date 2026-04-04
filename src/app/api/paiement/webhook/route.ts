@@ -20,13 +20,21 @@ export async function POST(req: NextRequest) {
   const rawBody = await req.text()
   const hmacSecret = process.env.JEKO_WEBHOOK_HMAC_SECRET
   if (hmacSecret) {
-    const receivedSig = req.headers.get("x-jeko-signature") ?? ""
+    const receivedSig = req.headers.get("x-jeko-signature")
+    if (!receivedSig) {
+      return NextResponse.json({ error: "Signature invalide" }, { status: 401 })
+    }
+
     const expectedSig = crypto
       .createHmac("sha256", hmacSecret)
       .update(rawBody)
       .digest("hex")
+
     // Comparaison en temps constant pour éviter les timing attacks
-    if (!crypto.timingSafeEqual(Buffer.from(receivedSig), Buffer.from(expectedSig))) {
+    if (
+      receivedSig.length !== expectedSig.length ||
+      !crypto.timingSafeEqual(Buffer.from(receivedSig), Buffer.from(expectedSig))
+    ) {
       return NextResponse.json({ error: "Signature invalide" }, { status: 401 })
     }
   }

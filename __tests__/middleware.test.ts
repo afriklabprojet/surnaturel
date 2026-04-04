@@ -144,6 +144,28 @@ describe("Middleware — RBAC & Route Protection", () => {
     expect(res.status).toBe(200)
   })
 
+  it("uses secure cookies when NEXTAUTH_URL is https", async () => {
+    vi.resetModules()
+    process.env.NEXTAUTH_URL = "https://example.com"
+    process.env.NEXTAUTH_SECRET = "test-secret"
+
+    const { middleware: secureMiddleware } = await import("@/middleware")
+    mockGetToken.mockResolvedValue({ id: "usr_1", role: "CLIENT" })
+
+    const req = createRequest("/profil")
+    const res = await secureMiddleware(req)
+
+    expect(res.status).toBe(200)
+    expect(mockGetToken).toHaveBeenCalledWith(
+      expect.objectContaining({
+        secureCookie: true,
+        cookieName: "__Secure-authjs.session-token",
+      })
+    )
+
+    delete process.env.NEXTAUTH_URL
+  })
+
   it("has correct matcher config", () => {
     expect(config.matcher).toContain("/api/auth/:path*")
     expect(config.matcher).toContain("/api/paiement/:path*")
@@ -357,6 +379,17 @@ describe("Middleware — Rate Limiting", () => {
     expect(res.headers.get("Retry-After")).toBe("120")
     const json = await res.json()
     expect(json.error).toContain("Trop de tentatives")
+    expect(json.error).toContain("minutes") // plural
+  })
+
+  it("returns singular 'minute' when retry is under 60s", async () => {
+    mockRateLimitResult = { allowed: false, limit: 20, remaining: 0, retryAfterSeconds: 30 }
+    const req = createRequest("/api/auth/inscription", "POST")
+    const res = await middleware(req)
+    expect(res.status).toBe(429)
+    const json = await res.json()
+    expect(json.error).toContain("1 minute")
+    expect(json.error).not.toContain("minutes")
   })
 
   it("adds rate limit headers when allowed", async () => {
@@ -364,5 +397,62 @@ describe("Middleware — Rate Limiting", () => {
     const res = await middleware(req)
     expect(res.headers.get("X-RateLimit-Limit")).toBe("100")
     expect(res.headers.get("X-RateLimit-Remaining")).toBe("99")
+  })
+
+  it("applies rate limiting for /api/paiement POST", async () => {
+    const req = createRequest("/api/paiement/init", "POST")
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBeTruthy()
+  })
+
+  it("applies rate limiting for /api/rdv POST", async () => {
+    const req = createRequest("/api/rdv", "POST")
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBeTruthy()
+  })
+
+  it("applies rate limiting for /api/communaute/posts POST", async () => {
+    const req = createRequest("/api/communaute/posts", "POST")
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBeTruthy()
+  })
+
+  it("applies rate limiting for /api/search", async () => {
+    const req = createRequest("/api/search", "GET")
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBeTruthy()
+  })
+
+  it("falls back to x-real-ip when x-forwarded-for is absent", async () => {
+    const url = new URL("/api/contact", "http://localhost:3000")
+    ;(url as unknown as { clone: () => URL }).clone = () => new URL(url.toString())
+    const req = {
+      method: "POST",
+      nextUrl: url,
+      url: url.toString(),
+      headers: new Headers({
+        "x-real-ip": "10.0.0.1",
+        // no x-forwarded-for
+      }),
+      cookies: new Map(),
+    } as unknown as import("next/server").NextRequest
+
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBeTruthy()
+  })
+
+  it("uses 'unknown' when no IP headers are present", async () => {
+    const url = new URL("/api/contact", "http://localhost:3000")
+    ;(url as unknown as { clone: () => URL }).clone = () => new URL(url.toString())
+    const req = {
+      method: "POST",
+      nextUrl: url,
+      url: url.toString(),
+      headers: new Headers({}), // no IP headers at all
+      cookies: new Map(),
+    } as unknown as import("next/server").NextRequest
+
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBeTruthy()
   })
 })

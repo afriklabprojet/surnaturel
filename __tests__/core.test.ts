@@ -137,4 +137,132 @@ describe("rate-limit", () => {
     const after = await Promise.resolve(limiter("ip-expire"))
     expect(after.allowed).toBe(true)
   })
+
+  it("cleanup retains valid entries while removing expired ones", async () => {
+    // Use fake timers to control cleanup timing
+    vi.useFakeTimers()
+    try {
+      const { createRateLimiter } = await import("../src/lib/rate-limit")
+      // 2 min window — allows entries to survive across 61s advance
+      const limiter = createRateLimiter({ limit: 10, windowMs: 120_000 })
+
+      // Add initial requests for two keys
+      await Promise.resolve(limiter("ip-cleanup-a"))
+      await Promise.resolve(limiter("ip-cleanup-b"))
+
+      // Advance past the 60s cleanup threshold
+      vi.advanceTimersByTime(61_000)
+
+      // This call triggers cleanup — both keys have timestamps within 120s window
+      // so the else branch (store.set(key, valid)) is taken
+      const result = await Promise.resolve(limiter("ip-cleanup-a"))
+      expect(result.allowed).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("upstash limiter allows request under limit", async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://fake-redis.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "fake-token"
+    const originalFetch = globalThis.fetch
+    try {
+      vi.resetModules()
+      const mockFetch = vi.fn()
+      globalThis.fetch = mockFetch
+      // Pipeline response: [ZREMRANGEBYSCORE, ZADD, ZCARD, EXPIRE]
+      mockFetch.mockResolvedValueOnce({
+        json: async () => [{}, {}, { result: 2 }, {}],
+      })
+      const { createRateLimiter } = await import("../src/lib/rate-limit")
+      const limiter = createRateLimiter({ limit: 5, windowMs: 60_000 })
+      const result = await limiter("test-upstash-key")
+      expect(result.allowed).toBe(true)
+      expect(result.remaining).toBe(3) // 5 - 2
+    } finally {
+      delete process.env.UPSTASH_REDIS_REST_URL
+      delete process.env.UPSTASH_REDIS_REST_TOKEN
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it("upstash limiter blocks request over limit with ZRANGE data", async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://fake-redis.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "fake-token"
+    const originalFetch = globalThis.fetch
+    try {
+      vi.resetModules()
+      const mockFetch = vi.fn()
+      globalThis.fetch = mockFetch
+      // Pipeline: count = 6 (over limit of 5)
+      mockFetch.mockResolvedValueOnce({
+        json: async () => [{}, {}, { result: 6 }, {}],
+      })
+      // redisCommand for ZRANGE oldest entry
+      mockFetch.mockResolvedValueOnce({
+        json: async () => ({ result: [`${Date.now() - 30000}:abc`, String(Date.now() - 30000)] }),
+      })
+      const { createRateLimiter } = await import("../src/lib/rate-limit")
+      const limiter = createRateLimiter({ limit: 5, windowMs: 60_000 })
+      const result = await limiter("test-upstash-blocked")
+      expect(result.allowed).toBe(false)
+      expect(result.retryAfterSeconds).toBeGreaterThan(0)
+    } finally {
+      delete process.env.UPSTASH_REDIS_REST_URL
+      delete process.env.UPSTASH_REDIS_REST_TOKEN
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it("upstash limiter handles missing pipeline result (count ?? 0)", async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://fake-redis.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "fake-token"
+    const originalFetch = globalThis.fetch
+    try {
+      vi.resetModules()
+      const mockFetch = vi.fn()
+      globalThis.fetch = mockFetch
+      // Pipeline returns incomplete results (missing ZCARD)
+      mockFetch.mockResolvedValueOnce({
+        json: async () => [{}, {}],
+      })
+      const { createRateLimiter } = await import("../src/lib/rate-limit")
+      const limiter = createRateLimiter({ limit: 5, windowMs: 60_000 })
+      const result = await limiter("test-missing-count")
+      expect(result.allowed).toBe(true)
+      expect(result.remaining).toBe(5) // 5 - 0
+    } finally {
+      delete process.env.UPSTASH_REDIS_REST_URL
+      delete process.env.UPSTASH_REDIS_REST_TOKEN
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it("upstash limiter falls back to now when ZRANGE returns empty", async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://fake-redis.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "fake-token"
+    const originalFetch = globalThis.fetch
+    try {
+      vi.resetModules()
+      const mockFetch = vi.fn()
+      globalThis.fetch = mockFetch
+      // count = 10 (over limit)
+      mockFetch.mockResolvedValueOnce({
+        json: async () => [{}, {}, { result: 10 }, {}],
+      })
+      // ZRANGE returns empty array (no oldest entry)
+      mockFetch.mockResolvedValueOnce({
+        json: async () => ({ result: [] }),
+      })
+      const { createRateLimiter } = await import("../src/lib/rate-limit")
+      const limiter = createRateLimiter({ limit: 5, windowMs: 60_000 })
+      const result = await limiter("test-empty-zrange")
+      expect(result.allowed).toBe(false)
+      expect(result.retryAfterSeconds).toBeGreaterThanOrEqual(1) // Math.max(..., 1)
+    } finally {
+      delete process.env.UPSTASH_REDIS_REST_URL
+      delete process.env.UPSTASH_REDIS_REST_TOKEN
+      globalThis.fetch = originalFetch
+    }
+  })
 })

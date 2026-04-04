@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
   const result = inscriptionSchema.safeParse(body)
   if (!result.success) {
-    const firstError = result.error.issues[0]?.message ?? "Données invalides."
+    const firstError = result.error.issues[0].message
     return NextResponse.json({ error: firstError }, { status: 400 })
   }
 

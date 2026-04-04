@@ -354,4 +354,215 @@ describe("Promo codes — Validation", () => {
     const res = await POST(req)
     expect(res.status).toBe(500)
   })
+
+  it("returns custom description when set on promo code", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      description: "Promo spéciale été",
+      utilisations: [],
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+    expect(json.detail).toBe("Promo spéciale été")
+  })
+
+  it("generates detail for MONTANT_FIXE type without description", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      type: "MONTANT_FIXE",
+      valeur: 3000,
+      pourcentage: null,
+      description: null,
+      utilisations: [],
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 20000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+    expect(json.detail).toContain("F CFA de réduction")
+  })
+
+  it("requires login for nouveauxClients code when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null)
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      premiereCommande: false,
+      nouveauxClients: true,
+      utilisations: false,
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", { code: "BIENVENUE20" })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(false)
+    expect(json.error).toContain("Connectez-vous")
+  })
+
+  it("allows code when categories match", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      categoriesProduits: ["SOINS"],
+      utilisations: [],
+    })
+    prismaMock.produit.findMany.mockResolvedValue([
+      { id: "prod_1", categorie: "SOINS" },
+    ])
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+      produitIds: ["prod_1"],
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+  })
+
+  it("allows code when not all products are excluded", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      produitsExclus: ["prod_excluded"],
+      utilisations: [],
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+      produitIds: ["prod_ok", "prod_excluded"],
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+  })
+
+  it("falls back to default 10% when AppConfig texte has no percentage", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue(null)
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "bandeau_promo",
+      valeur: JSON.stringify({
+        actif: true,
+        code: "OFFRE",
+        texte: "Offre spéciale de bienvenue",
+        detail: "Réduction",
+      }),
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", { code: "OFFRE" })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+    expect(json.pourcentage).toBe(10) // default fallback
+  })
+
+  it("validates promo without montantPanier (no reduction calculated)", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      utilisations: [],
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      // no montantPanier
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+    expect(json.reduction).toBeUndefined()
+  })
+
+  it("treats non-array utilisations as empty when session exists", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      utilisations: false, // non-array
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+  })
+
+  it("validates premiereCommande code when user has no orders", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      premiereCommande: true,
+      utilisations: [],
+    })
+    prismaMock.commande.findFirst.mockResolvedValue(null) // no existing order
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+  })
+
+  it("validates nouveauxClients code for recent user (< 30 days)", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      nouveauxClients: true,
+      utilisations: [],
+    })
+    prismaMock.user.findUnique.mockResolvedValue({
+      createdAt: new Date(), // just created = 0 days
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true)
+  })
+
+  it("skips nouveauxClients check when user not found", async () => {
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      nouveauxClients: true,
+      utilisations: [],
+    })
+    prismaMock.user.findUnique.mockResolvedValue(null) // user not found
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true) // no user → can't verify, continues
+  })
+
+  it("validates code without session when code has no session requirements", async () => {
+    mockAuth.mockResolvedValue(null)
+    prismaMock.codePromo.findUnique.mockResolvedValue({
+      ...fakeCodePromo,
+      premiereCommande: false,
+      nouveauxClients: false,
+      utilisations: false,
+    })
+
+    const req = buildJsonRequest("/api/boutique/promo", {
+      code: "BIENVENUE20",
+      montantPanier: 50000,
+    })
+    const res = await POST(req)
+    const json = await res.json()
+    expect(json.valide).toBe(true) // no login required → valid
+  })
 })

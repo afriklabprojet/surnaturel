@@ -208,7 +208,6 @@ describe("Payment webhook — Jeko", () => {
 
     try {
       const body = JSON.stringify({ reference: "CMD-cmd_test-1234567890", status: "success" })
-      // Provide a 64-char hex string (same length as SHA-256 hex digest) to avoid timingSafeEqual length mismatch
       const wrongSig = "a".repeat(64)
 
       const req = buildRequest("/api/paiement/webhook", {
@@ -223,6 +222,58 @@ describe("Payment webhook — Jeko", () => {
 
       const res = await POST(req as never)
       expect(res.status).toBe(401)
+    } finally {
+      delete process.env.JEKO_WEBHOOK_HMAC_SECRET
+    }
+  })
+
+  it("rejects missing HMAC signature when secret is set", async () => {
+    process.env.JEKO_WEBHOOK_HMAC_SECRET = "hmac-test-secret"
+
+    try {
+      const req = buildRequest("/api/paiement/webhook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "test-webhook-secret",
+        },
+        body: JSON.stringify({ reference: "CMD-cmd_test-1234567890", status: "success" }),
+      })
+
+      const res = await POST(req as never)
+      expect(res.status).toBe(401)
+    } finally {
+      delete process.env.JEKO_WEBHOOK_HMAC_SECRET
+    }
+  })
+
+  it("accepts valid HMAC signature and processes request", async () => {
+    const crypto = await import("crypto")
+    const hmacSecret = "hmac-valid-secret"
+    process.env.JEKO_WEBHOOK_HMAC_SECRET = hmacSecret
+
+    try {
+      const body = JSON.stringify({ reference: "CMD-cmd_test-1234567890", status: "success" })
+      const expectedSig = crypto
+        .createHmac("sha256", hmacSecret)
+        .update(body)
+        .digest("hex")
+
+      prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+      prismaMock.commande.update.mockResolvedValue({ ...fakeCommande, statut: "PAYEE" })
+
+      const req = buildRequest("/api/paiement/webhook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "test-webhook-secret",
+          "x-jeko-signature": expectedSig,
+        },
+        body,
+      })
+
+      const res = await POST(req as never)
+      expect(res.status).toBe(200)
     } finally {
       delete process.env.JEKO_WEBHOOK_HMAC_SECRET
     }
@@ -316,6 +367,27 @@ describe("Payment webhook — Jeko", () => {
     expect(json.alreadyProcessed).toBe(true)
   })
 
+  it("ignores unknown abonnement status (neither success nor error)", async () => {
+    prismaMock.abonnementMensuel.findUnique.mockResolvedValue({
+      id: "abo_unknown",
+      userId: "usr_1",
+      statut: "EN_ATTENTE",
+      user: { id: "usr_1", email: "client@example.com", prenom: "Aminata", nom: "Koné" },
+      formule: { nom: "Premium", prixMensuel: 5000 },
+    })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-ABCOMM-abo_unknown-1234567890",
+      status: "pending",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    // Neither success nor error path taken — no update calls
+    expect(prismaMock.abonnementMensuel.update).not.toHaveBeenCalled()
+    expect(prismaMock.paiementAbonnement.updateMany).not.toHaveBeenCalled()
+  })
+
   it("returns 502 when Jeko verification fails for abonnement", async () => {
     const { verifierStatutPaiement } = await import("@/lib/jeko")
     vi.mocked(verifierStatutPaiement).mockRejectedValueOnce(new Error("Jeko down"))
@@ -395,6 +467,40 @@ describe("Payment webhook — Jeko", () => {
     await new Promise((r) => setTimeout(r, 50))
   })
 
+  it("logs error when background fidelite fails after payment", async () => {
+    const { crediterCommande } = await import("@/lib/fidelite")
+    vi.mocked(crediterCommande).mockRejectedValueOnce(new Error("Fidelite service down"))
+
+    prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "success",
+      paymentRequestId: "pay_fidelite_fail",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    await new Promise((r) => setTimeout(r, 50))
+  })
+
+  it("logs error when background notification fails after payment", async () => {
+    const { notifierCommandePayee } = await import("@/lib/notifications")
+    vi.mocked(notifierCommandePayee).mockRejectedValueOnce(new Error("Notif service down"))
+
+    prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "success",
+      paymentRequestId: "pay_notif_fail",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    await new Promise((r) => setTimeout(r, 50))
+  })
+
   it("skips unconfirmed payment when Jeko says not success", async () => {
     const { verifierStatutPaiement } = await import("@/lib/jeko")
     vi.mocked(verifierStatutPaiement).mockResolvedValueOnce("pending")
@@ -411,5 +517,99 @@ describe("Payment webhook — Jeko", () => {
     const json = await res.json()
     expect(json.skipped).toBe("unconfirmed")
     expect(prismaMock.commande.update).not.toHaveBeenCalled()
+  })
+
+  it("processes success without paymentRequestId (skips Jeko verification)", async () => {
+    prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+    prismaMock.commande.update.mockResolvedValue({ ...fakeCommande, statut: "PAYEE" })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "success",
+      // no paymentRequestId — skips verifierStatutPaiement
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    const { verifierStatutPaiement } = await import("@/lib/jeko")
+    expect(vi.mocked(verifierStatutPaiement)).not.toHaveBeenCalled()
+  })
+
+  it("uses fallback methodePaiement when body.paymentMethod is absent (error)", async () => {
+    prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+    prismaMock.commande.update.mockResolvedValue({
+      ...fakeCommande,
+      statut: "EN_ATTENTE",
+    })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "error",
+      // no paymentMethod → falls back to commande.methodePaiement
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    expect(prismaMock.commande.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          methodePaiement: "wave", // from fakeCommande.methodePaiement
+        }),
+      })
+    )
+  })
+
+  it("handles abonnement error without paymentRequestId or errorMessage", async () => {
+    prismaMock.abonnementMensuel.findUnique.mockResolvedValue({
+      id: "abo_no_req",
+      userId: "usr_1",
+      statut: "EN_ATTENTE",
+      user: { id: "usr_1", email: "c@example.com", prenom: "A", nom: "K" },
+      formule: { nom: "Standard", prixMensuel: 3000 },
+    })
+    prismaMock.paiementAbonnement.updateMany.mockResolvedValue({ count: 1 })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-ABCOMM-abo_no_req-1234567890",
+      status: "error",
+      // no errorMessage → "Paiement refusé" fallback
+      // no paymentRequestId → null
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    expect(prismaMock.paiementAbonnement.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          statut: "ECHEC",
+          erreur: "Paiement refusé",
+          transactionId: null,
+        }),
+      })
+    )
+  })
+
+  it("handles abonnement success without paymentRequestId", async () => {
+    prismaMock.abonnementMensuel.findUnique.mockResolvedValue({
+      id: "abo_no_pay",
+      userId: "usr_1",
+      statut: "EN_ATTENTE",
+      user: { id: "usr_1", email: "c@example.com", prenom: "A", nom: "K" },
+      formule: { nom: "Standard", prixMensuel: 3000 },
+    })
+    prismaMock.abonnementMensuel.update.mockResolvedValue({})
+    prismaMock.paiementAbonnement.updateMany.mockResolvedValue({ count: 1 })
+    prismaMock.user.update.mockResolvedValue({})
+
+    const req = buildWebhookRequest({
+      reference: "CMD-ABCOMM-abo_no_pay-1234567890",
+      status: "success",
+      // no paymentRequestId → skips Jeko verification
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    const { verifierStatutPaiement } = await import("@/lib/jeko")
+    expect(vi.mocked(verifierStatutPaiement)).not.toHaveBeenCalled()
   })
 })

@@ -128,6 +128,21 @@ export const prismaMock = {
   groupe: {
     findUnique: vi.fn(),
   },
+  rencontrePreference: {
+    findUnique: vi.fn(),
+    upsert: vi.fn(),
+  },
+  rencontreLike: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    upsert: vi.fn(),
+  },
+  rencontreMatch: {
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
   $transaction: vi.fn((arg: unknown) => {
     if (typeof arg === "function") {
       return (arg as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock)

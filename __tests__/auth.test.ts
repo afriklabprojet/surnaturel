@@ -159,4 +159,22 @@ describe("Auth — Inscription", () => {
     expect(res.status).toBe(201)
     expect(json.message).toContain("Renvoyer")
   })
+
+  it("returns 201 with warning when email throws non-Error object", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null)
+    prismaMock.user.create.mockResolvedValue({ id: "usr_email_str" })
+    vi.mocked(envoyerEmailInscription).mockRejectedValueOnce("string error")
+
+    const req = buildJsonRequest("/api/auth/inscription", {
+      prenom: "Awa",
+      nom: "Koné",
+      email: "awa@example.com",
+      password: "Mon8ecure!",
+    })
+
+    const res = await POST(req)
+    const json = await res.json()
+    expect(res.status).toBe(201)
+    expect(json.message).toContain("Renvoyer")
+  })
 })

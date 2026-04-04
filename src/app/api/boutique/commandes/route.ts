@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   const result = commandeSchema.safeParse(body)
   if (!result.success) {
     return NextResponse.json(
-      { error: result.error.issues[0]?.message ?? "Données invalides." },
+      { error: result.error.issues[0].message },
       { status: 400 }
     )
   }

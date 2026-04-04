@@ -11,6 +11,7 @@ import {
   Bookmark,
   MessageCircle,
   Contact,
+  Heart,
 } from "lucide-react"
 
 const TABS = [
@@ -19,6 +20,7 @@ const TABS = [
   { href: "/communaute/groupes", label: "Groupes", icon: UsersRound },
   { href: "/communaute/evenements", label: "Événements", icon: CalendarDays },
   { href: "/communaute/membres", label: "Membres", icon: Contact },
+  { href: "/communaute/rencontres", label: "Rencontres", icon: Heart },
   { href: "/communaute/recherche", label: "Rechercher", icon: Search },
   { href: "/communaute/sauvegardes", label: "Sauvegardés", icon: Bookmark },
   { href: "/communaute/messages", label: "Messages", icon: MessageCircle },

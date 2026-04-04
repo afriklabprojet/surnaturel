@@ -5,10 +5,10 @@ import { createRateLimiter } from "@/lib/rate-limit"
 /* ━━━━━━━━━━ Cookie / Secret — identique à auth.ts ━━━━━━━━━━ */
 
 const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || ""
-const useSecureCookies =
+const useSecureCookies = Boolean(
   process.env.NEXTAUTH_URL?.startsWith("https://") ||
-  process.env.AUTH_URL?.startsWith("https://") ||
-  false
+  process.env.AUTH_URL?.startsWith("https://")
+)
 const SESSION_COOKIE = `${useSecureCookies ? "__Secure-" : ""}authjs.session-token`
 
 /* ━━━━━━━━━━ Rate Limiters ━━━━━━━━━━ */

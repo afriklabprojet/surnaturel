@@ -189,6 +189,80 @@ describe("E-commerce — Commandes", () => {
     expect(res.status).toBe(201)
   })
 
+  it("ignores promo code when bandeau_promo config not found", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue(null)
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_no_promo_config",
+      total: 10000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 2, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 2 }],
+      codePromo: "INVALID",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it("ignores promo code when code does not match", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "bandeau_promo",
+      valeur: JSON.stringify({
+        actif: true,
+        code: "BIENVENUE",
+        texte: "−10% sur tout",
+      }),
+    })
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_mismatch",
+      total: 10000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 2, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 2 }],
+      codePromo: "WRONGCODE",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it("handles promo texte without percentage pattern", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "bandeau_promo",
+      valeur: JSON.stringify({
+        actif: true,
+        code: "OFFRE",
+        texte: "Offre spéciale sans pourcentage",
+      }),
+    })
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_no_pct",
+      total: 10000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 2, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 2 }],
+      codePromo: "OFFRE",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
   it("creates order with delivery zone (zoneId)", async () => {
     prismaMock.appConfig.findUnique.mockResolvedValue({
       cle: "livraison",
@@ -251,6 +325,19 @@ describe("E-commerce — Commandes", () => {
     expect(res.status).toBe(500)
   })
 
+  it("returns generic error message when non-Error is thrown (500)", async () => {
+    prismaMock.produit.findMany.mockRejectedValue("string error")
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toBe("Erreur lors de la création de la commande")
+  })
+
   it("applies free shipping when total exceeds seuilGratuit", async () => {
     prismaMock.appConfig.findUnique.mockResolvedValue({
       cle: "livraison",
@@ -278,6 +365,177 @@ describe("E-commerce — Commandes", () => {
     // fraisLivraison should be 0 since total >= seuilGratuit
     const createCall = prismaMock.commande.create.mock.calls[0][0]
     expect(createCall.data.fraisLivraison).toBe(0)
+  })
+
+  it("uses prixPromo for zone total calculation when available", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "livraison",
+      valeur: JSON.stringify({
+        zones: [{ id: "zone_1", nom: "Cocody", frais: 2000, actif: true }],
+        seuilGratuit: 50000,
+      }),
+    })
+    // prixPromo is lower than prix → should use prixPromo for zone total
+    prismaMock.produit.findMany.mockResolvedValue([
+      { ...fakeProduit, prix: 5000, prixPromo: 3500 },
+    ])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_promo_zone",
+      total: 5500,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 3500 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    // Total below seuilGratuit → frais should be zone.frais
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(2000)
+  })
+
+  it("ignores zoneId when livraison config not found", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue(null)
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_no_config",
+      total: 5000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(0)
+  })
+
+  it("ignores zoneId when zone is not found or inactive", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "livraison",
+      valeur: JSON.stringify({
+        zones: [{ id: "zone_1", nom: "Cocody", frais: 2000, actif: false }],
+      }),
+    })
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_inactive_zone",
+      total: 5000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(0)
+  })
+
+  it("applies zone frais when no seuilGratuit in config", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "livraison",
+      valeur: JSON.stringify({
+        zones: [{ id: "zone_1", nom: "Cocody", frais: 1500, actif: true }],
+        // no seuilGratuit
+      }),
+    })
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_no_seuil",
+      total: 6500,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(1500)
+  })
+
+  it("defaults zone frais to 0 when zone.frais is null", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "livraison",
+      valeur: JSON.stringify({
+        zones: [{ id: "zone_1", nom: "Cocody", frais: null, actif: true }],
+      }),
+    })
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_null_frais",
+      total: 5000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(0)
+  })
+
+  it("skips unknown product in zone total calculation", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "livraison",
+      valeur: JSON.stringify({
+        zones: [{ id: "zone_1", nom: "Cocody", frais: 2000, actif: true }],
+        seuilGratuit: 50000,
+      }),
+    })
+    // First findMany (zone calc): only returns prod_1 — prod_2 is unknown
+    prismaMock.produit.findMany.mockResolvedValueOnce([fakeProduit])
+    // Second findMany (inside $transaction): returns both products
+    prismaMock.produit.findMany.mockResolvedValueOnce([
+      fakeProduit,
+      { ...fakeProduit, id: "prod_2", nom: "Huile" },
+    ])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_partial",
+      total: 7000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [
+        { produitId: "prod_1", quantite: 1 },
+        { produitId: "prod_2", quantite: 1 },
+      ],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
   })
 
   it("falls back to fraisLivraisonClient when no zoneId", async () => {

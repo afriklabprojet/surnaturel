@@ -39,7 +39,11 @@ export async function GET() {
 
   const safeDecrypt = (val: string | null) => {
     if (!val) return ""
-    try { return decrypt(val) } catch { return "" }
+    try {
+      return decrypt(val)
+    } catch {
+      return ""
+    }
   }
 
   return NextResponse.json({

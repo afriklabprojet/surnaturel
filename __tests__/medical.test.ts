@@ -67,6 +67,27 @@ describe("Medical — Dossier médical", () => {
     expect(json.dossier.antecedents).toBe("")
   })
 
+  it("returns empty string when a field cannot be decrypted", async () => {
+    mockAuth.mockResolvedValue(clientSession)
+    prismaMock.dossierMedical.findUnique.mockResolvedValue({
+      id: "dos_invalid",
+      pathologie: "not-encrypted-data",
+      notes: null,
+      allergies: null,
+      antecedents: null,
+      medicaments: null,
+      groupeSanguin: null,
+      contactUrgence: null,
+      updatedAt: new Date(),
+    })
+
+    const res = await dossierModule.GET()
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.dossier.pathologie).toBe("")
+  })
+
   it("creates/updates medical record via PATCH (200)", async () => {
     mockAuth.mockResolvedValue(clientSession)
     prismaMock.dossierMedical.upsert.mockResolvedValue({})
@@ -181,6 +202,35 @@ describe("Medical — Dossier médical", () => {
     expect(res.status).toBe(401)
     const json = await res.json()
     expect(json.error).toContain("révoquée")
+  })
+
+  it("skips JTI check when session has no jti (200)", async () => {
+    const { verifyActiveJti } = await import("@/lib/auth")
+    // Session without jti property — should skip JTI verification
+    mockAuth.mockResolvedValue({
+      user: clientSession.user,
+      expires: "2099-01-01",
+      // no jti
+    })
+    prismaMock.dossierMedical.findUnique.mockResolvedValue(null)
+
+    const res = await dossierModule.GET()
+    expect(res.status).toBe(200)
+    expect(vi.mocked(verifyActiveJti)).not.toHaveBeenCalled()
+  })
+
+  it("allows access when session has valid active jti (200)", async () => {
+    const { verifyActiveJti } = await import("@/lib/auth")
+    vi.mocked(verifyActiveJti).mockResolvedValueOnce(true)
+    mockAuth.mockResolvedValue({
+      ...clientSession,
+      jti: "active-jti-token",
+    })
+    prismaMock.dossierMedical.findUnique.mockResolvedValue(null)
+
+    const res = await dossierModule.GET()
+    expect(res.status).toBe(200)
+    expect(vi.mocked(verifyActiveJti)).toHaveBeenCalledWith("active-jti-token")
   })
 })
 
@@ -427,6 +477,54 @@ describe("Medical — Messages médicaux POST", () => {
     })
     const res = await messagesModule.POST(req as never)
     expect(res.status).toBe(403)
+  })
+
+  it("uses fallback prenom when destinataire and session have null prenom", async () => {
+    const sessionNullPrenom = {
+      user: {
+        id: "usr_medic_np",
+        email: "medic@example.com",
+        prenom: null,
+        nom: "Koné",
+        role: "ACCOMPAGNATEUR_MEDICAL",
+      },
+    }
+    mockAuth.mockResolvedValue(sessionNullPrenom)
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "usr_patient_np",
+      role: "CLIENT",
+      email: "patient@example.com",
+      prenom: null,
+    })
+    prismaMock.messageMedical.create.mockResolvedValue({
+      id: "msg_np",
+      expediteurId: "usr_medic_np",
+      destinataireId: "usr_patient_np",
+      contenu: "encrypted",
+      expediteur: {
+        id: "usr_medic_np",
+        nom: "Koné",
+        prenom: null,
+        photoUrl: null,
+      },
+    })
+
+    const { envoyerEmailMessageMedical } = await import("@/lib/email")
+
+    const req = buildJsonRequest("/api/medical/messages", {
+      destinataireId: "usr_patient_np",
+      contenu: "Test null prenom",
+    })
+    const res = await messagesModule.POST(req as never)
+    expect(res.status).toBe(201)
+    await new Promise((r) => setTimeout(r, 50))
+    // Verify fallback prenom values were used
+    expect(vi.mocked(envoyerEmailMessageMedical)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prenomDestinataire: "utilisateur",
+        prenomExpediteur: "un intervenant",
+      })
+    )
   })
 })
 

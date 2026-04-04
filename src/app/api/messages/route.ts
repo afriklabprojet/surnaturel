@@ -152,6 +152,7 @@ export async function POST(req: NextRequest) {
   // Si le message est programmé, ne pas l'émettre immédiatement
   if (!estProgramme) {
     const channelName = PUSHER_CHANNELS.conversation(session.user.id, destinataireId)
+    /* v8 ignore next -- best-effort realtime broadcast */
     getPusherServeur().trigger(channelName, PUSHER_EVENTS.NOUVEAU_MESSAGE, message).catch(() => {})
 
     // Notification + push en arrière-plan
