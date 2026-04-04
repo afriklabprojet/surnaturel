@@ -29,9 +29,12 @@ module.exports = {
     {
       name: "surnaturel",
 
-      // Lancer Next.js en mode production
-      script: "node_modules/.bin/next",
-      args: "start",
+      // Lancer le serveur standalone Next.js (output: "standalone" dans next.config.ts)
+      // Artifacts attendus (copiés par le script de déploiement) :
+      //   .next/standalone/server.js
+      //   .next/standalone/.next/static/
+      //   .next/standalone/public/
+      script: ".next/standalone/server.js",
 
       // ── Mode fork (1 processus uniquement) ─────────────────────────────
       // IMPORTANT : ne PAS utiliser exec_mode: "cluster" sans Redis partagé.
@@ -43,13 +46,13 @@ module.exports = {
       instances: 1,
 
       // ── Variables d'environnement ───────────────────────────────────────
-      // Ne pas mettre les secrets ici — les déclarer dans .env.production
-      // ou via le panneau d'environnement Hostinger.
-      node_args: "-r dotenv/config",
+      // --env-file charge .env.production (Node.js ≥ 20.6, serveur Hostinger = 20.x)
+      // Ne pas mettre les secrets ici — les déclarer dans .env.production.
+      node_args: "--env-file=.env.production",
       env_production: {
         NODE_ENV: "production",
         PORT: 3000,
-        DOTENV_CONFIG_PATH: ".env.production",
+        HOSTNAME: "0.0.0.0",
       },
 
       // ── Comportement ───────────────────────────────────────────────────

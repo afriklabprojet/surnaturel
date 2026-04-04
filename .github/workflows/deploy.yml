@@ -98,8 +98,9 @@ jobs:
   # ────────────────────────────────────────────────────────────────────────
   # 4. Build de vérification
   # ────────────────────────────────────────────────────────────────────────
-  # 4. Déploiement (seulement si CI verte)
-  # Le build Next.js tourne sur le serveur Hostinger qui a accès à la DB.
+  # 4. Build Next.js (tourne sur le runner GitHub, pas sur le serveur)
+  # Le serveur Hostinger manque de ressources pour npm run build.
+  # Stratégie : build ici → rsync .next/standalone/ → PM2 reload.
   # ────────────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy to Hostinger
@@ -109,90 +110,102 @@ jobs:
     environment: production
 
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
       # ──────────────────────────────────────────────────────────────────────
-      # Connexion SSH et déploiement
+      # 1. Dépendances + migrations + build (sur le runner GitHub)
       # ──────────────────────────────────────────────────────────────────────
-      - name: Deploy via SSH
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run DB migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      - name: Build Next.js (standalone)
+        run: npm run build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+
+      # ──────────────────────────────────────────────────────────────────────
+      # 2. Préparer SSH + rsync les artefacts vers le serveur
+      # ──────────────────────────────────────────────────────────────────────
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p 65002 "${{ secrets.HOSTINGER_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Upload standalone artifacts
+        run: |
+          SSH="ssh -i ~/.ssh/id_deploy -p 65002 -o StrictHostKeyChecking=no"
+          DEST="${{ secrets.HOSTINGER_SSH_USER }}@${{ secrets.HOSTINGER_SSH_HOST }}"
+
+          echo "▶ 1/4 standalone/…"
+          rsync -az --delete -e "$SSH" .next/standalone/       "$DEST":~/surnaturel/.next/standalone/
+
+          echo "▶ 2/4 static/…"
+          rsync -az --delete -e "$SSH" .next/static/           "$DEST":~/surnaturel/.next/standalone/.next/static/
+
+          echo "▶ 3/4 public/…"
+          rsync -az --delete -e "$SSH" public/                 "$DEST":~/surnaturel/.next/standalone/public/
+
+          echo "▶ 4/4 ecosystem.config.js…"
+          rsync -az -e "$SSH" ecosystem.config.js              "$DEST":~/surnaturel/ecosystem.config.js
+
+          echo "✓ Artefacts uploadés"
+
+      # ──────────────────────────────────────────────────────────────────────
+      # 3. Recharger PM2 via SSH (aucun build côté serveur)
+      # ──────────────────────────────────────────────────────────────────────
+      - name: Reload PM2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOSTINGER_SSH_HOST }}
           username: ${{ secrets.HOSTINGER_SSH_USER }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
+          port: 65002
           script_stop: true
-          # Timeout 10 min (build peut prendre du temps)
-          command_timeout: 10m
+          command_timeout: 2m
           script: |
             set -euo pipefail
-            # ── PATH : Node 20 + PM2 installé dans ~/.npm-global ──────────
             export PATH="/opt/alt/alt-nodejs20/root/usr/bin:/home/u507379921/.npm-global/bin:$PATH"
-
-            echo "══════════════════════════════════════════"
-            echo "  Déploiement — Le Surnaturel de Dieu"
-            echo "  $(date '+%Y-%m-%d %H:%M:%S %Z')"
-            echo "  Node $(node -v) | npm $(npm -v)"
-            echo "══════════════════════════════════════════"
-
-            # ── Aller dans le répertoire du projet ─────────────────────────
             cd ~/surnaturel
-
-            # ── Récupérer la dernière version ──────────────────────────────
-            echo ""
-            echo "▶ 1/6 Pull GitHub…"
-            git pull origin main --ff-only
-            echo "  ✓ Code à jour : $(git log -1 --pretty='%h %s')"
-
-            # ── Installer les dépendances ──────────────────────────────────
-            echo ""
-            echo "▶ 2/6 Installation dépendances…"
-            npm ci --legacy-peer-deps
-            echo "  ✓ npm ci terminé"
-
-            # ── Générer le client Prisma ───────────────────────────────────
-            echo ""
-            echo "▶ 3/6 Prisma generate…"
-            npx prisma generate
-            echo "  ✓ Prisma client généré"
-
-            # ── Migrations base de données ─────────────────────────────────
-            echo ""
-            echo "▶ 4/6 Migrations base de données…"
-            npx prisma migrate deploy
-            echo "  ✓ Migrations appliquées"
-
-            # ── Build Next.js ──────────────────────────────────────────────
-            echo ""
-            echo "▶ 5/6 Build Next.js…"
-            NODE_ENV=production npm run build
-            echo "  ✓ Build terminé"
-
-            # ── Redémarrage PM2 ───────────────────────────────────────────
-            echo ""
-            echo "▶ 6/6 Redémarrage PM2…"
+            echo "Commit déployé : $(git log -1 --pretty='%h %s' 2>/dev/null || echo 'N/A')"
             if pm2 list | grep -q "surnaturel"; then
               pm2 reload ecosystem.config.js --env production
             else
               pm2 start ecosystem.config.js --env production
             fi
             pm2 save
-            echo "  ✓ PM2 opérationnel"
-
-            # ── Résumé ────────────────────────────────────────────────────
-            echo ""
-            echo "══════════════════════════════════════════"
-            echo "  ✅ Déploiement terminé avec succès"
-            echo "══════════════════════════════════════════"
             pm2 list
 
       # ──────────────────────────────────────────────────────────────────────
-      # 2. Vérification santé post-déploiement
+      # 4. Vérification santé post-déploiement
       # ──────────────────────────────────────────────────────────────────────
       - name: Health check
         run: |
           SITE_URL="${{ secrets.NEXTAUTH_URL }}"
           echo "Health check sur ${SITE_URL}…"
 
-          # Attendre que l'app soit prête (max 60s)
           for i in {1..12}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SITE_URL}" || echo "000")
             if [[ "$STATUS" == "200" || "$STATUS" == "301" || "$STATUS" == "302" ]]; then
@@ -206,9 +219,6 @@ jobs:
           echo "✗ Health check échoué après 60s"
           exit 1
 
-      # ──────────────────────────────────────────────────────────────────────
-      # 3. Notification en cas d'échec (optionnel — via email GitHub)
-      # ──────────────────────────────────────────────────────────────────────
       - name: Notify on failure
         if: failure()
         run: |
