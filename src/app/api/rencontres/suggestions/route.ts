@@ -14,15 +14,21 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const cursor = searchParams.get("cursor") ?? undefined
 
-  // Récupérer les préférences de l'utilisateur (ou defaults)
-  const pref = await prisma.rencontrePreference.findUnique({
-    where: { userId },
-  })
+  // Récupérer les préférences + intérêts de l'utilisateur courant
+  const [pref, currentUser] = await Promise.all([
+    prisma.rencontrePreference.findUnique({ where: { userId } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { centresInteret: true },
+    }),
+  ])
 
   // Si le mode rencontre est désactivé, retourner liste vide
   if (pref && !pref.actif) {
     return NextResponse.json({ profiles: [], nextCursor: null })
   }
+
+  const myInterests = currentUser?.centresInteret ?? []
 
   // IDs déjà likés/passés par cet user
   const dejaSwaipes = await prisma.rencontreLike.findMany({
@@ -74,6 +80,7 @@ export async function GET(req: NextRequest) {
       centresInteret: true,
       verificationStatus: true,
       dateNaissance: true,
+      derniereVueAt: true,
       profilDetail: {
         select: { languesParlees: true, specialite: true },
       },
@@ -86,5 +93,18 @@ export async function GET(req: NextRequest) {
   const page = hasMore ? profiles.slice(0, PAGE_SIZE) : profiles
   const nextCursor = hasMore ? page[page.length - 1].id : null
 
-  return NextResponse.json({ profiles: page, nextCursor })
+  // Calculer le score de compatibilité basé sur les intérêts communs
+  const profilesWithScore = page.map((p) => {
+    const common = p.centresInteret.filter((c) => myInterests.includes(c)).length
+    const total = Math.max(myInterests.length, p.centresInteret.length)
+    const compatibilityScore = total > 0 ? Math.round((common / total) * 100) : 0
+    return {
+      ...p,
+      dateNaissance: p.dateNaissance?.toISOString() ?? null,
+      derniereVueAt: p.derniereVueAt?.toISOString() ?? null,
+      compatibilityScore,
+    }
+  })
+
+  return NextResponse.json({ profiles: profilesWithScore, nextCursor })
 }

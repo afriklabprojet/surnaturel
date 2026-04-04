@@ -136,6 +136,7 @@ export const prismaMock = {
     findMany: vi.fn(),
     findUnique: vi.fn(),
     upsert: vi.fn(),
+    count: vi.fn(),
   },
   rencontreMatch: {
     findUnique: vi.fn(),

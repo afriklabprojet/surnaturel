@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Settings, Users } from "lucide-react"
+import { Settings, Users, Heart } from "lucide-react"
 import Link from "next/link"
 import CarteProfil, { type ProfilSuggestion } from "@/components/rencontres/CarteProfil"
 import MatchModal from "@/components/rencontres/MatchModal"
@@ -12,6 +12,7 @@ interface MatchResult {
   matched: boolean
   matchId?: string
   conversationId?: string
+  likesRestants?: number
 }
 
 export default function PageRencontres() {
@@ -21,6 +22,7 @@ export default function PageRencontres() {
   const [loading, setLoading] = useState(true)
   const [swiping, setSwiping] = useState(false)
   const [matchResult, setMatchResult] = useState<(MatchResult & { profil: ProfilSuggestion }) | null>(null)
+  const [likesRestants, setLikesRestants] = useState<number | null>(null)
 
   const fetchSuggestions = useCallback(async (cursor?: string) => {
     setLoading(true)
@@ -53,6 +55,12 @@ export default function PageRencontres() {
         body: JSON.stringify({ toUserId: profil.id, type }),
       })
 
+      if (res.status === 429) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string }
+        toast.error(err.error ?? "Limite de likes atteinte pour aujourd'hui")
+        return
+      }
+
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string }
         toast.error(err.error ?? "Erreur inattendue")
@@ -60,6 +68,9 @@ export default function PageRencontres() {
       }
 
       const data = (await res.json()) as MatchResult
+      if (data.likesRestants !== undefined) {
+        setLikesRestants(data.likesRestants)
+      }
 
       // Retirer le profil de la liste
       setProfiles((prev) => {
@@ -93,6 +104,13 @@ export default function PageRencontres() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href="/communaute/rencontres/qui-ma-like"
+            className="p-2 rounded-full text-text-muted-brand hover:bg-bg-page hover:text-pink-500 transition-colors"
+            aria-label="Qui m'a liké"
+          >
+            <Heart size={20} />
+          </Link>
+          <Link
             href="/communaute/rencontres/matches"
             className="p-2 rounded-full text-text-muted-brand hover:bg-bg-page hover:text-primary-brand transition-colors"
             aria-label="Mes matches"
@@ -108,6 +126,18 @@ export default function PageRencontres() {
           </Link>
         </div>
       </div>
+
+      {/* Compteur de likes restants */}
+      {likesRestants !== null && (
+        <div className="flex items-center justify-center gap-1.5 text-xs text-text-muted-brand">
+          <Heart size={12} className="text-pink-400" />
+          <span>
+            {likesRestants > 0
+              ? `${likesRestants} like${likesRestants > 1 ? "s" : ""} restant${likesRestants > 1 ? "s" : ""} aujourd'hui`
+              : "Limite de likes atteinte — revenez demain"}
+          </span>
+        </div>
+      )}
 
       {/* Carte profil */}
       {loading && !currentProfil ? (

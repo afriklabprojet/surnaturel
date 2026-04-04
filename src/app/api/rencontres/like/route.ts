@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod/v4"
 import { creerNotification } from "@/lib/notifications"
 
+const LIKE_DAILY_LIMIT = 20
+
 const likeSchema = z.object({
   toUserId: z.string().min(1),
   type: z.enum(["LIKE", "SUPER_LIKE", "PASS"]).default("LIKE"),
@@ -41,6 +43,23 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Vérifier la limite journalière de likes (pas pour les PASS)
+  if (type !== "PASS") {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const likesToday = await prisma.rencontreLike.count({
+      where: { fromUserId: userId, type: { not: "PASS" }, createdAt: { gte: today } },
+    })
+    if (likesToday >= LIKE_DAILY_LIMIT) {
+      const resetAt = new Date(today)
+      resetAt.setDate(resetAt.getDate() + 1)
+      return NextResponse.json(
+        { error: `Limite de ${LIKE_DAILY_LIMIT} likes atteinte pour aujourd'hui`, resetAt: resetAt.toISOString() },
+        { status: 429 }
+      )
+    }
+  }
+
   // Vérifier que la cible existe
   const target = await prisma.user.findUnique({
     where: { id: toUserId },
@@ -59,8 +78,16 @@ export async function POST(req: NextRequest) {
 
   // Si PASS, pas de vérification de match
   if (type === "PASS") {
-    return NextResponse.json({ matched: false })
+    return NextResponse.json({ matched: false, likesRestants: LIKE_DAILY_LIMIT })
   }
+
+  // Calculer les likes restants aujourd'hui
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const likesDone = await prisma.rencontreLike.count({
+    where: { fromUserId: userId, type: { not: "PASS" }, createdAt: { gte: todayStart } },
+  })
+  const likesRestants = Math.max(0, LIKE_DAILY_LIMIT - likesDone)
 
   // Vérifier si c'est un match mutuel (l'autre a aussi liké)
   const reciproque = await prisma.rencontreLike.findUnique({
@@ -69,7 +96,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (!reciproque || reciproque.type === "PASS") {
-    return NextResponse.json({ matched: false })
+    return NextResponse.json({ matched: false, likesRestants })
   }
 
   // Déduplication — vérifier si le match existe déjà
@@ -79,7 +106,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (matchExistant) {
-    return NextResponse.json({ matched: true, matchId: matchExistant.id, alreadyExisted: true })
+    return NextResponse.json({ matched: true, matchId: matchExistant.id, alreadyExisted: true, likesRestants })
   }
 
   // Créer la conversation dédiée au match
@@ -117,5 +144,5 @@ export async function POST(req: NextRequest) {
     sourceId: match.id,
   })
 
-  return NextResponse.json({ matched: true, matchId: match.id, conversationId: conversation.id })
+  return NextResponse.json({ matched: true, matchId: match.id, conversationId: conversation.id, likesRestants })
 }

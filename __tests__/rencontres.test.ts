@@ -6,6 +6,7 @@ const suggestionsModule = await import("@/app/api/rencontres/suggestions/route")
 const likeModule = await import("@/app/api/rencontres/like/route")
 const matchesModule = await import("@/app/api/rencontres/matches/route")
 const matchIdModule = await import("@/app/api/rencontres/[matchId]/route")
+const quiMALikeModule = await import("@/app/api/rencontres/qui-ma-like/route")
 
 const fakeSession = {
   user: {
@@ -124,6 +125,7 @@ describe("Rencontres — Suggestions", () => {
     vi.clearAllMocks()
     mockAuth.mockResolvedValue(fakeSession)
     prismaMock.rencontrePreference.findUnique.mockResolvedValue(null)
+    prismaMock.user.findUnique.mockResolvedValue({ centresInteret: [] })
     prismaMock.rencontreLike.findMany.mockResolvedValue([])
     prismaMock.blocage.findMany.mockResolvedValue([])
   })
@@ -141,6 +143,7 @@ describe("Rencontres — Suggestions", () => {
         centresInteret: [],
         verificationStatus: "AUCUNE",
         dateNaissance: null,
+        derniereVueAt: null,
         profilDetail: null,
       },
     ])
@@ -150,6 +153,39 @@ describe("Rencontres — Suggestions", () => {
     const json = await res.json()
     expect(json.profiles).toHaveLength(1)
     expect(json.profiles[0].id).toBe("usr_bob")
+  })
+
+  it("GET calcule un score de compatibilité (200)", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ centresInteret: ["sport", "musique"] })
+    prismaMock.user.findMany.mockResolvedValue([
+      {
+        id: "usr_bob",
+        prenom: "Bob",
+        nom: "Dupont",
+        pseudo: null,
+        photoUrl: null,
+        bio: null,
+        ville: null,
+        centresInteret: ["sport", "lecture"],
+        verificationStatus: "AUCUNE",
+        dateNaissance: null,
+        derniereVueAt: null,
+        profilDetail: null,
+      },
+    ])
+    const req = buildRequest("/api/rencontres/suggestions")
+    const res = await suggestionsModule.GET(req as never)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.profiles[0].compatibilityScore).toBeGreaterThan(0)
+  })
+
+  it("GET fonctionne si currentUser introuvable (intérêts vides)", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null)
+    prismaMock.user.findMany.mockResolvedValue([])
+    const req = buildRequest("/api/rencontres/suggestions")
+    const res = await suggestionsModule.GET(req as never)
+    expect(res.status).toBe(200)
   })
 
   it("GET retourne liste vide si mode actif=false", async () => {
@@ -236,6 +272,7 @@ describe("Rencontres — Suggestions", () => {
       centresInteret: [],
       verificationStatus: "AUCUNE",
       dateNaissance: null,
+      derniereVueAt: null,
       profilDetail: null,
     }))
     prismaMock.user.findMany.mockResolvedValue(manyProfiles)
@@ -260,6 +297,7 @@ describe("Rencontres — Like", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuth.mockResolvedValue(fakeSession)
+    prismaMock.rencontreLike.count.mockResolvedValue(0)
   })
 
   it("POST PASS → no match (200)", async () => {
@@ -358,6 +396,25 @@ describe("Rencontres — Like", () => {
     })
     const res = await likeModule.POST(req as never)
     expect(res.status).toBe(400)
+  })
+
+  it("POST 429 si limite journalière atteinte", async () => {
+    prismaMock.rencontreLike.count.mockResolvedValue(20)
+    const req = buildJsonRequest("/api/rencontres/like", { toUserId: "usr_bob", type: "LIKE" })
+    const res = await likeModule.POST(req as never)
+    expect(res.status).toBe(429)
+    const json = await res.json()
+    expect(json.error).toMatch(/limite/i)
+    expect(json.resetAt).toBeDefined()
+  })
+
+  it("POST PASS ne compte pas contre la limite (200)", async () => {
+    prismaMock.rencontreLike.count.mockResolvedValue(20)
+    prismaMock.user.findUnique.mockResolvedValue({ id: "usr_bob" })
+    prismaMock.rencontreLike.upsert.mockResolvedValue({})
+    const req = buildJsonRequest("/api/rencontres/like", { toUserId: "usr_bob", type: "PASS" })
+    const res = await likeModule.POST(req as never)
+    expect(res.status).toBe(200)
   })
 
   it("POST 401 si non authentifié", async () => {
@@ -547,5 +604,111 @@ describe("Rencontres — Unmatch (DELETE /[matchId])", () => {
       params: Promise.resolve({ matchId: "match_2" }),
     })
     expect(res.status).toBe(200)
+  })
+})
+
+// ─── Qui m'a liké ────────────────────────────────────────────────
+
+describe("Rencontres — Qui m'a liké", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuth.mockResolvedValue(fakeSession)
+  })
+
+  it("GET retourne les likes reçus (200)", async () => {
+    prismaMock.rencontreLike.findMany.mockResolvedValue([
+      {
+        fromUserId: "usr_bob",
+        type: "LIKE",
+        createdAt: new Date(),
+        fromUser: {
+          id: "usr_bob",
+          prenom: "Bob",
+          photoUrl: null,
+          ville: "Abidjan",
+          dateNaissance: null,
+          verificationStatus: "AUCUNE",
+        },
+      },
+    ])
+    prismaMock.rencontreMatch.findMany.mockResolvedValue([])
+    const req = buildRequest("/api/rencontres/qui-ma-like")
+    const res = await quiMALikeModule.GET()
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.count).toBe(1)
+    expect(json.likes[0].id).toBe("usr_bob")
+  })
+
+  it("GET exclut ceux avec qui il y a déjà un match actif", async () => {
+    prismaMock.rencontreLike.findMany.mockResolvedValue([
+      {
+        fromUserId: "usr_bob",
+        type: "LIKE",
+        createdAt: new Date(),
+        fromUser: {
+          id: "usr_bob",
+          prenom: "Bob",
+          photoUrl: null,
+          ville: null,
+          dateNaissance: null,
+          verificationStatus: "AUCUNE",
+        },
+      },
+    ])
+    prismaMock.rencontreMatch.findMany.mockResolvedValue([
+      { userAId: "usr_alice", userBId: "usr_bob" },
+    ])
+    const req = buildRequest("/api/rencontres/qui-ma-like")
+    const res = await quiMALikeModule.GET()
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.count).toBe(0)
+    expect(json.likes).toHaveLength(0)
+  })
+
+  it("GET exclut correctement quand l'utilisateur est userB du match", async () => {
+    prismaMock.rencontreLike.findMany.mockResolvedValue([
+      {
+        fromUserId: "usr_charlie",
+        type: "SUPER_LIKE",
+        createdAt: new Date(),
+        fromUser: {
+          id: "usr_charlie",
+          prenom: "Charlie",
+          photoUrl: null,
+          ville: null,
+          dateNaissance: null,
+          verificationStatus: "AUCUNE",
+        },
+      },
+    ])
+    // Alice est userB ici
+    prismaMock.rencontreMatch.findMany.mockResolvedValue([
+      { userAId: "usr_charlie", userBId: "usr_alice" },
+    ])
+    const req = buildRequest("/api/rencontres/qui-ma-like")
+    const res = await quiMALikeModule.GET()
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.count).toBe(0)
+  })
+
+  it("GET retourne liste vide si aucun like (200)", async () => {
+    prismaMock.rencontreLike.findMany.mockResolvedValue([])
+    prismaMock.rencontreMatch.findMany.mockResolvedValue([])
+    const req = buildRequest("/api/rencontres/qui-ma-like")
+    const res = await quiMALikeModule.GET()
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.count).toBe(0)
+    expect(json.likes).toHaveLength(0)
+  })
+
+  it("GET 401 si non authentifié", async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = buildRequest("/api/rencontres/qui-ma-like")
+    const res = await quiMALikeModule.GET()
+    expect(res.status).toBe(401)
   })
 })
