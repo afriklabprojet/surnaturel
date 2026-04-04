@@ -24,9 +24,32 @@ function e(s: string): string {
 
 async function getFrom(): Promise<string> {
   // Priorité : variable d'env RESEND_FROM_EMAIL (domaine vérifié dans Resend)
-  if (process.env.RESEND_FROM_EMAIL) return process.env.RESEND_FROM_EMAIL
+  if (process.env.RESEND_FROM_EMAIL) {
+    const raw = process.env.RESEND_FROM_EMAIL
+    // Si l'adresse n'a pas de display name, en ajouter un
+    if (!raw.includes("<")) return `Le Surnaturel de Dieu <${raw}>`
+    return raw
+  }
   const { nomCentre, emailRdv } = await getConfig()
   return `${nomCentre} <${emailRdv}>`
+}
+
+/**
+ * Wrapper autour de Resend v6 — le SDK ne throw plus sur erreur API,
+ * il retourne { data, error }. Ce wrapper lance une vraie Error si
+ * l'envoi échoue, pour que les catch existants fonctionnent.
+ */
+async function sendEmail(
+  opts: Parameters<Resend["emails"]["send"]>[0]
+) {
+  const { data, error } = await getResend().emails.send(opts)
+  if (error) {
+    console.error("[EMAIL] Resend API error:", JSON.stringify(error))
+    const err = new Error(error.message) as Error & { statusCode?: number }
+    err.name = error.name
+    throw err
+  }
+  return data
 }
 
 export async function envoyerEmailConfirmationRDV(params: {
@@ -37,7 +60,7 @@ export async function envoyerEmailConfirmationRDV(params: {
   heure: string
   prix: string
 }) {
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Votre rendez-vous est confirmé — Le Surnaturel de Dieu",
@@ -87,7 +110,7 @@ export async function envoyerEmailInscription(params: {
   tokenVerification: string
 }) {
   const lienVerification = `${SITE_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Confirmez votre email — Le Surnaturel de Dieu",
@@ -126,7 +149,7 @@ export async function envoyerEmailMessageMedical(params: {
   prenomExpediteur: string
 }) {
   const appUrl = SITE_URL
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Nouveau message médical — Le Surnaturel de Dieu",
@@ -163,7 +186,7 @@ export async function envoyerEmailInvitationParrainage(params: {
   lienParrainage: string
 }) {
   const appUrl = SITE_URL
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: `${e(params.prenomParrain)} vous invite au Surnaturel de Dieu`,
@@ -205,7 +228,7 @@ export async function envoyerEmailRappelRDV(params: {
   heure: string
 }) {
   const appUrl = SITE_URL
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Rappel : votre rendez-vous demain — Le Surnaturel de Dieu",
@@ -311,7 +334,7 @@ export async function envoyerEmailCommandePayee(params: {
     ? `<tr style="background:#E8F5E3;"><td style="padding:10px;font-weight:600;">Réf. transaction</td><td style="padding:10px;font-family:monospace;">${params.reference}</td></tr>`
     : ""
 
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: `Reçu de paiement #${ref} — Le Surnaturel de Dieu`,
@@ -395,7 +418,7 @@ export async function envoyerEmailConfirmationCommande(params: {
     )
     .join("")
 
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: `Commande #${ref} enregistrée — Le Surnaturel de Dieu`,
@@ -449,7 +472,7 @@ export async function envoyerEmailResetMotDePasse(params: {
   prenom: string
   lienReset: string
 }) {
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Réinitialisation de votre mot de passe — Le Surnaturel de Dieu",
@@ -501,7 +524,7 @@ export async function envoyerEmailInvitationAvis(params: {
   rdvId: string
 }) {
   const appUrl = SITE_URL
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Comment s'est passé votre soin ? — Le Surnaturel de Dieu",
@@ -633,7 +656,7 @@ export async function envoyerEmailNewsletter(
     </div>
   ` : ''
 
-  await getResend().emails.send({
+  await sendEmail({
     from: await getFrom(),
     to: email,
     subject: '🌿 Les actualités du Surnaturel de Dieu',
@@ -892,7 +915,7 @@ export async function envoyerEmailOnboarding({ destinataire, prenom, step }: Onb
     throw new Error(`Étape d'onboarding invalide: ${step}`)
   }
 
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: destinataire,
     subject: emailConfig.subject,
@@ -914,7 +937,7 @@ export async function envoyerEmailRenouvellementAbonnement(params: {
     minimumFractionDigits: 0,
   }).format(params.montant)
 
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Renouvellement de votre abonnement — Le Surnaturel de Dieu",
@@ -982,7 +1005,7 @@ export async function envoyerEmailReactivation(params: {
        </div>`
     : ""
 
-  return getResend().emails.send({
+  return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
     subject: "Vous nous manquez ! — Le Surnaturel de Dieu",
