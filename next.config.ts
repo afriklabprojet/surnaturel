@@ -68,6 +68,18 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Hostinger Node.js — build autonome (inclut node_modules nécessaires dans .next/standalone)
   output: "standalone",
+
+  // Forcer l'inclusion des packages serveur non détectés par nft (Node File Tracer)
+  // resend, cloudinary, bcryptjs ne sont pas tracés automatiquement.
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "./node_modules/resend/**",
+      "./node_modules/cloudinary/**",
+      "./node_modules/bcryptjs/**",
+      "./node_modules/pusher/**",
+    ],
+  },
+
   reactCompiler: {
     // "none" = le compilateur saute silencieusement les composants
     // qu'il ne peut pas optimiser au lieu de les signaler comme erreurs ESLint.
