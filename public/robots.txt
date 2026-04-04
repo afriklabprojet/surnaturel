@@ -11,5 +11,13 @@ Disallow: /favoris
 Disallow: /fidelite
 Disallow: /notifications
 Disallow: /parrainage
+Disallow: /avis
+Disallow: /communaute/messages
+Disallow: /connexion
+Disallow: /inscription
+Disallow: /verification-2fa
+Disallow: /mot-de-passe-oublie
+Disallow: /_next/
+Disallow: /monitoring
 
 Sitemap: https://lesurnatureldedieu.com/sitemap.xml

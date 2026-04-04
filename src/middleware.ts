@@ -63,6 +63,12 @@ const roleRestrictedRoutes: Record<string, string[]> = {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  /* ── Bloquer les scanners / tentatives d'accès aux fichiers sensibles ── */
+  const blockedPatterns = /^\/(\.env|\.git|wp-admin|wp-login|xmlrpc|phpinfo|phpmyadmin|\.well-known\/acme|package\.json|tsconfig|node_modules|\.next\/)/i
+  if (blockedPatterns.test(pathname)) {
+    return new NextResponse(null, { status: 404 })
+  }
+
   /* ── Rate limiting (avant toute logique auth) ── */
   // Exempter les GET auth (session, csrf, providers) — ne limiter que les POST (tentatives de login)
   const isAuthGet = pathname.startsWith("/api/auth/") && req.method === "GET"
@@ -216,5 +222,13 @@ export const config = {
     "/parrainage/:path*",
     "/avis/:path*",
     "/notifications/:path*",
+    // Bloquer les scanners
+    "/.env:path*",
+    "/.git/:path*",
+    "/wp-admin/:path*",
+    "/wp-login:path*",
+    "/package.json",
+    "/tsconfig:path*",
+    "/node_modules/:path*",
   ],
 }

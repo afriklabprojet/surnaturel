@@ -70,6 +70,9 @@ const nextConfig: NextConfig = {
   // Hostinger Node.js — build autonome (inclut node_modules nécessaires dans .next/standalone)
   output: "standalone",
 
+  // Désactiver le header X-Powered-By (ne pas révéler Next.js aux scanners)
+  poweredByHeader: false,
+
   // Forcer l'inclusion des packages serveur non détectés par nft (Node File Tracer)
   // resend, cloudinary, bcryptjs ne sont pas tracés automatiquement.
   outputFileTracingIncludes: {
@@ -109,6 +112,21 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      // Bloquer l'accès aux fichiers sensibles
+      {
+        source: "/:path(.env*|package.json|tsconfig.json|prisma/:any*)",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      // Empêcher la mise en cache des pages protégées
+      {
+        source: "/(admin|dashboard|profil|mes-rdv|commandes|suivi-medical)/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, private" },
+          { key: "Pragma", value: "no-cache" },
+        ],
       },
     ];
   },
