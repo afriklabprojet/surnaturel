@@ -80,16 +80,21 @@ export async function POST(request: Request) {
   // Email de vérification
   let emailEnvoye = true
   try {
+    console.log("[INSCRIPTION] Envoi email de vérification à:", email)
+    console.log("[INSCRIPTION] RESEND_API_KEY définie:", !!process.env.RESEND_API_KEY)
+    console.log("[INSCRIPTION] RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL ?? "(non définie)")
     await envoyerEmailInscription({
       destinataire: email,
       prenom,
       tokenVerification: emailVerifToken,
     })
+    console.log("[INSCRIPTION] Email envoyé avec succès à:", email)
   } catch (err) {
     emailEnvoye = false
     console.error("[INSCRIPTION] Erreur envoi email Resend:", {
       message: (err as Error)?.message ?? String(err),
-      statusCode: (err as { statusCode?: number })?.statusCode,
+      name: (err as Error)?.name,
+      stack: (err as Error)?.stack?.split("\n").slice(0, 3).join("\n"),
     })
   }
 
