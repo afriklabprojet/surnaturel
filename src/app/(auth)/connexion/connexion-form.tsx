@@ -110,9 +110,13 @@ export default function ConnexionForm() {
           setErreur("Email ou mot de passe incorrect.")
         }
       } else {
-        // Respecter le callbackUrl s'il est présent
-        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-        router.push(callbackUrl)
+        // ADMIN → dashboard admin, sinon callbackUrl ou dashboard client
+        if (result.role === "ADMIN") {
+          router.push("/admin")
+        } else {
+          const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+          router.push(callbackUrl)
+        }
         router.refresh()
       }
     } catch (err) {

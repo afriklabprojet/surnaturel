@@ -15,6 +15,10 @@ export default async function PageConnexion({
 }) {
   const session = await auth()
   if (session?.user) {
+    // Les admins vont toujours vers /admin, jamais /dashboard
+    const role = (session.user as { role?: string }).role
+    if (role === "ADMIN") redirect("/admin")
+
     const params = await searchParams
     const raw = params.callbackUrl ?? ""
     // Valider le callbackUrl — doit être un chemin relatif et PAS /connexion (anti-boucle)

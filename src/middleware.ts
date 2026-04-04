@@ -141,6 +141,15 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // ── ADMIN ne doit pas accéder aux pages client ──
+  const clientOnlyRoutes = ["/dashboard", "/profil", "/mes-rdv", "/commandes", "/favoris", "/fidelite", "/parrainage", "/avis", "/notifications"]
+  const isClientRoute = clientOnlyRoutes.some((r) => pathname === r || pathname.startsWith(r + "/"))
+  if (isClientRoute && (token.role as string) === "ADMIN") {
+    const url = req.nextUrl.clone()
+    url.pathname = "/admin"
+    return NextResponse.redirect(url)
+  }
+
   // ── Gate communauté : accès payant (gratuit pour ADMIN/SAGE_FEMME/ACCOMPAGNATEUR_MEDICAL) ──
   // Couvre les pages /communaute/* ET les routes API /api/messages/* (messenger inclus)
   const communauteExclus = ["/communaute/abonnement", "/communaute/essai"]

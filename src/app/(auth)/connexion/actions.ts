@@ -1,11 +1,11 @@
 "use server"
 
-import { signIn } from "@/lib/auth"
+import { signIn, auth } from "@/lib/auth"
 import { AuthError } from "next-auth"
 import { isRedirectError } from "next/dist/client/components/redirect-error"
 
 export type PublicLoginResult =
-  | { ok: true }
+  | { ok: true; role: string }
   | { ok: false; code: "EMAIL_NON_VERIFIE" }
   | { ok: false; code: "2FA_REQUIRED"; userId: string }
   | { ok: false; code: "CREDENTIALS_INVALID" }
@@ -17,7 +17,10 @@ export async function publicLoginAction(
 ): Promise<PublicLoginResult> {
   try {
     await signIn("credentials", { email, password, redirect: false })
-    return { ok: true }
+    // Récupérer le rôle pour rediriger côté client
+    const session = await auth()
+    const role = (session?.user as { role?: string })?.role ?? "CLIENT"
+    return { ok: true, role }
   } catch (error) {
     // NextAuth v5 beta peut lancer un NEXT_REDIRECT même avec redirect: false
     // dans les Server Actions — laisser Next.js le gérer

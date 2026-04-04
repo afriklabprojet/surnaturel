@@ -25,20 +25,21 @@ async function createAdmins() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@lesurnatureldedieu.com" },
-    update: { passwordHash: adminHash },
+    update: { passwordHash: adminHash, emailVerifie: true },
     create: {
       email: "admin@lesurnatureldedieu.com",
       passwordHash: adminHash,
       nom: "Jeanne",
       prenom: "Marie",
       role: "ADMIN",
+      emailVerifie: true,
     },
   })
   console.log(`✅ Admin: ${admin.email} (${admin.prenom} ${admin.nom})`)
 
   const sageFemme = await prisma.user.upsert({
     where: { email: "sagefemme@lesurnatureldedieu.com" },
-    update: { passwordHash: sageFemmeHash },
+    update: { passwordHash: sageFemmeHash, emailVerifie: true },
     create: {
       email: "sagefemme@lesurnatureldedieu.com",
       passwordHash: sageFemmeHash,
@@ -46,13 +47,14 @@ async function createAdmins() {
       prenom: "Ama",
       role: "SAGE_FEMME",
       telephone: "+225 07 00 00 01",
+      emailVerifie: true,
     },
   })
   console.log(`✅ Sage-femme: ${sageFemme.email} (${sageFemme.prenom} ${sageFemme.nom})`)
 
   const client = await prisma.user.upsert({
     where: { email: "client@test.com" },
-    update: { passwordHash: clientHash },
+    update: { passwordHash: clientHash, emailVerifie: true },
     create: {
       email: "client@test.com",
       passwordHash: clientHash,
@@ -60,6 +62,7 @@ async function createAdmins() {
       prenom: "Fatou",
       role: "CLIENT",
       telephone: "+225 05 00 00 01",
+      emailVerifie: true,
     },
   })
   console.log(`✅ Client: ${client.email} (${client.prenom} ${client.nom})`)
