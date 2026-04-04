@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { SITE_URL } from "@/lib/site"
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token")
 
   if (!token) {
     return NextResponse.redirect(
-      new URL("/connexion?verification=invalid", req.url)
+      new URL("/connexion?verification=invalid", SITE_URL)
     )
   }
 
@@ -17,19 +18,19 @@ export async function GET(req: NextRequest) {
 
   if (!user) {
     return NextResponse.redirect(
-      new URL("/connexion?verification=invalid", req.url)
+      new URL("/connexion?verification=invalid", SITE_URL)
     )
   }
 
   if (user.emailVerifie) {
     return NextResponse.redirect(
-      new URL("/connexion?verification=already", req.url)
+      new URL("/connexion?verification=already", SITE_URL)
     )
   }
 
   if (user.emailVerifExpiry && user.emailVerifExpiry < new Date()) {
     return NextResponse.redirect(
-      new URL("/connexion?verification=expired", req.url)
+      new URL("/connexion?verification=expired", SITE_URL)
     )
   }
 
@@ -43,6 +44,6 @@ export async function GET(req: NextRequest) {
   })
 
   return NextResponse.redirect(
-    new URL("/connexion?verification=ok", req.url)
+    new URL("/connexion?verification=ok", SITE_URL)
   )
 }

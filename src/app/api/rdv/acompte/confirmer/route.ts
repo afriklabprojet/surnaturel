@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { verifierStatutPaiement } from "@/lib/jeko"
 import { envoyerSmsAcomptePaye } from "@/lib/sms"
 import { formatPrix } from "@/lib/utils"
+import { SITE_URL } from "@/lib/site"
 
 // GET /api/rdv/acompte/confirmer?reference=...&rdv=...
 // Appelé après retour de la page de paiement Jeko
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   if (!rdvId) {
     return NextResponse.redirect(
-      new URL("/mes-rdv?erreur=paiement", req.url)
+      new URL("/mes-rdv?erreur=paiement", SITE_URL)
     )
   }
 
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   if (!rdv || !rdv.paiementId) {
     return NextResponse.redirect(
-      new URL("/mes-rdv?erreur=paiement", req.url)
+      new URL("/mes-rdv?erreur=paiement", SITE_URL)
     )
   }
 
@@ -55,17 +56,17 @@ export async function GET(req: NextRequest) {
       }
 
       return NextResponse.redirect(
-        new URL(`/mes-rdv?nouveau=ok&acompte=ok`, req.url)
+        new URL(`/mes-rdv?nouveau=ok&acompte=ok`, SITE_URL)
       )
     }
 
     // Paiement en attente ou échoué
     return NextResponse.redirect(
-      new URL(`/mes-rdv?erreur=paiement&rdv=${rdvId}`, req.url)
+      new URL(`/mes-rdv?erreur=paiement&rdv=${rdvId}`, SITE_URL)
     )
   } catch {
     return NextResponse.redirect(
-      new URL("/mes-rdv?erreur=paiement", req.url)
+      new URL("/mes-rdv?erreur=paiement", SITE_URL)
     )
   }
 }
