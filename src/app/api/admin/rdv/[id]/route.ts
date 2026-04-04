@@ -9,7 +9,7 @@ import { fr } from "date-fns/locale"
 import { formatPrix } from "@/lib/utils"
 import { notifierRDVConfirme, notifierRDVAnnule } from "@/lib/notifications"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
-import { getResend } from "@/lib/email"
+import { sendEmail } from "@/lib/email"
 import { BUSINESS_EMAIL, SITE_NAME, SITE_URL } from "@/lib/site"
 import type { StatutRDV } from "@/generated/prisma/client"
 
@@ -99,7 +99,7 @@ export async function PATCH(
       }
     }
     
-    getResend().emails.send({
+    sendEmail({
       from: FROM,
       to: rdv.user.email,
       subject: "Votre rendez-vous a été annulé — Le Surnaturel de Dieu",
@@ -121,7 +121,7 @@ export async function PATCH(
   }
 
   if (result.data.statut === "TERMINE") {
-    getResend().emails.send({
+    sendEmail({
       from: FROM,
       to: rdv.user.email,
       subject: "Merci pour votre visite — Le Surnaturel de Dieu",

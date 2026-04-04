@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod/v4"
-import { getResend } from "@/lib/email"
+import { sendEmail } from "@/lib/email"
 import { BUSINESS_EMAIL, SITE_NAME } from "@/lib/site"
 
 const contactSchema = z.object({
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const { nom, email, telephone, sujet, message } = result.data
 
   try {
-    await getResend().emails.send({
+    await sendEmail({
       from: `${SITE_NAME} <${BUSINESS_EMAIL}>`,
       to: BUSINESS_EMAIL,
       replyTo: email,

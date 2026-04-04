@@ -39,7 +39,7 @@ async function getFrom(): Promise<string> {
  * il retourne { data, error }. Ce wrapper lance une vraie Error si
  * l'envoi échoue, pour que les catch existants fonctionnent.
  */
-async function sendEmail(
+export async function sendEmail(
   opts: Parameters<Resend["emails"]["send"]>[0]
 ) {
   const { data, error } = await getResend().emails.send(opts)
