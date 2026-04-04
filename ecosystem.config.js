@@ -29,12 +29,12 @@ module.exports = {
     {
       name: "surnaturel",
 
-      // Lancer le serveur standalone Next.js (output: "standalone" dans next.config.ts)
-      // Artifacts attendus (copiés par le script de déploiement) :
-      //   .next/standalone/server.js
-      //   .next/standalone/.next/static/
-      //   .next/standalone/public/
-      script: ".next/standalone/server.js",
+      // Lancer le serveur standalone via start.sh (wrapper qui source .env.production).
+      // Sans ce wrapper, PM2 daemon perd les variables d'environnement au respawn
+      // (la commande `pm2 save` ne sauvegarde pas les vars héritées du shell).
+      // start.sh : set -a; source .env.production; set +a; exec node server.js
+      script: "./start.sh",
+      interpreter: "bash",
 
       // ── Mode fork (1 processus uniquement) ─────────────────────────────
       // IMPORTANT : ne PAS utiliser exec_mode: "cluster" sans Redis partagé.
@@ -46,10 +46,8 @@ module.exports = {
       instances: 1,
 
       // ── Variables d'environnement ───────────────────────────────────────
-      // Les secrets sont chargés via : set -a; source .env.production; set +a
-      // avant pm2 start (PM2 hérite l'env du shell et le sauvegarde dans dump.pm2).
-      // node_args "--env-file" ne fonctionne pas : Next.js standalone remplace
-      // son propre processus (exec) et les flags Node sont perdus.
+      // Secrets chargés par start.sh (source .env.production).
+      // Ces vars ici servent uniquement de fallback pour NODE_ENV/PORT/HOSTNAME.
       env_production: {
         NODE_ENV: "production",
         PORT: 3000,

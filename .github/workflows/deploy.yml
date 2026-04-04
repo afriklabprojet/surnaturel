@@ -171,6 +171,10 @@ jobs:
           echo "▶ 4/4 ecosystem.config.js…"
           rsync -az -e "$SSH" ecosystem.config.js              "$DEST":~/surnaturel/ecosystem.config.js
 
+          echo "▶ 5/4 start.sh…"
+          rsync -az -e "$SSH" scripts/start.sh                 "$DEST":~/surnaturel/start.sh
+          $SSH "$DEST" "chmod +x ~/surnaturel/start.sh"
+
           echo "✓ Artefacts uploadés"
 
       # ──────────────────────────────────────────────────────────────────────
