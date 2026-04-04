@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerSms } from "@/lib/sms"
-import { capturePaymentError } from "@/lib/sentry"
+import { SITE_URL } from "@/lib/site"
 
 // Relance par SMS les commandes dont le paiement a échoué
 // Exécuté toutes les 30 minutes via Vercel CRON
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 
     const message =
       `Bonjour ${commande.user.prenom}, votre paiement de ${Math.round(commande.total).toLocaleString("fr-FR")} F CFA n'a pas abouti. ` +
-      `Vous pouvez réessayer depuis votre espace client : ${process.env.NEXTAUTH_URL}/commandes/${commande.id}. ` +
+      `Vous pouvez réessayer depuis votre espace client : ${SITE_URL}/commandes/${commande.id}. ` +
       `Si le problème persiste, contactez-nous.`
 
     try {

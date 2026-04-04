@@ -1,3 +1,5 @@
+import { SITE_URL } from "@/lib/site"
+
 const JEKO_API_URL = "https://api.jeko.africa/partner_api"
 
 const jekoHeaders = {
@@ -33,13 +35,13 @@ export async function creerPaiement(params: {
   const resolvedSuccessUrl =
     params.successUrl ??
     (isRDV
-      ? `${process.env.NEXTAUTH_URL}/api/rdv/acompte/confirmer?reference=${encodeURIComponent(reference)}&rdv=${encodeURIComponent(params.commandeId)}`
-      : `${process.env.NEXTAUTH_URL}/commandes/succes?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`)
+      ? `${SITE_URL}/api/rdv/acompte/confirmer?reference=${encodeURIComponent(reference)}&rdv=${encodeURIComponent(params.commandeId)}`
+      : `${SITE_URL}/commandes/succes?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`)
   const resolvedErrorUrl =
     params.errorUrl ??
     (isRDV
-      ? `${process.env.NEXTAUTH_URL}/mes-rdv?erreur=paiement&rdv=${encodeURIComponent(params.commandeId)}`
-      : `${process.env.NEXTAUTH_URL}/commandes/erreur?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`)
+      ? `${SITE_URL}/mes-rdv?erreur=paiement&rdv=${encodeURIComponent(params.commandeId)}`
+      : `${SITE_URL}/commandes/erreur?reference=${encodeURIComponent(reference)}&commande=${encodeURIComponent(params.commandeId)}`)
 
   const body = {
     storeId: params.storeId,

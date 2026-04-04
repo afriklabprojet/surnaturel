@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { creerPaiement, type JekoPaymentMethod } from "@/lib/jeko"
 import { typedLogger as logger } from "@/lib/logger"
+import { SITE_URL } from "@/lib/site"
 
 const MONTANT_ABONNEMENT_FCFA = 10_000
 const SLUG_FORMULE = "communaute"
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
 
     // Initier le paiement Jeko avec référence ABCOMM-
     const commandeId = `ABCOMM-${abonnement.id}`
-    const baseUrl = process.env.NEXTAUTH_URL!
+    const baseUrl = SITE_URL
 
     const { redirectUrl, paiementId } = await creerPaiement({
       commandeId,

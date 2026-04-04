@@ -10,7 +10,7 @@ import { formatPrix } from "@/lib/utils"
 import { notifierRDVConfirme, notifierRDVAnnule } from "@/lib/notifications"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import { getResend } from "@/lib/email"
-import { BUSINESS_EMAIL, SITE_NAME } from "@/lib/site"
+import { BUSINESS_EMAIL, SITE_NAME, SITE_URL } from "@/lib/site"
 import type { StatutRDV } from "@/generated/prisma/client"
 
 const FROM = `${SITE_NAME} <${BUSINESS_EMAIL}>`
@@ -134,7 +134,7 @@ export async function PATCH(
             <p>Bonjour <strong>${nom}</strong>,</p>
             <p>Nous espérons que votre soin <strong>${rdv.soin.nom}</strong> vous a apporté satisfaction.</p>
             <p>Votre avis nous est précieux :</p>
-            <a href="${process.env.NEXTAUTH_URL}/avis/${rdv.id}" style="display:inline-block;background:#2D7A1F;color:#fff;padding:12px 24px;text-decoration:none;margin-top:12px;font-size:14px;">
+            <a href="${SITE_URL}/avis/${rdv.id}" style="display:inline-block;background:#2D7A1F;color:#fff;padding:12px 24px;text-decoration:none;margin-top:12px;font-size:14px;">
               Laisser un avis
             </a>
             <p style="color:#8A8A8A;font-size:12px;margin-top:24px;">Le Surnaturel de Dieu — Abidjan</p>

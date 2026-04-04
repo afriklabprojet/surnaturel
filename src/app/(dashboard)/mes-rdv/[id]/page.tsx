@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma"
 import { genererLienGoogle, genererLienOutlook } from "@/lib/calendrier"
 import { formatPrix, formatDate } from "@/lib/utils"
 import { ArrowLeft, Calendar, Clock, Download, ExternalLink, Sparkles } from "lucide-react"
+import { SITE_URL } from "@/lib/site"
 
 const STATUT_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   CONFIRME: { bg: "bg-primary-light", text: "text-primary-brand", label: "Confirmé" },
@@ -35,8 +36,7 @@ export default async function PageBilletRDV({
 
   // Génération QR code en data URL (côté serveur)
   // Payload = URL du billet (scannable par n'importe quel lecteur QR)
-  const baseUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ""
-  const qrPayload = `${baseUrl}/mes-rdv/${rdv.id}`
+  const qrPayload = `${SITE_URL}/mes-rdv/${rdv.id}`
   const qrDataUrl = await QRCode.toDataURL(qrPayload, {
     width: 220,
     margin: 2,
