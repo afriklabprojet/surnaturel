@@ -73,49 +73,25 @@ module.exports = {
     },
 
     // ── Processus cron dédié ───────────────────────────────────────────
-    // Gère tous les crons de l'application (remplace vercel.json crons).
-    // Lance src/cron.ts via tsx (transpileur TypeScript léger).
-    // Démarrage : pm2 start ecosystem.config.js --only crons
-    {
-      name: "crons",
-      script: "node_modules/.bin/tsx",
-      args: "src/cron.ts",
-      exec_mode: "fork",
-      instances: 1,
-      autorestart: true,
-      max_restarts: 5,
-      min_uptime: "10s",
-      node_args: "-r dotenv/config",
-      env_production: {
-        NODE_ENV: "production",
-        DOTENV_CONFIG_PATH: ".env.production",
-      },
-      out_file: "./logs/cron-out.log",
-      error_file: "./logs/cron-error.log",
-      log_date_format: "YYYY-MM-DD HH:mm:ss",
-      merge_logs: true,
-    },
+    // DÉSACTIVÉ sur Hostinger (limite de threads trop basse).
+    // Les crons sont appelés via /api/cron/* par un service externe (ex: cron-job.org)
+    // ou depuis GitHub Actions avec curl.
+    // Pour réactiver : retirer le commentaire et redéployer.
+    // {
+    //   name: "crons",
+    //   script: "node_modules/.bin/tsx",
+    //   args: "src/cron.ts",
+    //   ...
+    // },
 
     // ── Worker BullMQ — notifications & push asynchrones ──────────────────
-    // Requis : REDIS_URL configuré (voir A12).
-    // Lance src/worker.ts — consomme la queue "notifications".
-    // Démarrage : pm2 start ecosystem.config.js --only worker
-    {
-      name: "worker",
-      script: "node_modules/.bin/tsx",
-      args: "src/worker.ts",
-      exec_mode: "fork",
-      instances: 1,
-      autorestart: true,
-      max_restarts: 10,
-      min_uptime: "5s",
-      env_production: {
-        NODE_ENV: "production",
-      },
-      out_file: "./logs/worker-out.log",
-      error_file: "./logs/worker-error.log",
-      log_date_format: "YYYY-MM-DD HH:mm:ss",
-      merge_logs: true,
-    },
+    // DÉSACTIVÉ sur Hostinger (limite de threads trop basse + REDIS_URL non configuré).
+    // Pour réactiver : configurer REDIS_URL et retirer le commentaire.
+    // {
+    //   name: "worker",
+    //   script: "node_modules/.bin/tsx",
+    //   args: "src/worker.ts",
+    //   ...
+    // },
   ],
 }
