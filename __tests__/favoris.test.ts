@@ -64,6 +64,12 @@ describe("Favoris — GET /api/favoris", () => {
     const res = await GET()
     expect(res.status).toBe(401)
   })
+
+  it("handles server error in GET (500)", async () => {
+    prismaMock.favori.findMany.mockRejectedValue(new Error("DB down"))
+    const res = await GET()
+    expect(res.status).toBe(500)
+  })
 })
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -120,6 +126,13 @@ describe("Favoris — POST /api/favoris", () => {
     const req = buildJsonRequest("/api/favoris", { soinId: "soin_1" })
     const res = await POST(req)
     expect(res.status).toBe(401)
+  })
+
+  it("handles server error in POST (500)", async () => {
+    prismaMock.favori.findFirst.mockRejectedValue(new Error("DB down"))
+    const req = buildJsonRequest("/api/favoris", { soinId: "soin_1" })
+    const res = await POST(req)
+    expect(res.status).toBe(500)
   })
 })
 
@@ -194,5 +207,27 @@ describe("Favoris — DELETE /api/favoris", () => {
     })
     const res = await DELETE(req)
     expect(res.status).toBe(401)
+  })
+
+  it("deletes favorite by produitId (200)", async () => {
+    prismaMock.favori.findFirst.mockResolvedValue(FAVORI_PRODUIT)
+    prismaMock.favori.delete.mockResolvedValue(FAVORI_PRODUIT)
+
+    const req = buildRequest("/api/favoris", {
+      method: "DELETE",
+      searchParams: { produitId: "prod_1" },
+    })
+    const res = await DELETE(req)
+    expect(res.status).toBe(200)
+  })
+
+  it("handles server error in DELETE (500)", async () => {
+    prismaMock.favori.findUnique.mockRejectedValue(new Error("DB down"))
+    const req = buildRequest("/api/favoris", {
+      method: "DELETE",
+      searchParams: { id: "fav_1" },
+    })
+    const res = await DELETE(req)
+    expect(res.status).toBe(500)
   })
 })

@@ -78,6 +78,13 @@ describe("Notifications — GET /api/notifications", () => {
     const res = await GET(req)
     expect(res.status).toBe(401)
   })
+
+  it("handles server error in GET (500)", async () => {
+    prismaMock.notification.findMany.mockRejectedValue(new Error("DB down"))
+    const req = buildRequest("/api/notifications")
+    const res = await GET(req)
+    expect(res.status).toBe(500)
+  })
 })
 
 describe("Notifications — PATCH /api/notifications/toutes-lues", () => {
@@ -104,6 +111,12 @@ describe("Notifications — PATCH /api/notifications/toutes-lues", () => {
     const res = await markAllRead()
     expect(res.status).toBe(401)
   })
+
+  it("handles server error in PATCH (500)", async () => {
+    prismaMock.notification.updateMany.mockRejectedValue(new Error("DB down"))
+    const res = await markAllRead()
+    expect(res.status).toBe(500)
+  })
 })
 
 describe("Notifications — GET /api/notifications/count", () => {
@@ -123,6 +136,16 @@ describe("Notifications — GET /api/notifications/count", () => {
 
   it("returns 0 for unauthenticated user (no 401)", async () => {
     mockAuth.mockResolvedValue(null)
+    const res = await getCount()
+    const json = await res.json()
+    expect(res.status).toBe(200)
+    expect(json.count).toBe(0)
+  })
+
+  it("returns 0 when DB errors (catch fallback)", async () => {
+    mockAuth.mockResolvedValue(SESSION)
+    prismaMock.notification.count.mockReset()
+    prismaMock.notification.count.mockRejectedValue(new Error("DB down"))
     const res = await getCount()
     const json = await res.json()
     expect(res.status).toBe(200)

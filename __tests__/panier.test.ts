@@ -68,6 +68,35 @@ describe("Panier — GET /api/panier", () => {
 
     expect(res.status).toBe(200)
     expect(json.items).toHaveLength(1)
+    expect(json.updatedAt).toBeNull() // legacy format has no updatedAt
+  })
+
+  it("handles corrupted JSON in cart gracefully", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: CART_KEY,
+      valeur: "not valid json",
+    })
+
+    const res = await GET()
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.items).toHaveLength(0)
+    expect(json.updatedAt).toBeNull()
+  })
+
+  it("returns updatedAt from new-format object", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: CART_KEY,
+      valeur: JSON.stringify({ items: [ITEM], updatedAt: "2026-04-03T12:00:00Z" }),
+    })
+
+    const res = await GET()
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.items).toHaveLength(1)
+    expect(json.updatedAt).toBe("2026-04-03T12:00:00Z")
   })
 })
 

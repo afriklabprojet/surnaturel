@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { NextRequest } from "next/server"
-import { prismaMock, mockAuth, buildJsonRequest } from "./setup"
+import { prismaMock, mockAuth, buildJsonRequest, buildRequest } from "./setup"
 
 const rdvModule = await import("@/app/api/rdv/route")
 const dispoModule = await import("@/app/api/rdv/disponibilites/route")
@@ -21,6 +21,55 @@ const fakeSoin = {
   prix: 15000,
   slug: "massage-relaxant",
 }
+
+describe("RDV — GET /api/rdv", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuth.mockResolvedValue(fakeSession)
+  })
+
+  it("returns list of user appointments (200)", async () => {
+    prismaMock.rendezVous.findMany.mockResolvedValue([
+      {
+        id: "rdv_1",
+        userId: "usr_client",
+        soinId: "soin_1",
+        dateHeure: new Date(),
+        soin: fakeSoin,
+      },
+    ])
+
+    const req = buildRequest("/api/rdv")
+    const res = await rdvModule.GET(req as never)
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.rdvs).toHaveLength(1)
+    expect(json.rdvs[0].id).toBe("rdv_1")
+  })
+
+  it("filters by categorie", async () => {
+    prismaMock.rendezVous.findMany.mockResolvedValue([])
+
+    const req = buildRequest("/api/rdv", {
+      searchParams: { categorie: "MASSAGE" },
+    })
+    const res = await rdvModule.GET(req as never)
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.rdvs).toHaveLength(0)
+    const findManyCall = prismaMock.rendezVous.findMany.mock.calls[0][0]
+    expect(findManyCall.where.soin).toEqual({ categorie: "MASSAGE" })
+  })
+
+  it("rejects unauthenticated GET (401)", async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = buildRequest("/api/rdv")
+    const res = await rdvModule.GET(req as never)
+    expect(res.status).toBe(401)
+  })
+})
 
 describe("RDV — Prise de rendez-vous", () => {
   beforeEach(() => {
@@ -98,6 +147,52 @@ describe("RDV — Prise de rendez-vous", () => {
 
     const res = await rdvModule.POST(req)
     expect(res.status).toBe(400)
+  })
+
+  it("rejects malformed JSON body (400)", async () => {
+    const req = new Request("http://localhost:3000/api/rdv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "bad json",
+    })
+    const res = await rdvModule.POST(req)
+    expect(res.status).toBe(400)
+  })
+
+  it("handles P2002 duplicate key race condition (409)", async () => {
+    prismaMock.soin.findUnique.mockResolvedValue(fakeSoin)
+    prismaMock.rendezVous.findUnique.mockResolvedValue(null)
+    // Simulate Prisma P2002 unique constraint violation
+    const p2002Error = Object.assign(new Error("Unique constraint failed"), { code: "P2002" })
+    prismaMock.rendezVous.create.mockRejectedValue(p2002Error)
+    // $transaction calls the fn which will throw P2002
+    prismaMock.$transaction.mockRejectedValueOnce(p2002Error)
+
+    const dateHeure = new Date(Date.now() + 86400_000).toISOString()
+    const req = buildJsonRequest("/api/rdv", {
+      soinId: "soin_1",
+      dateHeure,
+    })
+
+    const res = await rdvModule.POST(req)
+    expect(res.status).toBe(409)
+    const json = await res.json()
+    expect(json.error).toContain("réservé")
+  })
+
+  it("handles unexpected server error (500)", async () => {
+    prismaMock.soin.findUnique.mockResolvedValue(fakeSoin)
+    prismaMock.rendezVous.findUnique.mockResolvedValue(null)
+    prismaMock.$transaction.mockRejectedValueOnce(new Error("DB disconnect"))
+
+    const dateHeure = new Date(Date.now() + 86400_000).toISOString()
+    const req = buildJsonRequest("/api/rdv", {
+      soinId: "soin_1",
+      dateHeure,
+    })
+
+    const res = await rdvModule.POST(req)
+    expect(res.status).toBe(500)
   })
 })
 

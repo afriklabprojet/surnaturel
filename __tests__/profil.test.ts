@@ -172,6 +172,44 @@ describe("Profil — PUT /api/profil (change password)", () => {
     const res = await PUT(req)
     expect(res.status).toBe(401)
   })
+
+  it("rejects PUT with malformed JSON (400)", async () => {
+    const req = new NextRequest("http://localhost:3000/api/profil", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: "bad json",
+    })
+    const res = await PUT(req)
+    expect(res.status).toBe(400)
+  })
+
+  it("returns 404 when user not found in PUT", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null)
+
+    const req = buildJsonRequest("/api/profil", {
+      motDePasseActuel: PLAIN_PW,
+      nouveauMotDePasse: "NewPass456!",
+      confirmation: "NewPass456!",
+    }, "PUT")
+    const res = await PUT(req)
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error).toContain("introuvable")
+  })
+
+  it("rejects when user has no passwordHash (OAuth user)", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ passwordHash: null })
+
+    const req = buildJsonRequest("/api/profil", {
+      motDePasseActuel: "SomePass123!",
+      nouveauMotDePasse: "NewPass456!",
+      confirmation: "NewPass456!",
+    }, "PUT")
+    const res = await PUT(req)
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toContain("incorrect")
+  })
 })
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -304,5 +342,33 @@ describe("Auth — Reset password PUT (confirm)", () => {
     )
     const res = await confirmReset(req)
     expect(res.status).toBe(400)
+  })
+
+  it("handles server error in PUT confirm (500)", async () => {
+    prismaMock.user.findUnique.mockRejectedValue(new Error("DB down"))
+
+    const req = buildJsonRequest(
+      "/api/auth/reset-password",
+      {
+        token: "valid_token",
+        motDePasse: "NewSecure123!",
+        confirmation: "NewSecure123!",
+      },
+      "PUT"
+    )
+    const res = await confirmReset(req)
+    expect(res.status).toBe(500)
+  })
+})
+
+describe("Auth — Reset password POST server error", () => {
+  it("handles server error in POST request (500)", async () => {
+    prismaMock.user.findUnique.mockRejectedValue(new Error("DB down"))
+
+    const req = buildJsonRequest("/api/auth/reset-password", {
+      email: "test@example.com",
+    })
+    const res = await requestReset(req)
+    expect(res.status).toBe(500)
   })
 })

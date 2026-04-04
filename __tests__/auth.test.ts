@@ -98,4 +98,46 @@ describe("Auth — Inscription", () => {
     const json = await res.json()
     expect(json.error).toContain("incorrectes")
   })
+
+  it("returns 409 with re-send message when unverified account is within 2 minutes", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "existing",
+      emailVerifie: false,
+      createdAt: new Date(), // just now → within 2 min window
+    })
+
+    const req = buildJsonRequest("/api/auth/inscription", {
+      prenom: "Awa",
+      nom: "Koné",
+      email: "awa@example.com",
+      password: "Mon8ecure!",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(409)
+    const json = await res.json()
+    expect(json.error).toContain("email de confirmation")
+  })
+
+  it("deletes expired unverified account and recreates (201)", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "old_unverified",
+      emailVerifie: false,
+      createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 min ago → expired
+    })
+    prismaMock.user.delete.mockResolvedValue({})
+    prismaMock.user.create.mockResolvedValue({ id: "usr_new" })
+
+    const req = buildJsonRequest("/api/auth/inscription", {
+      prenom: "Awa",
+      nom: "Koné",
+      email: "awa@example.com",
+      password: "Mon8ecure!",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    expect(prismaMock.user.delete).toHaveBeenCalledWith({ where: { id: "old_unverified" } })
+    expect(prismaMock.user.create).toHaveBeenCalledOnce()
+  })
 })

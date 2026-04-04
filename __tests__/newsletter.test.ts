@@ -135,4 +135,17 @@ describe("Newsletter — POST /api/newsletter/subscribe", () => {
     const createCall = prismaMock.abonneNewsletter.create.mock.calls[0][0]
     expect(createCall.data.email).toBe("upper@example.com")
   })
+
+  it("handles server error (500)", async () => {
+    prismaMock.abonneNewsletter.findUnique.mockRejectedValue(new Error("DB down"))
+
+    const req = buildJsonRequest(
+      "/api/newsletter/subscribe",
+      { email: "test@example.com" }
+    )
+    const res = await POST(req)
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toContain("erreur")
+  })
 })

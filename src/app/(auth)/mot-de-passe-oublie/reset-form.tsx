@@ -123,7 +123,7 @@ function DemandeReset() {
         variants={fadeInRight}
         className="flex items-center justify-center px-6 py-10 md:px-12"
       >
-        <div className="w-full max-w-[400px]">
+        <div className="w-full max-w-100">
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-6 bg-gold" />
             <span className="font-body text-xs font-medium uppercase tracking-[0.2em] text-gold">
@@ -296,7 +296,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
         variants={fadeInRight}
         className="flex items-center justify-center px-6 py-10 md:px-12"
       >
-        <div className="w-full max-w-[400px]">
+        <div className="w-full max-w-100">
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-6 bg-gold" />
             <span className="font-body text-xs font-medium uppercase tracking-[0.2em] text-gold">

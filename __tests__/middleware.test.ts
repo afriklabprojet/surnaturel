@@ -172,3 +172,156 @@ describe("Middleware — Rate Limiting", () => {
     expect(res.status).toBe(200)
   })
 })
+
+describe("Middleware — Security & Scanner Blocking", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("blocks .env access (404)", async () => {
+    const req = createRequest("/.env")
+    const res = await middleware(req)
+    expect(res.status).toBe(404)
+  })
+
+  it("blocks .git access (404)", async () => {
+    const req = createRequest("/.git/config")
+    const res = await middleware(req)
+    expect(res.status).toBe(404)
+  })
+
+  it("blocks wp-admin access (404)", async () => {
+    const req = createRequest("/wp-admin/login.php")
+    const res = await middleware(req)
+    expect(res.status).toBe(404)
+  })
+
+  it("blocks node_modules access (404)", async () => {
+    const req = createRequest("/node_modules/some-pkg")
+    const res = await middleware(req)
+    expect(res.status).toBe(404)
+  })
+})
+
+describe("Middleware — ADMIN redirected from client routes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("redirects ADMIN from /dashboard to /admin", async () => {
+    mockGetToken.mockResolvedValue({ id: "usr_admin", role: "ADMIN" })
+    const req = createRequest("/dashboard")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/admin")
+  })
+
+  it("redirects ADMIN from /profil to /admin", async () => {
+    mockGetToken.mockResolvedValue({ id: "usr_admin", role: "ADMIN" })
+    const req = createRequest("/profil")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/admin")
+  })
+
+  it("redirects ADMIN from /favoris to /admin", async () => {
+    mockGetToken.mockResolvedValue({ id: "usr_admin", role: "ADMIN" })
+    const req = createRequest("/favoris")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/admin")
+  })
+})
+
+describe("Middleware — Communauté access gate", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("allows ADMIN to access /communaute freely", async () => {
+    mockGetToken.mockResolvedValue({ id: "usr_admin", role: "ADMIN" })
+    const req = createRequest("/communaute")
+    const res = await middleware(req)
+    expect(res.status).toBe(200)
+  })
+
+  it("allows ACCOMPAGNATEUR_MEDICAL to access /communaute freely", async () => {
+    mockGetToken.mockResolvedValue({ id: "usr_medic", role: "ACCOMPAGNATEUR_MEDICAL" })
+    const req = createRequest("/communaute")
+    const res = await middleware(req)
+    expect(res.status).toBe(200)
+  })
+
+  it("redirects CLIENT without access to /communaute/essai", async () => {
+    mockGetToken.mockResolvedValue({
+      id: "usr_1",
+      role: "CLIENT",
+      accesCommuaute: false,
+      essaiCommuauteUtilise: false,
+    })
+    const req = createRequest("/communaute")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/communaute/essai")
+  })
+
+  it("redirects CLIENT with expired access to /communaute/abonnement", async () => {
+    mockGetToken.mockResolvedValue({
+      id: "usr_1",
+      role: "CLIENT",
+      accesCommuaute: true,
+      accesCommuauteExpireAt: new Date(Date.now() - 86400_000).toISOString(),
+      essaiCommuauteUtilise: true,
+    })
+    const req = createRequest("/communaute")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/communaute/abonnement")
+  })
+
+  it("allows CLIENT with valid access to /communaute", async () => {
+    mockGetToken.mockResolvedValue({
+      id: "usr_1",
+      role: "CLIENT",
+      accesCommuaute: true,
+      accesCommuauteExpireAt: new Date(Date.now() + 86400_000 * 30).toISOString(),
+    })
+    const req = createRequest("/communaute")
+    const res = await middleware(req)
+    expect(res.status).toBe(200)
+  })
+
+  it("returns 403 JSON for /api/messages when CLIENT has no access", async () => {
+    mockGetToken.mockResolvedValue({
+      id: "usr_1",
+      role: "CLIENT",
+      accesCommuaute: false,
+      essaiCommuauteUtilise: true,
+    })
+    // /communaute/messages is a subpage of /communaute, gated by middleware
+    const req = createRequest("/communaute/messages")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/communaute/abonnement")
+  })
+
+  it("allows /communaute/abonnement without access", async () => {
+    mockGetToken.mockResolvedValue({
+      id: "usr_1",
+      role: "CLIENT",
+      accesCommuaute: false,
+    })
+    const req = createRequest("/communaute/abonnement")
+    const res = await middleware(req)
+    // /communaute/abonnement is excluded from gate
+    expect(res.status).toBe(200)
+  })
+
+  it("redirects SAGE_FEMME from /suivi-medical to /dashboard", async () => {
+    mockGetToken.mockResolvedValue({ id: "usr_sf", role: "SAGE_FEMME" })
+    const req = createRequest("/suivi-medical")
+    const res = await middleware(req)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/dashboard")
+  })
+})

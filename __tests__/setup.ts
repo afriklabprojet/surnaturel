@@ -29,7 +29,9 @@ export const prismaMock = {
   commande: {
     create: vi.fn(),
     findUnique: vi.fn(),
+    findFirst: vi.fn(),
     update: vi.fn(),
+    count: vi.fn(),
   },
   produit: {
     findMany: vi.fn(),
@@ -65,6 +67,7 @@ export const prismaMock = {
   },
   appConfig: {
     findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
     upsert: vi.fn(),
     deleteMany: vi.fn(),
   },
@@ -112,9 +115,26 @@ export const prismaMock = {
     delete: vi.fn(),
     count: vi.fn(),
   },
-  $transaction: vi.fn((fn: (tx: typeof prismaMock) => Promise<unknown>) =>
-    fn(prismaMock)
-  ),
+  abonnementMensuel: {
+    findUnique: vi.fn(),
+    update: vi.fn(),
+  },
+  paiementAbonnement: {
+    updateMany: vi.fn(),
+  },
+  motBloque: {
+    findMany: vi.fn(),
+  },
+  groupe: {
+    findUnique: vi.fn(),
+  },
+  $transaction: vi.fn((arg: unknown) => {
+    if (typeof arg === "function") {
+      return (arg as (tx: typeof prismaMock) => Promise<unknown>)(prismaMock)
+    }
+    // Array of promises — resolve them all
+    return Promise.all(arg as Promise<unknown>[])
+  }),
   $executeRaw: vi.fn().mockResolvedValue(0),
 }
 
@@ -124,6 +144,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
 export const mockAuth = vi.fn()
 vi.mock("@/lib/auth", () => ({
   auth: () => mockAuth(),
+  verifyActiveJti: vi.fn().mockResolvedValue(true),
   handlers: {},
   signIn: vi.fn(),
   signOut: vi.fn(),
@@ -156,11 +177,13 @@ vi.mock("@/lib/pusher", () => ({
     communaute: "communaute-feed",
     groupe: (id: string) => `groupe-${id}`,
     notification: (id: string) => `notification-${id}`,
+    creneaux: (soinId: string, date: string) => `creneaux-${soinId}-${date}`,
   },
   PUSHER_EVENTS: {
     NOUVEAU_MESSAGE: "new-message",
     NOUVEAU_POST: "new-post",
     POST_SUPPRIME: "post-deleted",
+    CRENEAU_RESERVE: "creneau-reserve",
   },
 }))
 
@@ -228,6 +251,32 @@ vi.mock("@/lib/jeko", () => ({
 /* ───── Logger ────────────────────────────────────────────────────── */
 vi.mock("@/lib/logger", () => ({
   default: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  typedLogger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}))
+
+/* ───── Site constants ────────────────────────────────────────────── */
+vi.mock("@/lib/site", () => ({
+  SITE_NAME: "Le Surnaturel de Dieu",
+  SITE_DOMAIN: "lesurnatureldedieu.com",
+  SITE_URL: "https://lesurnatureldedieu.com",
+  BUSINESS_FOUNDING_YEAR: 2020,
+  BUSINESS_FOUNDER: "Fondatrice",
+  BUSINESS_PHONE_DISPLAY: "+225 00 00 00 00",
+  BUSINESS_PHONE_TEL: "+22500000000",
+  BUSINESS_WHATSAPP_NUMBER: "+22500000000",
+  BUSINESS_WHATSAPP_DISPLAY: "+225 00 00 00 00",
+  BUSINESS_WHATSAPP_MESSAGE: "Bonjour",
+  BUSINESS_EMAIL: "contact@test.com",
+  BUSINESS_EMAIL_RDV: "rdv@test.com",
+  BUSINESS_ADDRESS: "Abidjan",
+  BUSINESS_CITY: "Abidjan",
+  BUSINESS_COUNTRY: "Côte d'Ivoire",
+  BUSINESS_ADDRESS_FULL: "Abidjan — Abidjan, Côte d'Ivoire",
+  BUSINESS_LATITUDE: 5.3,
+  BUSINESS_LONGITUDE: -4.0,
+  SOCIAL_FACEBOOK: "https://facebook.com/test",
+  SOCIAL_INSTAGRAM: "https://instagram.com/test",
+  TIMEZONE: "Africa/Abidjan",
 }))
 
 /* ───── Web Push ──────────────────────────────────────────────────── */
