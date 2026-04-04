@@ -82,6 +82,24 @@ export async function middleware(req: NextRequest) {
     return response
   }
 
+  /* ── /connexion : rediriger si déjà connecté ── */
+  if (pathname === "/connexion") {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    if (token) {
+      const raw = req.nextUrl.searchParams.get("callbackUrl") ?? ""
+      // Sécurité : n'accepter que les chemins internes (pas d'open redirect)
+      const safe =
+        raw.startsWith("/") && !raw.startsWith("//") && !raw.startsWith("/\\")
+          ? raw
+          : "/dashboard"
+      const url = req.nextUrl.clone()
+      url.pathname = safe
+      url.search = ""
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next()
+  }
+
   /* ── /admin/login accessible sans session ── */
   if (pathname === "/admin/login") {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
@@ -179,6 +197,8 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/connexion",
+    "/admin/login",
     "/api/auth/:path*",
     "/api/contact",
     "/api/paiement/:path*",
