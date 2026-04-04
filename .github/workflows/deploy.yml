@@ -124,13 +124,17 @@ jobs:
           command_timeout: 10m
           script: |
             set -euo pipefail
+            # ── PATH : Node 20 + PM2 installé dans ~/.npm-global ──────────
+            export PATH="/opt/alt/alt-nodejs20/root/usr/bin:/home/u507379921/.npm-global/bin:$PATH"
+
             echo "══════════════════════════════════════════"
             echo "  Déploiement — Le Surnaturel de Dieu"
             echo "  $(date '+%Y-%m-%d %H:%M:%S %Z')"
+            echo "  Node $(node -v) | npm $(npm -v)"
             echo "══════════════════════════════════════════"
 
             # ── Aller dans le répertoire du projet ─────────────────────────
-            cd ${{ secrets.PROJECT_PATH }}
+            cd ~/surnaturel
 
             # ── Récupérer la dernière version ──────────────────────────────
             echo ""
@@ -141,7 +145,7 @@ jobs:
             # ── Installer les dépendances ──────────────────────────────────
             echo ""
             echo "▶ 2/6 Installation dépendances…"
-            npm ci --omit=dev --legacy-peer-deps
+            npm ci --legacy-peer-deps
             echo "  ✓ npm ci terminé"
 
             # ── Générer le client Prisma ───────────────────────────────────
@@ -152,13 +156,9 @@ jobs:
 
             # ── Migrations base de données ─────────────────────────────────
             echo ""
-            if [[ "${{ inputs.skip_migrations }}" == "true" ]]; then
-              echo "▶ 4/6 Migrations — IGNORÉES (skip_migrations=true)"
-            else
-              echo "▶ 4/6 Migrations base de données…"
-              npx prisma migrate deploy
-              echo "  ✓ Migrations appliquées"
-            fi
+            echo "▶ 4/6 Migrations base de données…"
+            npx prisma migrate deploy
+            echo "  ✓ Migrations appliquées"
 
             # ── Build Next.js ──────────────────────────────────────────────
             echo ""
