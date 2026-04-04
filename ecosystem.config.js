@@ -46,9 +46,10 @@ module.exports = {
       instances: 1,
 
       // ── Variables d'environnement ───────────────────────────────────────
-      // --env-file charge .env.production (Node.js ≥ 20.6, serveur Hostinger = 20.x)
-      // Ne pas mettre les secrets ici — les déclarer dans .env.production.
-      node_args: "--env-file=.env.production",
+      // Les secrets sont chargés via : set -a; source .env.production; set +a
+      // avant pm2 start (PM2 hérite l'env du shell et le sauvegarde dans dump.pm2).
+      // node_args "--env-file" ne fonctionne pas : Next.js standalone remplace
+      // son propre processus (exec) et les flags Node sont perdus.
       env_production: {
         NODE_ENV: "production",
         PORT: 3000,

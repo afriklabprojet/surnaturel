@@ -190,8 +190,11 @@ jobs:
             export PATH="/opt/alt/alt-nodejs20/root/usr/bin:/home/u507379921/.npm-global/bin:$PATH"
             cd ~/surnaturel
             echo "Commit déployé : $(git log -1 --pretty='%h %s' 2>/dev/null || echo 'N/A')"
+            # Charger les secrets depuis .env.production dans le shell
+            # (PM2 hérite l'env et le sauvegarde dans dump.pm2)
+            set -a; source .env.production; set +a
             if pm2 list | grep -q "surnaturel"; then
-              pm2 reload ecosystem.config.js --env production
+              pm2 reload ecosystem.config.js --env production --update-env
             else
               pm2 start ecosystem.config.js --env production
             fi
