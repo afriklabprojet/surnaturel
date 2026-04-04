@@ -12,8 +12,8 @@ const serverSchema = z.object({
   NEXTAUTH_SECRET: z
     .string()
     .min(16, "NEXTAUTH_SECRET must be at least 16 characters"),
-  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
-  GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required"),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   PUSHER_APP_ID: z.string().min(1, "PUSHER_APP_ID is required"),
   PUSHER_KEY: z.string().min(1, "PUSHER_KEY is required"),
   PUSHER_SECRET: z.string().min(1, "PUSHER_SECRET is required"),
