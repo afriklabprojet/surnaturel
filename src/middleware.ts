@@ -82,8 +82,8 @@ export async function middleware(req: NextRequest) {
     return response
   }
 
-  /* ── /connexion : rediriger si déjà connecté ── */
-  if (pathname === "/connexion") {
+  /* ── /connexion : rediriger si déjà connecté (GET uniquement, pas les Server Actions POST) ── */
+  if (pathname === "/connexion" && req.method === "GET") {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
     if (token) {
       const raw = req.nextUrl.searchParams.get("callbackUrl") ?? ""
