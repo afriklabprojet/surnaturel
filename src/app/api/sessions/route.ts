@@ -8,7 +8,7 @@ import { typedLogger as logger } from "@/lib/logger"
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { auth, SESSION_COOKIE_NAME } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
 import { hashSessionToken } from "@/lib/totp"
@@ -24,8 +24,7 @@ export async function GET() {
 
     // Get current session token to mark it as current
     const cookieStore = await cookies()
-    const sessionToken = cookieStore.get("authjs.session-token")?.value
-      || cookieStore.get("__Secure-authjs.session-token")?.value
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
     const currentTokenHash = sessionToken ? hashSessionToken(sessionToken) : null
 
     const sessions = await prisma.authSession.findMany({
@@ -76,8 +75,7 @@ export async function DELETE(req: NextRequest) {
 
     // Get current session token
     const cookieStore = await cookies()
-    const sessionToken = cookieStore.get("authjs.session-token")?.value
-      || cookieStore.get("__Secure-authjs.session-token")?.value
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
     const currentTokenHash = sessionToken ? hashSessionToken(sessionToken) : null
 
     if (revokeAll) {

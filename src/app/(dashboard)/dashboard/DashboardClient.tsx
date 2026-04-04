@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import {
@@ -117,39 +117,41 @@ export default function DashboardClient({
     loaded: false,
   })
   const [rdvsSansAvis, setRdvsSansAvis] = useState<RDVSansAvis[]>([])
+  const hasAnimated = useRef(false)
 
-  // Logique d'affichage onboarding
+  // Logique d'affichage onboarding (une seule fois au mount)
   useEffect(() => {
     const flowDone = localStorage.getItem("onboarding_flow_done")
     const wizardDismissed = localStorage.getItem("onboarding_dismissed")
     const allStepsComplete = profilComplet && hasRdv && hasCommande
 
-    // Nouvelle utilisatrice sans RDV → modale de démarrage guidé (prioritaire)
     if (!flowDone && isNewUser && !hasRdv) {
       setShowOnboardingFlow(true)
-    // Utilisatrice existante avec des étapes incomplètes → wizard inline
     } else if (!wizardDismissed && !allStepsComplete) {
       setShowOnboarding(true)
     }
+  // SSR props ne changent pas — exécuter une seule fois
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-    // Countdown pour le prochain RDV
-    if (prochainRdv) {
-      function updateCountdown() {
-        const diff = new Date(prochainRdv!.dateHeure).getTime() - Date.now()
-        if (diff <= 0) { setCountdown(""); return }
-        const jours = Math.floor(diff / (1000 * 60 * 60 * 24))
-        const heures = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        if (jours > 0) setCountdown(`dans ${jours}j ${heures}h`)
-        else {
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-          setCountdown(`dans ${heures}h ${minutes}min`)
-        }
+  // Countdown pour le prochain RDV
+  useEffect(() => {
+    if (!prochainRdv) return
+    function updateCountdown() {
+      const diff = new Date(prochainRdv!.dateHeure).getTime() - Date.now()
+      if (diff <= 0) { setCountdown(""); return }
+      const jours = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const heures = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      if (jours > 0) setCountdown(`dans ${jours}j ${heures}h`)
+      else {
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        setCountdown(`dans ${heures}h ${minutes}min`)
       }
-      updateCountdown()
-      const timer = setInterval(updateCountdown, 60000)
-      return () => clearInterval(timer)
     }
-  }, [hasData, prochainRdv])
+    updateCountdown()
+    const timer = setInterval(updateCountdown, 60000)
+    return () => clearInterval(timer)
+  }, [prochainRdv])
 
   useEffect(() => {
     async function fetchRealtimeData() {
@@ -190,12 +192,17 @@ export default function DashboardClient({
     }
 
     fetchRealtimeData()
-  }, [hasData])
+  // Exécuter une seule fois au mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Marquer comme déjà animé après le premier rendu
+  useEffect(() => { hasAnimated.current = true }, [])
 
   return (
     <motion.div
       variants={staggerContainer}
-      initial="initial"
+      initial={hasAnimated.current ? false : "initial"}
       animate="animate"
       className="space-y-8"
     >

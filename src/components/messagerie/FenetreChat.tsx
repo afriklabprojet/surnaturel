@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, memo } from "react"
+import Image from "next/image"
 import { Send, Loader2, MessageSquare, Mic, X, Reply, Play, Pause, CornerDownRight, Clock, AlertCircle, RotateCcw, Trash2, ImageIcon, Edit2, Pin, Share2, Search, SmilePlus, Timer, Paperclip, Download, CalendarClock, FileText, FileSpreadsheet, File as FileIcon, Plus, ArrowDown, CheckCheck, Check } from "lucide-react"
 import { toast } from "sonner"
 import { Avatar, getAvatarStyle } from "@/components/messagerie/ListeConversations"
@@ -423,7 +424,6 @@ export default function FenetreChat({
     const container = messagesContainerRef.current
     if (!container) return
     bottomRef.current?.scrollIntoView({ behavior: "instant" })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interlocuteur?.id])
 
   useEffect(() => {
@@ -891,7 +891,6 @@ export default function FenetreChat({
               let showDateSep = false
               if (msgDate !== lastDate) { showDateSep = true; lastDate = msgDate }
               const grouped = msg.reactions ? groupReactions(msg.reactions) : []
-              const myReaction = msg.reactions?.find((r) => r.userId === currentUserId)
               const isEditing = editingMessageId === msg.id
 
               return (
@@ -972,11 +971,14 @@ export default function FenetreChat({
                                 preload="none"
                               />
                             ) : (
-                              <img
+                              <Image
                                 src={msg.contenu}
                                 alt="Image"
+                                width={400}
+                                height={288}
+                                sizes="(max-width: 768px) 100vw, 400px"
                                 className="block max-h-72 w-full max-w-full object-cover"
-                                loading="lazy"
+                                unoptimized
                               />
                             )}
                           </div>

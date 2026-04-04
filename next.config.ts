@@ -36,6 +36,7 @@ const csp = [
     "https://va.vercel-scripts.com",
     "https://cdn.vercel-insights.com",
     "https://vitals.vercel-insights.com",
+    "https://*.ingest.de.sentry.io",
   ].join(" "),
 
   // Iframes : Pusher + Google Maps

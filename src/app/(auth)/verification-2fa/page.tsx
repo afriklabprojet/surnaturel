@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
+import MotionDiv from "@/components/ui/MotionDiv"
 import { motion } from "framer-motion"
 import { Shield, Key, Loader2, ArrowLeft, AlertCircle } from "lucide-react"
 import { fadeInUp, buttonHover } from "@/lib/animations"
@@ -101,10 +102,8 @@ function TwoFAVerificationForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-10 bg-bg-page">
-      <motion.div
+      <MotionDiv
         variants={fadeInUp}
-        initial="initial"
-        animate="animate"
         className="w-full max-w-md"
       >
         {/* Back link */}
@@ -198,7 +197,7 @@ function TwoFAVerificationForm() {
             Contactez-nous
           </Link>
         </p>
-      </motion.div>
+      </MotionDiv>
     </div>
   )
 }

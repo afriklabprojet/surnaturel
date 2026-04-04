@@ -8,8 +8,8 @@ import { signIn } from "next-auth/react"
 import { publicLoginAction } from "./actions"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { motion } from "framer-motion"
 import { Fingerprint } from "lucide-react"
+import MotionDiv from "@/components/ui/MotionDiv"
 import { fadeInLeft, fadeInRight, staggerContainer, staggerItem, buttonHover } from "@/lib/animations"
 import { isPlatformAuthenticatorAvailable, authenticateWithPasskey } from "@/lib/webauthn"
 
@@ -136,10 +136,8 @@ export default function ConnexionForm() {
       </div>
 
       {/* ─── Desktop : colonne gauche verte ────────────────────── */}
-      <motion.div
+      <MotionDiv
         variants={fadeInLeft}
-        initial="initial"
-        animate="animate"
         className="hidden bg-primary-brand md:flex md:flex-col md:justify-between md:px-12 md:py-14"
       >
         <div>
@@ -185,13 +183,11 @@ export default function ConnexionForm() {
             qu&apos;on puisse s&apos;offrir.&rdquo;
           </p>
         </div>
-      </motion.div>
+      </MotionDiv>
 
       {/* ─── Colonne droite : formulaire ───────────────────────── */}
-      <motion.div
+      <MotionDiv
         variants={fadeInRight}
-        initial="initial"
-        animate="animate"
         className="flex items-center justify-center px-6 py-10 md:px-12"
       >
         <div className="w-full max-w-100">
@@ -410,7 +406,7 @@ export default function ConnexionForm() {
             </Link>
           </p>
         </div>
-      </motion.div>
+      </MotionDiv>
     </div>
   )
 }

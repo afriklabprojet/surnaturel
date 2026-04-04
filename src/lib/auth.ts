@@ -6,6 +6,18 @@ import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
 import type { Role } from "@/generated/prisma/client"
 
+/* ━━━━━━━━━━ Cookie Configuration ━━━━━━━━━━ */
+// Déterminer une seule fois si on est en HTTPS (production)
+const useSecureCookies =
+  process.env.NEXTAUTH_URL?.startsWith("https://") ||
+  process.env.AUTH_URL?.startsWith("https://") ||
+  false
+
+const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+
+/** Nom exact du cookie de session — exporté pour le middleware */
+export const SESSION_COOKIE_NAME = `${cookiePrefix}authjs.session-token`
+
 class EmailNonVerifieError extends CredentialsSignin {
   code = "EMAIL_NON_VERIFIE"
 }
@@ -143,6 +155,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // URLs relatives → préfixer avec baseUrl
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // URLs absolues sur le même domaine → autoriser
+      try {
+        const urlObj = new URL(url)
+        if (urlObj.origin === baseUrl) return url
+      } catch {
+        // URL invalide → fallback
+      }
+      return `${baseUrl}/dashboard`
+    },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         const email = user.email
@@ -255,8 +279,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 jours
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: SESSION_COOKIE_NAME,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+  },
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
 })
 
 /**

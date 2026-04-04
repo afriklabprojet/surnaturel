@@ -74,13 +74,22 @@ fi
 
 # ── 5. Build Next.js ─────────────────────────────────────────────────
 echo ""
-echo "▶ 5/7 Build Next.js (output: standalone)…"
+echo "▶ 5/8 Build Next.js (output: standalone)…"
 NODE_ENV=production npm run build
 echo "  ✓ Build terminé"
 
-# ── 6. Redémarrage PM2 ───────────────────────────────────────────────
+# ── 6. Copier les assets statiques dans standalone ───────────────────
+# Next.js standalone NE copie PAS .next/static ni public automatiquement.
+# Sans cette étape, tous les JS/CSS client retournent 404 → page blanche.
 echo ""
-echo "▶ 6/7 Redémarrage PM2…"
+echo "▶ 6/8 Copie des assets statiques…"
+cp -r .next/static .next/standalone/.next/static
+cp -r public .next/standalone/public
+echo "  ✓ .next/static et public/ copiés dans standalone"
+
+# ── 7. Redémarrage PM2 ───────────────────────────────────────────────
+echo ""
+echo "▶ 7/8 Redémarrage PM2…"
 if pm2 list | grep -q "surnaturel"; then
   pm2 reload ecosystem.config.js --env production
 else
@@ -89,9 +98,9 @@ fi
 pm2 save
 echo "  ✓ PM2 redémarré"
 
-# ── 7. Tests des routes critiques ────────────────────────────────────
+# ── 8. Tests des routes critiques ────────────────────────────────────
 echo ""
-echo "▶ 7/7 Test des routes critiques…"
+echo "▶ 8/8 Test des routes critiques…"
 
 BASE_URL="${NEXTAUTH_URL}"
 ROUTES=("/api/health" "/" "/connexion" "/boutique")

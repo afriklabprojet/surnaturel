@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, type FormEvent } from "react"
+import Image from "next/image"
 import { Loader2, Send, ImageIcon, Video, LinkIcon, X } from "lucide-react"
 import { Avatar, timeAgo } from "./AvatarCommunaute"
 import { MentionTextarea } from "./MentionTextarea"
@@ -174,10 +175,13 @@ export function NouveauPost({
               </div>
               <p className="font-body text-[12px] text-text-mid line-clamp-3">{repostData.contenu}</p>
               {repostData.images?.length > 0 && (
-                <img
+                <Image
                   src={repostData.images[0]}
                   alt={`Photo par ${repostData.auteur.prenom}`}
+                  width={128}
+                  height={80}
                   className="mt-2 h-20 w-32 object-cover border border-border-brand"
+                  unoptimized
                 />
               )}
             </div>
@@ -188,7 +192,7 @@ export function NouveauPost({
             <div className="mt-2 flex gap-2 flex-wrap">
               {images.map((url, i) => (
                 <div key={i} className="relative group w-20 h-20">
-                  <img src={url} alt={`Aperçu image ${i + 1}`} className="w-full h-full object-cover rounded-lg border border-border-brand" />
+                  <Image src={url} alt={`Aperçu image ${i + 1}`} width={80} height={80} className="w-full h-full object-cover rounded-lg border border-border-brand" unoptimized />
                   <button
                     type="button"
                     onClick={() => removeImage(i)}

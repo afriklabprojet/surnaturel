@@ -13,7 +13,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       attribute="class"
       defaultTheme="light"
       forcedTheme="light"
-      disableTransitionOnChange={false}
+      disableTransitionOnChange
     >
       {children}
     </NextThemesProvider>

@@ -2,6 +2,15 @@ import { NextResponse, type NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 import { createRateLimiter } from "@/lib/rate-limit"
 
+/* ━━━━━━━━━━ Cookie / Secret — identique à auth.ts ━━━━━━━━━━ */
+
+const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || ""
+const useSecureCookies =
+  process.env.NEXTAUTH_URL?.startsWith("https://") ||
+  process.env.AUTH_URL?.startsWith("https://") ||
+  false
+const SESSION_COOKIE = `${useSecureCookies ? "__Secure-" : ""}authjs.session-token`
+
 /* ━━━━━━━━━━ Rate Limiters ━━━━━━━━━━ */
 
 const authLimiter = createRateLimiter({ limit: 20, windowMs: 15 * 60 * 1000 })   // 20 req / 15 min
@@ -84,7 +93,7 @@ export async function middleware(req: NextRequest) {
 
   /* ── /admin/login accessible sans session ── */
   if (pathname === "/admin/login") {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    const token = await getToken({ req, secret: AUTH_SECRET, cookieName: SESSION_COOKIE, secureCookie: useSecureCookies })
     if (token && (token.role as string) === "ADMIN") {
       const url = req.nextUrl.clone()
       url.pathname = "/admin"
@@ -101,7 +110,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+  const token = await getToken({ req, secret: AUTH_SECRET, cookieName: SESSION_COOKIE, secureCookie: useSecureCookies })
 
   if (!token) {
     if (pathname.startsWith("/admin")) {

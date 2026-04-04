@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import {
   LayoutDashboard,
   Calendar,
@@ -85,9 +86,8 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const pathname = usePathname()
-  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const [points, setPoints] = useState(0)
@@ -98,33 +98,38 @@ export default function DashboardLayout({
   const initiales = user
     ? `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
     : ""
+  const hasFetched = useRef(false)
 
-  // Fetch points and notifications
+  // Fetch points — une seule fois au mount
   const fetchStats = useCallback(async () => {
+    if (hasFetched.current) return
+    hasFetched.current = true
     try {
       const fideliteRes = await fetch("/api/fidelite")
       if (fideliteRes.ok) {
         const data = await fideliteRes.json()
         const pts = data.points || 0
         setPoints(pts)
-        // Heuristique : 0 point → aucun soin complété, utilisatrice nouvelle
         setIsNewUser(pts === 0)
       }
-      if (user) {
-        let progress = 0
-        if (user.prenom) progress += 20
-        if (user.nom) progress += 20
-        if (user.email) progress += 20
-        if (user.photoUrl) progress += 20
-        progress += 20 // email verified
-        setProfileProgress(progress)
-      }
     } catch {}
-  }, [user])
+  }, [])
 
   useEffect(() => {
     fetchStats()
   }, [fetchStats])
+
+  // Progression profil — basée sur les données session
+  useEffect(() => {
+    if (!user) return
+    let progress = 0
+    if (user.prenom) progress += 20
+    if (user.nom) progress += 20
+    if (user.email) progress += 20
+    if (user.photoUrl) progress += 20
+    progress += 20 // email verified
+    setProfileProgress(progress)
+  }, [user?.prenom, user?.nom, user?.email, user?.photoUrl])
 
   const pageTitle =
     PAGE_TITLES[pathname] ??
@@ -139,16 +144,60 @@ export default function DashboardLayout({
     return pathname.startsWith(href)
   }
 
+  // Tant que la session charge, afficher un squelette stable (pas de flash)
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen bg-bg-page">
+        <aside className="hidden lg:flex lg:w-65 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-border-brand">
+          <div className="border-b border-border-brand px-5 py-6">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 bg-border-brand animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-28 bg-border-brand animate-pulse" />
+                <div className="h-3 w-36 bg-border-brand animate-pulse" />
+              </div>
+            </div>
+          </div>
+          <nav className="flex-1 px-3 py-4">
+            <ul className="space-y-1">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <li key={i} className="h-10 bg-border-brand/30 animate-pulse" />
+              ))}
+            </ul>
+          </nav>
+        </aside>
+        <div className="flex-1 lg:ml-65 flex flex-col">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border-brand bg-white px-5 py-4 lg:px-8">
+            <div className="h-8 w-40 bg-border-brand animate-pulse" />
+          </header>
+          <main className="flex-1 p-5 lg:p-8">
+            <div className="space-y-6">
+              <div className="h-7 w-52 bg-border-brand animate-pulse" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-36 border border-border-brand bg-white animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
   const sidebarContent = (
     <>
       {/* Avatar + nom + progression */}
       <div className="border-b border-border-brand px-5 py-6">
         <div className="flex items-center gap-3">
           {user?.photoUrl ? (
-            <img
+            <Image
               src={user.photoUrl}
               alt=""
+              width={44}
+              height={44}
               className="h-11 w-11 object-cover"
+              unoptimized
             />
           ) : (
             <div className="flex h-11 w-11 items-center justify-center bg-primary-brand text-white font-body text-[13px] font-medium">

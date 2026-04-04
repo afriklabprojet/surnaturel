@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod/v4"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import MotionDiv from "@/components/ui/MotionDiv"
 import { fadeInLeft, fadeInRight } from "@/lib/animations"
 
 // ─── Schemas ─────────────────────────────────────────────────────
@@ -81,10 +81,8 @@ function DemandeReset() {
       </div>
 
       {/* Desktop : colonne gauche verte */}
-      <motion.div
+      <MotionDiv
         variants={fadeInLeft}
-        initial="initial"
-        animate="animate"
         className="hidden bg-primary-brand md:flex md:flex-col md:justify-between md:px-12 md:py-14"
       >
         <div>
@@ -118,13 +116,11 @@ function DemandeReset() {
             qu&apos;on puisse s&apos;offrir.&rdquo;
           </p>
         </div>
-      </motion.div>
+      </MotionDiv>
 
       {/* Colonne droite : formulaire */}
-      <motion.div
+      <MotionDiv
         variants={fadeInRight}
-        initial="initial"
-        animate="animate"
         className="flex items-center justify-center px-6 py-10 md:px-12"
       >
         <div className="w-full max-w-[400px]">
@@ -208,7 +204,7 @@ function DemandeReset() {
             </>
           )}
         </div>
-      </motion.div>
+      </MotionDiv>
     </div>
   )
 }
@@ -263,10 +259,8 @@ function NouveauMotDePasse({ token }: { token: string }) {
       </div>
 
       {/* Desktop : colonne gauche verte */}
-      <motion.div
+      <MotionDiv
         variants={fadeInLeft}
-        initial="initial"
-        animate="animate"
         className="hidden bg-primary-brand md:flex md:flex-col md:justify-between md:px-12 md:py-14"
       >
         <div>
@@ -295,13 +289,11 @@ function NouveauMotDePasse({ token }: { token: string }) {
             qu&apos;on puisse s&apos;offrir.&rdquo;
           </p>
         </div>
-      </motion.div>
+      </MotionDiv>
 
       {/* Colonne droite : formulaire */}
-      <motion.div
+      <MotionDiv
         variants={fadeInRight}
-        initial="initial"
-        animate="animate"
         className="flex items-center justify-center px-6 py-10 md:px-12"
       >
         <div className="w-full max-w-[400px]">
@@ -403,7 +395,7 @@ function NouveauMotDePasse({ token }: { token: string }) {
             </>
           )}
         </div>
-      </motion.div>
+      </MotionDiv>
     </div>
   )
 }

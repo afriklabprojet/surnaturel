@@ -6,6 +6,7 @@ import { isoBase64URL } from "@simplewebauthn/server/helpers"
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types"
 import { encode } from "next-auth/jwt"
 import { cookies } from "next/headers"
+import { SESSION_COOKIE_NAME } from "@/lib/auth"
 
 const RP_ID = process.env.WEBAUTHN_RP_ID || "localhost"
 const ORIGIN = process.env.NEXTAUTH_URL || "http://localhost:3000"
@@ -81,11 +82,8 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Create NextAuth session token
-    const isProduction = process.env.NODE_ENV === "production"
-    const cookieName = isProduction
-      ? "__Secure-authjs.session-token"
-      : "authjs.session-token"
+    // Create NextAuth session token — utiliser le même nom de cookie que auth.ts
+    const useSecure = SESSION_COOKIE_NAME.startsWith("__Secure-")
 
     const token = await encode({
       token: {
@@ -97,15 +95,15 @@ export async function POST(req: NextRequest) {
         photoUrl: webAuthnCred.user.photoUrl,
       },
       secret: process.env.AUTH_SECRET!,
-      salt: cookieName,
+      salt: SESSION_COOKIE_NAME,
     })
 
     // Set session cookie
     const cookieStore = await cookies()
 
-    cookieStore.set(cookieName, token, {
+    cookieStore.set(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: isProduction,
+      secure: useSecure,
       sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60, // 30 days

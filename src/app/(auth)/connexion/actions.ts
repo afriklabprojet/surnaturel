@@ -2,6 +2,7 @@
 
 import { signIn } from "@/lib/auth"
 import { AuthError } from "next-auth"
+import { isRedirectError } from "next/dist/client/components/redirect-error"
 
 export type PublicLoginResult =
   | { ok: true }
@@ -18,6 +19,10 @@ export async function publicLoginAction(
     await signIn("credentials", { email, password, redirect: false })
     return { ok: true }
   } catch (error) {
+    // NextAuth v5 beta peut lancer un NEXT_REDIRECT même avec redirect: false
+    // dans les Server Actions — laisser Next.js le gérer
+    if (isRedirectError(error)) throw error
+
     if (error instanceof AuthError) {
       const code = (error as { code?: string }).code ?? ""
       const msg = error.message ?? ""
@@ -31,7 +36,10 @@ export async function publicLoginAction(
       }
       return { ok: false, code: "CREDENTIALS_INVALID" }
     }
-    // Re-throw Next.js redirect / not-found errors
-    throw error
+
+    // Erreur inattendue — log et retourner une erreur exploitable côté client
+    const detail = error instanceof Error ? error.message : "Erreur interne"
+    console.error("[publicLoginAction] Erreur inattendue:", detail)
+    return { ok: false, code: "SERVER_ERROR", detail }
   }
 }

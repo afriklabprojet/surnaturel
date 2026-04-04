@@ -84,6 +84,7 @@ export default function Footer() {
                 <li key={lien.href}>
                   <Link
                     href={lien.href}
+                    prefetch={false}
                     className="font-body text-[12px] text-white/55 transition-colors duration-300 hover:text-gold"
                   >
                     {lien.label}
@@ -103,6 +104,7 @@ export default function Footer() {
                 <li key={lien.href}>
                   <Link
                     href={lien.href}
+                    prefetch={false}
                     className="font-body text-[12px] text-white/55 transition-colors duration-300 hover:text-gold"
                   >
                     {lien.label}
@@ -149,18 +151,21 @@ export default function Footer() {
           <div className="flex gap-6">
             <Link
               href="/mentions-legales"
+              prefetch={false}
               className="font-body text-xs text-white/40 transition-colors duration-300 hover:text-gold"
             >
               Mentions légales
             </Link>
             <Link
               href="/politique-confidentialite"
+              prefetch={false}
               className="font-body text-xs text-white/40 transition-colors duration-300 hover:text-gold"
             >
               Politique de confidentialité
             </Link>
             <Link
               href="/conditions-utilisation"
+              prefetch={false}
               className="font-body text-xs text-white/40 transition-colors duration-300 hover:text-gold"
             >
               CGU
