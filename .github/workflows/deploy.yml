@@ -107,6 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [typecheck, lint, test]
     if: ${{ always() && (needs.typecheck.result == 'success' || needs.typecheck.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped') && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    environment: production
 
     steps:
       - uses: actions/checkout@v4
@@ -121,6 +122,13 @@ jobs:
       # ──────────────────────────────────────────────────────────────────────
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
+
+      - name: Debug secrets availability
+        run: |
+          echo "DATABASE_URL set: ${{ secrets.DATABASE_URL != '' }}"
+          echo "DIRECT_URL set: ${{ secrets.DIRECT_URL != '' }}"
+          echo "NEXTAUTH_SECRET set: ${{ secrets.NEXTAUTH_SECRET != '' }}"
+          echo "HOSTINGER_SSH_KEY set: ${{ secrets.HOSTINGER_SSH_KEY != '' }}"
 
       - name: Generate Prisma client
         run: npx prisma generate
