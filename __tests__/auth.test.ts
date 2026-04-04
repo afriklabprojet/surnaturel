@@ -34,7 +34,11 @@ describe("Auth — Inscription", () => {
   })
 
   it("rejects duplicate email (409)", async () => {
-    prismaMock.user.findUnique.mockResolvedValue({ id: "existing" })
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "existing",
+      emailVerifie: true,
+      createdAt: new Date(),
+    })
 
     const req = buildJsonRequest("/api/auth/inscription", {
       prenom: "Awa",
