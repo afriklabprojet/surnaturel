@@ -56,6 +56,16 @@ describe("Crypto — AES-256-GCM encryption", () => {
     expect(() => decrypt(tampered)).toThrow()
   })
 
+  it("throws when ENCRYPTION_KEY is missing", () => {
+    const saved = process.env.ENCRYPTION_KEY
+    delete process.env.ENCRYPTION_KEY
+    try {
+      expect(() => encrypt("test")).toThrow("ENCRYPTION_KEY")
+    } finally {
+      process.env.ENCRYPTION_KEY = saved
+    }
+  })
+
   it("handles long text", () => {
     const texte = "A".repeat(10_000)
     const dechiffre = decrypt(encrypt(texte))

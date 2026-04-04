@@ -250,4 +250,89 @@ describe("E-commerce — Commandes", () => {
     const res = await POST(req)
     expect(res.status).toBe(500)
   })
+
+  it("applies free shipping when total exceeds seuilGratuit", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: "livraison",
+      valeur: JSON.stringify({
+        zones: [{ id: "zone_1", nom: "Cocody", frais: 2000, actif: true }],
+        seuilGratuit: 5000,
+      }),
+    })
+    prismaMock.produit.findMany.mockResolvedValue([{ ...fakeProduit, prix: 6000 }])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_free_ship",
+      total: 6000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 1, prixUnitaire: 6000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+      zoneId: "zone_1",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    // fraisLivraison should be 0 since total >= seuilGratuit
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(0)
+  })
+
+  it("falls back to fraisLivraisonClient when no zoneId", async () => {
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.produit.update.mockResolvedValue({})
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_fallback",
+      total: 12000,
+      lignes: [{ produit: { nom: "Crème" }, quantite: 2, prixUnitaire: 5000 }],
+      user: { email: "buyer@example.com", prenom: "Fatou" },
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 2 }],
+      fraisLivraison: 1500,
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const createCall = prismaMock.commande.create.mock.calls[0][0]
+    expect(createCall.data.fraisLivraison).toBe(1500)
+  })
+
+  it("returns stock error message as 409", async () => {
+    prismaMock.produit.findMany.mockResolvedValue([{ ...fakeProduit, stock: 0 }])
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(409)
+    const json = await res.json()
+    expect(json.error).toContain("Stock insuffisant")
+  })
+
+  it("logs error when confirmation email fails (background catch)", async () => {
+    const { envoyerEmailConfirmationCommande } = await import("@/lib/email")
+    vi.mocked(envoyerEmailConfirmationCommande).mockRejectedValueOnce(new Error("Email down"))
+
+    prismaMock.produit.findMany.mockResolvedValue([fakeProduit])
+    prismaMock.commande.create.mockResolvedValue({
+      id: "cmd_email_fail",
+      total: 5000,
+      user: { email: "client@test.com", prenom: "Awa" },
+      lignes: [{ produit: { nom: "Produit Test" }, quantite: 1, prixUnitaire: 5000 }],
+    })
+
+    const req = buildJsonRequest("/api/boutique/commandes", {
+      items: [{ produitId: "prod_1", quantite: 1 }],
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    // Wait for background .catch() to settle
+    await new Promise((r) => setTimeout(r, 50))
+  })
 })

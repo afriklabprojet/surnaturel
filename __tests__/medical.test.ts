@@ -94,6 +94,25 @@ describe("Medical — Dossier médical", () => {
     expect(upsertCall.create.groupeSanguin).toContain(":")
   })
 
+  it("creates record with contactUrgence and without groupeSanguin (200)", async () => {
+    mockAuth.mockResolvedValue(clientSession)
+    prismaMock.dossierMedical.upsert.mockResolvedValue({})
+
+    const req = buildJsonRequest("/api/medical/dossier", {
+      contactUrgence: "+225 07 00 00 00",
+      notes: "RAS",
+    }, "PATCH") as never
+
+    const res = await dossierModule.PATCH(req)
+    expect(res.status).toBe(200)
+
+    const upsertCall = prismaMock.dossierMedical.upsert.mock.calls[0][0]
+    // contactUrgence should be encrypted
+    expect(upsertCall.create.contactUrgence).toContain(":")
+    // groupeSanguin should be null (not provided)
+    expect(upsertCall.create.groupeSanguin).toBeNull()
+  })
+
   it("rejects PATCH with malformed JSON (400)", async () => {
     mockAuth.mockResolvedValue(clientSession)
     const req = new Request("http://localhost:3000/api/medical/dossier", {
@@ -149,6 +168,20 @@ describe("Medical — Dossier médical", () => {
     const res = await dossierModule.GET()
     expect(res.status).toBe(401)
   })
+
+  it("rejects revoked session via JTI check (401)", async () => {
+    const { verifyActiveJti } = await import("@/lib/auth")
+    vi.mocked(verifyActiveJti).mockResolvedValueOnce(false)
+    mockAuth.mockResolvedValue({
+      ...clientSession,
+      jti: "revoked-jti-token",
+    })
+
+    const res = await dossierModule.GET()
+    expect(res.status).toBe(401)
+    const json = await res.json()
+    expect(json.error).toContain("révoquée")
+  })
 })
 
 describe("Medical — Messages médicaux POST", () => {
@@ -193,6 +226,73 @@ describe("Medical — Messages médicaux POST", () => {
     const createCall = prismaMock.messageMedical.create.mock.calls[0][0]
     expect(createCall.data.contenu).not.toBe("Bonjour docteur, j'ai des douleurs")
     expect(createCall.data.contenu).toContain(":")
+  })
+
+  it("sends message to destinataire without email (no email notification)", async () => {
+    mockAuth.mockResolvedValue(clientSession)
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "usr_medic",
+      role: "ACCOMPAGNATEUR_MEDICAL",
+      email: null,
+      prenom: "Docteur",
+    })
+    prismaMock.messageMedical.create.mockResolvedValue({
+      id: "msg_no_email",
+      expediteurId: "usr_patient",
+      destinataireId: "usr_medic",
+      contenu: "encrypted",
+      expediteur: {
+        id: "usr_patient",
+        nom: "Bamba",
+        prenom: "Mariam",
+        photoUrl: null,
+      },
+    })
+
+    const req = buildJsonRequest("/api/medical/messages", {
+      destinataireId: "usr_medic",
+      contenu: "Message sans email",
+    })
+
+    const res = await messagesModule.POST(req as never)
+    expect(res.status).toBe(201)
+    // Email notification should be skipped when no email
+    const { envoyerEmailMessageMedical } = await import("@/lib/email")
+    expect(envoyerEmailMessageMedical).not.toHaveBeenCalled()
+  })
+
+  it("handles email notification failure gracefully", async () => {
+    mockAuth.mockResolvedValue(clientSession)
+    const { envoyerEmailMessageMedical } = await import("@/lib/email")
+    vi.mocked(envoyerEmailMessageMedical).mockRejectedValueOnce(new Error("Email down"))
+
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: "usr_medic",
+      role: "ACCOMPAGNATEUR_MEDICAL",
+      email: "medic@example.com",
+      prenom: "Docteur",
+    })
+    prismaMock.messageMedical.create.mockResolvedValue({
+      id: "msg_email_fail",
+      expediteurId: "usr_patient",
+      destinataireId: "usr_medic",
+      contenu: "encrypted",
+      expediteur: {
+        id: "usr_patient",
+        nom: "Bamba",
+        prenom: "Mariam",
+        photoUrl: null,
+      },
+    })
+
+    const req = buildJsonRequest("/api/medical/messages", {
+      destinataireId: "usr_medic",
+      contenu: "Message test email fail",
+    })
+
+    const res = await messagesModule.POST(req as never)
+    expect(res.status).toBe(201) // Message created despite email failure
+    await new Promise((r) => setTimeout(r, 50)) // let catch settle
   })
 
   it("CLIENT cannot send to another CLIENT (403)", async () => {

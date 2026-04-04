@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest"
 import { prismaMock } from "./setup"
 
 // ── Calendrier ────────────────────────────────────────────────────
@@ -179,5 +179,112 @@ describe("Rate Limit — createMemoryLimiter (in-memory fallback)", () => {
 
     const r2 = await Promise.resolve(limiter("key-b"))
     expect(r2.allowed).toBe(true) // different key, still allowed
+  })
+
+  it("runs periodic cleanup of expired entries", async () => {
+    const mod = await vi.importActual<typeof import("@/lib/rate-limit")>("@/lib/rate-limit")
+    const limiter = mod.createRateLimiter({ limit: 5, windowMs: 1_000 }) // 1s window
+
+    // Add entries
+    await Promise.resolve(limiter("cleanup-key"))
+    await Promise.resolve(limiter("cleanup-key"))
+
+    // Advance time past cleanup threshold (60s) and past window (1s)
+    const realDateNow = Date.now
+    let fakeNow = realDateNow()
+    vi.spyOn(Date, "now").mockImplementation(() => fakeNow)
+
+    fakeNow += 61_000 // 61 seconds later → triggers cleanup + all entries expired
+
+    // Next call triggers cleanup
+    const r = await Promise.resolve(limiter("cleanup-key"))
+    expect(r.allowed).toBe(true)
+    // Old entries should have been cleaned up, so remaining = limit - 1
+    expect(r.remaining).toBe(4)
+
+    vi.spyOn(Date, "now").mockRestore()
+  })
+})
+
+// ── Rate Limit — Upstash Redis backend ─────────────────────────────
+// To test the Upstash branch, we need to:
+// 1. Set env vars before import
+// 2. Use vi.doUnmock + vi.resetModules to force fresh evaluation
+// 3. Mock global.fetch for the Redis REST API
+
+describe("Rate Limit — createUpstashLimiter (Redis backend)", () => {
+  const savedUrl = process.env.UPSTASH_REDIS_REST_URL
+  const savedToken = process.env.UPSTASH_REDIS_REST_TOKEN
+  const savedFetch = globalThis.fetch
+
+  afterEach(() => {
+    if (savedUrl) process.env.UPSTASH_REDIS_REST_URL = savedUrl
+    else delete process.env.UPSTASH_REDIS_REST_URL
+    if (savedToken) process.env.UPSTASH_REDIS_REST_TOKEN = savedToken
+    else delete process.env.UPSTASH_REDIS_REST_TOKEN
+    globalThis.fetch = savedFetch
+    // Re-mock rate-limit for other tests
+    vi.doMock("@/lib/rate-limit", () => ({
+      createRateLimiter: () => (...args: unknown[]) => {
+        const { mockRateLimitCheck } = require("./setup")
+        return mockRateLimitCheck(...args)
+      },
+    }))
+  })
+
+  it("allows request when under limit via Upstash", async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://mock-redis.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "mock-token"
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([
+        { result: 0 },  // ZREMRANGEBYSCORE
+        { result: 1 },  // ZADD
+        { result: 1 },  // ZCARD — count = 1 (under limit)
+        { result: 1 },  // EXPIRE
+      ]),
+    }) as unknown as typeof fetch
+
+    vi.doUnmock("@/lib/rate-limit")
+    vi.resetModules()
+    const mod = await import("@/lib/rate-limit")
+    const limiter = mod.createRateLimiter({ limit: 10, windowMs: 60_000 })
+
+    const result = await Promise.resolve(limiter("upstash-key"))
+    expect(result.allowed).toBe(true)
+    expect(result.remaining).toBe(9)
+    expect(result.retryAfterSeconds).toBe(0)
+    expect(globalThis.fetch).toHaveBeenCalled()
+  })
+
+  it("blocks request when over limit via Upstash", async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://mock-redis.upstash.io"
+    process.env.UPSTASH_REDIS_REST_TOKEN = "mock-token"
+
+    const now = Date.now()
+    globalThis.fetch = vi.fn()
+      // First call: pipeline
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve([
+          { result: 0 },
+          { result: 1 },
+          { result: 11 },  // ZCARD = 11 > limit of 10
+          { result: 1 },
+        ]),
+      })
+      // Second call: ZRANGE for oldest entry
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({ result: [String(now - 30_000), String(now - 30_000)] }),
+      }) as unknown as typeof fetch
+
+    vi.doUnmock("@/lib/rate-limit")
+    vi.resetModules()
+    const mod = await import("@/lib/rate-limit")
+    const limiter = mod.createRateLimiter({ limit: 10, windowMs: 60_000 })
+
+    const result = await Promise.resolve(limiter("upstash-blocked"))
+    expect(result.allowed).toBe(false)
+    expect(result.remaining).toBe(0)
+    expect(result.retryAfterSeconds).toBeGreaterThan(0)
   })
 })

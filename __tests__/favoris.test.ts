@@ -173,6 +173,12 @@ describe("Favoris — DELETE /api/favoris", () => {
     expect(json.success).toBe(true)
   })
 
+  it("returns 404 when no id, soinId, or produitId param provided", async () => {
+    const req = buildRequest("/api/favoris", { method: "DELETE" })
+    const res = await DELETE(req)
+    expect(res.status).toBe(404)
+  })
+
   it("returns 404 when favorite does not exist", async () => {
     prismaMock.favori.findUnique.mockResolvedValue(null)
     prismaMock.favori.findFirst.mockResolvedValue(null)

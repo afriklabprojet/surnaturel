@@ -316,6 +316,51 @@ describe("Payment webhook — Jeko", () => {
     expect(json.alreadyProcessed).toBe(true)
   })
 
+  it("returns 502 when Jeko verification fails for abonnement", async () => {
+    const { verifierStatutPaiement } = await import("@/lib/jeko")
+    vi.mocked(verifierStatutPaiement).mockRejectedValueOnce(new Error("Jeko down"))
+
+    prismaMock.abonnementMensuel.findUnique.mockResolvedValue({
+      id: "abo_jeko_fail",
+      userId: "usr_1",
+      statut: "EN_ATTENTE",
+      user: { id: "usr_1", email: "e@example.com", prenom: "A", nom: "K" },
+      formule: { nom: "Premium", prixMensuel: 5000 },
+    })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-ABCOMM-abo_jeko_fail-1234567890",
+      status: "success",
+      paymentRequestId: "pay_abo_fail",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(502)
+  })
+
+  it("skips unconfirmed abonnement when Jeko says not success", async () => {
+    const { verifierStatutPaiement } = await import("@/lib/jeko")
+    vi.mocked(verifierStatutPaiement).mockResolvedValueOnce("pending")
+
+    prismaMock.abonnementMensuel.findUnique.mockResolvedValue({
+      id: "abo_unconfirmed",
+      userId: "usr_1",
+      statut: "EN_ATTENTE",
+      user: { id: "usr_1", email: "e@example.com", prenom: "A", nom: "K" },
+      formule: { nom: "Premium", prixMensuel: 5000 },
+    })
+
+    const req = buildWebhookRequest({
+      reference: "CMD-ABCOMM-abo_unconfirmed-1234567890",
+      status: "success",
+      paymentRequestId: "pay_abo_pending",
+    })
+
+    const res = await POST(req as never)
+    const json = await res.json()
+    expect(json.skipped).toBe("unconfirmed")
+  })
+
   it("returns 502 when Jeko verification fails on success", async () => {
     const { verifierStatutPaiement } = await import("@/lib/jeko")
     vi.mocked(verifierStatutPaiement).mockRejectedValueOnce(new Error("Jeko down"))
@@ -330,6 +375,24 @@ describe("Payment webhook — Jeko", () => {
 
     const res = await POST(req as never)
     expect(res.status).toBe(502)
+  })
+
+  it("logs error when background email fails after payment", async () => {
+    const { envoyerEmailCommandePayee } = await import("@/lib/email")
+    vi.mocked(envoyerEmailCommandePayee).mockRejectedValueOnce(new Error("Email service down"))
+
+    prismaMock.commande.findUnique.mockResolvedValue(fakeCommande)
+
+    const req = buildWebhookRequest({
+      reference: "CMD-cmd_test-1234567890",
+      status: "success",
+      paymentRequestId: "pay_email_fail",
+    })
+
+    const res = await POST(req as never)
+    expect(res.status).toBe(200)
+    // Wait for background .catch() to settle
+    await new Promise((r) => setTimeout(r, 50))
   })
 
   it("skips unconfirmed payment when Jeko says not success", async () => {

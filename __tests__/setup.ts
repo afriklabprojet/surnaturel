@@ -282,16 +282,24 @@ vi.mock("@/lib/site", () => ({
 /* ───── Web Push ──────────────────────────────────────────────────── */
 vi.mock("@/lib/web-push", () => ({
   envoyerPushNotification: vi.fn().mockResolvedValue(undefined),
-  isPushConfigured: () => false,
+  isPushConfigured: vi.fn().mockReturnValue(false),
 }))
 
 /* ───── Rate Limit ────────────────────────────────────────────────── */
+export const mockRateLimitCheck = vi.fn().mockResolvedValue({ allowed: true, retryAfterSeconds: 0, limit: 30, remaining: 29 })
 vi.mock("@/lib/rate-limit", () => ({
-  createRateLimiter: () => vi.fn().mockResolvedValue({ allowed: true, retryAfterSeconds: 0, limit: 30 }),
+  createRateLimiter: () => (...args: unknown[]) => mockRateLimitCheck(...args),
 }))
 
-/* ───── bcryptjs (keep real for auth tests) ───────────────────────── */
-// NOT mocked — used for realistic password hashing assertions
+/* ───── bcryptjs (fast mock for tests) ─────────────────────────────── */
+vi.mock("bcryptjs", () => ({
+  default: {
+    hash: vi.fn(async (pw: string) => `hashed_${pw}`),
+    compare: vi.fn(async (pw: string, hash: string) => hash === `hashed_${pw}`),
+    hashSync: vi.fn((pw: string) => `hashed_${pw}`),
+    compareSync: vi.fn((pw: string, hash: string) => hash === `hashed_${pw}`),
+  },
+}))
 
 /* ───── Helper: build a Request object for route handlers ─────────── */
 import { NextRequest } from "next/server"

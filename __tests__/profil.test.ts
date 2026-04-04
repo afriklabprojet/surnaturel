@@ -65,6 +65,30 @@ describe("Profil — PATCH /api/profil", () => {
     expect(json.user.nom).toBe("Coulibaly")
   })
 
+  it("updates all conditional fields (nom, prenom, telephone, photoUrl)", async () => {
+    prismaMock.user.update.mockResolvedValue({
+      ...USER_DB,
+      nom: "Coulibaly",
+      prenom: "Fatoumata",
+      telephone: "+2250700111222",
+      photoUrl: "https://example.com/photo.jpg",
+    })
+    const req = buildJsonRequest("/api/profil", {
+      nom: "Coulibaly",
+      prenom: "Fatoumata",
+      telephone: "+2250700111222",
+      photoUrl: "https://example.com/photo.jpg",
+    }, "PATCH")
+    const res = await PATCH(req)
+    const json = await res.json()
+    expect(res.status).toBe(200)
+    const updateCall = prismaMock.user.update.mock.calls[0][0]
+    expect(updateCall.data.nom).toBe("Coulibaly")
+    expect(updateCall.data.prenom).toBe("Fatoumata")
+    expect(updateCall.data.telephone).toBe("+2250700111222")
+    expect(updateCall.data.photoUrl).toBe("https://example.com/photo.jpg")
+  })
+
   it("rejects invalid photoUrl (400)", async () => {
     const req = buildJsonRequest(
       "/api/profil",

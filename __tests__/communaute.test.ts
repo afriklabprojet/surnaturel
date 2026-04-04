@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { prismaMock, mockAuth, buildJsonRequest } from "./setup"
+import { prismaMock, mockAuth, buildJsonRequest, mockRateLimitCheck } from "./setup"
 
 const postsModule = await import("@/app/api/communaute/posts/route")
 const messagesModule = await import("@/app/api/messages/route")
@@ -78,6 +78,23 @@ describe("Communauté — Posts", () => {
     expect(res.status).toBe(200)
     expect(json.posts).toHaveLength(1)
     expect(json.total).toBe(1)
+  })
+
+  it("filters out blocked users from feed", async () => {
+    prismaMock.blocage.findMany.mockResolvedValue([
+      { bloqueurId: "usr_alice", bloqueId: "usr_troll" },
+    ])
+    prismaMock.post.findMany.mockResolvedValue([])
+    prismaMock.post.count.mockResolvedValue(0)
+
+    const req = new Request("http://localhost:3000/api/communaute/posts?page=1&limit=10")
+    const res = await postsModule.GET(req as never)
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    // Verify the where clause excludes blocked user
+    const findManyCall = prismaMock.post.findMany.mock.calls[0][0]
+    expect(findManyCall.where.auteurId.notIn).toContain("usr_troll")
   })
 
   it("rejects post creation without auth (401)", async () => {
@@ -460,6 +477,45 @@ describe("Communauté — Messages privés", () => {
     await new Promise((r) => setTimeout(r, 50))
   })
 
+  it("sends message with push notification when configured", async () => {
+    const { isPushConfigured } = await import("@/lib/web-push")
+    const { envoyerPushNotification } = await import("@/lib/web-push")
+    vi.mocked(isPushConfigured).mockReturnValue(true)
+
+    prismaMock.user.findUnique
+      .mockResolvedValueOnce({ id: "usr_bob" }) // destinataire check
+    prismaMock.message.create.mockResolvedValue({
+      id: "msg_push",
+      contenu: "Push test",
+      expediteur: { id: "usr_alice", nom: "Yao", prenom: "Alice", photoUrl: null },
+      replyTo: null,
+    })
+    prismaMock.conversation.findUnique.mockResolvedValue({ id: "conv_push" })
+    prismaMock.message.update.mockResolvedValue({})
+    prismaMock.conversation.upsert.mockResolvedValue({})
+    // The void async IIFE reads this for notification + push
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      notifMessages: true,
+      pushSubscriptions: [
+        { endpoint: "https://push.example.com/sub1", p256dh: "key1", auth: "auth1" },
+      ],
+    })
+
+    const req = buildJsonRequest("/api/messages", {
+      destinataireId: "usr_bob",
+      contenu: "Push test",
+    })
+
+    const res = await messagesModule.POST(req as never)
+    expect(res.status).toBe(201)
+    // Give the void async IIFE a tick to settle
+    await new Promise((r) => setTimeout(r, 50))
+    expect(vi.mocked(envoyerPushNotification)).toHaveBeenCalled()
+
+    // Restore
+    vi.mocked(isPushConfigured).mockReturnValue(false)
+  })
+
   it("rejects malformed JSON message body (400)", async () => {
     const req = new Request("http://localhost:3000/api/messages", {
       method: "POST",
@@ -479,5 +535,23 @@ describe("Communauté — Messages privés", () => {
 
     const res = await messagesModule.POST(req as never)
     expect(res.status).toBe(400)
+  })
+
+  it("returns 429 when rate limited", async () => {
+    mockRateLimitCheck.mockResolvedValueOnce({
+      allowed: false,
+      limit: 30,
+      remaining: 0,
+      retryAfterSeconds: 45,
+    })
+
+    const req = buildJsonRequest("/api/messages", {
+      destinataireId: "usr_bob",
+      contenu: "Spam",
+    })
+
+    const res = await messagesModule.POST(req as never)
+    expect(res.status).toBe(429)
+    expect(res.headers.get("Retry-After")).toBe("45")
   })
 })

@@ -85,6 +85,20 @@ describe("Panier — GET /api/panier", () => {
     expect(json.updatedAt).toBeNull()
   })
 
+  it("handles object format without items or updatedAt keys", async () => {
+    prismaMock.appConfig.findUnique.mockResolvedValue({
+      cle: CART_KEY,
+      valeur: JSON.stringify({ someOtherKey: "value" }),
+    })
+
+    const res = await GET()
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.items).toHaveLength(0)
+    expect(json.updatedAt).toBeNull()
+  })
+
   it("returns updatedAt from new-format object", async () => {
     prismaMock.appConfig.findUnique.mockResolvedValue({
       cle: CART_KEY,

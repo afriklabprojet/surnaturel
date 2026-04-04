@@ -6,14 +6,15 @@ vi.mock("next-auth/jwt", () => ({
   getToken: (...args: unknown[]) => mockGetToken(...args),
 }))
 
-// Mock rate limiter to always allow
+// Mock rate limiter — default: always allow; override via mockRateLimit
+let mockRateLimitResult = {
+  allowed: true,
+  limit: 100,
+  remaining: 99,
+  retryAfterSeconds: 0,
+}
 vi.mock("@/lib/rate-limit", () => ({
-  createRateLimiter: () => () => ({
-    allowed: true,
-    limit: 100,
-    remaining: 99,
-    retryAfterSeconds: 0,
-  }),
+  createRateLimiter: () => () => mockRateLimitResult,
 }))
 
 const { middleware, config } = await import("@/middleware")
@@ -37,6 +38,7 @@ describe("Middleware — RBAC & Route Protection", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.NEXTAUTH_SECRET = "test-secret"
+    mockRateLimitResult = { allowed: true, limit: 100, remaining: 99, retryAfterSeconds: 0 }
   })
 
   it("allows public routes without auth", async () => {
@@ -305,6 +307,20 @@ describe("Middleware — Communauté access gate", () => {
     expect(res.headers.get("location")).toContain("/communaute/abonnement")
   })
 
+  it("returns 403 JSON for /api/messages API route when CLIENT has no access", async () => {
+    mockGetToken.mockResolvedValue({
+      id: "usr_1",
+      role: "CLIENT",
+      accesCommuaute: false,
+      essaiCommuauteUtilise: true,
+    })
+    const req = createRequest("/api/messages/conv_123")
+    const res = await middleware(req)
+    expect(res.status).toBe(403)
+    const json = await res.json()
+    expect(json.error).toContain("Abonnement communauté requis")
+  })
+
   it("allows /communaute/abonnement without access", async () => {
     mockGetToken.mockResolvedValue({
       id: "usr_1",
@@ -323,5 +339,30 @@ describe("Middleware — Communauté access gate", () => {
     const res = await middleware(req)
     expect(res.status).toBe(307)
     expect(res.headers.get("location")).toContain("/dashboard")
+  })
+})
+
+describe("Middleware — Rate Limiting", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    process.env.NEXTAUTH_SECRET = "test-secret"
+    mockRateLimitResult = { allowed: true, limit: 100, remaining: 99, retryAfterSeconds: 0 }
+  })
+
+  it("returns 429 when rate limit is exceeded", async () => {
+    mockRateLimitResult = { allowed: false, limit: 20, remaining: 0, retryAfterSeconds: 120 }
+    const req = createRequest("/api/auth/inscription", "POST")
+    const res = await middleware(req)
+    expect(res.status).toBe(429)
+    expect(res.headers.get("Retry-After")).toBe("120")
+    const json = await res.json()
+    expect(json.error).toContain("Trop de tentatives")
+  })
+
+  it("adds rate limit headers when allowed", async () => {
+    const req = createRequest("/api/contact", "POST")
+    const res = await middleware(req)
+    expect(res.headers.get("X-RateLimit-Limit")).toBe("100")
+    expect(res.headers.get("X-RateLimit-Remaining")).toBe("99")
   })
 })

@@ -52,6 +52,7 @@ const protectedRoutes = [
   "/admin",
   "/dashboard",
   "/favoris",
+  "/api/messages",
 ]
 
 // SÉCURITÉ : /suivi-medical accessible à CLIENT, ACCOMPAGNATEUR_MEDICAL et ADMIN

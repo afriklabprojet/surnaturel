@@ -3,6 +3,7 @@ import { prismaMock, buildJsonRequest } from "./setup"
 
 // Import the route handler under test
 const { POST } = await import("@/app/api/auth/inscription/route")
+const { envoyerEmailInscription } = await import("@/lib/email")
 
 describe("Auth — Inscription", () => {
   beforeEach(() => {
@@ -139,5 +140,23 @@ describe("Auth — Inscription", () => {
     expect(res.status).toBe(201)
     expect(prismaMock.user.delete).toHaveBeenCalledWith({ where: { id: "old_unverified" } })
     expect(prismaMock.user.create).toHaveBeenCalledOnce()
+  })
+
+  it("returns 201 with warning when email send fails", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null)
+    prismaMock.user.create.mockResolvedValue({ id: "usr_email_fail" })
+    vi.mocked(envoyerEmailInscription).mockRejectedValueOnce(new Error("Resend error"))
+
+    const req = buildJsonRequest("/api/auth/inscription", {
+      prenom: "Awa",
+      nom: "Koné",
+      email: "awa@example.com",
+      password: "Mon8ecure!",
+    })
+
+    const res = await POST(req)
+    const json = await res.json()
+    expect(res.status).toBe(201)
+    expect(json.message).toContain("Renvoyer")
   })
 })
