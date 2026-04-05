@@ -28,6 +28,7 @@ import {
   EyeOff,
   TrendingUp,
   X,
+  type LucideIcon,
 } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 
@@ -55,6 +56,23 @@ interface NotePro {
   partagePatient?: boolean; auteur?: string; createdAt: string
 }
 
+interface SuiviSpecialise {
+  id: string; type: string; actif: boolean; prenomPatient?: string
+  dpa?: string; terme?: string; grossesse?: number
+  dateDebut?: string; notes?: string; nombreSeances?: number
+  updatedAt?: string
+}
+
+interface QuestionnaireItem {
+  id: string; typeSoin?: string; motif: string; antecedents?: string
+  medicaments?: string; allergies?: string; ddr?: string; parite?: string
+  autresInfos?: string; createdAt: string
+}
+
+interface RdvItem {
+  id: string; dateHeure: string; soin?: { nom: string }; statut: string
+}
+
 interface Questionnaire {
   id: string
   patient: { id: string; prenom: string; nom: string; telephone: string; email: string }
@@ -66,7 +84,7 @@ interface Questionnaire {
 interface FichePatient {
   patient: { id: string; nom: string; prenom: string; email: string; telephone: string; image?: string; createdAt: string; dateNaissance?: string }
   dossier: { id: string; groupeSanguin: string|null; pathologie: string|null; allergies: string|null; antecedents: string|null; medicaments: string|null } | null
-  suiviSpecialises: any[]; questionnaires: any[]; rdvs: any[]; notes: any[]
+  suiviSpecialises: SuiviSpecialise[]; questionnaires: QuestionnaireItem[]; rdvs: RdvItem[]; notes: NotePro[]
 }
 
 interface DashboardData {
@@ -191,7 +209,7 @@ function FichePatientModal({ patientId, onClose }: { patientId: string; onClose:
 
               {tab === "notes" && (fiche.notes.length === 0 ? (
                 <p className="py-6 text-center text-text-muted-brand">Aucune note</p>
-              ) : fiche.notes.map((note: any) => {
+              ) : fiche.notes.map((note) => {
                 const cfg = NOTE_COLORS[note.type] ?? NOTE_COLORS.GENERALE
                 return (
                   <div key={note.id} className="border border-border-brand p-3">
@@ -213,7 +231,7 @@ function FichePatientModal({ patientId, onClose }: { patientId: string; onClose:
 
               {tab === "suivi" && (fiche.suiviSpecialises.length === 0 ? (
                 <p className="py-6 text-center text-text-muted-brand">Aucun suivi spécialisé</p>
-              ) : fiche.suiviSpecialises.map((s: any) => (
+              ) : fiche.suiviSpecialises.map((s) => (
                 <div key={s.id} className={`border p-4 ${s.actif ? "border-primary-brand bg-primary-light/20" : "border-border-brand opacity-60"}`}>
                   <div className="mb-2 flex items-center gap-2">
                     <span className="font-medium text-[14px]">{TYPE_SUIVI_LABELS[s.type] ?? s.type}</span>
@@ -242,7 +260,7 @@ function FichePatientModal({ patientId, onClose }: { patientId: string; onClose:
 
               {tab === "questionnaire" && (fiche.questionnaires.length === 0 ? (
                 <p className="py-6 text-center text-text-muted-brand">Aucun questionnaire</p>
-              ) : fiche.questionnaires.map((q: any) => (
+              ) : fiche.questionnaires.map((q) => (
                 <div key={q.id} className="border border-border-brand p-4 text-[13px] space-y-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] uppercase tracking-wider text-text-muted-brand">{fmtDL(q.createdAt)}</span>
@@ -288,7 +306,7 @@ function CalendrierVue({ onSelectRdv }: { onSelectRdv: (rdv: RDV) => void }) {
     const r = await fetch(`/api/admin/sage-femme/planning?debut=${isoDate(debut)}&fin=${isoDate(fin)}`)
     if (r.ok) setRdvs((await r.json()).rdvs || [])
     setLoading(false)
-  }, [debut, mode])
+  }, [debut, fin])
 
   useEffect(() => { charger() }, [charger])
 
@@ -839,7 +857,7 @@ const STATUT_CONFIG: Record<string, { label: string }> = {
   ANNULE:     { label: "Annulé" },
 }
 
-function StatCard({ label, value, icon: Icon, sub }: { label: string; value: string|number; icon: any; sub?: string }) {
+function StatCard({ label, value, icon: Icon, sub }: { label: string; value: string|number; icon: LucideIcon; sub?: string }) {
   return (
     <div className="border border-border-brand bg-white p-4">
       <div className="flex items-start justify-between">
@@ -864,7 +882,7 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
   )
 }
 
-function Empty({ icon: Icon, message }: { icon: any; message: string }) {
+function Empty({ icon: Icon, message }: { icon: LucideIcon; message: string }) {
   return (
     <div className="py-12 text-center">
       <Icon className="mx-auto h-12 w-12 text-text-muted-brand/30" />

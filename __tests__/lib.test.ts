@@ -225,9 +225,9 @@ describe("Rate Limit — createUpstashLimiter (Redis backend)", () => {
     globalThis.fetch = savedFetch
     // Re-mock rate-limit for other tests
     vi.doMock("@/lib/rate-limit", () => ({
-      createRateLimiter: () => (...args: unknown[]) => {
-        const { mockRateLimitCheck } = require("./setup")
-        return mockRateLimitCheck(...args)
+      createRateLimiter: () => async (...args: unknown[]) => {
+        const setup = await import("./setup")
+        return setup.mockRateLimitCheck(...args)
       },
     }))
   })
