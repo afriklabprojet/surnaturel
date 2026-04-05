@@ -60,7 +60,10 @@ interface SuiviSpecialise {
   id: string; type: string; actif: boolean; prenomPatient?: string
   dpa?: string; terme?: string; grossesse?: number
   dateDebut?: string; notes?: string; nombreSeances?: number
-  updatedAt?: string
+  updatedAt?: string; semainesAmenorhee?: number; datePrevueAccouchement?: string
+  parite?: string; poidsKg?: number; taillesConsultations?: string; tensionArterielle?: string
+  examensRealises?: string[]; symptomes?: string; recommandations?: string
+  tailleCm?: number; perimCranienCm?: number; dateNaissancePatient?: string
 }
 
 interface QuestionnaireItem {
@@ -70,7 +73,7 @@ interface QuestionnaireItem {
 }
 
 interface RdvItem {
-  id: string; dateHeure: string; soin?: { nom: string }; statut: string
+  id: string; dateHeure: string; soin?: { nom: string }; statut: string; notes?: string
 }
 
 interface Questionnaire {
@@ -248,9 +251,9 @@ function FichePatientModal({ patientId, onClose }: { patientId: string; onClose:
                     {s.dateNaissancePatient && <div><span className="text-text-muted-brand">Né(e): </span>{fmtD(s.dateNaissancePatient)}</div>}
                   </div>
                   {s.notes && <p className="mt-2 text-[12px] italic text-text-mid">{s.notes}</p>}
-                  {s.examensRealises?.length > 0 && (
+                  {(s.examensRealises?.length ?? 0) > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {s.examensRealises.map((e: string, i: number) => (
+                      {s.examensRealises?.map((e: string, i: number) => (
                         <span key={i} className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-text-muted-brand">{e}</span>
                       ))}
                     </div>

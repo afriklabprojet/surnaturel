@@ -31,7 +31,8 @@ export async function GET() {
       take: 10,
     })
 
-    const decrypted = questionnaires.map((q) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const decrypted = questionnaires.map((q: any) => ({
       id: q.id,
       typeSoin: q.typeSoin,
       motif: decrypt(q.motif),

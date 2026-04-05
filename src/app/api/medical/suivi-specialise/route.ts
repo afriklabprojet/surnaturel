@@ -58,7 +58,8 @@ export async function GET() {
       orderBy: [{ actif: "desc" }, { updatedAt: "desc" }],
     })
 
-    const decrypted = suivis.map((s) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const decrypted = suivis.map((s: any) => ({
       ...s,
       notes: s.notes ? decrypt(s.notes) : null,
       examensRealises: s.examensRealises ? JSON.parse(s.examensRealises) : [],

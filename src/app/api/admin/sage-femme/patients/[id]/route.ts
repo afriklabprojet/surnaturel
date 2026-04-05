@@ -63,13 +63,16 @@ export async function GET(
     }
 
     // Suivi spécialisé
-    let suiviSpecialises: Record<string, unknown>[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let suiviSpecialises: any[] = []
     if (user.dossierMedical) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       suiviSpecialises = await (prisma as any).suiviSpecialise.findMany({
         where: { dossierId: user.dossierMedical.id },
         orderBy: [{ actif: "desc" }, { updatedAt: "desc" }],
       })
-      suiviSpecialises = suiviSpecialises.map((s) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      suiviSpecialises = suiviSpecialises.map((s: any) => ({
         ...s,
         notes: s.notes ? decrypt(s.notes) : null,
         examensRealises: s.examensRealises ? JSON.parse(s.examensRealises) : [],
@@ -77,12 +80,14 @@ export async function GET(
     }
 
     // Questionnaires
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const questionnaires = await (prisma as any).questionnairePreConsultation.findMany({
       where: { userId: id },
       orderBy: { createdAt: "desc" },
       take: 5,
     })
-    const questionnairesDecrypted = questionnaires.map((q: Record<string, unknown>) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const questionnairesDecrypted = questionnaires.map((q: any) => ({
       id: q.id,
       typeSoin: q.typeSoin,
       motif: decrypt(q.motif),

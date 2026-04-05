@@ -27,7 +27,8 @@ export async function GET(request: Request) {
       },
     })
 
-    const formatted = questionnaires.map((q) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formatted = questionnaires.map((q: any) => ({
       id: q.id,
       patient: { id: q.user.id, prenom: q.user.prenom, nom: q.user.nom, telephone: q.user.telephone, email: q.user.email },
       typeSoin: q.typeSoin,
