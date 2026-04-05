@@ -128,9 +128,9 @@ export async function PATCH(request: Request) {
     if (partagePatient !== undefined) updateData.partagePatient = partagePatient
     if (type !== undefined) updateData.type = type
 
-    await (prisma.notePro.update as any)({
+    await prisma.notePro.update({
       where: { id },
-      data: updateData,
+      data: updateData as { partagePatient?: boolean; type?: string },
     })
 
     return NextResponse.json({ ok: true })

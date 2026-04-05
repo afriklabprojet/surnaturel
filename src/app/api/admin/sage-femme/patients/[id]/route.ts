@@ -63,13 +63,13 @@ export async function GET(
     }
 
     // Suivi spécialisé
-    let suiviSpecialises: any[] = []
+    let suiviSpecialises: Record<string, unknown>[] = []
     if (user.dossierMedical) {
       suiviSpecialises = await (prisma as any).suiviSpecialise.findMany({
         where: { dossierId: user.dossierMedical.id },
         orderBy: [{ actif: "desc" }, { updatedAt: "desc" }],
       })
-      suiviSpecialises = suiviSpecialises.map((s: any) => ({
+      suiviSpecialises = suiviSpecialises.map((s) => ({
         ...s,
         notes: s.notes ? decrypt(s.notes) : null,
         examensRealises: s.examensRealises ? JSON.parse(s.examensRealises) : [],
@@ -82,7 +82,7 @@ export async function GET(
       orderBy: { createdAt: "desc" },
       take: 5,
     })
-    const questionnairesDecrypted = questionnaires.map((q: any) => ({
+    const questionnairesDecrypted = questionnaires.map((q: Record<string, unknown>) => ({
       id: q.id,
       typeSoin: q.typeSoin,
       motif: decrypt(q.motif),
@@ -134,7 +134,7 @@ export async function GET(
         notes: rdv.notes,
         soin: rdv.soin,
       })),
-      notes: user.notesRecues.map((n: any) => ({
+      notes: user.notesRecues.map((n) => ({
         id: n.id,
         contenu: n.contenu,
         type: n.type,

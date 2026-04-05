@@ -59,7 +59,7 @@ export default function PageQuiMALike() {
         <div>
           <h1 className="font-heading text-xl font-semibold text-text-main flex items-center gap-2">
             <Heart size={20} className="text-pink-500" />
-            Qui m'a liké
+            Qui m&apos;a liké
           </h1>
           <p className="text-sm text-text-muted-brand">
             {count > 0 ? `${count} personne${count > 1 ? "s" : ""} ont aimé votre profil` : "Aucun like pour l'instant"}
@@ -76,9 +76,9 @@ export default function PageQuiMALike() {
       ) : likes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
           <Heart size={48} className="text-pink-200" />
-          <p className="font-heading text-lg text-text-muted-brand">Personne n'a encore liké votre profil</p>
+          <p className="font-heading text-lg text-text-muted-brand">Personne n&apos;a encore liké votre profil</p>
           <p className="text-sm text-text-muted-brand max-w-xs">
-            Complétez votre profil et explorez d'autres profils pour augmenter vos chances !
+            Complétez votre profil et explorez d&apos;autres profils pour augmenter vos chances !
           </p>
           <Link
             href="/communaute/rencontres"

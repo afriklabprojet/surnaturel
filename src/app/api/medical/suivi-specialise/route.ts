@@ -58,7 +58,7 @@ export async function GET() {
       orderBy: [{ actif: "desc" }, { updatedAt: "desc" }],
     })
 
-    const decrypted = suivis.map((s: any) => ({
+    const decrypted = suivis.map((s) => ({
       ...s,
       notes: s.notes ? decrypt(s.notes) : null,
       examensRealises: s.examensRealises ? JSON.parse(s.examensRealises) : [],

@@ -28,7 +28,7 @@ export async function GET() {
       },
     })
 
-    const formatted = notes.map((n: any) => ({
+    const formatted = notes.map((n) => ({
       id: n.id,
       contenu: n.contenu,
       type: n.type,

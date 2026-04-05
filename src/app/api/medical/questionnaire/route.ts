@@ -31,7 +31,7 @@ export async function GET() {
       take: 10,
     })
 
-    const decrypted = questionnaires.map((q: any) => ({
+    const decrypted = questionnaires.map((q) => ({
       id: q.id,
       typeSoin: q.typeSoin,
       motif: decrypt(q.motif),

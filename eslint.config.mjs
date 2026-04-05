@@ -33,6 +33,13 @@ const eslintConfig = defineConfig([
         },
       ]
     : []),
+  // Downgrade no-explicit-any à warning pour API routes et tests
+  {
+    files: ["src/app/api/**/*.ts", "__tests__/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;

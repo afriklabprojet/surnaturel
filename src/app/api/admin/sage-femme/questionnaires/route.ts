@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       },
     })
 
-    const formatted = questionnaires.map((q: any) => ({
+    const formatted = questionnaires.map((q) => ({
       id: q.id,
       patient: { id: q.user.id, prenom: q.user.prenom, nom: q.user.nom, telephone: q.user.telephone, email: q.user.email },
       typeSoin: q.typeSoin,
