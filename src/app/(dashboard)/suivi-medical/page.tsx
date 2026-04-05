@@ -3,18 +3,20 @@
 import { Suspense, useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Shield, Lock, FileText, Stethoscope, MessageSquare, Activity, FolderOpen } from "lucide-react"
+import { Shield, Lock, FileText, Stethoscope, MessageSquare, Activity, FolderOpen, BookHeart } from "lucide-react"
 import { SkeletonSuiviMedical } from "@/components/ui/skeletons"
 import DossierMedical from "@/components/medical/DossierMedical"
 import MesConsultations from "@/components/medical/MesConsultations"
 import MessagerieMedicale from "@/components/medical/MessagerieMedicale"
 import MesuresSante from "@/components/medical/MesuresSante"
 import DocumentsMedicaux from "@/components/medical/DocumentsMedicaux"
+import CarnetSante from "@/components/medical/CarnetSante"
 
 const ALLOWED_ROLES = ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"]
 
 const TABS = [
   { id: "dossier", label: "Mon dossier", icon: FileText },
+  { id: "carnet", label: "Carnet", icon: BookHeart },
   { id: "mesures", label: "Mesures", icon: Activity },
   { id: "documents", label: "Documents", icon: FolderOpen },
   { id: "consultations", label: "Consultations", icon: Stethoscope },
@@ -105,6 +107,7 @@ function SuiviMedicalContent() {
           </span>
         </div>
         {activeTab === "dossier" && <DossierMedical />}
+        {activeTab === "carnet" && <CarnetSante />}
         {activeTab === "mesures" && <MesuresSante />}
         {activeTab === "documents" && <DocumentsMedicaux />}
         {activeTab === "consultations" && <MesConsultations />}
