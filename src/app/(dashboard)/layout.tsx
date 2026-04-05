@@ -100,6 +100,16 @@ export default function DashboardLayout({
     : ""
   const hasFetched = useRef(false)
 
+  // Verrouiller le scroll body quand un menu mobile est ouvert
+  useEffect(() => {
+    if (sidebarOpen || moreMenuOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => { document.body.style.overflow = "" }
+  }, [sidebarOpen, moreMenuOpen])
+
   // Fetch points — une seule fois au mount
   const fetchStats = useCallback(async () => {
     if (hasFetched.current) return
@@ -339,19 +349,19 @@ export default function DashboardLayout({
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-65 flex flex-col pb-16 lg:pb-0">
+      <div className="flex-1 lg:ml-65 flex flex-col pb-20 lg:pb-0">
         {/* Header */}
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border-brand bg-white px-5 py-4 lg:px-8">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex h-11 w-11 items-center justify-center lg:hidden text-text-mid"
+              className="flex h-11 w-11 shrink-0 items-center justify-center lg:hidden text-text-mid"
               aria-label="Ouvrir le menu"
             >
               <Menu size={22} />
             </button>
-            <div>
-              <h1 className="font-display text-[18px] sm:text-[24px] font-light text-text-main">
+            <div className="min-w-0">
+              <h1 className="font-display text-[18px] sm:text-[24px] font-light text-text-main truncate">
                 {pageTitle}
               </h1>
               <span className="hidden sm:block font-body text-xs uppercase tracking-[0.15em] text-gold">
@@ -371,7 +381,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-brand bg-white py-1 safe-area-pb lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-brand bg-white py-1 pb-safe lg:hidden">
         {MOBILE_NAV.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
@@ -424,7 +434,7 @@ export default function DashboardLayout({
                 <X size={18} />
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-1 p-4">
+            <div className="grid grid-cols-4 gap-1 p-4 pb-safe">
               {MORE_NAV_ITEMS.map((item) => {
                 const active = isActive(item.href)
                 return (

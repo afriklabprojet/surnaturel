@@ -166,7 +166,7 @@ export default function Notifications({ userId }: { userId?: string }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="absolute right-0 top-12 z-50 w-80 border border-border-brand bg-white shadow-lg"
+            className="absolute right-0 top-12 z-50 w-[min(20rem,calc(100vw-1.25rem))] border border-border-brand bg-white shadow-lg"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border-brand px-4 py-3">
