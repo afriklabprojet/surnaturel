@@ -1,7 +1,6 @@
 "use server"
 
-import { cache } from "react"
-import { revalidatePath } from "next/cache"
+import { unstable_cache, revalidatePath, updateTag } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import type { BrandingSettings } from "@/generated/prisma/client"
@@ -10,27 +9,31 @@ import { DEFAULT_BRANDING, BRANDING_PRESETS, type BrandingData, type BrandingPre
 // ─── Lecture avec cache ──────────────────────────────────────────
 
 /**
- * Récupère les paramètres de branding (avec cache React)
+ * Récupère les paramètres de branding (avec cache Next.js)
  * @param tenantId - ID du tenant (null pour global)
  */
-export const getBranding = cache(async (tenantId?: string | null): Promise<BrandingData> => {
-  try {
-    const branding = await prisma.brandingSettings.findFirst({
-      where: tenantId ? { tenantId } : { tenantId: null },
-    })
-    
-    if (!branding) {
+export const getBranding = unstable_cache(
+  async (tenantId?: string | null): Promise<BrandingData> => {
+    try {
+      const branding = await prisma.brandingSettings.findFirst({
+        where: tenantId ? { tenantId } : { tenantId: null },
+      })
+      
+      if (!branding) {
+        return DEFAULT_BRANDING
+      }
+      
+      // Retourner sans id, createdAt, updatedAt
+      const { id, createdAt, updatedAt, ...data } = branding
+      return data
+    } catch (error) {
+      console.error("[BRANDING] Erreur lecture:", error)
       return DEFAULT_BRANDING
     }
-    
-    // Retourner sans id, createdAt, updatedAt
-    const { id, createdAt, updatedAt, ...data } = branding
-    return data
-  } catch (error) {
-    console.error("[BRANDING] Erreur lecture:", error)
-    return DEFAULT_BRANDING
-  }
-})
+  },
+  ["branding-settings"],
+  { tags: ["branding"], revalidate: 300 }
+)
 
 /**
  * Récupère les préréglages disponibles
@@ -118,7 +121,8 @@ export async function updateBranding(
       })
     }
 
-    // Invalider le cache
+    // Invalider le cache branding
+    updateTag("branding")
     revalidatePath("/", "layout")
 
     return { success: true }
