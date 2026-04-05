@@ -83,14 +83,14 @@ describe("Suivi spécialisé — patient (GET)", () => {
 
   it("retourne 401 si non authentifié", async () => {
     mockAuth.mockResolvedValue(null)
-    const res = await suiviModule.GET(buildRequest("/api/medical/suivi-specialise"))
+    const res = await suiviModule.GET()
     expect(res.status).toBe(401)
   })
 
   it("retourne [] si aucun dossier (200)", async () => {
     mockAuth.mockResolvedValue(clientSession)
     prismaMock.dossierMedical.findUnique.mockResolvedValue(null)
-    const res = await suiviModule.GET(buildRequest("/api/medical/suivi-specialise"))
+    const res = await suiviModule.GET()
     const json = await res.json()
     expect(res.status).toBe(200)
     expect(json.suivis).toHaveLength(0)
@@ -101,7 +101,7 @@ describe("Suivi spécialisé — patient (GET)", () => {
     const suivi = makeSuivi()
     prismaMock.dossierMedical.findUnique.mockResolvedValue({ id: "dos_1", userId: "usr_client" })
     prismaMock.suiviSpecialise.findMany.mockResolvedValue([suivi])
-    const res = await suiviModule.GET(buildRequest("/api/medical/suivi-specialise"))
+    const res = await suiviModule.GET()
     const json = await res.json()
     expect(res.status).toBe(200)
     expect(json.suivis).toHaveLength(1)
@@ -146,14 +146,14 @@ describe("Comptes-rendus — patient (GET)", () => {
 
   it("retourne 401 si non authentifié", async () => {
     mockAuth.mockResolvedValue(null)
-    const res = await comptesModule.GET(buildRequest("/api/medical/comptes-rendus"))
+    const res = await comptesModule.GET()
     expect(res.status).toBe(401)
   })
 
   it("retourne les notes partagées", async () => {
     mockAuth.mockResolvedValue(clientSession)
     prismaMock.notePro.findMany.mockResolvedValue([makeNote()])
-    const res = await comptesModule.GET(buildRequest("/api/medical/comptes-rendus"))
+    const res = await comptesModule.GET()
     const json = await res.json()
     expect(res.status).toBe(200)
     // Route returns key 'compteRendus' (not 'comptes')
@@ -166,7 +166,7 @@ describe("Comptes-rendus — patient (GET)", () => {
   it("retourne un tableau vide si aucune note partagée", async () => {
     mockAuth.mockResolvedValue(clientSession)
     prismaMock.notePro.findMany.mockResolvedValue([])
-    const res = await comptesModule.GET(buildRequest("/api/medical/comptes-rendus"))
+    const res = await comptesModule.GET()
     const json = await res.json()
     expect(res.status).toBe(200)
     expect(json.compteRendus).toHaveLength(0)
@@ -180,17 +180,17 @@ describe("Questionnaire pré-consultation — patient", () => {
 
   it("GET retourne 401 si non authentifié", async () => {
     mockAuth.mockResolvedValue(null)
-    const res = await questionnaireModule.GET(buildRequest("/api/medical/questionnaire"))
+    const res = await questionnaireModule.GET()
     expect(res.status).toBe(401)
   })
 
   it("GET retourne les questionnaires déchiffrés", async () => {
     mockAuth.mockResolvedValue(clientSession)
-    ;(prismaMock as any).questionnairePreConsultation = {
-      ...((prismaMock as any).questionnairePreConsultation ?? {}),
+    ;(prismaMock as Record<string, unknown>).questionnairePreConsultation = {
+      ...((prismaMock as Record<string, unknown>).questionnairePreConsultation as object ?? {}),
       findMany: vi.fn().mockResolvedValue([makeQuestionnaire()]),
     }
-    const res = await questionnaireModule.GET(buildRequest("/api/medical/questionnaire"))
+    const res = await questionnaireModule.GET()
     const json = await res.json()
     expect(res.status).toBe(200)
     expect(json.questionnaires).toHaveLength(1)
@@ -278,13 +278,13 @@ describe("Admin sage-femme — Statistiques (GET)", () => {
 
   it("retourne 401 si non authentifié", async () => {
     mockAuth.mockResolvedValue(null)
-    const res = await sfStatsModule.GET(buildRequest("/api/admin/sage-femme/stats"))
+    const res = await sfStatsModule.GET()
     expect(res.status).toBe(401)
   })
 
   it("retourne 401 si CLIENT", async () => {
     mockAuth.mockResolvedValue(clientSession)
-    const res = await sfStatsModule.GET(buildRequest("/api/admin/sage-femme/stats"))
+    const res = await sfStatsModule.GET()
     expect(res.status).toBe(401)
   })
 
@@ -296,7 +296,7 @@ describe("Admin sage-femme — Statistiques (GET)", () => {
       { statut: "ANNULE",  soin: { nom: "Consultation grossesse", prix: 25000 }, dateHeure: new Date().toISOString(), duree: 30 },
       { statut: "CONFIRME",soin: { nom: "Bilan nourrisson", prix: 15000 }, dateHeure: new Date().toISOString(), duree: 20 },
     ])
-    const res = await sfStatsModule.GET(buildRequest("/api/admin/sage-femme/stats"))
+    const res = await sfStatsModule.GET()
     const json = await res.json()
     expect(res.status).toBe(200)
     expect(json).toHaveProperty("parMois")
