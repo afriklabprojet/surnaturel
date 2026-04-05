@@ -173,6 +173,9 @@ function e(s: string): string {
     .replace(/'/g, "&#x27;")
 }
 
+// Email par défaut si aucune variable d'environnement n'est définie
+const DEFAULT_FROM_EMAIL = "noreply@lesurnatureldedieu.com"
+
 async function getFrom(): Promise<string> {
   // Priorité 1: RESEND_FROM_EMAIL (pour Resend)
   if (process.env.RESEND_FROM_EMAIL) {
@@ -187,8 +190,13 @@ async function getFrom(): Promise<string> {
     return raw
   }
   // Priorité 3: config BDD
-  const { nomCentre, emailRdv } = await getConfig()
-  return `${nomCentre} <${emailRdv}>`
+  try {
+    const { nomCentre, emailRdv } = await getConfig()
+    return `${nomCentre} <${emailRdv}>`
+  } catch {
+    // Fallback ultime si la BDD échoue
+    return `Le Surnaturel de Dieu <${DEFAULT_FROM_EMAIL}>`
+  }
 }
 
 /**

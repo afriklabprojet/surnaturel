@@ -148,6 +148,7 @@ jobs:
           PUSHER_SECRET: ${{ secrets.PUSHER_SECRET }}
           PUSHER_CLUSTER: ${{ secrets.PUSHER_CLUSTER }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: "noreply@lesurnatureldedieu.com"
 
       # ──────────────────────────────────────────────────────────────────────
       # 2. Préparer SSH + rsync les artefacts vers le serveur
@@ -183,7 +184,27 @@ jobs:
           echo "✓ Artefacts uploadés"
 
       # ──────────────────────────────────────────────────────────────────────
-      # 3. Recharger PM2 via SSH (aucun build côté serveur)
+      # 3. Assurer les variables d'env manquantes sur le serveur
+      # ──────────────────────────────────────────────────────────────────────
+      - name: Ensure env vars on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOSTINGER_SSH_HOST }}
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: 65002
+          script: |
+            cd ~/surnaturel
+            # Ajouter RESEND_FROM_EMAIL si absent
+            if ! grep -q "RESEND_FROM_EMAIL" .env.production 2>/dev/null; then
+              echo 'RESEND_FROM_EMAIL="noreply@lesurnatureldedieu.com"' >> .env.production
+              echo "✓ RESEND_FROM_EMAIL ajouté à .env.production"
+            else
+              echo "✓ RESEND_FROM_EMAIL déjà présent"
+            fi
+
+      # ──────────────────────────────────────────────────────────────────────
+      # 4. Recharger PM2 via SSH (aucun build côté serveur)
       # ──────────────────────────────────────────────────────────────────────
       - name: Reload PM2
         uses: appleboy/ssh-action@v1.2.0
@@ -209,7 +230,7 @@ jobs:
             pm2 list
 
       # ──────────────────────────────────────────────────────────────────────
-      # 4. Vérification santé post-déploiement
+      # 5. Vérification santé post-déploiement
       # ──────────────────────────────────────────────────────────────────────
       - name: Health check
         run: |
