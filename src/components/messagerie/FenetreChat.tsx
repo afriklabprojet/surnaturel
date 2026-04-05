@@ -707,16 +707,23 @@ export default function FenetreChat({
   // ─── État vide ─────────────────────────────────────────────────
   if (!interlocuteur) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-bg-page text-center px-8">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-light mb-5">
-          <MessageSquare size={36} className="text-primary-brand" />
+      <div className="flex h-full flex-col items-center justify-center bg-[#EDE8DF] text-center px-8">
+        <div className="relative mb-6">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg">
+            <MessageSquare size={40} className="text-primary-brand" />
+          </div>
+          <span className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary-brand text-white text-lg shadow-md">💬</span>
         </div>
-        <h3 className="font-display text-[20px] font-normal text-text-main">
+        <h3 className="font-display text-[22px] font-normal text-text-main">
           Bienvenue dans la messagerie
         </h3>
-        <p className="mt-2 font-body text-[13px] font-light text-text-muted-brand max-w-xs leading-relaxed">
+        <p className="mt-2.5 font-body text-[13px] font-light text-text-muted-brand max-w-xs leading-relaxed">
           Sélectionnez une conversation à gauche ou démarrez-en une nouvelle pour commencer à échanger.
         </p>
+        <div className="mt-6 flex items-center gap-2 rounded-full bg-white/70 px-5 py-2.5 shadow-sm backdrop-blur-sm">
+          <span className="text-sm">✨</span>
+          <span className="font-body text-[12px] text-text-muted-brand">Vos messages sont chiffrés de bout en bout</span>
+        </div>
       </div>
     )
   }
@@ -728,21 +735,27 @@ export default function FenetreChat({
       <style>{typingKeyframes}</style>
 
       {/* ─── Header ─── */}
-      <div className="flex items-center justify-between border-b border-border-brand bg-white px-5 py-3">
+      <div className="flex items-center justify-between border-b border-border-brand bg-linear-to-r from-white via-white to-[#FAFAF8] px-5 py-3 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-3">
-          <Avatar nom={interlocuteur.nom} prenom={interlocuteur.prenom} photoUrl={interlocuteur.photoUrl} size={38} enLigne={presenceEnLigne} />
+          <Avatar nom={interlocuteur.nom} prenom={interlocuteur.prenom} photoUrl={interlocuteur.photoUrl} size={44} enLigne={presenceEnLigne} />
           <div>
-            <h3 className="font-display text-[15px] font-normal text-text-main">
+            <h3 className="font-display text-[15px] font-normal text-text-main leading-tight">
               {interlocuteur.prenom} {interlocuteur.nom}
             </h3>
             {isTyping ? (
-              <p className="font-body text-xs italic text-gold">
+              <p className="font-body text-xs italic text-gold flex items-center gap-1">
+                <span className="inline-flex gap-0.5">
+                  {[0,1,2].map(i => <span key={i} className="block h-1 w-1 rounded-full bg-gold" style={{ animation: "typingDot 1.4s infinite ease-in-out", animationDelay: `${i * 200}ms` }} />)}
+                </span>
                 en train d&apos;écrire…
               </p>
             ) : presenceEnLigne ? (
               <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-brand" />
-                <span className="font-body text-xs font-light text-text-muted-brand">En ligne</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary-brand opacity-60 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-brand" />
+                </span>
+                <span className="font-body text-xs font-light text-primary-brand">En ligne</span>
               </div>
             ) : derniereVueLe ? (
               <span className="font-body text-xs font-light text-text-muted-brand">
@@ -758,7 +771,7 @@ export default function FenetreChat({
           {onTogglePush && (
             <button
               onClick={onTogglePush}
-              className={`flex h-7 w-7 items-center justify-center transition-colors ${pushActive ? "text-gold" : "text-text-muted-brand hover:text-gold"}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${pushActive ? "text-gold bg-gold-light/50" : "text-text-muted-brand hover:bg-bg-page hover:text-gold"}`}
               title={pushActive ? "Notifications actives" : "Activer les notifications"}
             >
               <span className="text-[14px]">{pushActive ? "🔔" : "🔕"}</span>
@@ -767,14 +780,14 @@ export default function FenetreChat({
           <button
             onClick={exportConversation}
             disabled={messages.filter(m => !m._optimistic).length === 0}
-            className="flex h-7 w-7 items-center justify-center text-text-muted-brand hover:text-gold transition-colors disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted-brand hover:bg-bg-page hover:text-gold transition-colors disabled:opacity-30"
             title="Exporter la conversation"
           >
             <Download size={14} />
           </button>
           <button
             onClick={() => { setSearchOpen((v) => !v); setSearchQuery("") }}
-            className={`flex h-7 w-7 items-center justify-center transition-colors ${searchOpen ? "text-gold" : "text-text-muted-brand hover:text-gold"}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${searchOpen ? "bg-gold-light text-gold" : "text-text-muted-brand hover:bg-bg-page hover:text-gold"}`}
             title="Rechercher dans la conversation"
           >
             <Search size={15} />
@@ -833,7 +846,7 @@ export default function FenetreChat({
           onClick={() => setLongPressMsg(null)}
         />
       )}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-6 bg-[#EDE8DF] relative" onScroll={() => longPressMsg && setLongPressMsg(null)}>
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-6 bg-[#EDE8DF] relative" style={{ backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)", backgroundSize: "24px 24px" }} onScroll={() => longPressMsg && setLongPressMsg(null)}>
         {/* ─── Bouton "↓ Nouveaux messages" ─── */}
         {newMessagesCount > 0 && (
           <button
@@ -864,8 +877,8 @@ export default function FenetreChat({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center px-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/80 shadow-sm mb-4">
-              <MessageSquare size={24} className="text-text-muted-brand" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md mb-4">
+              <MessageSquare size={26} className="text-primary-brand" />
             </div>
             <p className="font-body text-[13px] font-medium text-text-mid">
               Commencez la conversation
@@ -935,8 +948,8 @@ export default function FenetreChat({
                       <div
                         className={`px-4 py-2.5 font-body text-[13px] font-light leading-relaxed ${
                           isMine
-                            ? "rounded-2xl rounded-br-sm bg-primary-brand text-white shadow-sm"
-                            : "rounded-2xl rounded-bl-sm border border-border-brand bg-white text-text-main shadow-sm"
+                            ? "rounded-2xl rounded-br-sm bg-linear-to-br from-primary-brand to-primary-dark text-white shadow-md"
+                            : "rounded-2xl rounded-bl-sm border border-border-brand bg-white text-text-main shadow-md"
                         }`}
                       >
                         {isEditing ? (
@@ -1010,7 +1023,7 @@ export default function FenetreChat({
                       </div>
 
                       {/* Actions au survol (desktop) + long-press (mobile) — positionnées au-dessus de la bulle */}
-                      <div className={`absolute flex gap-0.5 transition-all ${longPressMsg === msg.id ? "opacity-100 scale-100" : "opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"} ${isMine ? "right-0" : "left-0"} -top-9 bg-white rounded-full shadow-md ring-1 ring-black/5 px-1.5 py-1 z-10`}>
+                      <div className={`absolute flex gap-0.5 transition-all ${longPressMsg === msg.id ? "opacity-100 scale-100" : "opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100"} ${isMine ? "right-0" : "left-0"} -top-9 bg-white rounded-full shadow-lg ring-1 ring-black/8 px-2 py-1.5 z-10`}>
                         <button onClick={() => setReplyTo(msg)} className="flex h-7 w-7 items-center justify-center rounded-full text-text-muted-brand hover:text-primary-brand hover:bg-primary-light transition-colors" title="Répondre">
                           <Reply size={13} />
                         </button>
@@ -1134,15 +1147,15 @@ export default function FenetreChat({
 
             {/* ─── Indicateur écriture ─── */}
             {isTyping && (
-              <div className="mb-3 flex justify-start">
+              <div className="mb-3 flex justify-start items-end gap-2">
                 <div
-                  className="border border-border-brand bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm"
+                  className="border border-border-brand bg-white px-4 py-3 rounded-2xl rounded-bl-sm shadow-md"
                 >
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5 items-center">
                     {[0, 1, 2].map((i) => (
                       <span
                         key={i}
-                        className="block h-1.5 w-1.5 rounded-full bg-gold"
+                        className="block h-2 w-2 rounded-full bg-text-muted-brand"
                         style={{
                           animation: "typingDot 1.4s infinite ease-in-out",
                           animationDelay: `${i * 200}ms`,
@@ -1160,23 +1173,23 @@ export default function FenetreChat({
 
       {/* ─── Bloc citation / réponse ─── */}
       {replyTo && (
-        <div className="border-t border-border-brand bg-primary-light/30 px-5 py-2.5 flex items-center gap-3">
+        <div className="border-t border-border-brand bg-linear-to-r from-primary-light/40 to-white px-5 py-2.5 flex items-center gap-3">
           <CornerDownRight size={14} className="text-gold shrink-0" />
           <div className="flex-1 min-w-0 border-l-2 border-gold pl-3">
-            <p className="font-body text-xs font-medium text-gold">{replyTo.expediteur.prenom} {replyTo.expediteur.nom}</p>
+            <p className="font-body text-xs font-semibold text-gold">{replyTo.expediteur.prenom} {replyTo.expediteur.nom}</p>
             <p className="font-body text-xs text-text-mid truncate">
-              {replyTo.type === "VOCAL" ? "🎤 Message vocal" : replyTo.contenu}
+              {replyTo.type === "VOCAL" ? "🎤 Message vocal" : replyTo.type === "MEDIA" ? "🖼️ Image" : replyTo.contenu}
             </p>
           </div>
-          <button onClick={() => setReplyTo(null)} className="shrink-0 text-text-muted-brand hover:text-danger transition-colors">
-            <X size={14} />
+          <button onClick={() => setReplyTo(null)} className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-text-muted-brand hover:bg-red-50 hover:text-danger transition-colors">
+            <X size={12} />
           </button>
         </div>
       )}
 
       {/* ─── Zone d'enregistrement vocal ─── */}
       {enregistrement ? (
-        <div className="border-t border-border-brand bg-white px-5 py-3">
+        <div className="border-t border-border-brand bg-white px-5 py-3 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-4">
             <button onClick={cancelRecording} className="text-danger hover:text-danger/80 transition-colors" title="Annuler">
               <X size={18} />
@@ -1212,7 +1225,7 @@ export default function FenetreChat({
         </div>
       ) : (
         /* ─── Champ de saisie standard ─── */
-        <form onSubmit={handleSubmit} className="border-t border-border-brand bg-[#F0F2F5] px-4 py-3">
+        <form onSubmit={handleSubmit} className="border-t border-border-brand bg-white px-4 py-3 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.06)]">
           {/* Emoji picker */}
           {emojiPickerOpen && (
             <div className="mb-2 border border-border-brand bg-white shadow-lg">
@@ -1350,13 +1363,13 @@ export default function FenetreChat({
               onKeyDown={handleKeyDown}
               placeholder={ephemere ? "Message éphémère (24h)…" : "Écrire un message…"}
               maxLength={2000}
-              className="max-h-30 min-h-9.5 flex-1 resize-none rounded-2xl border border-border-brand bg-white px-4 py-2.5 font-body text-[13px] font-light text-text-main outline-none placeholder:text-text-muted-brand/60 focus:border-gold focus:ring-2 focus:ring-gold/10 transition-all duration-200"
+              className="max-h-30 min-h-9.5 flex-1 resize-none rounded-2xl border border-border-brand bg-[#F5F3EF] px-4 py-2.5 font-body text-[13px] font-light text-text-main outline-none placeholder:text-text-muted-brand/60 focus:border-gold focus:bg-white focus:ring-2 focus:ring-gold/10 transition-all duration-200"
             />
             {/* Micro (si vide) / Envoyer (si texte) */}
             {saisie.trim() ? (
               <button
                 type="submit"
-                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-brand text-white transition-colors duration-200 hover:bg-primary-dark"
+                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary-brand to-primary-dark text-white shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95"
               >
                 <Send size={16} />
               </button>
@@ -1364,7 +1377,7 @@ export default function FenetreChat({
               <button
                 type="button"
                 onClick={startRecording}
-                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-brand text-text-muted-brand transition-colors duration-200 hover:border-gold hover:text-gold"
+                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-brand bg-[#F5F3EF] text-text-muted-brand transition-all duration-200 hover:border-gold hover:text-gold hover:bg-gold-light/30"
                 title="Message vocal"
               >
                 <Mic size={16} />

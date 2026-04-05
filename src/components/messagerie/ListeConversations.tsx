@@ -110,15 +110,20 @@ export default function ListeConversations({
 }: ListeConversationsProps) {
   const [recherche, setRecherche] = useState("")
   const [showNewModal, setShowNewModal] = useState(false)
+  const [filtre, setFiltre] = useState<"tous" | "nonLus">("tous")
 
   const unique = Array.from(
     new Map(conversations.map((c) => [c.interlocuteur.id, c])).values()
   )
 
+  const totalNonLus = unique.reduce((sum, c) => sum + c.nonLus, 0)
+
   const filtered = unique.filter((c) => {
     const fullName =
       `${c.interlocuteur.prenom} ${c.interlocuteur.nom}`.toLowerCase()
-    return fullName.includes(recherche.toLowerCase())
+    if (!fullName.includes(recherche.toLowerCase())) return false
+    if (filtre === "nonLus") return c.nonLus > 0
+    return true
   })
 
   return (
@@ -126,9 +131,16 @@ export default function ListeConversations({
       {/* ─── En-tête sidebar ─── */}
       <div className="border-b border-border-brand px-4 py-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-[18px] font-normal text-text-main">
-            Messages
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-[18px] font-normal text-text-main">
+              Messages
+            </h2>
+            {totalNonLus > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-brand px-1.5 font-body text-[10px] font-semibold text-white">
+                {totalNonLus > 99 ? "99+" : totalNonLus}
+              </span>
+            )}
+          </div>
           {/* Nouvelle conversation */}
           <button
             onClick={() => setShowNewModal(true)}
@@ -140,7 +152,7 @@ export default function ListeConversations({
         </div>
 
         {/* Recherche */}
-        <div className="relative">
+        <div className="relative mb-3">
           <Search
             size={13}
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted-brand"
@@ -152,6 +164,27 @@ export default function ListeConversations({
             placeholder="Rechercher…"
             className="w-full rounded-full border border-border-brand bg-bg-page py-2 pl-9 pr-4 font-body text-[12px] font-light text-text-main outline-none placeholder:text-text-muted-brand/60 focus:border-gold focus:ring-2 focus:ring-gold/10 transition-all duration-200"
           />
+        </div>
+
+        {/* Filtres Tous / Non lus */}
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => setFiltre("tous")}
+            className={`flex-1 rounded-full py-1.5 font-body text-[11px] font-medium transition-all duration-200 ${filtre === "tous" ? "bg-text-main text-white shadow-sm" : "bg-bg-page text-text-muted-brand hover:bg-[#ECEAE6]"}`}
+          >
+            Tous
+          </button>
+          <button
+            onClick={() => setFiltre("nonLus")}
+            className={`flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 font-body text-[11px] font-medium transition-all duration-200 ${filtre === "nonLus" ? "bg-primary-brand text-white shadow-sm" : "bg-bg-page text-text-muted-brand hover:bg-[#ECEAE6]"}`}
+          >
+            Non lus
+            {totalNonLus > 0 && filtre !== "nonLus" && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-brand px-1 font-body text-[9px] font-semibold text-white">
+                {totalNonLus > 99 ? "99+" : totalNonLus}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -198,10 +231,10 @@ export default function ListeConversations({
                 <button
                   key={conv.interlocuteur.id}
                   onClick={() => onSelect(conv.interlocuteur)}
-                  className={`group flex w-full items-center gap-3 px-3 py-3.5 text-left transition-colors duration-150 ${
+                  className={`group flex w-full items-center gap-3 px-3 py-3.5 text-left transition-colors duration-150 border-l-2 ${
                     isActive
-                      ? "bg-primary-light"
-                      : "hover:bg-[#F3F0EB]"
+                      ? "bg-primary-light border-primary-brand"
+                      : "border-transparent hover:bg-[#F3F0EB]"
                   }`}
                 >
                   <Avatar
