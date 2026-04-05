@@ -1,14 +1,38 @@
 import { Resend } from "resend"
+import nodemailer from "nodemailer"
 import { getConfig } from "@/lib/config"
 import { SITE_URL } from "@/lib/site"
 
+// ── Resend (fallback) ────────────────────────────────────────────────────────
 let _resend: Resend | null = null
-export function getResend(): Resend {
-  if (!_resend) {
-    if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not set")
+function getResend(): Resend | null {
+  if (!_resend && process.env.RESEND_API_KEY) {
     _resend = new Resend(process.env.RESEND_API_KEY)
   }
   return _resend
+}
+
+// ── Nodemailer (Gmail SMTP - primary) ────────────────────────────────────────
+let _transporter: nodemailer.Transporter | null = null
+function getNodemailerTransporter(): nodemailer.Transporter | null {
+  if (_transporter) return _transporter
+  
+  const user = process.env.SMTP_USER || process.env.GMAIL_USER
+  const pass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD
+  
+  if (!user || !pass) {
+    console.warn("[EMAIL] SMTP_USER/SMTP_PASS non configurés, Nodemailer désactivé")
+    return null
+  }
+  
+  _transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || "smtp.gmail.com",
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true", // true pour 465, false pour 587
+    auth: { user, pass },
+  })
+  
+  return _transporter
 }
 
 /** Échappe les caractères HTML dangereux dans les données utilisateur.
@@ -23,32 +47,66 @@ function e(s: string): string {
 }
 
 async function getFrom(): Promise<string> {
-  // Priorité : variable d'env RESEND_FROM_EMAIL (domaine vérifié dans Resend)
-  if (process.env.RESEND_FROM_EMAIL) {
-    const raw = process.env.RESEND_FROM_EMAIL
-    // Si l'adresse n'a pas de display name, en ajouter un
+  // Priorité 1: SMTP_FROM (pour Nodemailer)
+  if (process.env.SMTP_FROM) {
+    const raw = process.env.SMTP_FROM
     if (!raw.includes("<")) return `Le Surnaturel de Dieu <${raw}>`
     return raw
   }
+  // Priorité 2: RESEND_FROM_EMAIL (pour Resend fallback)
+  if (process.env.RESEND_FROM_EMAIL) {
+    const raw = process.env.RESEND_FROM_EMAIL
+    if (!raw.includes("<")) return `Le Surnaturel de Dieu <${raw}>`
+    return raw
+  }
+  // Priorité 3: config BDD
   const { nomCentre, emailRdv } = await getConfig()
   return `${nomCentre} <${emailRdv}>`
 }
 
 /**
- * Wrapper autour de Resend v6 — le SDK ne throw plus sur erreur API,
- * il retourne { data, error }. Ce wrapper lance une vraie Error si
- * l'envoi échoue, pour que les catch existants fonctionnent.
+ * Envoi d'email avec double provider :
+ * 1. Tente Nodemailer (Gmail SMTP) en premier
+ * 2. Si échec, bascule automatiquement sur Resend
  */
 export async function sendEmail(
   opts: Parameters<Resend["emails"]["send"]>[0]
 ) {
-  const { data, error } = await getResend().emails.send(opts)
+  const transporter = getNodemailerTransporter()
+  
+  // ── Essai 1 : Nodemailer (Gmail SMTP) ─────────────────────────────────────
+  if (transporter) {
+    try {
+      const result = await transporter.sendMail({
+        from: opts.from as string,
+        to: Array.isArray(opts.to) ? opts.to.join(", ") : opts.to,
+        subject: opts.subject,
+        html: opts.html as string,
+        text: opts.text as string | undefined,
+      })
+      console.log("[EMAIL] ✅ Envoyé via Nodemailer:", result.messageId)
+      return { id: result.messageId }
+    } catch (nodemailerError) {
+      console.error("[EMAIL] ❌ Nodemailer échec, bascule sur Resend:", nodemailerError)
+      // Continue vers le fallback Resend
+    }
+  }
+  
+  // ── Essai 2 : Resend (fallback) ───────────────────────────────────────────
+  const resend = getResend()
+  if (!resend) {
+    throw new Error("Aucun provider email configuré. Configurez SMTP_USER/SMTP_PASS ou RESEND_API_KEY")
+  }
+  
+  const { data, error } = await resend.emails.send(opts)
   if (error) {
-    console.error("[EMAIL] Resend API error:", JSON.stringify(error))
+    console.error("[EMAIL] ❌ Resend API error:", JSON.stringify(error))
     const err = new Error(error.message) as Error & { statusCode?: number }
     err.name = error.name
     throw err
   }
+  
+  console.log("[EMAIL] ✅ Envoyé via Resend (fallback):", data?.id)
   return data
 }
 
