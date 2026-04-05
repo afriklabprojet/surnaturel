@@ -96,6 +96,12 @@ export interface HeroContent {
   badge?: string
 }
 
+interface Stats {
+  clientes: number
+  soins: number
+  annees: number
+}
+
 export interface ServicesContent {
   tag?: string
   titre?: string
@@ -135,13 +141,14 @@ const CHIFFRES_DEFAUT: ChiffreCle[] = [
 
 // ─── Hero Section (animated) ─────────────────────────────────────
 
-export function HeroSection({ content }: { content?: HeroContent }) {
+export function HeroSection({ content, stats }: { content?: HeroContent; stats?: Stats }) {
   const tag = content?.tag || "Institut de bien-être"
   const titre = content?.titre || "Votre bien-être est notre vocation"
   const sousTitre = content?.sousTitre || "Depuis 2015, Marie Jeanne accueille les femmes d'Abidjan dans un espace de sérénité unique, dédié à la beauté naturelle et au bien-être holistique."
   const cta1 = content?.cta1 || "Découvrir nos soins"
   const cta2 = content?.cta2 || "Prendre rendez-vous"
   const badge = content?.badge || "Depuis 2015 à Abidjan"
+  const nombreClientes = stats?.clientes ?? 500
   return (
     <section className="bg-white px-6 py-20 sm:py-28 lg:px-10">
       <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
@@ -208,7 +215,7 @@ export function HeroSection({ content }: { content?: HeroContent }) {
               ))}
             </div>
             <p className="font-body text-[12px] text-text-mid">
-              <strong className="text-text-main">500+ clientes</strong> nous font confiance
+              <strong className="text-text-main">{nombreClientes}+ clientes</strong> nous font confiance
             </p>
           </motion.div>
         </div>

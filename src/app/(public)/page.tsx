@@ -170,7 +170,7 @@ export default async function PageAccueil() {
 
   return (
     <>
-      <HeroSection content={content.hero} />
+      <HeroSection content={content.hero} stats={stats} />
       <PremiereVisite />
       <ServicesSection services={services} content={content.services} />
       <ChiffresSection stats={stats} content={content.chiffres} />
