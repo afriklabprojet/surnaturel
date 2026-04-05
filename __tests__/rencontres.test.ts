@@ -29,8 +29,7 @@ describe("Rencontres — Préférences", () => {
 
   it("GET retourne null si aucune préférence (200)", async () => {
     prismaMock.rencontrePreference.findUnique.mockResolvedValue(null)
-    const req = buildRequest("/api/rencontres/preferences")
-    const res = await preferencesModule.GET(req as never)
+    const res = await preferencesModule.GET()
     expect(res.status).toBe(200)
     expect(await res.json()).toBeNull()
   })
@@ -47,8 +46,7 @@ describe("Rencontres — Préférences", () => {
       updatedAt: new Date(),
     }
     prismaMock.rencontrePreference.findUnique.mockResolvedValue(pref)
-    const req = buildRequest("/api/rencontres/preferences")
-    const res = await preferencesModule.GET(req as never)
+    const res = await preferencesModule.GET()
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.intention).toBe("RELATION_SERIEUSE")
@@ -57,8 +55,7 @@ describe("Rencontres — Préférences", () => {
 
   it("GET 401 si non authentifié", async () => {
     mockAuth.mockResolvedValue(null)
-    const req = buildRequest("/api/rencontres/preferences")
-    const res = await preferencesModule.GET(req as never)
+    const res = await preferencesModule.GET()
     expect(res.status).toBe(401)
   })
 
@@ -466,8 +463,7 @@ describe("Rencontres — Matches", () => {
         },
       },
     ])
-    const req = buildRequest("/api/rencontres/matches")
-    const res = await matchesModule.GET(req as never)
+    const res = await matchesModule.GET()
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.matches).toHaveLength(1)
@@ -508,16 +504,14 @@ describe("Rencontres — Matches", () => {
         },
       },
     ])
-    const req = buildRequest("/api/rencontres/matches")
-    const res = await matchesModule.GET(req as never)
+    const res = await matchesModule.GET()
     const json = await res.json()
     expect(json.matches[0].interlocuteur.id).toBe("usr_charlie")
   })
 
   it("GET retourne liste vide s'il n'y a pas de matches (200)", async () => {
     prismaMock.rencontreMatch.findMany.mockResolvedValue([])
-    const req = buildRequest("/api/rencontres/matches")
-    const res = await matchesModule.GET(req as never)
+    const res = await matchesModule.GET()
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.matches).toHaveLength(0)
@@ -525,8 +519,7 @@ describe("Rencontres — Matches", () => {
 
   it("GET 401 si non authentifié", async () => {
     mockAuth.mockResolvedValue(null)
-    const req = buildRequest("/api/rencontres/matches")
-    const res = await matchesModule.GET(req as never)
+    const res = await matchesModule.GET()
     expect(res.status).toBe(401)
   })
 })
