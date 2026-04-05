@@ -98,167 +98,183 @@ export default function CarteProfil({
   }
 
   return (
-    <div
-      className="relative w-full max-w-sm mx-auto"
-      style={{
-        transform: `translateX(${dragX}px) translateY(${dragY}px) rotate(${rotation}deg)`,
-        transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
-        cursor: isDragging ? "grabbing" : "grab",
-        touchAction: "none",
-        userSelect: "none",
-        willChange: "transform",
-      }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-    >
-      <div className="rounded-2xl overflow-hidden shadow-lg bg-white border border-border-brand select-none">
-        {/* Photo */}
-        <div className="relative h-96 bg-bg-page">
-          {/* LIKE overlay */}
-          <div
-            className="absolute inset-0 z-20 flex items-start justify-start p-6 pointer-events-none"
-            style={{ opacity: likeOpacity }}
-            aria-hidden="true"
-          >
-            <span className="border-4 border-green-500 text-green-500 font-black text-3xl px-3 py-1 rounded-lg rotate-[-20deg] tracking-widest">
-              LIKE
-            </span>
-          </div>
+    <div className="relative w-full max-w-sm mx-auto" style={{ height: "560px" }}>
+      {/* Cartes fantômes (effet deck) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 mx-4 h-full rounded-2xl bg-white border border-border-brand shadow-md"
+        style={{ transform: "rotate(6deg) translateY(6px)", zIndex: 1 }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 mx-2 h-full rounded-2xl bg-white border border-border-brand shadow-md"
+        style={{ transform: "rotate(3deg) translateY(3px)", zIndex: 2 }}
+      />
 
-          {/* NOPE overlay */}
-          <div
-            className="absolute inset-0 z-20 flex items-start justify-end p-6 pointer-events-none"
-            style={{ opacity: nopeOpacity }}
-            aria-hidden="true"
-          >
-            <span className="border-4 border-red-500 text-red-500 font-black text-3xl px-3 py-1 rounded-lg rotate-[20deg] tracking-widest">
-              NOPE
-            </span>
-          </div>
-
-          {/* SUPER overlay */}
-          <div
-            className="absolute inset-0 z-20 flex items-end justify-center pb-6 pointer-events-none"
-            style={{ opacity: superOpacity }}
-            aria-hidden="true"
-          >
-            <span className="border-4 border-blue-500 text-blue-500 font-black text-3xl px-3 py-1 rounded-lg tracking-widest">
-              SUPER
-            </span>
-          </div>
-
-          {profil.photoUrl ? (
-            <Image
-              src={profil.photoUrl}
-              alt={`${profil.prenom} ${profil.nom}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, 384px"
-              draggable={false}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl font-heading text-primary-brand/30">
-              {profil.prenom[0]}
+      {/* Carte principale */}
+      <div
+        className="absolute inset-0"
+        style={{
+          zIndex: 3,
+          transform: `translateX(${dragX}px) translateY(${dragY}px) rotate(${rotation}deg)`,
+          transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+          cursor: isDragging ? "grabbing" : "grab",
+          touchAction: "none",
+          userSelect: "none",
+          willChange: "transform",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <div className="w-full h-full rounded-2xl overflow-hidden shadow-xl bg-white border border-border-brand select-none flex flex-col">
+          {/* Photo */}
+          <div className="relative flex-1 bg-bg-page min-h-0">
+            {/* LIKE overlay */}
+            <div
+              className="absolute inset-0 z-20 flex items-start justify-start p-6 pointer-events-none"
+              style={{ opacity: likeOpacity }}
+              aria-hidden="true"
+            >
+              <span className="border-4 border-green-500 text-green-500 font-black text-3xl px-3 py-1 rounded-lg rotate-[-20deg] tracking-widest">
+                LIKE
+              </span>
             </div>
-          )}
 
-          {/* Badges top-right */}
-          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
-            {profil.verificationStatus !== "AUCUNE" && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-white/90 text-primary-brand shadow">
-                {profil.verificationStatus === "PROFESSIONNEL_SANTE" ? (
-                  <Shield size={12} />
-                ) : (
-                  <BadgeCheck size={12} />
-                )}
-                {profil.verificationStatus === "PROFESSIONNEL_SANTE" ? "Professionnel" : "Vérifié"}
+            {/* NOPE overlay */}
+            <div
+              className="absolute inset-0 z-20 flex items-start justify-end p-6 pointer-events-none"
+              style={{ opacity: nopeOpacity }}
+              aria-hidden="true"
+            >
+              <span className="border-4 border-red-500 text-red-500 font-black text-3xl px-3 py-1 rounded-lg rotate-[20deg] tracking-widest">
+                NOPE
               </span>
-            )}
-          </div>
+            </div>
 
-          {/* Badges top-left */}
-          <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5 z-10">
-            {profil.compatibilityScore !== undefined && profil.compatibilityScore > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white/90 text-pink-600 shadow">
-                {profil.compatibilityScore}% compatible
+            {/* SUPER overlay */}
+            <div
+              className="absolute inset-0 z-20 flex items-end justify-center pb-6 pointer-events-none"
+              style={{ opacity: superOpacity }}
+              aria-hidden="true"
+            >
+              <span className="border-4 border-blue-500 text-blue-500 font-black text-3xl px-3 py-1 rounded-lg tracking-widest">
+                SUPER
               </span>
+            </div>
+
+            {profil.photoUrl ? (
+              <Image
+                src={profil.photoUrl}
+                alt={`${profil.prenom} ${profil.nom}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 384px"
+                draggable={false}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-6xl font-heading text-primary-brand/30">
+                {profil.prenom[0]}
+              </div>
             )}
-            {presence && (
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-white/90 text-text-main shadow">
-                <span className={`w-2 h-2 rounded-full ${presence.color}`} />
-                {presence.label}
-              </span>
-            )}
-          </div>
 
-          {/* Dégradé bas */}
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-black/60 to-transparent" />
-
-          {/* Nom + âge */}
-          <div className="absolute bottom-4 left-4 text-white z-10">
-            <p className="font-heading text-xl font-semibold">
-              {profil.prenom}
-              {age !== null && `, ${age} ans`}
-            </p>
-            {profil.ville && (
-              <p className="flex items-center gap-1 text-sm text-white/80">
-                <MapPin size={12} />
-                {profil.ville}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Infos */}
-        <div className="p-4 space-y-3">
-          {profil.bio && (
-            <p className="text-sm text-text-mid line-clamp-3">{profil.bio}</p>
-          )}
-
-          {profil.centresInteret.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {profil.centresInteret.slice(0, 5).map((c) => (
-                <span
-                  key={c}
-                  className="px-2 py-0.5 rounded-full text-xs bg-primary-light text-primary-brand font-medium"
-                >
-                  {c}
+            {/* Badges top-right */}
+            <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
+              {profil.verificationStatus !== "AUCUNE" && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-white/90 text-primary-brand shadow">
+                  {profil.verificationStatus === "PROFESSIONNEL_SANTE" ? (
+                    <Shield size={12} />
+                  ) : (
+                    <BadgeCheck size={12} />
+                  )}
+                  {profil.verificationStatus === "PROFESSIONNEL_SANTE" ? "Professionnel" : "Vérifié"}
                 </span>
-              ))}
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-center gap-5 px-4 pb-5">
-          <button
-            onClick={onPass}
-            disabled={isLoading}
-            aria-label="Passer"
-            className="flex items-center justify-center w-14 h-14 rounded-full border-2 border-gray-200 text-gray-400 hover:border-red-400 hover:text-red-400 hover:scale-110 transition-all disabled:opacity-50"
-          >
-            <X size={24} />
-          </button>
+            {/* Badges top-left */}
+            <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5 z-10">
+              {profil.compatibilityScore !== undefined && profil.compatibilityScore > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white/90 text-pink-600 shadow">
+                  {profil.compatibilityScore}% compatible
+                </span>
+              )}
+              {presence && (
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-white/90 text-text-main shadow">
+                  <span className={`w-2 h-2 rounded-full ${presence.color}`} />
+                  {presence.label}
+                </span>
+              )}
+            </div>
 
-          <button
-            onClick={onSuperLike}
-            disabled={isLoading}
-            aria-label="Super like"
-            className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-blue-200 text-blue-400 hover:border-blue-500 hover:text-blue-500 hover:scale-110 transition-all disabled:opacity-50"
-          >
-            <Star size={20} />
-          </button>
+            {/* Dégradé bas */}
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-black/70 to-transparent" />
 
-          <button
-            onClick={onLike}
-            disabled={isLoading}
-            aria-label="Liker"
-            className="flex items-center justify-center w-14 h-14 rounded-full border-2 border-pink-200 text-pink-400 hover:border-pink-500 hover:text-pink-500 hover:scale-110 transition-all disabled:opacity-50"
-          >
-            <Heart size={24} />
-          </button>
+            {/* Nom + âge */}
+            <div className="absolute bottom-4 left-4 text-white z-10">
+              <p className="font-heading text-2xl font-bold drop-shadow">
+                {profil.prenom}
+                {age !== null && `, ${age}`}
+              </p>
+              {profil.ville && (
+                <p className="flex items-center gap-1 text-sm text-white/80 drop-shadow">
+                  <MapPin size={12} />
+                  {profil.ville}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Infos + actions */}
+          <div className="bg-white px-4 pt-3 pb-4 space-y-3">
+            {profil.bio && (
+              <p className="text-sm text-text-mid line-clamp-2">{profil.bio}</p>
+            )}
+
+            {profil.centresInteret.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {profil.centresInteret.slice(0, 5).map((c) => (
+                  <span
+                    key={c}
+                    className="px-2 py-0.5 rounded-full text-xs bg-primary-light text-primary-brand font-medium"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Boutons actions — style Tinder avec gradients */}
+            <div className="flex items-center justify-center gap-4 pt-1">
+              <button
+                onClick={onPass}
+                disabled={isLoading}
+                aria-label="Passer"
+                className="flex items-center justify-center w-14 h-14 rounded-full shadow-md bg-white border-2 border-gray-100 text-gray-400 hover:border-red-300 hover:text-red-400 hover:scale-110 hover:shadow-red-100 transition-all disabled:opacity-50"
+              >
+                <X size={26} />
+              </button>
+
+              <button
+                onClick={onSuperLike}
+                disabled={isLoading}
+                aria-label="Super like"
+                className="flex items-center justify-center w-12 h-12 rounded-full shadow-md bg-linear-to-br from-cyan-400 to-blue-500 text-white hover:scale-110 hover:shadow-blue-200 transition-all disabled:opacity-50"
+              >
+                <Star size={20} />
+              </button>
+
+              <button
+                onClick={onLike}
+                disabled={isLoading}
+                aria-label="Liker"
+                className="flex items-center justify-center w-14 h-14 rounded-full shadow-md bg-linear-to-br from-pink-500 to-rose-500 text-white hover:scale-110 hover:shadow-pink-200 transition-all disabled:opacity-50"
+              >
+                <Heart size={26} className="fill-white" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

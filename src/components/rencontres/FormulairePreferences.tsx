@@ -2,12 +2,36 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { Save } from "lucide-react"
+import { Save, Users, Heart, Church } from "lucide-react"
 
 const INTENTIONS = [
-  { value: "AMITIE", label: "Amitié", description: "Rencontres amicales, échanges" },
-  { value: "RELATION_SERIEUSE", label: "Relation sérieuse", description: "Cherche une relation stable" },
-  { value: "MARIAGE", label: "Mariage", description: "Cherche un/une partenaire de vie" },
+  {
+    value: "AMITIE",
+    label: "Amitié",
+    description: "Rencontres amicales, échanges",
+    icon: Users,
+    gradient: "from-sky-400 to-cyan-500",
+    light: "bg-sky-50 border-sky-200 text-sky-700",
+    active: "border-sky-400 bg-sky-50",
+  },
+  {
+    value: "RELATION_SERIEUSE",
+    label: "Relation sérieuse",
+    description: "Cherche une relation stable",
+    icon: Heart,
+    gradient: "from-pink-500 to-rose-500",
+    light: "bg-pink-50 border-pink-200 text-pink-700",
+    active: "border-pink-400 bg-pink-50",
+  },
+  {
+    value: "MARIAGE",
+    label: "Mariage",
+    description: "Cherche un/une partenaire de vie",
+    icon: Church,
+    gradient: "from-violet-500 to-purple-600",
+    light: "bg-violet-50 border-violet-200 text-violet-700",
+    active: "border-violet-400 bg-violet-50",
+  },
 ] as const
 
 type Intention = (typeof INTENTIONS)[number]["value"]
@@ -68,85 +92,113 @@ export default function FormulairePreferences({
     }
   }
 
+  const currentIntention = INTENTIONS.find((i) => i.value === intention)!
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Intention */}
-      <div className="space-y-2">
-        <label className="font-medium text-text-main text-sm">Je cherche…</label>
-        <div className="grid gap-2">
-          {INTENTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setIntention(opt.value)}
-              className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-colors ${
-                intention === opt.value
-                  ? "border-primary-brand bg-primary-light"
-                  : "border-border-brand hover:border-primary-brand/40"
-              }`}
-            >
-              <div
-                className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 ${
-                  intention === opt.value
-                    ? "border-primary-brand bg-primary-brand"
-                    : "border-gray-300"
+      <div className="space-y-3">
+        <label className="font-semibold text-text-main text-sm">Je cherche…</label>
+        <div className="grid gap-2.5">
+          {INTENTIONS.map((opt) => {
+            const Icon = opt.icon
+            const selected = intention === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setIntention(opt.value)}
+                className={`flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${
+                  selected
+                    ? `${opt.active} shadow-md`
+                    : "border-border-brand hover:border-gray-300 bg-white"
                 }`}
-              />
-              <div>
-                <p className="font-medium text-sm text-text-main">{opt.label}</p>
-                <p className="text-xs text-text-muted-brand">{opt.description}</p>
-              </div>
-            </button>
-          ))}
+              >
+                {/* Icône avec gradient */}
+                <div className={`w-10 h-10 rounded-xl bg-linear-to-br ${opt.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                  <Icon size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-text-main">{opt.label}</p>
+                  <p className="text-xs text-text-muted-brand">{opt.description}</p>
+                </div>
+                {/* Radio visuel */}
+                <div
+                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
+                    selected ? `border-current bg-linear-to-br ${opt.gradient}` : "border-gray-300"
+                  }`}
+                  style={selected ? { borderColor: "transparent" } : {}}
+                >
+                  {selected && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Tranche d'âge */}
-      <div className="space-y-2">
-        <label className="font-medium text-text-main text-sm">
-          Tranche d&apos;âge : {ageMin} – {ageMax} ans
-        </label>
-        <div className="flex items-center gap-3">
-          <input
-            type="range"
-            min={18}
-            max={ageMax}
-            value={ageMin}
-            onChange={(e) => setAgeMin(Number(e.target.value))}
-            className="flex-1 accent-primary-brand"
-          />
-          <input
-            type="range"
-            min={ageMin}
-            max={99}
-            value={ageMax}
-            onChange={(e) => setAgeMax(Number(e.target.value))}
-            className="flex-1 accent-primary-brand"
-          />
+      <div className="p-4 rounded-2xl border border-border-brand bg-white space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="font-semibold text-text-main text-sm">Tranche d&apos;âge</label>
+          <span className="text-sm font-bold text-primary-brand">
+            {ageMin} – {ageMax} ans
+          </span>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-text-muted-brand w-8">Min</span>
+            <input
+              type="range"
+              min={18}
+              max={ageMax}
+              value={ageMin}
+              onChange={(e) => setAgeMin(Number(e.target.value))}
+              className="flex-1 accent-pink-500 h-1.5"
+            />
+            <span className="text-xs font-medium text-text-main w-8 text-right">{ageMin}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-text-muted-brand w-8">Max</span>
+            <input
+              type="range"
+              min={ageMin}
+              max={99}
+              value={ageMax}
+              onChange={(e) => setAgeMax(Number(e.target.value))}
+              className="flex-1 accent-pink-500 h-1.5"
+            />
+            <span className="text-xs font-medium text-text-main w-8 text-right">{ageMax}</span>
+          </div>
         </div>
       </div>
 
       {/* Distance */}
-      <div className="space-y-2">
-        <label className="font-medium text-text-main text-sm">
-          Distance max : {distanceKm} km
-        </label>
-        <input
-          type="range"
-          min={1}
-          max={500}
-          value={distanceKm}
-          onChange={(e) => setDistanceKm(Number(e.target.value))}
-          className="w-full accent-primary-brand"
-        />
+      <div className="p-4 rounded-2xl border border-border-brand bg-white space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="font-semibold text-text-main text-sm">Distance maximum</label>
+          <span className="text-sm font-bold text-primary-brand">{distanceKm} km</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-text-muted-brand">1 km</span>
+          <input
+            type="range"
+            min={1}
+            max={500}
+            value={distanceKm}
+            onChange={(e) => setDistanceKm(Number(e.target.value))}
+            className="flex-1 accent-pink-500 h-1.5"
+          />
+          <span className="text-xs text-text-muted-brand">500 km</span>
+        </div>
       </div>
 
       {/* Statut actif */}
-      <div className="flex items-center justify-between p-3 rounded-xl border border-border-brand">
+      <div className="flex items-center justify-between p-4 rounded-2xl border border-border-brand bg-white">
         <div>
-          <p className="font-medium text-sm text-text-main">Mode rencontres actif</p>
-          <p className="text-xs text-text-muted-brand">
-            Désactivez pour ne plus apparaître dans les découvertes
+          <p className="font-semibold text-sm text-text-main">Mode rencontres actif</p>
+          <p className="text-xs text-text-muted-brand mt-0.5">
+            {actif ? "Votre profil est visible dans les découvertes" : "Vous n'apparaissez plus dans les découvertes"}
           </p>
         </div>
         <button
@@ -154,25 +206,27 @@ export default function FormulairePreferences({
           role="switch"
           aria-checked={actif}
           onClick={() => setActif(!actif)}
-          className={`relative w-11 h-6 rounded-full transition-colors ${
-            actif ? "bg-primary-brand" : "bg-gray-200"
+          className={`relative w-12 h-6.5 rounded-full transition-all shrink-0 ${
+            actif ? "bg-linear-to-r from-pink-500 to-fuchsia-600 shadow-md shadow-pink-200" : "bg-gray-200"
           }`}
+          style={{ height: "26px", width: "48px" }}
         >
           <span
             className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-              actif ? "translate-x-5" : "translate-x-0"
+              actif ? "translate-x-[22px]" : "translate-x-0"
             }`}
           />
         </button>
       </div>
 
+      {/* Bouton enregistrer */}
       <button
         type="submit"
         disabled={saving}
-        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary-brand text-white font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
+        className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-semibold text-white transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0 bg-linear-to-br ${currentIntention.gradient}`}
       >
-        <Save size={16} />
-        {saving ? "Enregistrement…" : "Enregistrer"}
+        <Save size={17} />
+        {saving ? "Enregistrement…" : "Enregistrer mes préférences"}
       </button>
     </form>
   )
