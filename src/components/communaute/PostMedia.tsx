@@ -3,7 +3,12 @@
 import Image from "next/image"
 import { ExternalLink, FileText } from "lucide-react"
 
-const imgLoader = ({ src }: { src: string }) => src
+const imgLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+  if (src.includes('cloudinary.com/')) {
+    return src.replace('/upload/', `/upload/w_${width},q_${quality ?? 80},f_auto/`)
+  }
+  return src
+}
 import type { PostData } from "./types"
 
 export function PostMedia({ post }: { post: PostData }) {

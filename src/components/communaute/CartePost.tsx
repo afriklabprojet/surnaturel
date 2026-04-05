@@ -299,7 +299,7 @@ export function CartePost({
           </div>
           {post.partageDe.imageUrl && (
             <div className="relative w-full h-48">
-              <Image src={post.partageDe.imageUrl} alt={`Photo par ${post.partageDe.auteur.prenom}`} fill className="object-cover" />
+              <Image src={post.partageDe.imageUrl} alt={`Photo par ${post.partageDe.auteur.prenom}`} fill sizes="(max-width: 768px) 100vw, 600px" className="object-cover" />
             </div>
           )}
         </div>

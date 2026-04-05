@@ -112,7 +112,18 @@ export default function Navbar() {
     setOpenMobileDropdown((prev) => (prev === label ? null : label))
   }
 
+  // Verrouiller le scroll du body quand le menu mobile est ouvert
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => { document.body.style.overflow = "" }
+  }, [mobileMenuOpen])
+
   return (
+    <>
     <header className="sticky top-0 z-50 w-full border-b border-border-brand backdrop-blur bg-[color-mix(in_srgb,var(--color-bg-card)_95%,transparent)]">
       <nav className="flex h-18 items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         {/* Logo */}
@@ -280,11 +291,14 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile full-screen menu */}
-        {mobileMenuOpen && (
-          <div
-            className="fixed inset-0 top-18 z-40 animate-slide-in-right overflow-y-auto bg-bg-page px-6 pb-10 pt-6 lg:hidden"
-          >
+      {/* Mini-cart drawer */}
+      <MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} />
+    </header>
+
+      {/* Menu mobile — EN DEHORS du header pour éviter que backdrop-filter
+          crée un containing block et empêche le fixed de couvrir tout le viewport */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 top-18 z-40 overflow-y-auto bg-bg-page px-6 pb-10 pt-6 lg:hidden">
           {/* Raccourcis rapides */}
           <div className="flex gap-2 mb-6 pb-6 border-b border-border-brand">
             <Link
@@ -401,10 +415,7 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
-        )}
-
-      {/* Mini-cart drawer */}
-      <MiniCart open={miniCartOpen} onClose={() => setMiniCartOpen(false)} />
-    </header>
+      )}
+    </>
   )
 }
