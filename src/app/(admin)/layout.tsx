@@ -190,6 +190,11 @@ export default function AdminLayout({
   })
 
   const isLoginPage = pathname === "/admin/login"
+  const isSageFemme = session?.user?.role === "SAGE_FEMME"
+
+  const visibleGroups = isSageFemme
+    ? navGroups.filter((g) => g.id === "equipe")
+    : navGroups
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href)
@@ -269,23 +274,25 @@ export default function AdminLayout({
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-2 overflow-y-auto">
-          {/* Dashboard — standalone top link */}
-          <Link
-            href="/admin"
-            onClick={() => setSidebarOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2.5 mb-3 font-body text-[12px] uppercase tracking-widest font-medium transition-colors ${
-              pathname === "/admin"
-                ? "bg-white/15 text-white border-l-[3px] border-white"
-                : "text-white/70 hover:bg-white/8 hover:text-white border-l-[3px] border-transparent"
-            }`}
-          >
-            <LayoutDashboard className="h-4 w-4 shrink-0" />
-            Tableau de bord
-          </Link>
+          {/* Dashboard — standalone top link (admin only) */}
+          {!isSageFemme && (
+            <Link
+              href="/admin"
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 mb-3 font-body text-[12px] uppercase tracking-widest font-medium transition-colors ${
+                pathname === "/admin"
+                  ? "bg-white/15 text-white border-l-[3px] border-white"
+                  : "text-white/70 hover:bg-white/8 hover:text-white border-l-[3px] border-transparent"
+              }`}
+            >
+              <LayoutDashboard className="h-4 w-4 shrink-0" />
+              Tableau de bord
+            </Link>
+          )}
 
           {/* Grouped sections */}
           <div className="space-y-0.5">
-            {navGroups.map((group) => {
+            {visibleGroups.map((group) => {
               const isOpen = openGroups.has(group.id)
               const hasActive = group.items.some((item) => isActive(item.href))
               return (

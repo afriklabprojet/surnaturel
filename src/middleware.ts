@@ -58,7 +58,7 @@ const protectedRoutes = [
 // SÉCURITÉ : /suivi-medical accessible à CLIENT, ACCOMPAGNATEUR_MEDICAL et ADMIN
 const roleRestrictedRoutes: Record<string, string[]> = {
   "/suivi-medical": ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"],
-  "/admin": ["ADMIN"],
+  "/admin": ["ADMIN", "SAGE_FEMME"],
 }
 
 export async function middleware(req: NextRequest) {
@@ -101,9 +101,16 @@ export async function middleware(req: NextRequest) {
   /* ── /admin/login accessible sans session ── */
   if (pathname === "/admin/login") {
     const token = await getToken({ req, secret: AUTH_SECRET, cookieName: SESSION_COOKIE, secureCookie: useSecureCookies })
-    if (token && (token.role as string) === "ADMIN") {
+    if (token) {
+      const role = token.role as string
       const url = req.nextUrl.clone()
-      url.pathname = "/admin"
+      if (role === "SAGE_FEMME") url.pathname = "/admin/sage-femme"
+      else if (role === "ADMIN") url.pathname = "/admin"
+      else {
+        // CLIENT, ACCOMPAGNATEUR_MEDICAL → pas leur place ici, alerte
+        url.pathname = "/dashboard"
+        url.searchParams.set("alert", "wrong-login-page")
+      }
       return NextResponse.redirect(url)
     }
     return NextResponse.next()
@@ -136,14 +143,19 @@ export async function middleware(req: NextRequest) {
     if (pathname === route || pathname.startsWith(route + "/")) {
       const userRole = token.role as string
       if (!allowedRoles.includes(userRole)) {
-        if (route === "/admin") {
-          const url = req.nextUrl.clone()
-          url.pathname = "/admin/login"
-          return NextResponse.redirect(url)
-        }
         const url = req.nextUrl.clone()
+        // Utilisateur connecté sans les droits admin → espace client (pas /admin/login)
         url.pathname = "/dashboard"
         return NextResponse.redirect(url)
+      }
+      // SAGE_FEMME ne peut accéder qu'à /admin/sage-femme (et /admin/login)
+      if (route === "/admin" && userRole === "SAGE_FEMME") {
+        const sageFemmeAllowed = pathname === "/admin/sage-femme" || pathname.startsWith("/admin/sage-femme/")
+        if (!sageFemmeAllowed) {
+          const url = req.nextUrl.clone()
+          url.pathname = "/admin/sage-femme"
+          return NextResponse.redirect(url)
+        }
       }
     }
   }

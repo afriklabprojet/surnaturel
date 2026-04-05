@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { useSearchParams, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import { toast } from "sonner"
 import {
   Calendar,
   ShoppingBag,
@@ -106,6 +108,8 @@ export default function DashboardClient({
   hasRdv,
   hasCommande,
 }: DashboardClientProps) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showOnboardingFlow, setShowOnboardingFlow] = useState(false)
   const [messagesNonLus, setMessagesNonLus] = useState(0)
@@ -198,6 +202,18 @@ export default function DashboardClient({
 
   // Marquer comme déjà animé après le premier rendu
   useEffect(() => { hasAnimated.current = true }, [])
+
+  // Afficher une alerte si l'utilisateur a tenté d'utiliser /admin/login
+  useEffect(() => {
+    if (searchParams.get("alert") === "wrong-login-page") {
+      toast.error("Accès refusé", {
+        description: "Ce lien est réservé au personnel. Utilisez /connexion pour vous connecter.",
+        duration: 6000,
+      })
+      // Nettoyer l'URL
+      router.replace("/dashboard", { scroll: false })
+    }
+  }, [searchParams, router])
 
   return (
     <motion.div

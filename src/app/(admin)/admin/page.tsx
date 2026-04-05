@@ -160,7 +160,13 @@ async function getAdminStats(): Promise<DashboardData> {
 
 export default async function AdminDashboard() {
   const session = await auth()
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (!session?.user) {
+    redirect("/admin/login")
+  }
+  if (session.user.role === "SAGE_FEMME") {
+    redirect("/admin/sage-femme")
+  }
+  if (session.user.role !== "ADMIN") {
     redirect("/admin/login")
   }
 

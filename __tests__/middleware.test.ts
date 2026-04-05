@@ -91,12 +91,12 @@ describe("Middleware — RBAC & Route Protection", () => {
     expect(res.status).toBe(200)
   })
 
-  it("blocks CLIENT from /admin (redirects to /admin/login)", async () => {
+  it("blocks CLIENT from /admin (redirects to /dashboard)", async () => {
     mockGetToken.mockResolvedValue({ id: "usr_1", role: "CLIENT" })
     const req = createRequest("/admin")
     const res = await middleware(req)
     expect(res.status).toBe(307)
-    expect(res.headers.get("location")).toContain("/admin/login")
+    expect(res.headers.get("location")).toContain("/dashboard")
   })
 
   it("allows ADMIN to access /admin", async () => {
@@ -120,12 +120,12 @@ describe("Middleware — RBAC & Route Protection", () => {
     expect(res.status).toBe(200)
   })
 
-  it("blocks SAGE_FEMME from /admin", async () => {
+  it("redirects SAGE_FEMME from /admin to /admin/sage-femme", async () => {
     mockGetToken.mockResolvedValue({ id: "usr_sf", role: "SAGE_FEMME" })
     const req = createRequest("/admin")
     const res = await middleware(req)
     expect(res.status).toBe(307)
-    expect(res.headers.get("location")).toContain("/admin/login")
+    expect(res.headers.get("location")).toContain("/admin/sage-femme")
   })
 
   it("redirects logged-in ADMIN from /admin/login to /admin", async () => {
@@ -137,11 +137,13 @@ describe("Middleware — RBAC & Route Protection", () => {
     expect(res.headers.get("location")).not.toContain("/admin/login")
   })
 
-  it("allows non-admin to stay on /admin/login", async () => {
+  it("redirects logged-in CLIENT from /admin/login to /dashboard with alert", async () => {
     mockGetToken.mockResolvedValue({ id: "usr_1", role: "CLIENT" })
     const req = createRequest("/admin/login")
     const res = await middleware(req)
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(307)
+    expect(res.headers.get("location")).toContain("/dashboard")
+    expect(res.headers.get("location")).toContain("alert=wrong-login-page")
   })
 
   it("uses secure cookies when NEXTAUTH_URL is https", async () => {
