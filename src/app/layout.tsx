@@ -10,7 +10,10 @@ import { SiteConfigProvider } from "@/components/providers/SiteConfigProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import PostHogProvider from "@/components/providers/PostHogProvider";
 import PwaInstallPrompt from "@/components/layout/PwaInstallPrompt";
+import { BrandingProvider } from "@/components/branding";
 import { getConfig } from "@/lib/config";
+import { getBranding } from "@/app/actions/branding";
+import { generateBrandingCSS, generateFontUrl } from "@/lib/branding-utils";
 import { auth } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -75,8 +78,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const config = await getConfig()
-  const session = await auth()
+  const [config, branding, session] = await Promise.all([
+    getConfig(),
+    getBranding(),
+    auth(),
+  ])
+  
+  // Générer le CSS dynamique et l'URL des polices
+  const brandingCSS = generateBrandingCSS(branding)
+  const fontUrl = generateFontUrl(branding)
+  
   return (
     <html
       lang="fr"
@@ -85,7 +96,9 @@ export default async function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2D7A1F" />
+        <meta name="theme-color" content={branding.primaryColor} />
+        {/* Polices Google Fonts dynamiques */}
+        {fontUrl && <link rel="stylesheet" href={fontUrl} />}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -142,8 +155,11 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-body bg-bg-page text-text-main">
+        {/* Injection CSS branding dynamique */}
+        <style dangerouslySetInnerHTML={{ __html: brandingCSS }} />
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-9999 focus:bg-primary-brand focus:text-white focus:px-4 focus:py-2 focus:font-body focus:text-sm">Aller au contenu principal</a>
         <ThemeProvider>
+        <BrandingProvider branding={branding} css={brandingCSS} fontUrl={fontUrl}>
         <SiteConfigProvider config={config}>
         <SessionWrapper session={session}>
           <I18nProvider>
@@ -158,6 +174,7 @@ export default async function RootLayout({
         </SessionWrapper>
         <PwaInstallPrompt />
         </SiteConfigProvider>
+        </BrandingProvider>
         </ThemeProvider>
         <Toaster
           position="top-right"

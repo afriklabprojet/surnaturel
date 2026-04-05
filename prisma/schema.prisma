@@ -1394,6 +1394,60 @@ model AppConfig {
   valeur String // JSON stringifié
 }
 
+// ─── Branding dynamique (White-Label) ────────────────────────────
+
+model BrandingSettings {
+  id                String   @id @default(cuid())
+  tenantId          String?  @unique // Multi-tenant ready (null = global)
+  
+  // Identité
+  appName           String   @default("Le Surnaturel de Dieu")
+  logoLight         String?  // URL logo pour fond clair
+  logoDark          String?  // URL logo pour fond sombre
+  favicon           String?  // URL favicon
+  loaderLogo        String?  // Logo pour écran de chargement
+  
+  // Palette de couleurs
+  primaryColor      String   @default("#2D7A1F")
+  primaryDarkColor  String   @default("#1A5C10")
+  primaryLightColor String   @default("#E8F5E3")
+  secondaryColor    String   @default("#E8F5E3")
+  accentColor       String   @default("#9A7B22")
+  accentLightColor  String   @default("#F5EDD6")
+  backgroundColor   String   @default("#FAFAF7")
+  foregroundColor   String   @default("#1C1C1C")
+  cardColor         String   @default("#FFFFFF")
+  borderColor       String   @default("#E8E4DC")
+  dangerColor       String   @default("#DC2626")
+  successColor      String   @default("#16A34A")
+  
+  // Typographie
+  fontFamily        String   @default("Jost")
+  fontHeading       String   @default("Cormorant Garamond")
+  
+  // UI
+  buttonRadius      String   @default("md") // sm, md, lg, full
+  sidebarTheme      String   @default("light") // light, dark
+  
+  // Page de connexion
+  loginBackground   String?  // Image de fond
+  loginTitle        String?  // Titre personnalisé
+  loginSubtitle     String?  // Sous-titre personnalisé
+  loginLogoSize     String   @default("md") // sm, md, lg
+  
+  // Email branding
+  emailLogoUrl      String?
+  emailPrimaryColor String   @default("#2D7A1F")
+  emailFooterText   String?
+  
+  // Presets et métadonnées
+  presetName        String?  // Nom du preset si utilisé
+  customCss         String?  // CSS personnalisé (injection)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
 // ─── Notes Sage-Femme ────────────────────────────────────────────
 
 model NotePro {
