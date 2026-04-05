@@ -275,7 +275,7 @@ function GraphiqueTendances({ entrees }: { entrees: EntreeCarnet[] }) {
           <XAxis dataKey="date" tick={{ fontSize: 9 }} tickLine={false} />
           <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 9 }} />
           <Tooltip
-            formatter={(value: number, name: string) => [
+            formatter={(value, name) => [
               value,
               name === "humeur" ? "Humeur" : name === "energie" ? "Énergie" : "Sommeil",
             ]}
