@@ -3,13 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
 import { Loader2, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import ListeConversations from "@/components/messagerie/ListeConversations"
 import FenetreChat from "@/components/messagerie/FenetreChatLazy"
 import { usePusherChat } from "@/lib/hooks/use-pusher"
-import { fadeInUp } from "@/lib/animations"
 import type { MessageData, Interlocuteur, Conversation } from "@/types/messages"
 
 export default function PageCommunaute() {
@@ -912,21 +910,16 @@ export default function PageCommunaute() {
   return (
     <section className="-m-5 lg:-m-8">
       {/* En-tête */}
-      <motion.div
-        variants={fadeInUp}
-        initial="initial"
-        animate="animate"
-        className="border-b border-border-brand bg-white px-5 py-4"
-      >
+      <div className="border-b border-border-brand bg-white px-5 py-4">
         <h1 className="font-display text-[28px] font-light text-text-main">
           Messagerie
         </h1>
         <p className="font-body text-[12px] text-text-muted-brand">
           Échangez avec les membres et l&apos;équipe du centre
         </p>
-      </motion.div>
+      </div>
 
-      <div className="flex overflow-hidden bg-bg-page" style={{ height: "calc(100dvh - 200px)" }}>
+      <div className="flex overflow-hidden bg-bg-page" style={{ height: "calc(100svh - 200px)" }}>
         {/* Colonne gauche — 280px fixe : Liste des conversations */}
         <div
           className={`w-full border-r border-border-brand bg-white shadow-sm md:w-72 md:shrink-0 ${
