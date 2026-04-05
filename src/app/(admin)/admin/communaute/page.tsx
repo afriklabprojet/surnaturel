@@ -14,12 +14,19 @@ import {
   X,
   Trash2,
   Eye,
-  ChevronDown,
+  EyeOff,
   CreditCard,
   Plus,
   Pencil,
   ToggleLeft,
   ToggleRight,
+  Pin,
+  Star,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  UserCog,
+  Flag,
 } from "lucide-react"
 
 /* ━━━ Types ━━━ */
@@ -74,6 +81,36 @@ interface StatsAbo {
   revenuMensuel: number
 }
 
+interface PostAdmin {
+  id: string
+  contenu: string
+  imageUrl?: string | null
+  format: string
+  status: string
+  epingle: boolean
+  isAnnonce: boolean
+  masque: boolean
+  groupeId?: string | null
+  createdAt: string
+  auteur: { id: string; nom: string; prenom: string; photoUrl?: string | null }
+  commentairesCount: number
+  reactionsCount: number
+  signalementsCount: number
+}
+
+interface MembreAdmin {
+  id: string
+  nom: string
+  prenom: string
+  email: string
+  photoUrl?: string | null
+  role: string
+  createdAt: string
+  postsCount: number
+  commentairesCount: number
+  signalementsRecusCount: number
+}
+
 /* ━━━ Helpers ━━━ */
 
 function Avatar({ user, size = 32 }: { user: { prenom: string; nom: string; photoUrl?: string | null }; size?: number }) {
@@ -124,7 +161,7 @@ export default function PageAdminCommunaute() {
   const [filtreStatut, setFiltreStatut] = useState("EN_ATTENTE")
   const [sigLoading, setSigLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({})
-  const [tab, setTab] = useState<"stats" | "signalements" | "abonnements">("stats")
+  const [tab, setTab] = useState<"stats" | "signalements" | "abonnements" | "publications" | "membres">("stats")
 
   // Abonnements state
   const [formules, setFormules] = useState<FormuleData[]>([])
@@ -134,6 +171,24 @@ export default function PageAdminCommunaute() {
   const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({})
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingFormule, setEditingFormule] = useState<FormuleData | null>(null)
+
+  // Publications state
+  const [posts, setPosts] = useState<PostAdmin[]>([])
+  const [postsLoading, setPostsLoading] = useState(false)
+  const [postsPage, setPostsPage] = useState(1)
+  const [postsPages, setPostsPages] = useState(1)
+  const [postsTotal, setPostsTotal] = useState(0)
+  const [postsStatusFilter, setPostsStatusFilter] = useState("")
+  const [postsSearch, setPostsSearch] = useState("")
+  const [postActionLoading, setPostActionLoading] = useState<Record<string, boolean>>({})
+
+  // Membres state
+  const [membres, setMembres] = useState<MembreAdmin[]>([])
+  const [membresLoading, setMembresLoading] = useState(false)
+  const [membresPage, setMembresPage] = useState(1)
+  const [membresPages, setMembresPages] = useState(1)
+  const [membresTotal, setMembresTotal] = useState(0)
+  const [membresSearch, setMembresSearch] = useState("")
 
   const fetchStats = useCallback(async () => {
     try {
@@ -188,6 +243,70 @@ export default function PageAdminCommunaute() {
       setFormulesLoading(false)
     }
   }, [])
+
+  const fetchPosts = useCallback(async (page = 1, status = "", q = "") => {
+    setPostsLoading(true)
+    try {
+      const params = new URLSearchParams({ page: String(page) })
+      if (status) params.set("status", status)
+      if (q) params.set("q", q)
+      const res = await fetch(`/api/admin/communaute/posts?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setPosts(data.posts ?? [])
+        setPostsPage(data.page)
+        setPostsPages(data.pages)
+        setPostsTotal(data.total)
+      }
+    } catch {}
+    setPostsLoading(false)
+  }, [])
+
+  const fetchMembres = useCallback(async (page = 1, q = "") => {
+    setMembresLoading(true)
+    try {
+      const params = new URLSearchParams({ page: String(page) })
+      if (q) params.set("q", q)
+      const res = await fetch(`/api/admin/communaute/membres?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMembres(data.membres ?? [])
+        setMembresPage(data.page)
+        setMembresPages(data.pages)
+        setMembresTotal(data.total)
+      }
+    } catch {}
+    setMembresLoading(false)
+  }, [])
+
+  async function handlePostAction(postId: string, data: Record<string, unknown>) {
+    setPostActionLoading((prev) => ({ ...prev, [postId]: true }))
+    try {
+      const res = await fetch("/api/admin/communaute/posts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, ...data }),
+      })
+      if (res.ok) {
+        const { post } = await res.json()
+        setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...post } : p)))
+      }
+    } catch {}
+    setPostActionLoading((prev) => ({ ...prev, [postId]: false }))
+  }
+
+  async function handleDeletePost(postId: string) {
+    if (!confirm("Supprimer définitivement cette publication ?")) return
+    setPostActionLoading((prev) => ({ ...prev, [postId]: true }))
+    try {
+      const res = await fetch(`/api/admin/communaute/posts?id=${postId}`, { method: "DELETE" })
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId))
+        setPostsTotal((prev) => prev - 1)
+      }
+    } catch {}
+    setPostActionLoading((prev) => ({ ...prev, [postId]: false }))
+  }
 
   async function handleToggleActif(formule: FormuleData) {
     setToggleLoading((prev) => ({ ...prev, [formule.id]: true }))
@@ -245,9 +364,11 @@ export default function PageAdminCommunaute() {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-border-brand">
+      <div className="flex flex-wrap gap-1 border-b border-border-brand">
         {[
           { key: "stats" as const, label: "Statistiques", icon: TrendingUp },
+          { key: "publications" as const, label: `Publications${postsTotal > 0 && tab === "publications" ? ` (${postsTotal})` : ""}`, icon: Newspaper },
+          { key: "membres" as const, label: `Membres${membresTotal > 0 && tab === "membres" ? ` (${membresTotal})` : ""}`, icon: Users },
           { key: "signalements" as const, label: `Signalements${stats?.signalementsEnAttente ? ` (${stats.signalementsEnAttente})` : ""}`, icon: AlertTriangle },
           { key: "abonnements" as const, label: "Abonnements", icon: CreditCard },
         ].map((t) => (
@@ -257,6 +378,8 @@ export default function PageAdminCommunaute() {
               setTab(t.key)
               if (t.key === "signalements") fetchSignalements(filtreStatut)
               if (t.key === "abonnements") fetchFormules()
+              if (t.key === "publications") fetchPosts(1, postsStatusFilter, postsSearch)
+              if (t.key === "membres") fetchMembres(1, membresSearch)
             }}
             className={`flex items-center gap-1.5 px-4 py-2.5 font-body text-xs uppercase tracking-wider border-b-2 transition-colors ${
               tab === t.key ? "border-primary-brand text-primary-brand" : "border-transparent text-text-muted-brand hover:text-text-mid"
@@ -573,6 +696,267 @@ export default function PageAdminCommunaute() {
           onClose={() => setShowFormModal(false)}
           onSaved={() => { setShowFormModal(false); fetchFormules() }}
         />
+      )}
+
+      {/* ━━━ Onglet Publications ━━━ */}
+      {tab === "publications" && (
+        <div className="space-y-4">
+          {/* Filtres */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-50">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-brand pointer-events-none" />
+              <input
+                value={postsSearch}
+                onChange={(e) => setPostsSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") fetchPosts(1, postsStatusFilter, postsSearch) }}
+                placeholder="Rechercher dans les publications..."
+                className="w-full border border-border-brand bg-white py-2 pl-9 pr-3 font-body text-[12px] focus:border-gold focus:outline-none transition-colors"
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              {[
+                { val: "", label: "Toutes" },
+                { val: "PUBLIE", label: "Publiées" },
+                { val: "MASQUE", label: "Masquées" },
+              ].map((opt) => (
+                <button
+                  key={opt.val}
+                  onClick={() => { setPostsStatusFilter(opt.val); fetchPosts(1, opt.val, postsSearch) }}
+                  className={`px-2.5 py-1 font-body text-xs uppercase tracking-wider border transition-colors ${
+                    postsStatusFilter === opt.val ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:text-text-mid"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => fetchPosts(1, postsStatusFilter, postsSearch)}
+              className="px-3 py-1.5 bg-primary-brand text-white font-body text-xs uppercase tracking-wider hover:bg-primary-dark transition-colors"
+            >
+              Rechercher
+            </button>
+          </div>
+
+          {postsLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-gold" />
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="border border-border-brand bg-white p-12 text-center">
+              <Newspaper size={36} className="mx-auto text-text-muted-brand mb-2" />
+              <p className="font-body text-[13px] text-text-muted-brand">Aucune publication</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {posts.map((post) => {
+                const busy = postActionLoading[post.id]
+                return (
+                  <div key={post.id} className={`border bg-white p-4 ${post.masque ? "opacity-60 border-dashed border-border-brand" : "border-border-brand"}`}>
+                    <div className="flex items-start gap-3">
+                      {/* Auteur */}
+                      <Avatar user={post.auteur} size={36} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-body text-[13px] font-medium text-text-main">{post.auteur.prenom} {post.auteur.nom}</span>
+                          <span className="font-body text-xs text-text-muted-brand">
+                            {new Date(post.createdAt).toLocaleDateString("fr", { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                          {post.epingle && (
+                            <span className="flex items-center gap-0.5 px-2 py-0.5 bg-gold-light font-body text-[9px] uppercase tracking-wider text-gold-dark">
+                              <Pin size={9} /> Épinglé
+                            </span>
+                          )}
+                          {post.isAnnonce && (
+                            <span className="flex items-center gap-0.5 px-2 py-0.5 bg-primary-light font-body text-[9px] uppercase tracking-wider text-primary-brand">
+                              <Star size={9} /> Annonce
+                            </span>
+                          )}
+                          {post.masque && (
+                            <span className="flex items-center gap-0.5 px-2 py-0.5 bg-border-brand font-body text-[9px] uppercase tracking-wider text-text-muted-brand">
+                              <EyeOff size={9} /> Masqué
+                            </span>
+                          )}
+                        </div>
+                        {/* Contenu */}
+                        <p className="font-body text-[12px] text-text-mid line-clamp-2 mb-2">{post.contenu}</p>
+                        {/* Métas */}
+                        <div className="flex flex-wrap items-center gap-3 font-body text-[11px] text-text-muted-brand">
+                          <span className="flex items-center gap-1"><MessageCircle size={11} />{post.commentairesCount}</span>
+                          <span className="flex items-center gap-1">❤ {post.reactionsCount}</span>
+                          {post.signalementsCount > 0 && (
+                            <span className="flex items-center gap-1 text-orange-500"><Flag size={11} />{post.signalementsCount} signalement{post.signalementsCount > 1 ? "s" : ""}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <button
+                          disabled={busy}
+                          onClick={() => handlePostAction(post.id, { epingle: !post.epingle })}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 border font-body text-[10px] uppercase tracking-wider transition-colors disabled:opacity-50 ${
+                            post.epingle ? "border-gold bg-gold-light text-gold-dark" : "border-border-brand text-text-muted-brand hover:border-gold hover:text-gold"
+                          }`}
+                          title={post.epingle ? "Désépingler" : "Épingler"}
+                        >
+                          <Pin size={10} /> {post.epingle ? "Désépingler" : "Épingler"}
+                        </button>
+                        <button
+                          disabled={busy}
+                          onClick={() => handlePostAction(post.id, { isAnnonce: !post.isAnnonce })}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 border font-body text-[10px] uppercase tracking-wider transition-colors disabled:opacity-50 ${
+                            post.isAnnonce ? "border-primary-brand bg-primary-light text-primary-brand" : "border-border-brand text-text-muted-brand hover:border-primary-brand hover:text-primary-brand"
+                          }`}
+                          title={post.isAnnonce ? "Retirer annonce" : "Marquer annonce"}
+                        >
+                          <Star size={10} /> {post.isAnnonce ? "Retirer" : "Annonce"}
+                        </button>
+                        <button
+                          disabled={busy}
+                          onClick={() => handlePostAction(post.id, { masque: !post.masque })}
+                          className="flex items-center gap-1 px-2.5 py-1.5 border border-border-brand font-body text-[10px] uppercase tracking-wider text-text-muted-brand hover:text-text-mid transition-colors disabled:opacity-50"
+                          title={post.masque ? "Afficher" : "Masquer"}
+                        >
+                          {post.masque ? <Eye size={10} /> : <EyeOff size={10} />} {post.masque ? "Afficher" : "Masquer"}
+                        </button>
+                        <button
+                          disabled={busy}
+                          onClick={() => handleDeletePost(post.id)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 border border-danger/30 font-body text-[10px] uppercase tracking-wider text-danger hover:bg-red-50 transition-colors disabled:opacity-50"
+                          title="Supprimer"
+                        >
+                          {busy ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />} Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {postsPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <span className="font-body text-xs text-text-muted-brand">{postsTotal} publication{postsTotal > 1 ? "s" : ""}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={postsPage <= 1 || postsLoading}
+                  onClick={() => { setPostsPage((p) => p - 1); fetchPosts(postsPage - 1, postsStatusFilter, postsSearch) }}
+                  className="p-1.5 border border-border-brand text-text-muted-brand hover:text-text-mid disabled:opacity-40 transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="font-body text-xs text-text-mid">{postsPage} / {postsPages}</span>
+                <button
+                  disabled={postsPage >= postsPages || postsLoading}
+                  onClick={() => { setPostsPage((p) => p + 1); fetchPosts(postsPage + 1, postsStatusFilter, postsSearch) }}
+                  className="p-1.5 border border-border-brand text-text-muted-brand hover:text-text-mid disabled:opacity-40 transition-colors"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ━━━ Onglet Membres ━━━ */}
+      {tab === "membres" && (
+        <div className="space-y-4">
+          {/* Barre de recherche */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-brand pointer-events-none" />
+              <input
+                value={membresSearch}
+                onChange={(e) => setMembresSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") fetchMembres(1, membresSearch) }}
+                placeholder="Nom, prénom ou e-mail..."
+                className="w-full border border-border-brand bg-white py-2 pl-9 pr-3 font-body text-[12px] focus:border-gold focus:outline-none transition-colors"
+              />
+            </div>
+            <button
+              onClick={() => fetchMembres(1, membresSearch)}
+              className="px-3 py-1.5 bg-primary-brand text-white font-body text-xs uppercase tracking-wider hover:bg-primary-dark transition-colors"
+            >
+              Rechercher
+            </button>
+          </div>
+
+          {membresLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-gold" />
+            </div>
+          ) : membres.length === 0 ? (
+            <div className="border border-border-brand bg-white p-12 text-center">
+              <Users size={36} className="mx-auto text-text-muted-brand mb-2" />
+              <p className="font-body text-[13px] text-text-muted-brand">Aucun membre trouvé</p>
+            </div>
+          ) : (
+            <div className="border border-border-brand bg-white divide-y divide-border-brand">
+              {membres.map((m) => (
+                <div key={m.id} className="flex items-center gap-3 px-5 py-3">
+                  <Avatar user={m} size={38} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-body text-[13px] font-medium text-text-main truncate">{m.prenom} {m.nom}</p>
+                      {m.role !== "USER" && (
+                        <span className={`px-2 py-0.5 font-body text-[9px] uppercase tracking-wider ${
+                          m.role === "ADMIN" ? "bg-danger/10 text-danger" :
+                          m.role === "MODERATEUR" ? "bg-gold-light text-gold-dark" :
+                          "bg-primary-light text-primary-brand"
+                        }`}>
+                          {m.role}
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-body text-[11px] text-text-muted-brand truncate">{m.email}</p>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-4 font-body text-[11px] text-text-muted-brand shrink-0">
+                    <span className="flex items-center gap-1"><Newspaper size={11} />{m.postsCount} pub.</span>
+                    <span className="flex items-center gap-1"><MessageCircle size={11} />{m.commentairesCount} comm.</span>
+                    {m.signalementsRecusCount > 0 && (
+                      <span className="flex items-center gap-1 text-orange-500"><Flag size={11} />{m.signalementsRecusCount}</span>
+                    )}
+                    <span className="text-text-muted-brand">Membre depuis {new Date(m.createdAt).toLocaleDateString("fr", { month: "short", year: "numeric" })}</span>
+                  </div>
+                  <a
+                    href={`/admin/utilisateurs?id=${m.id}`}
+                    className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 border border-border-brand font-body text-[10px] uppercase tracking-wider text-text-muted-brand hover:border-gold hover:text-gold transition-colors"
+                  >
+                    <UserCog size={11} /> Gérer
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {membresPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <span className="font-body text-xs text-text-muted-brand">{membresTotal} membre{membresTotal > 1 ? "s" : ""}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={membresPage <= 1 || membresLoading}
+                  onClick={() => { setMembresPage((p) => p - 1); fetchMembres(membresPage - 1, membresSearch) }}
+                  className="p-1.5 border border-border-brand text-text-muted-brand hover:text-text-mid disabled:opacity-40 transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="font-body text-xs text-text-mid">{membresPage} / {membresPages}</span>
+                <button
+                  disabled={membresPage >= membresPages || membresLoading}
+                  onClick={() => { setMembresPage((p) => p + 1); fetchMembres(membresPage + 1, membresSearch) }}
+                  className="p-1.5 border border-border-brand text-text-muted-brand hover:text-text-mid disabled:opacity-40 transition-colors"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
