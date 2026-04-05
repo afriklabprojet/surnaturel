@@ -4,6 +4,7 @@ import PremiereVisite from "@/components/home/premiere-visite"
 import WhatsAppButton from "@/components/layout/WhatsAppButtonLazy"
 import {
   HeroSection,
+  AvantagesSection,
   ServicesSection,
   ChiffresSection,
   TemoignagesSection,
@@ -172,6 +173,7 @@ export default async function PageAccueil() {
     <>
       <HeroSection content={content.hero} />
       <PremiereVisite />
+      <AvantagesSection />
       <ServicesSection services={services} content={content.services} />
       <ChiffresSection stats={stats} content={content.chiffres} />
       <TemoignagesSection temoignages={temoignages} content={content.temoignages} />
