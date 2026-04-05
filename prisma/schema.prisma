@@ -470,18 +470,18 @@ model DossierMedical {
 model EntreeCarnet {
   id                   String         @id @default(cuid())
   dossierId            String
-  date                 String         // "YYYY-MM-DD" — un seul carnet par jour
-  humeur               Int?           // 1-5 : 1=très mal, 5=excellente
-  energie              Int?           // 1-5
-  sommeil              Float?         // heures dormies (0.0-12.0)
-  hydratation          Int?           // verres d'eau 0-15
-  symptomes            String?        // JSON chiffré : ["fatigue","douleur_lombaire",...]
+  date                 String // "YYYY-MM-DD" — un seul carnet par jour
+  humeur               Int? // 1-5 : 1=très mal, 5=excellente
+  energie              Int? // 1-5
+  sommeil              Float? // heures dormies (0.0-12.0)
+  hydratation          Int? // verres d'eau 0-15
+  symptomes            String? // JSON chiffré : ["fatigue","douleur_lombaire",...]
   cycleMenstruel       Boolean        @default(false)
-  jourCycle            Int?           // n° du jour dans le cycle
-  fluxCycle            String?        // "leger"|"moyen"|"abondant"|null
-  notes                String?        // texte libre chiffré (AES-256)
+  jourCycle            Int? // n° du jour dans le cycle
+  fluxCycle            String? // "leger"|"moyen"|"abondant"|null
+  notes                String? // texte libre chiffré (AES-256)
   partageAvecPraticien Boolean        @default(false)
-  tags                 String?        // JSON : ["post-soin","stress","rdv-sage-femme",...]
+  tags                 String? // JSON : ["post-soin","stress","rdv-sage-femme",...]
   dossier              DossierMedical @relation(fields: [dossierId], references: [id])
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
