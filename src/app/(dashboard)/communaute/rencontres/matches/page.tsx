@@ -54,7 +54,7 @@ export default function PageMatches() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-5">
+    <div className="max-w-lg lg:max-w-2xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
         <Link
           href="/communaute/rencontres"

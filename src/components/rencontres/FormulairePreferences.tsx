@@ -99,7 +99,7 @@ export default function FormulairePreferences({
       {/* Intention */}
       <div className="space-y-3">
         <label className="font-semibold text-text-main text-sm">Je cherche…</label>
-        <div className="grid gap-2.5">
+        <div className="grid gap-2.5 lg:grid-cols-3">
           {INTENTIONS.map((opt) => {
             const Icon = opt.icon
             const selected = intention === opt.value
@@ -108,7 +108,7 @@ export default function FormulairePreferences({
                 key={opt.value}
                 type="button"
                 onClick={() => setIntention(opt.value)}
-                className={`flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${
+                className={`flex items-center gap-4 p-4 lg:flex-col lg:items-center lg:text-center lg:gap-3 lg:py-6 rounded-2xl border-2 text-left transition-all ${
                   selected
                     ? `${opt.active} shadow-md`
                     : "border-border-brand hover:border-gray-300 bg-white"
@@ -118,13 +118,13 @@ export default function FormulairePreferences({
                 <div className={`w-10 h-10 rounded-xl bg-linear-to-br ${opt.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
                   <Icon size={20} className="text-white" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 lg:flex-none">
                   <p className="font-semibold text-sm text-text-main">{opt.label}</p>
                   <p className="text-xs text-text-muted-brand">{opt.description}</p>
                 </div>
                 {/* Radio visuel */}
                 <div
-                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
+                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors lg:hidden ${
                     selected ? `border-current bg-linear-to-br ${opt.gradient}` : "border-gray-300"
                   }`}
                   style={selected ? { borderColor: "transparent" } : {}}
@@ -137,59 +137,61 @@ export default function FormulairePreferences({
         </div>
       </div>
 
-      {/* Tranche d'âge */}
-      <div className="p-4 rounded-2xl border border-border-brand bg-white space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="font-semibold text-text-main text-sm">Tranche d&apos;âge</label>
-          <span className="text-sm font-bold text-primary-brand">
-            {ageMin} – {ageMax} ans
-          </span>
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-text-muted-brand w-8">Min</span>
-            <input
-              type="range"
-              min={18}
-              max={ageMax}
-              value={ageMin}
-              onChange={(e) => setAgeMin(Number(e.target.value))}
-              className="flex-1 accent-pink-500 h-1.5"
-            />
-            <span className="text-xs font-medium text-text-main w-8 text-right">{ageMin}</span>
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Tranche d'âge */}
+        <div className="p-4 rounded-2xl border border-border-brand bg-white space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="font-semibold text-text-main text-sm">Tranche d&apos;âge</label>
+            <span className="text-sm font-bold text-primary-brand">
+              {ageMin} – {ageMax} ans
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-text-muted-brand w-8">Max</span>
-            <input
-              type="range"
-              min={ageMin}
-              max={99}
-              value={ageMax}
-              onChange={(e) => setAgeMax(Number(e.target.value))}
-              className="flex-1 accent-pink-500 h-1.5"
-            />
-            <span className="text-xs font-medium text-text-main w-8 text-right">{ageMax}</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-text-muted-brand w-8">Min</span>
+              <input
+                type="range"
+                min={18}
+                max={ageMax}
+                value={ageMin}
+                onChange={(e) => setAgeMin(Number(e.target.value))}
+                className="flex-1 accent-pink-500 h-1.5"
+              />
+              <span className="text-xs font-medium text-text-main w-8 text-right">{ageMin}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-text-muted-brand w-8">Max</span>
+              <input
+                type="range"
+                min={ageMin}
+                max={99}
+                value={ageMax}
+                onChange={(e) => setAgeMax(Number(e.target.value))}
+                className="flex-1 accent-pink-500 h-1.5"
+              />
+              <span className="text-xs font-medium text-text-main w-8 text-right">{ageMax}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Distance */}
-      <div className="p-4 rounded-2xl border border-border-brand bg-white space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="font-semibold text-text-main text-sm">Distance maximum</label>
-          <span className="text-sm font-bold text-primary-brand">{distanceKm} km</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-text-muted-brand">1 km</span>
-          <input
-            type="range"
-            min={1}
-            max={500}
-            value={distanceKm}
-            onChange={(e) => setDistanceKm(Number(e.target.value))}
-            className="flex-1 accent-pink-500 h-1.5"
-          />
-          <span className="text-xs text-text-muted-brand">500 km</span>
+        {/* Distance */}
+        <div className="p-4 rounded-2xl border border-border-brand bg-white space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="font-semibold text-text-main text-sm">Distance maximum</label>
+            <span className="text-sm font-bold text-primary-brand">{distanceKm} km</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-text-muted-brand">1 km</span>
+            <input
+              type="range"
+              min={1}
+              max={500}
+              value={distanceKm}
+              onChange={(e) => setDistanceKm(Number(e.target.value))}
+              className="flex-1 accent-pink-500 h-1.5"
+            />
+            <span className="text-xs text-text-muted-brand">500 km</span>
+          </div>
         </div>
       </div>
 
@@ -213,7 +215,7 @@ export default function FormulairePreferences({
         >
           <span
             className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-              actif ? "translate-x-[22px]" : "translate-x-0"
+              actif ? "translate-x-5.5" : "translate-x-0"
             }`}
           />
         </button>

@@ -46,7 +46,7 @@ export default function PageQuiMALike() {
   }, [])
 
   return (
-    <div className="max-w-lg mx-auto space-y-5">
+    <div className="max-w-4xl mx-auto space-y-5">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
@@ -68,9 +68,9 @@ export default function PageQuiMALike() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-48 rounded-xl bg-bg-page animate-pulse" />
+            <div key={i} className="h-48 sm:h-56 rounded-xl bg-bg-page animate-pulse" />
           ))}
         </div>
       ) : likes.length === 0 ? (
@@ -88,7 +88,7 @@ export default function PageQuiMALike() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {likes.map((like, index) => {
             const age = calcAge(like.dateNaissance)
             // First item is visible, rest are blurred to encourage interaction
@@ -100,7 +100,7 @@ export default function PageQuiMALike() {
                 className="relative rounded-xl overflow-hidden bg-bg-page border border-border-brand"
               >
                 {/* Photo */}
-                <div className="relative h-48">
+                <div className="relative h-48 sm:h-56">
                   {like.photoUrl ? (
                     <Image
                       src={like.photoUrl}

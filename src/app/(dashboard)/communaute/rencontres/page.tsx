@@ -95,7 +95,7 @@ export default function PageRencontres() {
   const currentProfil = profiles[0] ?? null
 
   return (
-    <div className="max-w-lg mx-auto space-y-5">
+    <div className="max-w-lg lg:max-w-3xl mx-auto space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

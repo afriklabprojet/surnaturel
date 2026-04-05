@@ -98,7 +98,7 @@ export default function CarteProfil({
   }
 
   return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ height: "560px" }}>
+    <div className="relative w-full max-w-sm sm:max-w-md mx-auto h-[min(560px,75svh)] sm:h-[min(620px,80svh)]">
       {/* Cartes fantômes (effet deck) */}
       <div
         aria-hidden="true"
