@@ -294,7 +294,7 @@ function GroupePostCard({ post, currentUserId, onUpdatePost }: {
             <div
               onMouseEnter={() => clearTimeout(hoverTimeout.current)}
               onMouseLeave={() => { clearTimeout(hoverTimeout.current); hoverTimeout.current = setTimeout(() => setShowPicker(false), 400) }}
-              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-1 px-2 py-1.5 bg-white border border-border-brand shadow-lg rounded-full z-20"
+              className="absolute bottom-full left-0 mb-2 flex items-center gap-1 px-2 py-1.5 bg-white border border-border-brand shadow-lg rounded-full z-20"
             >
               {REACTIONS.map(r => (
                 <button key={r.type} onClick={() => handleReaction(r.type)} title={r.label}

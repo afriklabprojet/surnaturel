@@ -89,13 +89,13 @@ export function ReactionPicker({
         <div
           onMouseEnter={() => clearTimeout(timeoutRef.current)}
           onMouseLeave={handleMouseLeave}
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-end gap-1.5 px-3 py-2.5 bg-white border border-border-brand shadow-xl rounded-2xl z-20"
+          className="absolute bottom-full left-0 mb-2 flex items-end gap-1.5 px-3 py-2.5 bg-white border border-border-brand shadow-xl rounded-2xl z-20"
           style={{ animation: "fadeScaleIn 0.15s ease-out" }}
         >
           <style>{`
             @keyframes fadeScaleIn {
-              from { opacity: 0; transform: translateX(-50%) scale(0.85); }
-              to { opacity: 1; transform: translateX(-50%) scale(1); }
+              from { opacity: 0; transform: scale(0.85); }
+              to { opacity: 1; transform: scale(1); }
             }
           `}</style>
           {REACTIONS.map((r) => (

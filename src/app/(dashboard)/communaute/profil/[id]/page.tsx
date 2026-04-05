@@ -271,7 +271,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
 
           {/* Actions */}
           {!profil.isOwn && (
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex flex-wrap items-center gap-2 mt-4">
               {/* Bouton RDV pour professionnels vérifiés */}
               {profil.verificationStatus === "PROFESSIONNEL_SANTE" && (
                 <Link

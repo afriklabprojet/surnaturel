@@ -348,7 +348,7 @@ export function CartePost({
             Partager
           </button>
           {showShareMenu && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 rounded-xl bg-white shadow-lg ring-1 ring-black/5 z-50 min-w-45 overflow-hidden">
+            <div className="absolute bottom-full right-0 mb-2 rounded-xl bg-white shadow-lg ring-1 ring-black/5 z-50 w-44 overflow-hidden">
               <button
                 onClick={() => { onShare(post); setShowShareMenu(false) }}
                 className="w-full flex items-center gap-2 px-4 py-2.5 font-body text-[12px] text-text-main hover:bg-bg-page transition-colors"
