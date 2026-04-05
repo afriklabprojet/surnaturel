@@ -188,7 +188,7 @@ export default function MessagerieMedicale({ currentUserId }: { currentUserId: s
         </span>
       </div>
 
-      <div className="flex h-130">
+      <div className="flex h-[max(300px,calc(100svh-360px))] lg:h-130">
         {/* Colonne gauche — Liste conversations */}
         <div
           className={`w-full border-r border-border-brand md:w-1/3 ${

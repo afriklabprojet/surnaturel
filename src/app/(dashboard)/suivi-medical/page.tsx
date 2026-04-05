@@ -83,7 +83,7 @@ function SuiviMedicalContent() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0 overflow-x-auto border-b border-border-brand scrollbar-none">
+      <div className="flex gap-0 overflow-x-auto border-b border-border-brand scrollbar-none -mx-5 px-5 lg:mx-0 lg:px-0">
         {TABS.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -91,14 +91,14 @@ function SuiviMedicalContent() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex shrink-0 items-center gap-2 px-4 py-3 font-body text-[12px] uppercase tracking-[0.15em] transition-colors ${
+              className={`flex shrink-0 items-center gap-1.5 px-3 py-3 sm:px-4 font-body text-[11px] sm:text-[12px] uppercase tracking-[0.15em] transition-colors ${
                 isActive
                   ? "border-b-2 border-gold text-text-main"
                   : "text-text-muted-brand hover:text-text-mid"
               }`}
             >
-              <Icon size={15} />
-              {tab.label}
+              <Icon size={15} className="shrink-0" />
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           )
         })}
