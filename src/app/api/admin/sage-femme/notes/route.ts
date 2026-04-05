@@ -114,6 +114,32 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const session = await auth()
+    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    }
+
+    const { id, partagePatient, type } = await request.json()
+    if (!id) return NextResponse.json({ error: "ID requis" }, { status: 400 })
+
+    const updateData: Record<string, unknown> = {}
+    if (partagePatient !== undefined) updateData.partagePatient = partagePatient
+    if (type !== undefined) updateData.type = type
+
+    await (prisma.notePro.update as any)({
+      where: { id },
+      data: updateData,
+    })
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    logger.error("Erreur PATCH note:", error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const session = await auth()
@@ -128,16 +154,11 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "ID requis" }, { status: 400 })
     }
 
-    await prisma.notePro.delete({
-      where: { id },
-    })
+    await prisma.notePro.delete({ where: { id } })
 
     return NextResponse.json({ success: true })
   } catch (error) {
     logger.error("Erreur suppression note:", error)
-    return NextResponse.json(
-      { error: "Erreur serveur" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }

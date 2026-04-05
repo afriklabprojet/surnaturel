@@ -169,9 +169,10 @@ model User {
   echangesRecompenses     EchangeRecompense[]
   // ─── Utilisations de codes promo
   utilisationsCodePromo   UtilisationCodePromo[]
-  // ─── Notes sage-femme
+  // ─── Notes & suivi paramédical
   notesRecues             NotePro[]                @relation("NoteClient")
   notesEcrites            NotePro[]                @relation("NoteAuteur")
+  questionnaires          QuestionnairePreConsultation[]
   // ─── Abonnements mensuels
   abonnementsMensuels     AbonnementMensuel[]
   // ─── Avis produits
@@ -449,20 +450,21 @@ model MessageMedical {
 }
 
 model DossierMedical {
-  id             String            @id @default(cuid())
-  userId         String            @unique
-  pathologie     String? // chiffré
-  notes          String? // chiffré
-  allergies      String? // chiffré
-  antecedents    String? // chiffré (chirurgies, maladies passées)
-  medicaments    String? // chiffré (traitements en cours)
-  groupeSanguin  String?
-  contactUrgence String? // chiffré
-  user           User              @relation(fields: [userId], references: [id])
-  mesures        MesureSante[]
-  documents      DocumentMedical[]
-  entrees        EntreeCarnet[]
-  updatedAt      DateTime          @updatedAt
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  pathologie       String? // chiffré
+  notes            String? // chiffré
+  allergies        String? // chiffré
+  antecedents      String? // chiffré (chirurgies, maladies passées)
+  medicaments      String? // chiffré (traitements en cours)
+  groupeSanguin    String?
+  contactUrgence   String? // chiffré
+  user             User                @relation(fields: [userId], references: [id])
+  mesures          MesureSante[]
+  documents        DocumentMedical[]
+  entrees          EntreeCarnet[]
+  suiviSpecialises SuiviSpecialise[]
+  updatedAt        DateTime            @updatedAt
 }
 
 // ─── Carnet de Santé & Bien-Être ─────────────────────────────────
@@ -1395,17 +1397,19 @@ model AppConfig {
 // ─── Notes Sage-Femme ────────────────────────────────────────────
 
 model NotePro {
-  id        String   @id @default(cuid())
-  clientId  String
-  auteurId  String
-  contenu   String
-  type      String   @default("GENERALE") // GENERALE, SUIVI, ALERTE
-  client    User     @relation("NoteClient", fields: [clientId], references: [id], onDelete: Cascade)
-  auteur    User     @relation("NoteAuteur", fields: [auteurId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  clientId       String
+  auteurId       String
+  contenu        String
+  type           String   @default("GENERALE") // GENERALE, SUIVI, ALERTE
+  partagePatient Boolean  @default(false) // visible par le patient dans son espace
+  client         User     @relation("NoteClient", fields: [clientId], references: [id], onDelete: Cascade)
+  auteur         User     @relation("NoteAuteur", fields: [auteurId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([clientId])
+  @@index([clientId, partagePatient])
 }
 
 // ─── Abonnements Mensuels ────────────────────────────────────────
@@ -1538,4 +1542,65 @@ model RencontreMatch {
   @@unique([userAId, userBId])
   @@index([userAId])
   @@index([userBId])
+}
+
+// ─── Suivi Spécialisé Sage-Femme ─────────────────────────────────
+
+enum TypeSuivi {
+  GROSSESSE
+  POST_PARTUM
+  NOURRISSON    // 0-12 mois
+  PEDIATRIQUE   // 1-18 ans
+  GYNECOLOGIQUE // adulte
+  GENERAL
+}
+
+model SuiviSpecialise {
+  id                    String         @id @default(cuid())
+  dossierId             String
+  type                  TypeSuivi
+  actif                 Boolean        @default(true)
+  // ─── Grossesse ───────────────────────────────────────────────
+  dateDebutGrossesse    DateTime?
+  semainesAmenorhee     Int?           // SA calculé
+  datePrevueAccouchement DateTime?     // DPA
+  parite                String?        // ex: "G2P1" (2e grossesse, 1 accouchement)
+  // ─── Pédiatrie / Nourrisson ──────────────────────────────────
+  dateNaissancePatient  DateTime?      // pour calcul âge
+  prenomPatient         String?        // prénom de l'enfant suivi
+  // ─── Biométrie (poids/taille pour courbe croissance) ─────────
+  poidsKg               Float?         // dernière mesure en kg
+  tailleCm              Float?         // en cm
+  perimCranienCm        Float?         // périmètre crânien (nourrisson)
+  // ─── Général ──────────────────────────────────────────────────
+  notes                 String?        // texte libre, chiffré
+  examensRealises       String?        // JSON: ["Echo T1", "NFS", ...]
+  prochainControle      DateTime?
+  dossier               DossierMedical @relation(fields: [dossierId], references: [id])
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([dossierId, type])
+  @@index([dossierId, actif])
+}
+
+// ─── Questionnaire Pré-Consultation ──────────────────────────────
+
+model QuestionnairePreConsultation {
+  id            String   @id @default(cuid())
+  userId        String
+  typeSoin      String?  // slug du soin concerné
+  motif         String   // chiffré – raison principale
+  antecedents   String?  // chiffré
+  medicaments   String?  // chiffré
+  allergies     String?  // chiffré
+  ddr           String?  // date dernières règles (chiffré, optionnel)
+  parite        String?  // G/P (grossesses/accouchements) si pertinent
+  autresInfos   String?  // chiffré – informations complémentaires
+  traite        Boolean  @default(false) // praticienne a lu le questionnaire
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([traite, createdAt])
 }

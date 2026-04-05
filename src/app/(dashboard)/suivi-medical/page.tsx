@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Shield, Lock, FileText, Stethoscope, MessageSquare, Activity, FolderOpen, BookHeart } from "lucide-react"
+import { Shield, Lock, FileText, Stethoscope, MessageSquare, Activity, FolderOpen, BookHeart, Baby, ClipboardList, Share2 } from "lucide-react"
 import { SkeletonSuiviMedical } from "@/components/ui/skeletons"
 import DossierMedical from "@/components/medical/DossierMedical"
 import MesConsultations from "@/components/medical/MesConsultations"
@@ -11,6 +11,9 @@ import MessagerieMedicale from "@/components/medical/MessagerieMedicale"
 import MesuresSante from "@/components/medical/MesuresSante"
 import DocumentsMedicaux from "@/components/medical/DocumentsMedicaux"
 import CarnetSante from "@/components/medical/CarnetSante"
+import SuiviSpecialise from "@/components/medical/SuiviSpecialise"
+import CompteRendus from "@/components/medical/CompteRendus"
+import QuestionnairePreConsultation from "@/components/medical/QuestionnairePreConsultation"
 
 const ALLOWED_ROLES = ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"]
 
@@ -21,6 +24,9 @@ const TABS = [
   { id: "documents", label: "Documents", icon: FolderOpen },
   { id: "consultations", label: "Consultations", icon: Stethoscope },
   { id: "messagerie", label: "Messagerie", icon: MessageSquare },
+  { id: "suivi", label: "Suivi spécialisé", icon: Baby },
+  { id: "comptes-rendus", label: "Comptes-rendus", icon: Share2 },
+  { id: "questionnaire", label: "Questionnaire", icon: ClipboardList },
 ] as const
 
 type TabId = (typeof TABS)[number]["id"]
@@ -114,6 +120,9 @@ function SuiviMedicalContent() {
         {activeTab === "messagerie" && (
           <MessagerieMedicale currentUserId={session.user.id} />
         )}
+        {activeTab === "suivi" && <SuiviSpecialise />}
+        {activeTab === "comptes-rendus" && <CompteRendus />}
+        {activeTab === "questionnaire" && <QuestionnairePreConsultation />}
       </div>
     </div>
   )

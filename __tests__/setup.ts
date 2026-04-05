@@ -13,6 +13,7 @@ export const prismaMock = {
   user: {
     findUnique: vi.fn(),
     findMany: vi.fn(),
+    findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -152,6 +153,29 @@ export const prismaMock = {
     return Promise.all(arg as Promise<unknown>[])
   }),
   $executeRaw: vi.fn().mockResolvedValue(0),
+  notePro: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn(),
+  },
+  suiviSpecialise: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+  questionnairePreConsultation: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    updateMany: vi.fn(),
+  },
 }
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))

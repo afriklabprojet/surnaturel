@@ -162,6 +162,60 @@ export default async function PageSageFemme() {
         </MotionSection>
       </section>
 
+      {/* Pour qui — toutes les patientèles */}
+      <section className="border-b border-border-brand bg-primary-light/30">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: Heart,       label: "Femmes",           sub: "Gynécologie, grossesse, post-partum, suivi féminin" },
+              { icon: Baby,        label: "Nourrissons",      sub: "0 – 12 mois : bilans, biométrie, conseils parents"  },
+              { icon: Stethoscope, label: "Enfants",          sub: "1 – 18 ans : suivi pédiatrique de proximité"        },
+              { icon: Shield,      label: "Hommes & familles",sub: "Consultations familiales, éducation à la santé"      },
+            ].map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="flex items-start gap-3 border border-border-brand bg-white p-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-primary-light">
+                  <Icon size={18} className="text-primary-brand" />
+                </div>
+                <div>
+                  <p className="font-body text-[13px] font-medium text-text-main">{label}</p>
+                  <p className="mt-0.5 font-body text-[12px] leading-relaxed text-text-muted-brand">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Comment ça marche */}
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="h-px w-12 bg-gold" />
+            <span className="font-body text-xs uppercase tracking-[0.15em] text-gold">Votre parcours</span>
+            <div className="h-px w-12 bg-gold" />
+          </div>
+          <h2 className="font-display text-[28px] font-light text-text-main">
+            Comment ça <em className="italic text-primary-brand">marche</em>
+          </h2>
+        </div>
+        <div className="relative grid gap-8 sm:grid-cols-3">
+          {[
+            { step: "01", titre: "Questionnaire pré-consultation", desc: "Remplissez rapidement votre questionnaire en ligne depuis votre espace santé. Votre sage-femme le consulte avant votre visite.", icon: ChevronDown },
+            { step: "02", titre: "Consultation personnalisée",      desc: "Rendez-vous en cabinet. Bilan complet, biométrie, échanges et examens adaptés à votre situation.",               icon: Stethoscope },
+            { step: "03", titre: "Suivi continu",                   desc: "Accédez à vos comptes-rendus et votre suivi spécialisé (grossesse, pédiatrie, etc.) depuis votre espace santé.", icon: Heart },
+          ].map(({ step, titre, desc, icon: Icon }) => (
+            <div key={step} className="relative flex flex-col items-center text-center">
+              <div className="flex h-14 w-14 items-center justify-center border border-gold/40 bg-primary-light">
+                <span className="font-display text-[20px] text-gold">{step}</span>
+              </div>
+              <div className="mt-1 h-1 w-1 rounded-full bg-gold" />
+              <h3 className="mt-4 font-display text-[16px] text-text-main">{titre}</h3>
+              <p className="mt-2 font-body text-[13px] leading-relaxed text-text-mid">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Présentation */}
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -347,6 +401,36 @@ export default async function PageSageFemme() {
         </div>
 
         <FaqAccordion faq={FAQ} />
+      </section>
+
+      {/* Remboursement CNAM */}
+      <section className="border-y border-gold/20 bg-gold/5 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center border border-gold/40 bg-gold/10">
+              <Shield size={24} className="text-gold" />
+            </div>
+            <div>
+              <h3 className="font-display text-[20px] text-text-main">Remboursement &amp; prise en charge</h3>
+              <div className="mt-4 grid gap-3 text-[13px] sm:grid-cols-2">
+                {[
+                  "Consultations remboursables selon votre régime CNAM (AMU, CMU, assurance maladie)",
+                  "Suivi de grossesse pris en charge à 100% dès le 6ème mois (secteur 1)",
+                  "Nécessite une prescription médicale ou ordonnance du médecin traitant pour certains actes",
+                  "Nous vous accompagnons dans vos démarches de remboursement",
+                ].map((ligne, i) => (
+                  <div key={i} className="flex items-start gap-2 text-text-mid">
+                    <Star size={12} className="mt-0.5 shrink-0 text-gold" />
+                    {ligne}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 font-body text-[12px] text-text-muted-brand">
+                * Les conditions de remboursement varient selon votre assurance. Renseignez-vous auprès de votre caisse.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Contact / CTA */}
