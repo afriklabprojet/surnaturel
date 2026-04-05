@@ -12,6 +12,7 @@ import { Fingerprint } from "lucide-react"
 import MotionDiv from "@/components/ui/MotionDiv"
 import { fadeInLeft, fadeInRight, staggerContainer, staggerItem, buttonHover } from "@/lib/animations"
 import { isPlatformAuthenticatorAvailable, authenticateWithPasskey } from "@/lib/webauthn"
+import { useBranding } from "@/components/branding"
 
 // ─── Schema ──────────────────────────────────────────────────────
 
@@ -27,6 +28,7 @@ type ConnexionData = z.infer<typeof schemaConnexion>
 export default function ConnexionForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const branding = useBranding()
   const inscriptionOk = searchParams.get("inscription") === "ok"
   const verification = searchParams.get("verification")
   const [erreur, setErreur] = useState("")
@@ -131,7 +133,7 @@ export default function ConnexionForm() {
       <div className="bg-primary-brand px-6 py-6 text-center md:hidden">
         <Link href="/">
           <p className="font-display text-[22px] font-light text-white">
-            Le Surnaturel de Dieu
+            {branding.appName}
           </p>
           <p className="mt-1 font-body text-[9px] font-medium uppercase tracking-[0.2em] text-white/50">
             Institut de bien-être · Abidjan
@@ -143,11 +145,12 @@ export default function ConnexionForm() {
       <MotionDiv
         variants={fadeInLeft}
         className="hidden bg-primary-brand md:flex md:flex-col md:justify-between md:px-12 md:py-14"
+        style={branding.loginBackground ? { backgroundImage: `url(${branding.loginBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
       >
         <div>
           <Link href="/">
             <p className="font-display text-[22px] font-light text-white">
-              Le Surnaturel de Dieu
+              {branding.appName}
             </p>
             <p className="mt-1 font-body text-[9px] font-medium uppercase tracking-[0.2em] text-white/50">
               Institut de bien-être · Abidjan
@@ -157,9 +160,9 @@ export default function ConnexionForm() {
           <div className="mt-10 h-px w-8 bg-gold" />
 
           <p className="mt-8 font-display text-[28px] font-light italic leading-snug text-white">
-            Votre espace bien-être{" "}
+            {branding.loginTitle || "Votre espace bien-être"}{" "}
             <span className="font-body not-italic text-gold">
-              personnel
+              {branding.loginSubtitle || "personnel"}
             </span>
           </p>
 
@@ -205,7 +208,7 @@ export default function ConnexionForm() {
           </div>
 
           <h1 className="mt-5 text-center font-display text-[30px] font-light text-text-main">
-            Bon retour parmi nous
+            {branding.loginTitle ? `Bienvenue sur ${branding.appName}` : "Bon retour parmi nous"}
           </h1>
 
           <p className="mt-2 text-center font-body text-[12px] text-text-muted-brand">
