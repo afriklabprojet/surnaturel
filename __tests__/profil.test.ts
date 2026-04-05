@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import bcrypt from "bcryptjs"
 import { NextRequest } from "next/server"
-import { prismaMock, mockAuth, buildJsonRequest, buildRequest } from "./setup"
+import { prismaMock, mockAuth, buildJsonRequest } from "./setup"
 
 const { GET, PATCH, PUT } = await import("@/app/api/profil/route")
 const { POST: requestReset, PUT: confirmReset } = await import(
@@ -80,7 +80,6 @@ describe("Profil — PATCH /api/profil", () => {
       photoUrl: "https://example.com/photo.jpg",
     }, "PATCH")
     const res = await PATCH(req)
-    const json = await res.json()
     expect(res.status).toBe(200)
     const updateCall = prismaMock.user.update.mock.calls[0][0]
     expect(updateCall.data.nom).toBe("Coulibaly")
