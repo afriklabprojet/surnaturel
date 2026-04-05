@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import {
   UsersRound, Plus, Search, Loader2, Trash2, Eye, Users, Newspaper, CalendarDays,
   ChevronLeft, ChevronRight, X, Shield, Crown, Download, Edit, Save,
-  UserMinus, CheckCircle2, XCircle, Megaphone, MessageSquare,
+  UserMinus, CheckCircle2, XCircle, Megaphone, MessageSquare, Archive, ArchiveRestore,
 } from "lucide-react"
 
 /* ── Types ── */
@@ -17,6 +17,7 @@ interface GroupeItem {
   imageUrl: string | null
   visibilite: string
   regles: string | null
+  archivee: boolean
   nbMembres: number
   nbPosts: number
   nbEvenements: number
@@ -88,6 +89,7 @@ export default function PageAdminGroupes() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [filtreVisibilite, setFiltreVisibilite] = useState("all")
+  const [filtreArchive, setFiltreArchive] = useState<"all" | "actifs" | "archives">("actifs")
   const [exporting, setExporting] = useState(false)
 
   // Modals
@@ -119,6 +121,8 @@ export default function PageAdminGroupes() {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
       if (search) params.set("search", search)
       if (filtreVisibilite !== "all") params.set("visibilite", filtreVisibilite)
+      if (filtreArchive === "actifs") params.set("archivee", "false")
+      else if (filtreArchive === "archives") params.set("archivee", "true")
       const res = await fetch(`/api/admin/groupes?${params}`)
       if (res.ok) {
         const data = await res.json()
@@ -127,9 +131,24 @@ export default function PageAdminGroupes() {
       }
     } catch { /* ignore */ }
     setLoading(false)
-  }, [page, search, filtreVisibilite])
+  }, [page, search, filtreVisibilite, filtreArchive])
 
   useEffect(() => { fetchGroupes() }, [fetchGroupes])
+
+  /* ── Archive / Désarchiver ── */
+
+  async function toggleArchive(g: GroupeItem) {
+    setActionLoading((p) => ({ ...p, [g.id]: true }))
+    try {
+      const res = await fetch(`/api/admin/groupes/${g.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archivee: !g.archivee }),
+      })
+      if (res.ok) fetchGroupes()
+    } catch { /* ignore */ }
+    setActionLoading((p) => ({ ...p, [g.id]: false }))
+  }
 
   /* ── Actions ── */
 
@@ -311,6 +330,23 @@ export default function PageAdminGroupes() {
             </button>
           ))}
         </div>
+        <div className="flex items-center gap-1">
+          {([
+            { val: "actifs" as const, label: "Actifs" },
+            { val: "archives" as const, label: "Archivés" },
+            { val: "all" as const, label: "Tout" },
+          ]).map((opt) => (
+            <button
+              key={opt.val}
+              onClick={() => { setFiltreArchive(opt.val); setPage(1) }}
+              className={`px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
+                filtreArchive === opt.val ? "border-gold bg-gold-light text-gold-dark" : "border-border-brand text-text-muted-brand hover:text-text-mid"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Grille des groupes ── */}
@@ -341,9 +377,14 @@ export default function PageAdminGroupes() {
                 <div className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-display text-[16px] font-light text-text-main truncate">{g.nom}</h3>
-                    <span className={`shrink-0 px-2 py-0.5 font-body text-[9px] uppercase tracking-widest ${vis?.bg} ${vis?.text}`}>
-                      {vis?.label}
-                    </span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {g.archivee && (
+                        <span className="px-2 py-0.5 font-body text-[9px] uppercase tracking-widest bg-gold-light text-gold-dark">Archivé</span>
+                      )}
+                      <span className={`px-2 py-0.5 font-body text-[9px] uppercase tracking-widests ${vis?.bg} ${vis?.text}`}>
+                        {vis?.label}
+                      </span>
+                    </div>
                   </div>
 
                   {g.description && (
@@ -363,6 +404,14 @@ export default function PageAdminGroupes() {
                       className="flex-1 flex items-center justify-center gap-1 py-1.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:text-primary-brand hover:border-primary-brand transition-colors"
                     >
                       <Eye size={12} /> Gérer
+                    </button>
+                    <button
+                      onClick={() => toggleArchive(g)}
+                      disabled={actionLoading[g.id]}
+                      className={`p-1.5 border transition-colors ${g.archivee ? "border-gold/50 hover:bg-gold-light" : "border-border-brand hover:bg-gold-light hover:border-gold/50"}`}
+                      title={g.archivee ? "Désarchiver" : "Archiver"}
+                    >
+                      {g.archivee ? <ArchiveRestore size={14} className="text-gold-dark" /> : <Archive size={14} className="text-gold-dark" />}
                     </button>
                     <button
                       onClick={() => supprimerGroupe(g.id)}

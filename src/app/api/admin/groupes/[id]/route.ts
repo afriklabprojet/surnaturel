@@ -9,6 +9,7 @@ const patchSchema = z.object({
   visibilite: z.enum(["PUBLIC", "PRIVE", "SECRET"]).optional(),
   regles: z.string().max(2000).optional(),
   imageUrl: z.url().optional(),
+  archivee: z.boolean().optional(),
 })
 
 export async function GET(

@@ -15,9 +15,14 @@ export async function GET(req: NextRequest) {
   const search = url.get("search")?.trim()
   const visibilite = url.get("visibilite")
 
+  const archiveFilter = url.get("archivee")
+
   const where: Record<string, unknown> = {}
   if (search) where.nom = { contains: search, mode: "insensitive" }
   if (visibilite) where.visibilite = visibilite
+  if (archiveFilter === "true") where.archivee = true
+  else if (archiveFilter === "false") where.archivee = false
+  // par défaut : tous (archivés et non archivés)
 
   const [groupes, total] = await Promise.all([
     prisma.groupe.findMany({
@@ -41,6 +46,7 @@ export async function GET(req: NextRequest) {
       imageUrl: g.imageUrl,
       visibilite: g.visibilite,
       regles: g.regles,
+      archivee: g.archivee,
       nbMembres: g._count.membres,
       nbPosts: g._count.posts,
       nbEvenements: g._count.evenements,
