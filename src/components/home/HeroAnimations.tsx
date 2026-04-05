@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react"
 import { motion, useInView } from "framer-motion"
 import Image from "next/image"
-import { Star, Users, Clock, Award, Play, X, Leaf, Heart, ShieldCheck } from "lucide-react"
+import { Star, Users, Clock, Award, Play, X } from "lucide-react"
 import { getIcon } from "@/lib/icon-map"
 import { formatPrix } from "@/lib/utils"
 import SectionTag from "@/components/ui/SectionTag"
@@ -143,11 +143,8 @@ export function HeroSection({ content }: { content?: HeroContent }) {
   const cta2 = content?.cta2 || "Prendre rendez-vous"
   const badge = content?.badge || "Depuis 2015 à Abidjan"
   return (
-    <section className="relative overflow-hidden bg-white px-6 py-20 sm:py-28 lg:px-10">
-      {/* Fonds décoratifs */}
-      <div className="pointer-events-none absolute -top-32 -right-32 h-120 w-120 rounded-full bg-primary-light/50 blur-3xl" aria-hidden="true" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-gold/10 blur-3xl" aria-hidden="true" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
+    <section className="bg-white px-6 py-20 sm:py-28 lg:px-10">
+      <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
         <div>
           <motion.div variants={fadeInUp} initial="initial" animate="animate">
             <SectionTag>{tag}</SectionTag>
@@ -203,33 +200,16 @@ export function HeroSection({ content }: { content?: HeroContent }) {
             initial="initial"
             animate="animate"
             transition={{ delay: 0.45 }}
-            className="mt-8 inline-flex items-center gap-4 border border-border-brand bg-bg-page/80 px-5 py-3 shadow-sm"
+            className="mt-6 flex items-center gap-3"
           >
-            <div className="flex -space-x-2.5">
-              {[
-                { initials: "MA", bg: "bg-primary-brand" },
-                { initials: "SC", bg: "bg-gold" },
-                { initials: "FD", bg: "bg-primary-dark" },
-                { initials: "KB", bg: "bg-primary-brand/60" },
-                { initials: "NL", bg: "bg-gold/80" },
-              ].map((a, i) => (
-                <div key={i} className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${a.bg} font-body text-[9px] font-bold text-white`}>
-                  {a.initials}
-                </div>
+            <div className="flex gap-1" role="img" aria-label="5 étoiles sur 5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star key={i} size={13} className="fill-gold text-gold" aria-hidden="true" />
               ))}
             </div>
-            <div className="h-8 w-px shrink-0 bg-border-brand" />
-            <div>
-              <div className="flex items-center gap-0.5" role="img" aria-label="4.9 étoiles sur 5">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} size={13} className="fill-gold text-gold" aria-hidden="true" />
-                ))}
-                <span className="ml-1.5 font-display text-[15px] text-text-main">4.9</span>
-              </div>
-              <p className="mt-0.5 font-body text-[11px] text-text-mid">
-                <strong className="font-semibold text-text-main">500+</strong> clientes satisfaites
-              </p>
-            </div>
+            <p className="font-body text-[12px] text-text-mid">
+              <strong className="text-text-main">500+ clientes</strong> nous font confiance
+            </p>
           </motion.div>
         </div>
 
@@ -254,16 +234,6 @@ export function HeroSection({ content }: { content?: HeroContent }) {
             <p className="font-body text-xs font-medium uppercase tracking-[0.15em] text-white">
               {badge}
             </p>
-          </div>
-          {/* Carte note flottante */}
-          <div className="absolute -top-5 -right-5 hidden lg:flex flex-col gap-1 border border-border-brand bg-white px-4 py-3 shadow-xl">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} size={12} className="fill-gold text-gold" aria-hidden="true" />
-              ))}
-              <span className="ml-1 font-display text-[16px] text-text-main">4.9</span>
-            </div>
-            <p className="font-body text-[10px] uppercase tracking-wider text-text-muted-brand">Note moyenne</p>
           </div>
         </motion.div>
       </div>
@@ -426,12 +396,7 @@ export function ChiffresSection({ stats, content }: { stats?: { clientes: number
       ]
 
   return (
-    <section className="relative overflow-hidden bg-primary-brand px-6 py-24 lg:px-10">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
-        style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "36px 36px" }}
-        aria-hidden="true"
-      />
+    <section className="relative bg-primary-brand px-6 py-24 lg:px-10">
       <div className="relative mx-auto max-w-5xl">
         <div className="flex flex-col items-center gap-12 sm:flex-row sm:divide-x sm:divide-white/20 sm:gap-0">
           {chiffres.map((chiffre, i) => (
@@ -696,62 +661,6 @@ export function VideoTemoignagesSection({ videos, content }: { videos: VideoTemo
   )
 }
 
-// ─── Avantages / Pourquoi nous choisir ───────────────────────────
-
-export function AvantagesSection() {
-  const avantages = [
-    {
-      icon: Award,
-      titre: "10 ans d'expertise",
-      description: "Marie Jeanne accompagne les femmes d'Abidjan depuis 2015 avec passion et professionnalisme.",
-    },
-    {
-      icon: Leaf,
-      titre: "Produits 100\u00a0% naturels",
-      description: "Nous sélectionnons des soins naturels et bio, respectueux de votre peau et de l'environnement.",
-    },
-    {
-      icon: Heart,
-      titre: "Soin personnalisé",
-      description: "Chaque soin est adapté à vos besoins spécifiques pour un résultat optimal et durable.",
-    },
-    {
-      icon: ShieldCheck,
-      titre: "Espace de confiance",
-      description: "Un cadre intimiste et bienveillant, pensé pour que vous puissiez pleinement vous lâcher prise.",
-    },
-  ]
-  return (
-    <section className="border-y border-border-brand bg-bg-page px-6 py-20 lg:px-10">
-      <div className="mx-auto max-w-7xl">
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {avantages.map((a, i) => {
-            const Icon = a.icon
-            return (
-              <motion.div key={i} variants={staggerItem} className="flex flex-col gap-4">
-                <div className="flex h-12 w-12 items-center justify-center border border-border-brand bg-white">
-                  <Icon size={20} className="text-primary-brand" />
-                </div>
-                <div>
-                  <h3 className="font-display text-[18px] font-light text-text-main">{a.titre}</h3>
-                  <div className="mt-2 h-0.5 w-6 bg-gold" />
-                  <p className="mt-3 font-body text-[13px] leading-relaxed text-text-muted-brand">{a.description}</p>
-                </div>
-              </motion.div>
-            )
-          })}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
 // ─── CTA finale (animated) ───────────────────────────────────────
 
 export function CTASection({ content }: { content?: CTAContent }) {
@@ -759,14 +668,7 @@ export function CTASection({ content }: { content?: CTAContent }) {
   const sousTitre = content?.sousTitre || "Réservez votre créneau en quelques clics et offrez-vous un moment de bien-être sur mesure."
   const bouton = content?.bouton || "Réserver maintenant"
   return (
-    <section className="relative overflow-hidden bg-primary-brand px-6 py-24 lg:px-10">
-      <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/5" aria-hidden="true" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-gold/20" aria-hidden="true" />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-        aria-hidden="true"
-      />
+    <section className="relative bg-primary-brand px-6 py-24 lg:px-10">
       <motion.div
         variants={fadeInUp}
         initial="initial"
