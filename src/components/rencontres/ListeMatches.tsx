@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { MessageCircle, HeartCrack } from "lucide-react"
@@ -41,6 +42,17 @@ function isActiveToday(derniereVueAt: string | null): boolean {
 }
 
 export default function ListeMatches({ matches, onUnmatch }: ListeMatchesProps) {
+  // Capture timestamp once at mount to avoid impure Date.now() during render
+  const [now] = useState(() => Date.now())
+  
+  // Séparer les nouveaux matches (< 24h) des conversations existantes
+  const nouveaux = matches.filter(
+    (m) => now - new Date(m.createdAt).getTime() < 24 * 60 * 60 * 1000
+  )
+  const anciens = matches.filter(
+    (m) => now - new Date(m.createdAt).getTime() >= 24 * 60 * 60 * 1000
+  )
+  
   if (matches.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
@@ -60,15 +72,6 @@ export default function ListeMatches({ matches, onUnmatch }: ListeMatchesProps) 
       </div>
     )
   }
-
-  // Séparer les nouveaux matches (< 24h) des conversations existantes
-  const nouveaux = matches.filter(
-    (m) => Date.now() - new Date(m.createdAt).getTime() < 24 * 60 * 60 * 1000
-  )
-  const anciens = matches.filter(
-    (m) => Date.now() - new Date(m.createdAt).getTime() >= 24 * 60 * 60 * 1000
-  )
-  const tous = matches
 
   return (
     <div className="space-y-6">
@@ -170,7 +173,7 @@ export default function ListeMatches({ matches, onUnmatch }: ListeMatchesProps) 
                     {online ? (
                       <span className="text-xs text-green-600 font-medium shrink-0">En ligne</span>
                     ) : activeToday ? (
-                      <span className="text-xs text-yellow-600 font-medium shrink-0">Actif aujourd'hui</span>
+                      <span className="text-xs text-yellow-600 font-medium shrink-0">Actif aujourd&apos;hui</span>
                     ) : null}
                   </div>
                   {i.ville && (
