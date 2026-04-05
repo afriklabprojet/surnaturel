@@ -83,7 +83,7 @@ function SuiviMedicalContent() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-border-brand">
+      <div className="flex gap-0 overflow-x-auto border-b border-border-brand scrollbar-none">
         {TABS.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -91,7 +91,7 @@ function SuiviMedicalContent() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-3 font-body text-[12px] uppercase tracking-[0.15em] transition-colors ${
+              className={`flex shrink-0 items-center gap-2 px-4 py-3 font-body text-[12px] uppercase tracking-[0.15em] transition-colors ${
                 isActive
                   ? "border-b-2 border-gold text-text-main"
                   : "text-text-muted-brand hover:text-text-mid"
@@ -105,7 +105,7 @@ function SuiviMedicalContent() {
       </div>
 
       {/* Content with gold top border card */}
-      <div className="bg-white border border-border-brand border-t-2 border-t-gold p-6">
+      <div className="bg-white border border-border-brand border-t-2 border-t-gold p-4 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
           <Lock size={14} className="text-gold" />
           <span className="font-body text-xs uppercase tracking-widest text-text-muted-brand">

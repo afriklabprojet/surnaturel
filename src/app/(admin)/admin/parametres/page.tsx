@@ -522,7 +522,8 @@ export default function AdminParametresPage() {
             ) : staffList.length === 0 ? (
               <p className="px-4 py-6 text-sm text-gray-500 font-body text-center">Aucun personnel</p>
             ) : (
-              <table className="w-full text-sm font-body">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm font-body min-w-[480px]">
                 <thead className="bg-bg-page">
                   <tr>
                     <th className="text-left px-4 py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Nom</th>
@@ -548,6 +549,7 @@ export default function AdminParametresPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
 
@@ -606,7 +608,8 @@ export default function AdminParametresPage() {
           ) : logs.length === 0 ? (
             <p className="px-4 py-6 text-sm text-gray-500 font-body text-center">Aucun log d&apos;accès</p>
           ) : (
-            <table className="w-full text-sm font-body">
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm font-body min-w-[400px]">
               <thead className="bg-bg-page">
                 <tr>
                   <th className="text-left px-4 py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Date</th>
@@ -624,6 +627,7 @@ export default function AdminParametresPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}

@@ -351,7 +351,7 @@ export default function DashboardLayout({
               <Menu size={22} />
             </button>
             <div>
-              <h1 className="font-display text-[24px] font-light text-text-main">
+              <h1 className="font-display text-[18px] sm:text-[24px] font-light text-text-main">
                 {pageTitle}
               </h1>
               <span className="hidden sm:block font-body text-xs uppercase tracking-[0.15em] text-gold">

@@ -208,7 +208,7 @@ export default function DashboardClient({
     >
       {/* Bloc bienvenue */}
       <motion.section variants={staggerItem} className="border border-border-brand bg-white p-8">
-        <h1 className="font-display text-[36px] font-light text-text-main">
+        <h1 className="font-display text-[26px] sm:text-[36px] font-light text-text-main">
           Bonjour {prenom}
         </h1>
         <p className="mt-1 font-body text-[14px] text-gold capitalize">{today}</p>

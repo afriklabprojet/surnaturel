@@ -77,37 +77,37 @@ enum TypeLike {
 // ─── Modèles ─────────────────────────────────────────────────────
 
 model User {
-  id                      String                   @id @default(cuid())
-  email                   String                   @unique
+  id                      String                         @id @default(cuid())
+  email                   String                         @unique
   passwordHash            String?
   nom                     String
   prenom                  String
   name                    String? // nom complet (NextAuth)
   telephone               String?
   adresse                 String?
-  role                    Role                     @default(CLIENT)
+  role                    Role                           @default(CLIENT)
   photoUrl                String?
   image                   String? // avatar (NextAuth)
   ville                   String?
-  codeParrainage          String?                  @unique
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
+  codeParrainage          String?                        @unique
+  createdAt               DateTime                       @default(now())
+  updatedAt               DateTime                       @updatedAt
   // ─── Profil étendu réseau social
   bio                     String?
   centresInteret          String[]
   couvertureUrl           String?
-  profilPublic            Boolean                  @default(true)
-  pseudo                  String?                  @unique
+  profilPublic            Boolean                        @default(true)
+  pseudo                  String?                        @unique
   localisation            String?
-  statutProfil            StatutProfil             @default(ACTIF)
+  statutProfil            StatutProfil                   @default(ACTIF)
   // ─── Préférences notifications
-  notifLikes              Boolean                  @default(true)
-  notifCommentaires       Boolean                  @default(true)
-  notifConnexions         Boolean                  @default(true)
-  notifMessages           Boolean                  @default(true)
-  notifEvenements         Boolean                  @default(true)
-  notifGroupes            Boolean                  @default(true)
-  notifNewsletter         Boolean                  @default(true)
+  notifLikes              Boolean                        @default(true)
+  notifCommentaires       Boolean                        @default(true)
+  notifConnexions         Boolean                        @default(true)
+  notifMessages           Boolean                        @default(true)
+  notifEvenements         Boolean                        @default(true)
+  notifGroupes            Boolean                        @default(true)
+  notifNewsletter         Boolean                        @default(true)
   // ─── Relations existantes
   rendezVous              RendezVous[]
   commandes               Commande[]
@@ -116,53 +116,53 @@ model User {
   notifications           Notification[]
   pointsFidelite          PointsFidelite?
   favoris                 Favori[]
-  parrainagesParrain      Parrainage[]             @relation("Parrain")
-  parrainagesFilleul      Parrainage[]             @relation("Filleul")
+  parrainagesParrain      Parrainage[]                   @relation("Parrain")
+  parrainagesFilleul      Parrainage[]                   @relation("Filleul")
   avis                    Avis[]
   // ─── Relations réseau social
   posts                   Post[]
   commentaires            Commentaire[]
   reactions               Reaction[]
   postsSauvegardes        PostSauvegarde[]
-  connexionsEnvoyees      Connexion[]              @relation("Demandeur")
-  connexionsRecues        Connexion[]              @relation("Destinataire")
-  abonnements             Abonnement[]             @relation("Abonne")
-  abonnes                 Abonnement[]             @relation("Suivi")
+  connexionsEnvoyees      Connexion[]                    @relation("Demandeur")
+  connexionsRecues        Connexion[]                    @relation("Destinataire")
+  abonnements             Abonnement[]                   @relation("Abonne")
+  abonnes                 Abonnement[]                   @relation("Suivi")
   groupesMembres          MembreGroupe[]
-  evenementsCreateur      Evenement[]              @relation("CreateurEvenement")
+  evenementsCreateur      Evenement[]                    @relation("CreateurEvenement")
   participations          ParticipationEvenement[]
-  signalementsEmis        Signalement[]            @relation("Signaleur")
-  signalementsRecus       Signalement[]            @relation("Signale")
-  blocagesEmis            Blocage[]                @relation("Bloqueur")
-  blocagesRecus           Blocage[]                @relation("Bloque")
-  mentionsConcernees      Mention[]                @relation("MentionsConcernees")
-  mentionsEmises          Mention[]                @relation("MentionsEmises")
+  signalementsEmis        Signalement[]                  @relation("Signaleur")
+  signalementsRecus       Signalement[]                  @relation("Signale")
+  blocagesEmis            Blocage[]                      @relation("Bloqueur")
+  blocagesRecus           Blocage[]                      @relation("Bloque")
+  mentionsConcernees      Mention[]                      @relation("MentionsConcernees")
+  mentionsEmises          Mention[]                      @relation("MentionsEmises")
   stories                 Story[]
-  conversationsA          Conversation[]           @relation("ConvA")
-  conversationsB          Conversation[]           @relation("ConvB")
-  verificationStatus      VerificationStatus       @default(AUCUNE)
+  conversationsA          Conversation[]                 @relation("ConvA")
+  conversationsB          Conversation[]                 @relation("ConvB")
+  verificationStatus      VerificationStatus             @default(AUCUNE)
   profilDetail            ProfilDetail?
   // ─── Reset mot de passe
-  resetToken              String?                  @unique
+  resetToken              String?                        @unique
   resetTokenExpiry        DateTime?
   // ─── Vérification email
-  emailVerifie            Boolean                  @default(false)
-  emailVerifToken         String?                  @unique
+  emailVerifie            Boolean                        @default(false)
+  emailVerifToken         String?                        @unique
   emailVerifExpiry        DateTime?
   // ─── Onboarding email sequence
-  onboardingStep          Int                      @default(0) // 0=welcome, 1=soins, 2=boutique, 3=communauté
+  onboardingStep          Int                            @default(0) // 0=welcome, 1=soins, 2=boutique, 3=communauté
   lastOnboardingEmail     DateTime?
   derniereVueAt           DateTime? // présence en ligne
   dateNaissance           DateTime? // pour filtrage par âge (rencontres)
   // ─── Rencontres
   rencontrePreference     RencontrePreference?
-  likesEnvoyes            RencontreLike[]          @relation("LikesEnvoyes")
-  likesRecus              RencontreLike[]          @relation("LikesRecus")
-  matchesA                RencontreMatch[]         @relation("MatchesA")
-  matchesB                RencontreMatch[]         @relation("MatchesB")
+  likesEnvoyes            RencontreLike[]                @relation("LikesEnvoyes")
+  likesRecus              RencontreLike[]                @relation("LikesRecus")
+  matchesA                RencontreMatch[]               @relation("MatchesA")
+  matchesB                RencontreMatch[]               @relation("MatchesB")
   // ─── Messages médicaux (table séparée)
-  messagesMedicauxEnvoyes MessageMedical[]         @relation("MessagesMedicauxEnvoyes")
-  messagesMedicauxRecus   MessageMedical[]         @relation("MessagesMedicauxRecus")
+  messagesMedicauxEnvoyes MessageMedical[]               @relation("MessagesMedicauxEnvoyes")
+  messagesMedicauxRecus   MessageMedical[]               @relation("MessagesMedicauxRecus")
   // ─── Push subscriptions
   pushSubscriptions       PushSubscription[]
   // ─── Échanges de récompenses fidélité
@@ -170,8 +170,8 @@ model User {
   // ─── Utilisations de codes promo
   utilisationsCodePromo   UtilisationCodePromo[]
   // ─── Notes & suivi paramédical
-  notesRecues             NotePro[]                @relation("NoteClient")
-  notesEcrites            NotePro[]                @relation("NoteAuteur")
+  notesRecues             NotePro[]                      @relation("NoteClient")
+  notesEcrites            NotePro[]                      @relation("NoteAuteur")
   questionnaires          QuestionnairePreConsultation[]
   // ─── Abonnements mensuels
   abonnementsMensuels     AbonnementMensuel[]
@@ -181,7 +181,7 @@ model User {
   webAuthnCredentials     WebAuthnCredential[]
   // ─── 2FA / Two-Factor Authentication
   totpSecret              String? // Encrypted TOTP secret
-  totpEnabled             Boolean                  @default(false)
+  totpEnabled             Boolean                        @default(false)
   totpBackupCodes         String[] // Hashed backup codes
   totpVerifiedAt          DateTime? // When 2FA was enabled
   // ─── Session tracking
@@ -190,9 +190,9 @@ model User {
   lastLoginIp             String?
   lastLoginDevice         String?
   // ─── Accès Communauté (abonnement payant ou essai gratuit)
-  accesCommuaute          Boolean                  @default(false)
+  accesCommuaute          Boolean                        @default(false)
   accesCommuauteExpireAt  DateTime?
-  essaiCommuauteUtilise   Boolean                  @default(false)
+  essaiCommuauteUtilise   Boolean                        @default(false)
 }
 
 // ─── WebAuthn Credentials (Passkeys) ─────────────────────────────
@@ -450,8 +450,8 @@ model MessageMedical {
 }
 
 model DossierMedical {
-  id               String              @id @default(cuid())
-  userId           String              @unique
+  id               String            @id @default(cuid())
+  userId           String            @unique
   pathologie       String? // chiffré
   notes            String? // chiffré
   allergies        String? // chiffré
@@ -459,12 +459,12 @@ model DossierMedical {
   medicaments      String? // chiffré (traitements en cours)
   groupeSanguin    String?
   contactUrgence   String? // chiffré
-  user             User                @relation(fields: [userId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
   mesures          MesureSante[]
   documents        DocumentMedical[]
   entrees          EntreeCarnet[]
   suiviSpecialises SuiviSpecialise[]
-  updatedAt        DateTime            @updatedAt
+  updatedAt        DateTime          @updatedAt
 }
 
 // ─── Carnet de Santé & Bien-Être ─────────────────────────────────
@@ -1549,36 +1549,36 @@ model RencontreMatch {
 enum TypeSuivi {
   GROSSESSE
   POST_PARTUM
-  NOURRISSON    // 0-12 mois
-  PEDIATRIQUE   // 1-18 ans
+  NOURRISSON // 0-12 mois
+  PEDIATRIQUE // 1-18 ans
   GYNECOLOGIQUE // adulte
   GENERAL
 }
 
 model SuiviSpecialise {
-  id                    String         @id @default(cuid())
-  dossierId             String
-  type                  TypeSuivi
-  actif                 Boolean        @default(true)
+  id                     String         @id @default(cuid())
+  dossierId              String
+  type                   TypeSuivi
+  actif                  Boolean        @default(true)
   // ─── Grossesse ───────────────────────────────────────────────
-  dateDebutGrossesse    DateTime?
-  semainesAmenorhee     Int?           // SA calculé
-  datePrevueAccouchement DateTime?     // DPA
-  parite                String?        // ex: "G2P1" (2e grossesse, 1 accouchement)
+  dateDebutGrossesse     DateTime?
+  semainesAmenorhee      Int? // SA calculé
+  datePrevueAccouchement DateTime? // DPA
+  parite                 String? // ex: "G2P1" (2e grossesse, 1 accouchement)
   // ─── Pédiatrie / Nourrisson ──────────────────────────────────
-  dateNaissancePatient  DateTime?      // pour calcul âge
-  prenomPatient         String?        // prénom de l'enfant suivi
+  dateNaissancePatient   DateTime? // pour calcul âge
+  prenomPatient          String? // prénom de l'enfant suivi
   // ─── Biométrie (poids/taille pour courbe croissance) ─────────
-  poidsKg               Float?         // dernière mesure en kg
-  tailleCm              Float?         // en cm
-  perimCranienCm        Float?         // périmètre crânien (nourrisson)
+  poidsKg                Float? // dernière mesure en kg
+  tailleCm               Float? // en cm
+  perimCranienCm         Float? // périmètre crânien (nourrisson)
   // ─── Général ──────────────────────────────────────────────────
-  notes                 String?        // texte libre, chiffré
-  examensRealises       String?        // JSON: ["Echo T1", "NFS", ...]
-  prochainControle      DateTime?
-  dossier               DossierMedical @relation(fields: [dossierId], references: [id])
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
+  notes                  String? // texte libre, chiffré
+  examensRealises        String? // JSON: ["Echo T1", "NFS", ...]
+  prochainControle       DateTime?
+  dossier                DossierMedical @relation(fields: [dossierId], references: [id])
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
 
   @@index([dossierId, type])
   @@index([dossierId, actif])
@@ -1587,19 +1587,19 @@ model SuiviSpecialise {
 // ─── Questionnaire Pré-Consultation ──────────────────────────────
 
 model QuestionnairePreConsultation {
-  id            String   @id @default(cuid())
-  userId        String
-  typeSoin      String?  // slug du soin concerné
-  motif         String   // chiffré – raison principale
-  antecedents   String?  // chiffré
-  medicaments   String?  // chiffré
-  allergies     String?  // chiffré
-  ddr           String?  // date dernières règles (chiffré, optionnel)
-  parite        String?  // G/P (grossesses/accouchements) si pertinent
-  autresInfos   String?  // chiffré – informations complémentaires
-  traite        Boolean  @default(false) // praticienne a lu le questionnaire
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  typeSoin    String? // slug du soin concerné
+  motif       String // chiffré – raison principale
+  antecedents String? // chiffré
+  medicaments String? // chiffré
+  allergies   String? // chiffré
+  ddr         String? // date dernières règles (chiffré, optionnel)
+  parite      String? // G/P (grossesses/accouchements) si pertinent
+  autresInfos String? // chiffré – informations complémentaires
+  traite      Boolean  @default(false) // praticienne a lu le questionnaire
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 
   @@index([userId])
   @@index([traite, createdAt])

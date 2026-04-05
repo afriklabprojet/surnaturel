@@ -100,7 +100,7 @@ export function HeroBoutique({ codePromo, promoPourcentage }: HeroBoutiqueProps)
               </p>
 
               {/* Badges de confiance */}
-              <div className="mt-10 grid grid-cols-2 gap-3 xl:grid-cols-4">
+              <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-4">
                 {TRUST.map(({ icon: Icon, text }) => (
                   <div
                     key={text}

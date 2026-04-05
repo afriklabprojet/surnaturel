@@ -69,7 +69,7 @@ export default async function PageBlog({
           <span className="font-body text-xs uppercase tracking-[0.2em] text-gold">
             Conseils & Actualités
           </span>
-          <h1 className="mt-4 font-display text-[44px] font-light text-white">
+          <h1 className="mt-4 font-display text-[32px] sm:text-[44px] font-light text-white">
             Notre <em className="italic">blog</em>
           </h1>
           <p className="mx-auto mt-3 max-w-xl font-body text-[14px] text-white/80">

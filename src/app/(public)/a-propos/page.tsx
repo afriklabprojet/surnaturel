@@ -49,7 +49,7 @@ export default async function PageAPropos() {
           <span className="font-body text-xs uppercase tracking-[0.2em] text-gold">
             Notre histoire
           </span>
-          <h1 className="mt-4 font-display text-[44px] font-light text-white md:text-[52px]">
+          <h1 className="mt-4 font-display text-[32px] sm:text-[44px] font-light text-white md:text-[52px]">
             Le Surnaturel <em className="italic">de Dieu</em>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl font-body text-[15px] font-light leading-relaxed text-white/80">

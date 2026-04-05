@@ -76,7 +76,7 @@ export default function PageAvis() {
           <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 sm:flex-row sm:justify-center sm:gap-16">
             {/* Note moyenne */}
             <div className="text-center">
-              <p className="font-display text-5xl font-light text-primary-brand">
+              <p className="font-display text-4xl sm:text-5xl font-light text-primary-brand">
                 {stats.moyenne.toFixed(1)}
               </p>
               <div className="mt-2 flex justify-center gap-0.5">

@@ -486,8 +486,8 @@ export default function FidelitePage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden border border-border-brand bg-white">
-            <table className="w-full">
+          <div className="overflow-x-auto border border-border-brand bg-white">
+            <table className="w-full min-w-[360px]">
               <thead className="border-b border-border-brand bg-bg-page">
                 <tr>
                   <th className="px-4 py-3 text-left font-body text-xs font-medium uppercase tracking-widest text-text-muted-brand">

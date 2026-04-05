@@ -223,7 +223,8 @@ function PriseRDVContent() {
 
       {/* Stepper */}
       <div className="mb-12">
-        <div className="flex items-center justify-center">
+        <div className="overflow-x-auto pb-2">
+        <div className="flex items-center justify-center min-w-max px-4">
           {etapes.map((e, i) => (
             <div key={e.numero} className="flex items-center">
               <div className="flex flex-col items-center">
@@ -259,6 +260,7 @@ function PriseRDVContent() {
               )}
             </div>
           ))}
+        </div>
         </div>
       </div>
 

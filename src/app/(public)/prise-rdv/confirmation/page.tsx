@@ -125,7 +125,7 @@ function ConfirmationContent() {
           {/* Titre */}
           <motion.h1
             variants={fadeInUp}
-            className="mt-8 font-display text-[40px] font-light text-primary-brand"
+            className="mt-8 font-display text-[28px] sm:text-[40px] font-light text-primary-brand"
           >
             Rendez-vous confirmé !
           </motion.h1>

@@ -367,7 +367,7 @@ function ChiffreAnime({ chiffre, index }: { chiffre: ChiffreCle; index: number }
         className="flex flex-1 flex-col items-center gap-2 text-center"
       >
         <Icon size={22} className="text-gold" />
-        <p className="font-display text-6xl font-light text-white">
+        <p className="font-display text-4xl sm:text-6xl font-light text-white">
           {count}{chiffre.suffix}
         </p>
         <div className="h-px w-8 bg-gold/60" />

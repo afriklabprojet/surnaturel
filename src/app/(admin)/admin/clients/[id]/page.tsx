@@ -275,7 +275,8 @@ export default function AdminClientDetailPage() {
       <div className="bg-white border border-border-brand p-6">
         <h3 className="font-display text-lg text-text-main mb-4">Rendez-vous ({client.rendezVous.length})</h3>
         {client.rendezVous.length > 0 ? (
-          <table className="w-full text-sm font-body">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm font-body min-w-[400px]">
             <thead>
               <tr className="border-b border-border-brand">
                 <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Soin</th>
@@ -301,6 +302,7 @@ export default function AdminClientDetailPage() {
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <p className="text-gray-500 text-sm font-body">Aucun rendez-vous</p>
         )}
@@ -310,7 +312,8 @@ export default function AdminClientDetailPage() {
       <div className="bg-white border border-border-brand p-6">
         <h3 className="font-display text-lg text-text-main mb-4">Commandes ({client.commandes.length})</h3>
         {client.commandes.length > 0 ? (
-          <table className="w-full text-sm font-body">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm font-body min-w-[320px]">
             <thead>
               <tr className="border-b border-border-brand">
                 <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Date</th>
@@ -334,6 +337,7 @@ export default function AdminClientDetailPage() {
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <p className="text-gray-500 text-sm font-body">Aucune commande</p>
         )}

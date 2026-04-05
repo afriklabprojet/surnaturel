@@ -101,7 +101,7 @@ function SuccesContent() {
           </motion.div>
 
           {/* Titre */}
-          <motion.h1 variants={fadeInUp} className="mt-8 font-display text-[40px] font-light text-primary-brand">
+          <motion.h1 variants={fadeInUp} className="mt-8 font-display text-[28px] sm:text-[40px] font-light text-primary-brand">
             Paiement réussi !
           </motion.h1>
           <motion.div variants={fadeInUp} className="mx-auto mt-4 h-px w-16 bg-gold" />

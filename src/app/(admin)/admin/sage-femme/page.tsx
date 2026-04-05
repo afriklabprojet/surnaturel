@@ -161,7 +161,7 @@ function FichePatientModal({ patientId, onClose }: { patientId: string; onClose:
               </div>
             )}
 
-            <div className="flex gap-4 border-b border-border-brand px-4 pt-2">
+            <div className="flex gap-4 overflow-x-auto scrollbar-none border-b border-border-brand px-4 pt-2 whitespace-nowrap">
               {([
                 { id: "rdv", label: `Consultations (${fiche.rdvs.length})` },
                 { id: "notes", label: `Notes (${fiche.notes.length})` },
@@ -316,7 +316,8 @@ function CalendrierVue({ onSelectRdv }: { onSelectRdv: (rdv: RDV) => void }) {
       {loading ? (
         <div className="flex justify-center py-8"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary-brand border-t-transparent" /></div>
       ) : (
-        <div className="grid grid-cols-7 gap-1">
+        <div className="overflow-x-auto">
+        <div className="grid grid-cols-7 gap-1 min-w-[480px]">
           {jours.map(j => {
             const rdvsJ = rdvsDuJour(j)
             const isToday = isoDate(j) === isoDate(new Date())
@@ -339,6 +340,7 @@ function CalendrierVue({ onSelectRdv }: { onSelectRdv: (rdv: RDV) => void }) {
               </div>
             )
           })}
+        </div>
         </div>
       )}
     </div>
@@ -363,7 +365,7 @@ function StatsVue() {
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Consultations terminées", value: stats.totaux.rdvTermines, sub: `sur ${stats.totaux.rdvTotal} total` },
           { label: "Revenus générés", value: formatPrix(stats.totaux.revenu), sub: "cette année" },

@@ -81,7 +81,7 @@ export default async function RootLayout({
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${jost.variable} h-full antialiased overflow-x-hidden`}
     >
       <head>
         <link rel="manifest" href="/manifest.json" />

@@ -105,7 +105,7 @@ export default function PageContact() {
           <span className="font-body text-xs uppercase tracking-[0.2em] text-gold">
             Nous écrire
           </span>
-          <h1 className="mt-4 font-display text-[44px] font-light text-white">
+          <h1 className="mt-4 font-display text-[32px] sm:text-[44px] font-light text-white">
             Contactez-nous
           </h1>
           <p className="mx-auto mt-3 max-w-xl font-body text-[14px] text-white/80">

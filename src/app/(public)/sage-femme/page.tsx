@@ -198,7 +198,7 @@ export default async function PageSageFemme() {
             Comment ça <em className="italic text-primary-brand">marche</em>
           </h2>
         </div>
-        <div className="relative grid gap-8 sm:grid-cols-3">
+        <div className="relative grid gap-8 grid-cols-1 sm:grid-cols-3">
           {[
             { step: "01", titre: "Questionnaire pré-consultation", desc: "Remplissez rapidement votre questionnaire en ligne depuis votre espace santé. Votre sage-femme le consulte avant votre visite.", icon: ChevronDown },
             { step: "02", titre: "Consultation personnalisée",      desc: "Rendez-vous en cabinet. Bilan complet, biométrie, échanges et examens adaptés à votre situation.",               icon: Stethoscope },
@@ -348,7 +348,7 @@ export default async function PageSageFemme() {
               Ce que disent nos <em className="italic text-primary-brand">patientes</em>
             </h2>
           </div>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {AVIS_SF.map((a) => (
               <div key={a.id} className="border border-border-brand bg-white p-6">
                 <div className="mb-3 flex gap-0.5">
