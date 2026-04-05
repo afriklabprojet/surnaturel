@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { prismaMock, mockAuth, buildJsonRequest } from "./setup"
+import { prismaMock, buildJsonRequest } from "./setup"
 
 const { POST } = await import("@/app/api/newsletter/subscribe/route")
 

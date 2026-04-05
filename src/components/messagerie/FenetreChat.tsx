@@ -846,17 +846,18 @@ export default function FenetreChat({
           onClick={() => setLongPressMsg(null)}
         />
       )}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-6 bg-[#EDE8DF] relative" style={{ backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)", backgroundSize: "24px 24px" }} onScroll={() => longPressMsg && setLongPressMsg(null)}>
+      <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto px-5 py-6 bg-[#EDE8DF] relative" style={{ backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)", backgroundSize: "24px 24px" }} onScroll={() => longPressMsg && setLongPressMsg(null)}>
         {/* ─── Bouton "↓ Nouveaux messages" ─── */}
         {newMessagesCount > 0 && (
-          <button
-            onClick={() => scrollToBottom(true)}
-            className="sticky top-2 left-1/2 z-20 mx-auto flex items-center gap-2 rounded-full bg-primary-brand text-white px-4 py-2 shadow-lg font-body text-[13px] hover:bg-primary-dark transition-colors"
-            style={{ transform: "translateX(-50%)", width: "fit-content" }}
-          >
-            <ArrowDown size={14} />
-            {newMessagesCount} nouveau{newMessagesCount > 1 ? "x" : ""} message{newMessagesCount > 1 ? "s" : ""}
-          </button>
+          <div className="sticky top-2 z-20 flex justify-center pointer-events-none">
+            <button
+              onClick={() => scrollToBottom(true)}
+              className="pointer-events-auto flex items-center gap-2 rounded-full bg-primary-brand text-white px-4 py-2 shadow-lg font-body text-[13px] hover:bg-primary-dark transition-colors"
+            >
+              <ArrowDown size={14} />
+              {newMessagesCount} nouveau{newMessagesCount > 1 ? "x" : ""} message{newMessagesCount > 1 ? "s" : ""}
+            </button>
+          </div>
         )}
         {/* Bouton charger plus (infinite scroll) */}
         {hasMore && (

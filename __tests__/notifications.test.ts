@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { prismaMock, mockAuth, buildRequest, buildJsonRequest } from "./setup"
+import { prismaMock, mockAuth, buildRequest } from "./setup"
 
 const { GET } = await import("@/app/api/notifications/route")
 const { PATCH: markAllRead } = await import("@/app/api/notifications/toutes-lues/route")

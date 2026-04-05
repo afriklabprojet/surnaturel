@@ -927,7 +927,7 @@ export default function PageCommunaute() {
 
         {/* Colonne droite — flex : Fenêtre de chat */}
         <div
-          className={`flex-1 bg-bg-page ${
+          className={`flex-1 min-h-0 bg-bg-page ${
             showChat ? "flex flex-col" : "hidden md:flex md:flex-col"
           }`}
         >
@@ -943,7 +943,7 @@ export default function PageCommunaute() {
               </button>
             </div>
           )}
-          <div className="flex-1">
+          <div className="flex-1 min-h-0">
             <FenetreChat
               interlocuteur={activeInterlocuteur}
               currentUserId={currentUserId}
