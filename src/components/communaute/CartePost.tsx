@@ -28,11 +28,12 @@ import { MentionTextarea } from "./MentionTextarea"
 import BadgeVerification from "@/components/ui/BadgeVerification"
 import { useConfirm } from "@/components/ui/confirm-dialog"
 import { useToast } from "@/components/ui/toast"
-import { REACTIONS, type PostData, type CommentaireData, type ReactionType } from "./types"
+import { REACTIONS, type PostData, type CommentaireData, type ReactionType, type Auteur } from "./types"
 
 export function CartePost({
   post,
   currentUserId,
+  currentUser,
   onDelete,
   onReaction,
   onToggleSave,
@@ -42,6 +43,7 @@ export function CartePost({
 }: {
   post: PostData
   currentUserId: string
+  currentUser?: Auteur
   onDelete: (id: string) => void
   onReaction: (postId: string, type: ReactionType) => void
   onToggleSave: (postId: string) => void
@@ -329,20 +331,20 @@ export function CartePost({
         </div>
       )}
 
-      <div className="flex items-center gap-1 border-t border-border-brand px-3 py-2">
+      <div className="flex items-stretch gap-0 border-t border-border-brand divide-x divide-border-brand">
         <ReactionPicker
           userReaction={post.userReaction}
           reactionCounts={post.reactionCounts}
           reactionsCount={post.reactionsCount}
           onReact={(type) => onReaction(post.id, type)}
         />
-        <button onClick={handleToggleComments} className="flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 font-body text-[13px] font-medium text-text-muted-brand hover:bg-bg-page hover:text-primary-brand transition-colors">
-          <MessageCircle size={15} />
+        <button onClick={handleToggleComments} className="flex flex-1 items-center justify-center gap-2 py-2.5 font-body text-[13px] font-medium text-text-muted-brand hover:bg-bg-page hover:text-primary-brand transition-colors">
+          <MessageCircle size={16} />
           Commenter
         </button>
         <div className="relative flex-1" ref={shareMenuRef}>
-          <button onClick={() => setShowShareMenu(!showShareMenu)} className="w-full flex items-center justify-center gap-2 rounded-full px-3 py-2 font-body text-[13px] font-medium text-text-muted-brand hover:bg-bg-page hover:text-primary-brand transition-colors">
-            <Repeat2 size={15} />
+          <button onClick={() => setShowShareMenu(!showShareMenu)} className="w-full flex items-center justify-center gap-2 py-2.5 font-body text-[13px] font-medium text-text-muted-brand hover:bg-bg-page hover:text-primary-brand transition-colors">
+            <Repeat2 size={16} />
             Partager
           </button>
           {showShareMenu && (
@@ -379,9 +381,9 @@ export function CartePost({
       </div>
 
       {showComments && (
-        <div className="border-t border-border-brand px-5 py-4 space-y-4">
+        <div className="border-t border-border-brand bg-[#F8F6F2] px-5 py-4 space-y-1">
           {allComments.length > 0 && (
-            <div className="space-y-0 divide-y divide-border-brand">
+            <div className="space-y-0">
               {allComments.map((c) => (
                 <CommentaireItem key={c.id} commentaire={c} />
               ))}
@@ -405,8 +407,13 @@ export function CartePost({
             </div>
           )}
 
-          <form onSubmit={handleComment} className="flex gap-2 items-end">
-            <div className="flex-1">
+          <form onSubmit={handleComment} className="flex gap-2.5 items-end pt-2">
+            {currentUser && (
+              <div className="shrink-0 mb-0.5">
+                <Avatar user={currentUser} size={32} />
+              </div>
+            )}
+            <div className="flex-1 flex items-end gap-2 rounded-full bg-white ring-1 ring-border-brand px-3 py-1.5 focus-within:ring-2 focus-within:ring-gold/40 transition-all">
               <MentionTextarea
                 value={commentText}
                 onChange={setCommentText}
@@ -414,12 +421,14 @@ export function CartePost({
                 placeholder="Écrire un commentaire..."
                 maxLength={1000}
                 rows={1}
-                className="rounded-full bg-bg-page ring-1 ring-border-brand px-4 py-2.5 font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:ring-2 focus:ring-gold/40 focus:outline-none transition-all w-full resize-none"
+                className="flex-1 bg-transparent font-body text-[13px] text-text-main placeholder:text-text-muted-brand focus:outline-none resize-none"
               />
+              {commentText.trim() && (
+                <button type="submit" disabled={submitting} className="shrink-0 text-primary-brand hover:text-primary-dark transition-colors disabled:opacity-40">
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                </button>
+              )}
             </div>
-            <button type="submit" disabled={!commentText.trim() || submitting} className="rounded-full bg-primary-brand p-2.5 text-white transition-colors hover:bg-primary-dark disabled:opacity-40 shrink-0">
-              {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-            </button>
           </form>
         </div>
       )}

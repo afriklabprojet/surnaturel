@@ -153,6 +153,7 @@ export default function PageCommunaute() {
   const [repostData, setRepostData] = useState<PostData | null>(null)
   const composerRef = useRef<HTMLDivElement>(null)
   const [charteVue, setCharteVue] = useState(true)
+  const [filtreFeed, setFiltreFeed] = useState<"pourVous" | "recents">("pourVous")
 
   useEffect(() => {
     const vue = localStorage.getItem("communaute_charte_vue")
@@ -271,6 +272,22 @@ export default function PageCommunaute() {
       </div>
 
       <StoriesBandeau currentUserId={currentUser.id} />
+
+      {/* ── Onglets filtre feed ── */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setFiltreFeed("pourVous")}
+          className={`rounded-full px-4 py-1.5 font-body text-[12px] font-semibold transition-all duration-200 ${filtreFeed === "pourVous" ? "bg-primary-brand text-white shadow-sm" : "bg-white ring-1 ring-border-brand text-text-muted-brand hover:text-text-main"}`}
+        >
+          Pour vous
+        </button>
+        <button
+          onClick={() => setFiltreFeed("recents")}
+          className={`rounded-full px-4 py-1.5 font-body text-[12px] font-semibold transition-all duration-200 ${filtreFeed === "recents" ? "bg-primary-brand text-white shadow-sm" : "bg-white ring-1 ring-border-brand text-text-muted-brand hover:text-text-main"}`}
+        >
+          Récents
+        </button>
+      </div>
       <div ref={composerRef}>
         <NouveauPost user={currentUser} onPost={handleNewPost} repostData={repostData} onCancelRepost={() => setRepostData(null)} />
       </div>
@@ -285,11 +302,15 @@ export default function PageCommunaute() {
         </div>
       ) : (
         <div className="space-y-4">
-          {posts.map((post) => (
+          {(filtreFeed === "recents"
+            ? [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            : posts
+          ).map((post) => (
             <CartePost
               key={post.id}
               post={post}
               currentUserId={currentUserId}
+              currentUser={currentUser}
               onDelete={handleDelete}
               onReaction={handleReaction}
               onToggleSave={handleToggleSave}
