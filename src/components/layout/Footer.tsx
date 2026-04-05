@@ -37,10 +37,10 @@ export default function Footer() {
 
   return (
     <footer className="bg-text-main">
-      <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10">
-        <div className="grid gap-14 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:px-10 lg:py-20">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-14">
           {/* Logo & description */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <Link href="/" className="block">
               <p className="font-display text-xl font-light text-white">
                 {config.nomCentre}
@@ -115,7 +115,7 @@ export default function Footer() {
           </div>
 
           {/* Contact */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <h3 className="font-body text-xs font-medium uppercase tracking-[0.15em] text-gold">
               {t.footer.contact}
             </h3>
@@ -142,13 +142,13 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-white/10 px-6 py-6">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="font-body text-xs text-white/40">
+      <div className="border-t border-white/10 px-5 py-5 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 sm:flex-row">
+          <p className="font-body text-xs text-white/40 text-center sm:text-left">
             &copy; {new Date().getFullYear()} {config.nomCentre} — {config.fondatrice}.
             {t.footer.droits}
           </p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1">
             <Link
               href="/mentions-legales"
               prefetch={false}
