@@ -40,6 +40,7 @@ import {
   AlertTriangle,
   TrendingUp,
   ChevronDown,
+  Palette,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { ConfirmProvider } from "@/components/ui/confirm-dialog"
@@ -130,6 +131,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/admin/categories", label: "Catégories", icon: Tag },
       { href: "/admin/contenu", label: "Contenu du site", icon: FileText },
+      { href: "/admin/branding", label: "Branding", icon: Palette },
       { href: "/admin/rapports", label: "Rapports", icon: BarChart3 },
       { href: "/admin/configuration", label: "Config. avancée", icon: Wrench },
       { href: "/admin/parametres", label: "Paramètres", icon: Settings },
@@ -147,6 +149,7 @@ const pageTitles: Record<string, string> = {
   "/admin/equipe": "Équipe",
   "/admin/faq": "FAQ",
   "/admin/categories": "Catégories",
+  "/admin/branding": "Branding",
   "/admin/configuration": "Config. avancée",
   "/admin/boutique": "Boutique",
   "/admin/promo": "Codes Promo",
