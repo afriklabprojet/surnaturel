@@ -3,6 +3,134 @@ import nodemailer from "nodemailer"
 import { getConfig } from "@/lib/config"
 import { SITE_URL } from "@/lib/site"
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ██  DESIGN SYSTEM EMAIL - Le Surnaturel de Dieu                             ██
+// ══════════════════════════════════════════════════════════════════════════════
+
+const COLORS = {
+  primary: "#1B5E14",        // Vert forêt profond
+  primaryLight: "#2D7A1F",   // Vert principal
+  primaryPale: "#E8F5E3",    // Vert très pâle
+  gold: "#B8972A",           // Or signature
+  goldLight: "#D4AF37",      // Or clair
+  goldPale: "#FFFEF7",       // Or très pâle
+  dark: "#1F2937",           // Texte principal
+  gray: "#6B7280",           // Texte secondaire
+  grayLight: "#9CA3AF",      // Texte tertiaire
+  border: "#E5E7EB",         // Bordures
+  background: "#FAFAFA",     // Fond gris
+  white: "#FFFFFF",
+  warning: "#FEF3CD",
+  warningText: "#856404",
+}
+
+const FONTS = {
+  heading: "'Georgia', 'Times New Roman', serif",
+  body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+}
+
+/** Génère le wrapper HTML complet pour tous les emails */
+function emailWrapper(content: string, options?: { preheader?: string }): string {
+  return `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Le Surnaturel de Dieu</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    .button { padding: 14px 28px !important; }
+  </style>
+  <![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#F3F4F6;font-family:${FONTS.body};">
+  ${options?.preheader ? `<div style="display:none;max-height:0;overflow:hidden;">${options.preheader}</div>` : ''}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F3F4F6;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background:${COLORS.white};border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+          ${content}
+        </table>
+        <!-- Footer -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;margin-top:24px;">
+          <tr>
+            <td align="center" style="padding:16px;">
+              <p style="margin:0 0 8px;font-size:13px;color:${COLORS.grayLight};">
+                Le Surnaturel de Dieu — Institut de bien-être, Abidjan
+              </p>
+              <p style="margin:0;font-size:12px;color:${COLORS.grayLight};">
+                <a href="${SITE_URL}/profil?tab=notifications" style="color:${COLORS.gray};text-decoration:underline;">Gérer mes notifications</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+/** Génère un header stylisé */
+function emailHeader(title: string, icon: string, variant: 'primary' | 'gold' = 'primary'): string {
+  const bgColor = variant === 'gold' ? `linear-gradient(135deg, ${COLORS.gold} 0%, ${COLORS.goldLight} 100%)` : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`
+  return `
+    <tr>
+      <td style="background:${bgColor};padding:40px 32px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:12px;">${icon}</div>
+        <h1 style="margin:0;font-family:${FONTS.heading};font-size:24px;font-weight:600;color:${COLORS.white};letter-spacing:0.5px;">
+          ${title}
+        </h1>
+      </td>
+    </tr>`
+}
+
+/** Génère un bouton CTA */
+function emailButton(text: string, href: string, variant: 'primary' | 'gold' = 'primary'): string {
+  const bgColor = variant === 'gold' ? COLORS.gold : COLORS.primaryLight
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px auto;">
+      <tr>
+        <td style="background:${bgColor};border-radius:50px;text-align:center;">
+          <a href="${href}" target="_blank" style="display:inline-block;padding:14px 32px;font-family:${FONTS.body};font-size:14px;font-weight:600;color:${COLORS.white};text-decoration:none;letter-spacing:0.5px;">
+            ${text}
+          </a>
+        </td>
+      </tr>
+    </table>`
+}
+
+/** Génère une card informative */
+function emailCard(content: string, variant: 'info' | 'success' | 'warning' | 'gold' = 'info'): string {
+  const styles = {
+    info: { bg: COLORS.background, border: COLORS.border, icon: 'ℹ️' },
+    success: { bg: COLORS.primaryPale, border: '#A7D49B', icon: '✅' },
+    warning: { bg: COLORS.warning, border: '#B8972A', icon: '⚠️' },
+    gold: { bg: COLORS.goldPale, border: COLORS.gold, icon: '🎁' },
+  }
+  const style = styles[variant]
+  return `
+    <div style="background:${style.bg};border:1px solid ${style.border};border-radius:12px;padding:20px;margin:20px 0;">
+      ${content}
+    </div>`
+}
+
+/** Génère un tableau de données */
+function emailTable(rows: { label: string; value: string; highlight?: boolean }[]): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid ${COLORS.border};">
+      ${rows.map((row, i) => `
+        <tr style="background:${i % 2 === 0 ? COLORS.primaryPale : COLORS.white};">
+          <td style="padding:14px 16px;font-size:14px;font-weight:600;color:${COLORS.dark};width:40%;">${row.label}</td>
+          <td style="padding:14px 16px;font-size:14px;color:${row.highlight ? COLORS.primaryLight : COLORS.dark};font-weight:${row.highlight ? '700' : '400'};">${row.value}</td>
+        </tr>
+      `).join('')}
+    </table>`
+}
+
 // ── Resend (primary) ─────────────────────────────────────────────────────────
 let _resend: Resend | null = null
 function getResend(): Resend | null {
@@ -28,15 +156,14 @@ function getNodemailerTransporter(): nodemailer.Transporter | null {
   _transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
     port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true", // true pour 465, false pour 587
+    secure: process.env.SMTP_SECURE === "true",
     auth: { user, pass },
   })
   
   return _transporter
 }
 
-/** Échappe les caractères HTML dangereux dans les données utilisateur.
- *  Empêche les injections HTML/XSS dans les emails transactionnels. */
+/** Échappe les caractères HTML dangereux */
 function e(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -115,47 +242,45 @@ export async function envoyerEmailConfirmationRDV(params: {
   heure: string
   prix: string
 }) {
+  const html = emailWrapper(`
+    ${emailHeader('Rendez-vous confirmé', '✅')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${e(params.nom)}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Votre rendez-vous a été enregistré avec succès. Nous avons hâte de vous accueillir !
+        </p>
+        
+        ${emailTable([
+          { label: '💆 Soin', value: e(params.soin) },
+          { label: '📅 Date', value: e(params.date) },
+          { label: '🕐 Heure', value: e(params.heure) },
+          { label: '💰 Prix', value: e(params.prix), highlight: true },
+        ])}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.dark};">
+            <strong>📍 Adresse :</strong><br/>
+            Le Surnaturel de Dieu — Abidjan, Côte d'Ivoire
+          </p>
+        `, 'info')}
+        
+        ${emailButton('Voir mes rendez-vous', `${SITE_URL}/mes-rdv`)}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Pour annuler ou modifier, connectez-vous sur votre espace personnel.
+        </p>
+      </td>
+    </tr>
+  `, { preheader: `Votre RDV ${params.soin} le ${params.date} est confirmé` })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Votre rendez-vous est confirmé — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Rendez-vous confirmé
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${e(params.nom)}</strong>,</p>
-          <p>Votre rendez-vous a bien été enregistré.</p>
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Soin</td>
-              <td style="padding:10px;">${e(params.soin)}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px;font-weight:600;">Date</td>
-              <td style="padding:10px;">${e(params.date)}</td>
-            </tr>
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Heure</td>
-              <td style="padding:10px;">${e(params.heure)}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px;font-weight:600;">Prix</td>
-              <td style="padding:10px;">${e(params.prix)}</td>
-            </tr>
-          </table>
-          <p>À bientôt au centre <strong>Le Surnaturel de Dieu</strong>, Abidjan.</p>
-          <p style="color:#6B7280;font-size:12px;">
-            Pour annuler : connectez-vous sur votre espace et
-            accédez à "Mes rendez-vous".
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "✅ Rendez-vous confirmé — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -165,36 +290,40 @@ export async function envoyerEmailInscription(params: {
   tokenVerification: string
 }) {
   const lienVerification = `${SITE_URL}/api/auth/verifier-email?token=${params.tokenVerification}`
+  
+  const html = emailWrapper(`
+    ${emailHeader('Confirmez votre email', '📧')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${e(params.prenom)}</strong> 👋
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Bienvenue au <strong style="color:${COLORS.primaryLight};">Surnaturel de Dieu</strong> !<br/>
+          Pour activer votre compte, veuillez confirmer votre adresse email.
+        </p>
+        
+        ${emailButton('Confirmer mon email', lienVerification)}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:13px;color:${COLORS.gray};">
+            ⏱️ Ce lien est valable <strong>24 heures</strong>.<br/>
+            Si vous n'avez pas créé de compte, ignorez cet email.
+          </p>
+        `, 'info')}
+        
+        <p style="margin:24px 0 0;font-size:12px;color:${COLORS.grayLight};text-align:center;word-break:break-all;">
+          Lien alternatif : <a href="${lienVerification}" style="color:${COLORS.primaryLight};">${lienVerification}</a>
+        </p>
+      </td>
+    </tr>
+  `, { preheader: 'Confirmez votre email pour activer votre compte' })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Confirmez votre email — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Confirmez votre adresse email
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${e(params.prenom)}</strong>,</p>
-          <p>Bienvenue au <strong>Surnaturel de Dieu</strong> !</p>
-          <p>Pour activer votre compte, veuillez confirmer votre adresse
-             email en cliquant sur le bouton ci-dessous :</p>
-          <a href="${lienVerification}"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Confirmer mon email
-          </a>
-          <p style="color:#6B7280;font-size:12px;margin-top:20px;">
-            Ce lien est valable 24 heures. Si vous n'avez pas créé de compte,
-            ignorez cet email.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "📧 Confirmez votre email — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -203,35 +332,33 @@ export async function envoyerEmailMessageMedical(params: {
   prenomDestinataire: string
   prenomExpediteur: string
 }) {
-  const appUrl = SITE_URL
+  const html = emailWrapper(`
+    ${emailHeader('Nouveau message confidentiel', '🔒')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${e(params.prenomDestinataire)}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Vous avez reçu un nouveau message confidentiel de <strong style="color:${COLORS.primaryLight};">${e(params.prenomExpediteur)}</strong>.
+        </p>
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.gray};">
+            🔐 Pour des raisons de confidentialité, le contenu du message n'est pas affiché dans cet email.
+          </p>
+        `, 'warning')}
+        
+        ${emailButton('Lire le message', `${SITE_URL}/suivi-medical`)}
+      </td>
+    </tr>
+  `, { preheader: `Message confidentiel de ${params.prenomExpediteur}` })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Nouveau message médical — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Nouveau message médical
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${e(params.prenomDestinataire)}</strong>,</p>
-          <p>Vous avez reçu un nouveau message confidentiel de
-             <strong>${e(params.prenomExpediteur)}</strong>.</p>
-          <p style="color:#6B7280;font-size:13px;">
-            Pour des raisons de confidentialité, le contenu n'est pas affiché
-            dans cet email.</p>
-          <a href="${appUrl}/suivi-medical"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Lire le message
-          </a>
-        </div>
-      </div>
-    `,
+    subject: "🔒 Nouveau message médical — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -240,38 +367,42 @@ export async function envoyerEmailInvitationParrainage(params: {
   prenomParrain: string
   lienParrainage: string
 }) {
-  const appUrl = SITE_URL
+  const html = emailWrapper(`
+    ${emailHeader('Invitation spéciale', '🎁', 'gold')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour 👋
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          <strong style="color:${COLORS.gold};">${e(params.prenomParrain)}</strong> vous invite à rejoindre 
+          <strong>Le Surnaturel de Dieu</strong>, l'institut de bien-être d'Abidjan.
+        </p>
+        
+        ${emailCard(`
+          <div style="text-align:center;">
+            <p style="margin:0 0 8px;font-size:20px;">🎉</p>
+            <p style="margin:0;font-size:15px;color:${COLORS.dark};">
+              En vous inscrivant via ce lien, vous et votre parrain recevez chacun<br/>
+              <strong style="font-size:24px;color:${COLORS.gold};">200 points de fidélité</strong>
+            </p>
+          </div>
+        `, 'gold')}
+        
+        ${emailButton('Créer mon compte', params.lienParrainage, 'gold')}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Si vous ne souhaitez pas créer de compte, ignorez simplement cet email.
+        </p>
+      </td>
+    </tr>
+  `, { preheader: `${params.prenomParrain} vous offre 200 points de fidélité` })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: `${e(params.prenomParrain)} vous invite au Surnaturel de Dieu`,
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Vous êtes invité(e) !
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour,</p>
-          <p><strong>${e(params.prenomParrain)}</strong> vous invite à rejoindre
-             <strong>Le Surnaturel de Dieu</strong>, l'institut de bien-être
-             d'Abidjan.</p>
-          <p>En vous inscrivant via ce lien, vous et votre parrain bénéficiez
-             tous les deux de <strong>200 points de fidélité</strong> offerts.</p>
-          <a href="${params.lienParrainage}"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Créer mon compte
-          </a>
-          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
-            Si vous ne souhaitez pas créer de compte, ignorez cet email.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: `🎁 ${e(params.prenomParrain)} vous invite au Surnaturel de Dieu`,
+    html,
   })
 }
 
@@ -282,50 +413,44 @@ export async function envoyerEmailRappelRDV(params: {
   date: string
   heure: string
 }) {
-  const appUrl = SITE_URL
+  const html = emailWrapper(`
+    ${emailHeader('Rappel de rendez-vous', '⏰')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${e(params.nom)}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Nous vous rappelons que vous avez un rendez-vous <strong style="color:${COLORS.gold};">demain</strong> !
+        </p>
+        
+        ${emailTable([
+          { label: '💆 Soin', value: e(params.soin) },
+          { label: '📅 Date', value: e(params.date), highlight: true },
+          { label: '🕐 Heure', value: e(params.heure), highlight: true },
+        ])}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.dark};">
+            <strong>📍 Adresse :</strong><br/>
+            Le Surnaturel de Dieu — Abidjan, Côte d'Ivoire
+          </p>
+        `, 'info')}
+        
+        ${emailButton('Voir mes rendez-vous', `${SITE_URL}/mes-rdv`)}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Pour annuler ou modifier, connectez-vous sur votre espace personnel.
+        </p>
+      </td>
+    </tr>
+  `, { preheader: `Rappel : votre RDV ${params.soin} est demain à ${params.heure}` })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Rappel : votre rendez-vous demain — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Rappel de rendez-vous
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${e(params.nom)}</strong>,</p>
-          <p>Nous vous rappelons que vous avez un rendez-vous <strong>demain</strong>.</p>
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Soin</td>
-              <td style="padding:10px;">${e(params.soin)}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px;font-weight:600;">Date</td>
-              <td style="padding:10px;">${e(params.date)}</td>
-            </tr>
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Heure</td>
-              <td style="padding:10px;">${e(params.heure)}</td>
-            </tr>
-          </table>
-          <p>À bientôt au centre <strong>Le Surnaturel de Dieu</strong>, Abidjan.</p>
-          <a href="${appUrl}/mes-rdv"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:8px;">
-            Voir mes rendez-vous
-          </a>
-          <p style="color:#6B7280;font-size:12px;margin-top:16px;">
-            Pour annuler ou modifier votre rendez-vous, connectez-vous
-            sur votre espace.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "⏰ Rappel : votre rendez-vous demain — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -338,7 +463,6 @@ export async function envoyerEmailCommandePayee(params: {
   reference?: string
   lignes?: { nom: string; quantite: number; prixUnitaire: number }[]
 }) {
-  const appUrl = SITE_URL
   const ref = params.commandeId.slice(-8).toUpperCase()
   const date = new Date().toLocaleDateString("fr-CI", {
     day: "2-digit",
@@ -355,94 +479,69 @@ export async function envoyerEmailCommandePayee(params: {
   }).format(params.total)
 
   const lignesHtml = params.lignes?.length
-    ? params.lignes
-        .map(
-          (l, i) =>
-            `<tr style="background:${i % 2 === 0 ? "#E8F5E3" : "#fff"};">
-              <td style="padding:10px;">${l.nom}</td>
-              <td style="padding:10px;text-align:center;">${l.quantite}</td>
-              <td style="padding:10px;text-align:right;">${new Intl.NumberFormat("fr-CI").format(l.prixUnitaire)} F</td>
-            </tr>`
-        )
-        .join("")
-    : ""
-
-  const produitsTable = lignesHtml
-    ? `<table style="width:100%;border-collapse:collapse;margin:16px 0;">
-        <tr style="background:#2D7A1F;color:#fff;">
-          <th style="padding:10px;text-align:left;">Produit</th>
-          <th style="padding:10px;text-align:center;">Qté</th>
-          <th style="padding:10px;text-align:right;">Prix</th>
+    ? `
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid ${COLORS.border};">
+        <tr style="background:${COLORS.primaryLight};">
+          <th style="padding:14px 16px;font-size:13px;font-weight:600;color:${COLORS.white};text-align:left;">Produit</th>
+          <th style="padding:14px 16px;font-size:13px;font-weight:600;color:${COLORS.white};text-align:center;">Qté</th>
+          <th style="padding:14px 16px;font-size:13px;font-weight:600;color:${COLORS.white};text-align:right;">Prix</th>
         </tr>
-        ${lignesHtml}
-        <tr style="border-top:2px solid #2D7A1F;">
-          <td colspan="2" style="padding:10px;font-weight:700;">Total</td>
-          <td style="padding:10px;text-align:right;font-weight:700;">${totalFormate}</td>
+        ${params.lignes.map((l, i) => `
+          <tr style="background:${i % 2 === 0 ? COLORS.primaryPale : COLORS.white};">
+            <td style="padding:12px 16px;font-size:14px;color:${COLORS.dark};">${l.nom}</td>
+            <td style="padding:12px 16px;font-size:14px;color:${COLORS.dark};text-align:center;">${l.quantite}</td>
+            <td style="padding:12px 16px;font-size:14px;color:${COLORS.dark};text-align:right;">${new Intl.NumberFormat("fr-CI").format(l.prixUnitaire)} F</td>
+          </tr>
+        `).join('')}
+        <tr style="background:${COLORS.primary};">
+          <td colspan="2" style="padding:14px 16px;font-size:14px;font-weight:700;color:${COLORS.white};">Total</td>
+          <td style="padding:14px 16px;font-size:16px;font-weight:700;color:${COLORS.white};text-align:right;">${totalFormate}</td>
         </tr>
       </table>`
-    : `<p>Total : <strong>${totalFormate}</strong></p>`
+    : ''
 
-  const methodeHtml = params.methode
-    ? `<tr><td style="padding:10px;font-weight:600;">Méthode</td><td style="padding:10px;">${params.methode}</td></tr>`
-    : ""
-  const refTransHtml = params.reference
-    ? `<tr style="background:#E8F5E3;"><td style="padding:10px;font-weight:600;">Réf. transaction</td><td style="padding:10px;font-family:monospace;">${params.reference}</td></tr>`
-    : ""
+  const detailsRows = [
+    { label: '🧾 Commande', value: `#${ref}` },
+    { label: '📅 Date', value: date },
+  ]
+  if (params.methode) detailsRows.push({ label: '💳 Méthode', value: params.methode })
+  if (params.reference) detailsRows.push({ label: '🔢 Réf. transaction', value: params.reference })
+  detailsRows.push({ label: '💰 Montant', value: totalFormate, highlight: true } as { label: string; value: string; highlight?: boolean })
+
+  const html = emailWrapper(`
+    ${emailHeader('Paiement confirmé', '💚')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${e(params.prenom)}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Votre paiement a été reçu et confirmé. Voici votre reçu :
+        </p>
+        
+        ${emailTable(detailsRows)}
+        ${lignesHtml}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.warningText};">
+            📄 <strong>Conservez ce reçu</strong> comme preuve de paiement.
+          </p>
+        `, 'warning')}
+        
+        <p style="margin:20px 0;font-size:14px;color:${COLORS.gray};line-height:1.6;">
+          Nous préparons votre commande. Vous recevrez une notification lors de l'expédition.
+        </p>
+        
+        ${emailButton('Suivre ma commande', `${SITE_URL}/commandes`)}
+      </td>
+    </tr>
+  `, { preheader: `Paiement #${ref} confirmé - ${totalFormate}` })
 
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: `Reçu de paiement #${ref} — Le Surnaturel de Dieu`,
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Paiement confirmé
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${e(params.prenom)}</strong>,</p>
-          <p>Votre paiement a été reçu et confirmé. Voici votre reçu :</p>
-
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Commande</td>
-              <td style="padding:10px;">#${ref}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px;font-weight:600;">Date</td>
-              <td style="padding:10px;">${date}</td>
-            </tr>
-            ${methodeHtml}
-            ${refTransHtml}
-            <tr>
-              <td style="padding:10px;font-weight:600;">Montant</td>
-              <td style="padding:10px;font-weight:700;color:#2D7A1F;">${totalFormate}</td>
-            </tr>
-          </table>
-
-          ${produitsTable}
-
-          <div style="background:#FEF3CD;border:1px solid #B8972A;padding:12px;
-            border-radius:6px;margin-top:16px;">
-            <p style="margin:0;font-size:13px;color:#856404;">
-              📄 Conservez ce reçu comme preuve de paiement.
-            </p>
-          </div>
-
-          <p style="margin-top:16px;">Nous préparons votre commande. Vous recevrez
-            une notification lorsqu'elle sera expédiée.</p>
-
-          <a href="${appUrl}/commandes"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Suivre ma commande
-          </a>
-        </div>
-      </div>
-    `,
+    subject: `💚 Reçu de paiement #${ref} — Le Surnaturel de Dieu`,
+    html,
   })
 }
 
@@ -453,7 +552,6 @@ export async function envoyerEmailConfirmationCommande(params: {
   total: number
   lignes: { nom: string; quantite: number; prixUnitaire: number }[]
 }) {
-  const appUrl = SITE_URL
   const ref = params.commandeId.slice(-8).toUpperCase()
 
   const totalFormate = new Intl.NumberFormat("fr-CI", {
@@ -462,63 +560,56 @@ export async function envoyerEmailConfirmationCommande(params: {
     minimumFractionDigits: 0,
   }).format(params.total)
 
-  const lignesHtml = params.lignes
-    .map(
-      (l, i) =>
-        `<tr style="background:${i % 2 === 0 ? "#E8F5E3" : "#fff"};">
-          <td style="padding:10px;">${l.nom}</td>
-          <td style="padding:10px;text-align:center;">${l.quantite}</td>
-          <td style="padding:10px;text-align:right;">${new Intl.NumberFormat("fr-CI").format(l.prixUnitaire)} F</td>
-        </tr>`
-    )
-    .join("")
+  const lignesHtml = `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid ${COLORS.border};">
+      <tr style="background:${COLORS.primaryLight};">
+        <th style="padding:14px 16px;font-size:13px;font-weight:600;color:${COLORS.white};text-align:left;">Produit</th>
+        <th style="padding:14px 16px;font-size:13px;font-weight:600;color:${COLORS.white};text-align:center;">Qté</th>
+        <th style="padding:14px 16px;font-size:13px;font-weight:600;color:${COLORS.white};text-align:right;">Prix</th>
+      </tr>
+      ${params.lignes.map((l, i) => `
+        <tr style="background:${i % 2 === 0 ? COLORS.primaryPale : COLORS.white};">
+          <td style="padding:12px 16px;font-size:14px;color:${COLORS.dark};">${l.nom}</td>
+          <td style="padding:12px 16px;font-size:14px;color:${COLORS.dark};text-align:center;">${l.quantite}</td>
+          <td style="padding:12px 16px;font-size:14px;color:${COLORS.dark};text-align:right;">${new Intl.NumberFormat("fr-CI").format(l.prixUnitaire)} F</td>
+        </tr>
+      `).join('')}
+      <tr style="background:${COLORS.gold};">
+        <td colspan="2" style="padding:14px 16px;font-size:14px;font-weight:700;color:${COLORS.white};">Total à payer</td>
+        <td style="padding:14px 16px;font-size:16px;font-weight:700;color:${COLORS.white};text-align:right;">${totalFormate}</td>
+      </tr>
+    </table>`
+
+  const html = emailWrapper(`
+    ${emailHeader('Commande enregistrée', '🛒', 'gold')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${e(params.prenom)}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Votre commande <strong style="color:${COLORS.gold};">#${ref}</strong> a été enregistrée.<br/>
+          Elle sera validée dès réception de votre paiement.
+        </p>
+        
+        ${lignesHtml}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.warningText};">
+            ⏳ Cette commande sera automatiquement annulée si le paiement n'est pas reçu dans les <strong>24 heures</strong>.
+          </p>
+        `, 'warning')}
+        
+        ${emailButton('Suivre ma commande', `${SITE_URL}/commandes/${params.commandeId}`, 'gold')}
+      </td>
+    </tr>
+  `, { preheader: `Commande #${ref} en attente de paiement - ${totalFormate}` })
 
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: `Commande #${ref} enregistrée — Le Surnaturel de Dieu`,
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Commande enregistrée
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${e(params.prenom)}</strong>,</p>
-          <p>Votre commande <strong>#${ref}</strong> a été enregistrée.
-             Elle sera validée dès réception de votre paiement.</p>
-
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-            <tr style="background:#2D7A1F;color:#fff;">
-              <th style="padding:10px;text-align:left;">Produit</th>
-              <th style="padding:10px;text-align:center;">Qté</th>
-              <th style="padding:10px;text-align:right;">Prix</th>
-            </tr>
-            ${lignesHtml}
-            <tr style="border-top:2px solid #2D7A1F;">
-              <td colspan="2" style="padding:10px;font-weight:700;">Total à payer</td>
-              <td style="padding:10px;text-align:right;font-weight:700;color:#2D7A1F;">
-                ${totalFormate}
-              </td>
-            </tr>
-          </table>
-
-          <a href="${appUrl}/commandes/${params.commandeId}"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Suivre ma commande
-          </a>
-
-          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
-            Cette commande sera automatiquement annulée si le paiement
-            n'est pas reçu dans les 24 heures.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: `🛒 Commande #${ref} enregistrée — Le Surnaturel de Dieu`,
+    html,
   })
 }
 
@@ -527,47 +618,40 @@ export async function envoyerEmailResetMotDePasse(params: {
   prenom: string
   lienReset: string
 }) {
+  const html = emailWrapper(`
+    ${emailHeader('Réinitialisation mot de passe', '🔑')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${params.prenom}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Vous avez demandé la réinitialisation de votre mot de passe.<br/>
+          Ce lien expire dans <strong style="color:${COLORS.gold};">1 heure</strong>.
+        </p>
+        
+        ${emailButton('Réinitialiser mon mot de passe', params.lienReset)}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.warningText};">
+            <strong>⚠️ Vous n'êtes pas à l'origine de cette demande ?</strong><br/>
+            Ignorez cet email — votre mot de passe reste inchangé.
+            Si vous recevez plusieurs emails de ce type, contactez-nous immédiatement.
+          </p>
+        `, 'warning')}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Ce lien ne fonctionne qu'une seule fois. Ne le partagez avec personne.
+        </p>
+      </td>
+    </tr>
+  `, { preheader: 'Réinitialisez votre mot de passe (valable 1h)' })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Réinitialisation de votre mot de passe — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Réinitialisation du mot de passe
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
-          <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
-          <p>Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
-             Ce lien expire dans <strong>1 heure</strong>.</p>
-          <a href="${params.lienReset}"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Réinitialiser mon mot de passe
-          </a>
-
-          <div style="background:#FFF3CD;border:1px solid #B8972A;padding:12px;
-            border-radius:6px;margin-top:24px;">
-            <p style="margin:0;font-size:13px;color:#856404;">
-              ⚠️ <strong>Vous n'êtes pas à l'origine de cette demande ?</strong><br/>
-              Ignorez cet email — votre mot de passe reste inchangé.
-              Si vous recevez plusieurs emails de ce type, changez votre
-              mot de passe immédiatement et contactez-nous.
-            </p>
-          </div>
-
-          <p style="color:#6B7280;font-size:12px;margin-top:16px;">
-            Ce lien ne fonctionne qu'une seule fois et expire dans 1 heure.
-            Ne le partagez avec personne.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "🔑 Réinitialisation de votre mot de passe — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -578,49 +662,50 @@ export async function envoyerEmailInvitationAvis(params: {
   soin: string
   rdvId: string
 }) {
-  const appUrl = SITE_URL
+  const html = emailWrapper(`
+    ${emailHeader('Votre avis compte !', '⭐', 'gold')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${params.prenom}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Nous espérons que votre soin <strong style="color:${COLORS.primaryLight};">${params.soin}</strong> 
+          vous a apporté bien-être et sérénité.
+        </p>
+        
+        <div style="text-align:center;margin:24px 0;">
+          <div style="font-size:36px;margin-bottom:12px;">⭐⭐⭐⭐⭐</div>
+          <p style="margin:0;font-size:14px;color:${COLORS.gray};">
+            Votre avis aide d'autres clientes à faire leur choix<br/>
+            et nous permet d'améliorer nos services.
+          </p>
+        </div>
+        
+        ${emailButton('Donner mon avis', `${SITE_URL}/avis/${params.rdvId}`, 'gold')}
+        
+        ${emailCard(`
+          <div style="text-align:center;">
+            <p style="margin:0;font-size:14px;color:${COLORS.primaryLight};">
+              🎁 <strong>Bonus :</strong> Chaque avis publié vous rapporte<br/>
+              <strong style="font-size:20px;color:${COLORS.gold};">50 points de fidélité</strong>
+            </p>
+          </div>
+        `, 'success')}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Merci de votre confiance. 💚<br/>
+          L'équipe du Surnaturel de Dieu
+        </p>
+      </td>
+    </tr>
+  `, { preheader: 'Comment s\'est passé votre soin ? Gagnez 50 points !' })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Comment s'est passé votre soin ? — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#B8972A;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            ⭐ Votre avis compte pour nous !
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
-          <p>Nous espérons que votre soin <strong>${params.soin}</strong> vous a apporté
-             bien-être et sérénité.</p>
-          <p>Votre avis nous aide à améliorer nos services et guide d'autres clientes dans leur choix.
-             Cela ne prend que 30 secondes !</p>
-          
-          <div style="text-align:center;margin:24px 0;">
-            <a href="${appUrl}/avis/${params.rdvId}"
-               style="display:inline-block;background:#2D7A1F;color:#fff;
-               padding:14px 32px;border-radius:8px;text-decoration:none;
-               font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">
-              Donner mon avis
-            </a>
-          </div>
-
-          <div style="background:#E8F5E3;padding:16px;border-radius:8px;margin-top:16px;">
-            <p style="margin:0;font-size:14px;color:#2D7A1F;">
-              🎁 <strong>Bonus :</strong> Chaque avis publié vous rapporte 
-              <strong>50 points de fidélité</strong> !
-            </p>
-          </div>
-
-          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
-            Merci de votre confiance.<br/>
-            L'équipe du Surnaturel de Dieu
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "⭐ Comment s'est passé votre soin ? — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -658,106 +743,113 @@ export async function envoyerEmailNewsletter(
   const BASE_URL = SITE_URL
   
   const articlesHtml = articles.length > 0 ? `
-    <div style="margin-top:24px;">
-      <h2 style="font-family:'Cormorant Garamond',serif;color:#2D7A1F;font-size:20px;margin-bottom:16px;">
-        📰 Nos derniers articles
-      </h2>
-      ${articles.map(article => `
-        <div style="background:#FAFAFA;padding:16px;border-radius:8px;margin-bottom:12px;">
-          ${article.imageUrl ? `<img src="${article.imageUrl}" alt="${article.titre}" style="width:100%;max-height:150px;object-fit:cover;border-radius:6px;margin-bottom:12px;" />` : ''}
-          <h3 style="margin:0 0 8px 0;font-size:16px;color:#111827;">${article.titre}</h3>
-          <p style="margin:0 0 12px 0;font-size:14px;color:#6B7280;">${article.extrait}</p>
-          <a href="${BASE_URL}/blog/${article.slug}" style="color:#2D7A1F;font-size:14px;text-decoration:none;">
-            Lire la suite →
-          </a>
-        </div>
-      `).join('')}
-    </div>
-  ` : ''
-
-  const soinsHtml = soinsPopulaires.length > 0 ? `
-    <div style="margin-top:24px;">
-      <h2 style="font-family:'Cormorant Garamond',serif;color:#2D7A1F;font-size:20px;margin-bottom:16px;">
-        ✨ Soins populaires du moment
-      </h2>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;">
-        ${soinsPopulaires.map(soin => `
-          <div style="flex:1;min-width:200px;background:#E8F5E3;padding:16px;border-radius:8px;">
-            <h3 style="margin:0 0 8px 0;font-size:15px;color:#2D7A1F;">${soin.nom}</h3>
-            <p style="margin:0 0 12px 0;font-size:13px;color:#374151;">${soin.description}</p>
-            <a href="${BASE_URL}/prise-rdv?soin=${soin.slug}" style="background:#2D7A1F;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;display:inline-block;">
-              Réserver
+    <tr>
+      <td style="padding:0 32px;">
+        <h2 style="margin:32px 0 20px;font-family:${FONTS.heading};font-size:20px;color:${COLORS.primaryLight};">
+          📰 Nos derniers articles
+        </h2>
+        ${articles.map(article => `
+          <div style="background:${COLORS.background};border-radius:12px;padding:20px;margin-bottom:16px;">
+            ${article.imageUrl ? `<img src="${article.imageUrl}" alt="${article.titre}" style="width:100%;max-height:150px;object-fit:cover;border-radius:8px;margin-bottom:16px;" />` : ''}
+            <h3 style="margin:0 0 8px;font-size:16px;color:${COLORS.dark};">${article.titre}</h3>
+            <p style="margin:0 0 12px;font-size:14px;color:${COLORS.gray};line-height:1.5;">${article.extrait}</p>
+            <a href="${BASE_URL}/blog/${article.slug}" style="color:${COLORS.primaryLight};font-size:14px;text-decoration:none;font-weight:600;">
+              Lire la suite →
             </a>
           </div>
         `).join('')}
-      </div>
-    </div>
+      </td>
+    </tr>
+  ` : ''
+
+  const soinsHtml = soinsPopulaires.length > 0 ? `
+    <tr>
+      <td style="padding:0 32px;">
+        <h2 style="margin:32px 0 20px;font-family:${FONTS.heading};font-size:20px;color:${COLORS.primaryLight};">
+          ✨ Soins populaires
+        </h2>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            ${soinsPopulaires.map(soin => `
+              <td style="width:${100/soinsPopulaires.length}%;padding:8px;vertical-align:top;">
+                <div style="background:${COLORS.primaryPale};padding:20px;border-radius:12px;height:100%;">
+                  <h3 style="margin:0 0 8px;font-size:15px;color:${COLORS.primaryLight};">${soin.nom}</h3>
+                  <p style="margin:0 0 16px;font-size:13px;color:${COLORS.gray};line-height:1.5;">${soin.description}</p>
+                  <a href="${BASE_URL}/prise-rdv?soin=${soin.slug}" style="background:${COLORS.primaryLight};color:${COLORS.white};padding:10px 16px;border-radius:50px;text-decoration:none;font-size:12px;font-weight:600;display:inline-block;">
+                    Réserver
+                  </a>
+                </div>
+              </td>
+            `).join('')}
+          </tr>
+        </table>
+      </td>
+    </tr>
   ` : ''
 
   const promoHtml = codePromo ? `
-    <div style="margin-top:24px;background:linear-gradient(135deg,#B8972A 0%,#D4AF37 100%);padding:20px;border-radius:12px;text-align:center;">
-      <p style="margin:0 0 8px 0;font-size:14px;color:#fff;opacity:0.9;">Offre exclusive newsletter</p>
-      <p style="margin:0 0 12px 0;font-size:24px;font-weight:bold;color:#fff;">${codePromo.reduction}</p>
-      <div style="background:#fff;padding:12px 24px;border-radius:8px;display:inline-block;">
-        <span style="font-family:monospace;font-size:18px;color:#B8972A;font-weight:bold;">${codePromo.code}</span>
-      </div>
-      <p style="margin:12px 0 0 0;font-size:12px;color:#fff;opacity:0.8;">Valable jusqu'au ${codePromo.dateExpiration}</p>
-    </div>
+    <tr>
+      <td style="padding:32px;">
+        <div style="background:linear-gradient(135deg, ${COLORS.gold} 0%, ${COLORS.goldLight} 100%);padding:32px;border-radius:16px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:13px;color:${COLORS.white};opacity:0.9;letter-spacing:1px;text-transform:uppercase;">Offre exclusive newsletter</p>
+          <p style="margin:0 0 16px;font-size:28px;font-weight:bold;color:${COLORS.white};">${codePromo.reduction}</p>
+          <div style="background:${COLORS.white};padding:16px 32px;border-radius:8px;display:inline-block;">
+            <span style="font-family:monospace;font-size:22px;color:${COLORS.gold};font-weight:bold;letter-spacing:2px;">${codePromo.code}</span>
+          </div>
+          <p style="margin:16px 0 0;font-size:12px;color:${COLORS.white};opacity:0.8;">Valable jusqu'au ${codePromo.dateExpiration}</p>
+        </div>
+      </td>
+    </tr>
   ` : ''
 
   const messageHtml = messagePersonnalise ? `
-    <div style="margin-top:24px;padding:16px;border-left:4px solid #B8972A;background:#FFFEF7;">
-      <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${messagePersonnalise}</p>
-    </div>
+    <tr>
+      <td style="padding:0 32px;">
+        <div style="padding:20px;border-left:4px solid ${COLORS.gold};background:${COLORS.goldPale};border-radius:0 12px 12px 0;margin:24px 0;">
+          <p style="margin:0;font-size:14px;color:${COLORS.dark};line-height:1.6;">${messagePersonnalise}</p>
+        </div>
+      </td>
+    </tr>
   ` : ''
+
+  const html = emailWrapper(`
+    <tr>
+      <td style="background:linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%);padding:48px 32px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:16px;">🌿</div>
+        <h1 style="margin:0;font-family:${FONTS.heading};font-size:28px;color:${COLORS.white};">
+          Le Surnaturel de Dieu
+        </h1>
+        <p style="color:${COLORS.white};opacity:0.9;margin:12px 0 0;font-size:14px;letter-spacing:1px;">
+          VOTRE NEWSLETTER BIEN-ÊTRE
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 8px;font-size:18px;color:${COLORS.dark};">
+          Bonjour ${prenom || 'cher(e) client(e)'} 👋
+        </p>
+        <p style="margin:0;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Retrouvez toutes les actualités de notre institut et nos conseils bien-être.
+        </p>
+      </td>
+    </tr>
+    ${messageHtml}
+    ${articlesHtml}
+    ${soinsHtml}
+    ${promoHtml}
+    <tr>
+      <td style="padding:32px;text-align:center;">
+        ${emailButton('Prendre rendez-vous', `${BASE_URL}/prise-rdv`)}
+      </td>
+    </tr>
+  `, { preheader: 'Actualités et conseils bien-être du Surnaturel de Dieu' })
 
   await sendEmail({
     from: await getFrom(),
     to: email,
     subject: '🌿 Les actualités du Surnaturel de Dieu',
-    html: `
-      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:#2D7A1F;padding:24px;text-align:center;">
-          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
-            🌿 Le Surnaturel de Dieu
-          </h1>
-          <p style="color:#fff;opacity:0.9;margin:8px 0 0 0;font-size:14px;">
-            Votre newsletter bien-être
-          </p>
-        </div>
-
-        <div style="padding:32px 24px;">
-          <p style="font-size:16px;color:#374151;line-height:1.6;">
-            Bonjour ${prenom || 'cher(e) client(e)'} 👋
-          </p>
-          <p style="font-size:14px;color:#6B7280;line-height:1.6;">
-            Retrouvez toutes les actualités de notre institut et nos conseils bien-être.
-          </p>
-
-          ${messageHtml}
-          ${articlesHtml}
-          ${soinsHtml}
-          ${promoHtml}
-
-          <div style="margin-top:32px;text-align:center;">
-            <a href="${BASE_URL}/prise-rdv" style="background:#2D7A1F;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:15px;display:inline-block;">
-              Prendre rendez-vous
-            </a>
-          </div>
-
-          <div style="margin-top:32px;padding-top:24px;border-top:1px solid #E5E7EB;text-align:center;">
-            <p style="color:#9CA3AF;font-size:12px;margin:0;">
-              Vous recevez cet email car vous êtes inscrit(e) à notre newsletter.
-            </p>
-            <p style="margin:8px 0 0 0;">
-              <a href="${BASE_URL}/profil?tab=notifications" style="color:#6B7280;font-size:12px;text-decoration:underline;">
-                Se désabonner
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
-    `,
+    html,
   })
 }
 
@@ -772,193 +864,184 @@ interface OnboardingEmailParams {
 const ONBOARDING_EMAILS = [
   // Step 0: Email de bienvenue (envoyé à l'inscription)
   {
-    subject: "Bienvenue chez Le Surnaturel de Dieu — Votre bien-être commence ici",
-    getHtml: (prenom: string, baseUrl: string) => `
-      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:#2D7A1F;padding:32px 24px;text-align:center;">
-          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:32px;">
-            🌿 Bienvenue, ${prenom} !
+    subject: "🌿 Bienvenue chez Le Surnaturel de Dieu !",
+    getHtml: (prenom: string, baseUrl: string) => emailWrapper(`
+      <tr>
+        <td style="background:linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%);padding:48px 32px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:16px;">🌿</div>
+          <h1 style="margin:0;font-family:${FONTS.heading};font-size:32px;color:${COLORS.white};">
+            Bienvenue, ${prenom} !
           </h1>
-        </div>
-        <div style="padding:32px 24px;">
-          <p style="font-size:16px;color:#374151;line-height:1.8;">
+          <p style="color:${COLORS.white};opacity:0.9;margin:12px 0 0;font-size:15px;">
+            Votre parcours bien-être commence ici
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:32px;">
+          <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.8;">
             Nous sommes ravis de vous accueillir dans notre institut de bien-être à Abidjan.
           </p>
-          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
-            Chez <strong style="color:#2D7A1F;">Le Surnaturel de Dieu</strong>, nous croyons que chaque 
-            femme mérite de prendre soin d'elle. Notre équipe de professionnelles passionnées 
-            est là pour vous accompagner dans votre parcours bien-être.
+          <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.8;">
+            Chez <strong style="color:${COLORS.primaryLight};">Le Surnaturel de Dieu</strong>, 
+            nous croyons que chaque femme mérite de prendre soin d'elle. 
+            Notre équipe de professionnelles passionnées est là pour vous accompagner.
           </p>
           
-          <div style="background:#E8F5E3;padding:20px;border-radius:8px;margin:24px 0;">
-            <h2 style="font-size:18px;color:#2D7A1F;margin:0 0 12px 0;">
-              🎁 Votre cadeau de bienvenue
-            </h2>
-            <p style="font-size:14px;color:#374151;margin:0;">
-              Profitez de <strong>10% de réduction</strong> sur votre premier soin avec le code :
+          <div style="background:linear-gradient(135deg, ${COLORS.gold} 0%, ${COLORS.goldLight} 100%);padding:28px;border-radius:16px;text-align:center;margin:24px 0;">
+            <div style="font-size:32px;margin-bottom:12px;">🎁</div>
+            <p style="margin:0 0 8px;font-size:14px;color:${COLORS.white};opacity:0.9;">Votre cadeau de bienvenue</p>
+            <p style="margin:0 0 16px;font-size:15px;color:${COLORS.white};">
+              <strong>10% de réduction</strong> sur votre premier soin
             </p>
-            <div style="background:#fff;padding:12px 20px;border-radius:6px;text-align:center;margin-top:12px;">
-              <span style="font-family:monospace;font-size:20px;color:#B8972A;font-weight:bold;">BIENVENUE10</span>
+            <div style="background:${COLORS.white};padding:14px 28px;border-radius:8px;display:inline-block;">
+              <span style="font-family:monospace;font-size:22px;color:${COLORS.gold};font-weight:bold;letter-spacing:2px;">BIENVENUE10</span>
             </div>
           </div>
-
-          <div style="text-align:center;margin-top:32px;">
-            <a href="${baseUrl}/soins" style="background:#2D7A1F;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
-              Découvrir nos soins
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+          
+          ${emailButton('Découvrir nos soins', `${baseUrl}/soins`)}
+        </td>
+      </tr>
+    `, { preheader: 'Bienvenue ! Découvrez votre cadeau de 10% de réduction' }),
   },
   // Step 1: Découverte des soins (J+2)
   {
-    subject: "Découvrez nos soins signature — Hammam, Gommage & Plus",
-    getHtml: (prenom: string, baseUrl: string) => `
-      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:#2D7A1F;padding:32px 24px;text-align:center;">
-          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
-            ✨ Nos soins d'exception
-          </h1>
-        </div>
-        <div style="padding:32px 24px;">
-          <p style="font-size:16px;color:#374151;line-height:1.8;">
+    subject: "✨ Découvrez nos soins signature",
+    getHtml: (prenom: string, baseUrl: string) => emailWrapper(`
+      ${emailHeader("Nos soins d'exception", '✨')}
+      <tr>
+        <td style="padding:32px;">
+          <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.8;">
             Bonjour ${prenom},
           </p>
-          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
-            Avez-vous eu l'occasion de parcourir notre carte de soins ? Voici nos 
-            prestations les plus appréciées de nos clientes :
+          <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.8;">
+            Avez-vous eu l'occasion de parcourir notre carte de soins ? 
+            Voici nos prestations les plus appréciées :
           </p>
           
           <div style="margin:24px 0;">
-            <div style="border-bottom:1px solid #E8E4DC;padding:16px 0;">
-              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">🔥 Hammam Royal</h3>
-              <p style="color:#6B7280;font-size:14px;margin:0;">
+            <div style="background:${COLORS.primaryPale};border-radius:12px;padding:20px;margin-bottom:12px;">
+              <h3 style="color:${COLORS.primaryLight};margin:0 0 8px;font-size:16px;">🔥 Hammam Royal</h3>
+              <p style="color:${COLORS.gray};font-size:14px;margin:0;line-height:1.5;">
                 Une expérience de purification totale inspirée des traditions orientales.
               </p>
             </div>
-            <div style="border-bottom:1px solid #E8E4DC;padding:16px 0;">
-              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">✨ Gommage Corps Luxe</h3>
-              <p style="color:#6B7280;font-size:14px;margin:0;">
+            <div style="background:${COLORS.background};border-radius:12px;padding:20px;margin-bottom:12px;">
+              <h3 style="color:${COLORS.primaryLight};margin:0 0 8px;font-size:16px;">✨ Gommage Corps Luxe</h3>
+              <p style="color:${COLORS.gray};font-size:14px;margin:0;line-height:1.5;">
                 Exfoliation douce aux actifs naturels pour une peau soyeuse.
               </p>
             </div>
-            <div style="border-bottom:1px solid #E8E4DC;padding:16px 0;">
-              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">🌸 Soin Visage Éclat</h3>
-              <p style="color:#6B7280;font-size:14px;margin:0;">
+            <div style="background:${COLORS.primaryPale};border-radius:12px;padding:20px;margin-bottom:12px;">
+              <h3 style="color:${COLORS.primaryLight};margin:0 0 8px;font-size:16px;">🌸 Soin Visage Éclat</h3>
+              <p style="color:${COLORS.gray};font-size:14px;margin:0;line-height:1.5;">
                 Un soin complet pour révéler la luminosité de votre teint.
               </p>
             </div>
-            <div style="padding:16px 0;">
-              <h3 style="color:#2D7A1F;margin:0 0 8px 0;font-size:16px;">👶 Post-Accouchement</h3>
-              <p style="color:#6B7280;font-size:14px;margin:0;">
+            <div style="background:${COLORS.background};border-radius:12px;padding:20px;">
+              <h3 style="color:${COLORS.primaryLight};margin:0 0 8px;font-size:16px;">👶 Post-Accouchement</h3>
+              <p style="color:${COLORS.gray};font-size:14px;margin:0;line-height:1.5;">
                 Un accompagnement dédié aux jeunes mamans pour retrouver forme et sérénité.
               </p>
             </div>
           </div>
-
-          <div style="text-align:center;margin-top:32px;">
-            <a href="${baseUrl}/prise-rdv" style="background:#2D7A1F;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
-              Réserver mon soin
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+          
+          ${emailButton('Réserver mon soin', `${baseUrl}/prise-rdv`)}
+        </td>
+      </tr>
+    `, { preheader: 'Hammam, Gommage, Soin visage... Découvrez nos soins signature' }),
   },
   // Step 2: Boutique (J+5)
   {
-    subject: "Notre boutique en ligne — Prolongez votre bien-être chez vous",
-    getHtml: (prenom: string, baseUrl: string) => `
-      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:#B8972A;padding:32px 24px;text-align:center;">
-          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
-            🛍️ Notre boutique
-          </h1>
-        </div>
-        <div style="padding:32px 24px;">
-          <p style="font-size:16px;color:#374151;line-height:1.8;">
+    subject: "🛍️ Notre boutique — Prolongez votre bien-être",
+    getHtml: (prenom: string, baseUrl: string) => emailWrapper(`
+      ${emailHeader('Notre boutique', '🛍️', 'gold')}
+      <tr>
+        <td style="padding:32px;">
+          <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.8;">
             ${prenom}, savez-vous que vous pouvez prolonger votre expérience bien-être chez vous ?
           </p>
-          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
-            Notre boutique en ligne regroupe les meilleurs produits sélectionnés par nos 
-            expertes pour prendre soin de vous au quotidien.
+          <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.8;">
+            Notre boutique en ligne regroupe les meilleurs produits sélectionnés par nos expertes.
           </p>
           
-          <div style="background:#FFFEF7;border:1px solid #E8E4DC;padding:20px;margin:24px 0;">
-            <h3 style="color:#B8972A;margin:0 0 16px 0;font-size:16px;">Nos catégories :</h3>
-            <ul style="margin:0;padding-left:20px;color:#374151;font-size:14px;line-height:2;">
-              <li><strong>Soins du corps</strong> — Huiles, laits, gommages...</li>
-              <li><strong>Soins du visage</strong> — Sérums, masques, crèmes...</li>
-              <li><strong>Bien-être & santé</strong> — Compléments, tisanes...</li>
-            </ul>
+          <div style="background:${COLORS.goldPale};border:1px solid ${COLORS.border};border-radius:12px;padding:24px;margin:24px 0;">
+            <h3 style="color:${COLORS.gold};margin:0 0 16px;font-size:16px;">🏷️ Nos catégories :</h3>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding:8px 0;border-bottom:1px solid ${COLORS.border};">
+                  <strong style="color:${COLORS.dark};">Soins du corps</strong>
+                  <span style="color:${COLORS.gray};font-size:13px;"> — Huiles, laits, gommages...</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;border-bottom:1px solid ${COLORS.border};">
+                  <strong style="color:${COLORS.dark};">Soins du visage</strong>
+                  <span style="color:${COLORS.gray};font-size:13px;"> — Sérums, masques, crèmes...</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;">
+                  <strong style="color:${COLORS.dark};">Bien-être & santé</strong>
+                  <span style="color:${COLORS.gray};font-size:13px;"> — Compléments, tisanes...</span>
+                </td>
+              </tr>
+            </table>
           </div>
-
-          <p style="font-size:14px;color:#2D7A1F;font-style:italic;text-align:center;">
+          
+          <p style="font-size:14px;color:${COLORS.primaryLight};text-align:center;margin:20px 0;">
             💳 Paiement sécurisé par Mobile Money (Wave, Orange Money, MTN, Moov)
           </p>
-
-          <div style="text-align:center;margin-top:32px;">
-            <a href="${baseUrl}/boutique" style="background:#B8972A;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
-              Visiter la boutique
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+          
+          ${emailButton('Visiter la boutique', `${baseUrl}/boutique`, 'gold')}
+        </td>
+      </tr>
+    `, { preheader: 'Découvrez notre boutique de produits bien-être' }),
   },
   // Step 3: Communauté (J+7)
   {
-    subject: "Rejoignez notre communauté de femmes inspirantes",
-    getHtml: (prenom: string, baseUrl: string) => `
-      <div style="font-family:'Jost',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:#2D7A1F;padding:32px 24px;text-align:center;">
-          <h1 style="font-family:'Cormorant Garamond',serif;color:#fff;margin:0;font-size:28px;">
-            👭 Notre communauté
-          </h1>
-        </div>
-        <div style="padding:32px 24px;">
-          <p style="font-size:16px;color:#374151;line-height:1.8;">
+    subject: "👭 Rejoignez notre communauté",
+    getHtml: (prenom: string, baseUrl: string) => emailWrapper(`
+      ${emailHeader('Notre communauté', '👭')}
+      <tr>
+        <td style="padding:32px;">
+          <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.8;">
             ${prenom}, Le Surnaturel de Dieu c'est bien plus qu'un institut...
           </p>
-          <p style="font-size:15px;color:#6B7280;line-height:1.8;">
+          <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.8;">
             C'est une communauté de femmes qui partagent les mêmes valeurs : 
             prendre soin de soi, s'entraider et s'inspirer mutuellement.
           </p>
           
-          <div style="background:#E8F5E3;padding:20px;border-radius:8px;margin:24px 0;">
-            <h3 style="color:#2D7A1F;margin:0 0 12px 0;font-size:16px;">
-              Ce que vous pouvez faire dans notre espace communautaire :
+          <div style="background:${COLORS.primaryPale};padding:24px;border-radius:12px;margin:24px 0;">
+            <h3 style="color:${COLORS.primaryLight};margin:0 0 16px;font-size:16px;">
+              Dans notre espace communautaire :
             </h3>
-            <ul style="margin:0;padding-left:20px;color:#374151;font-size:14px;line-height:2;">
-              <li>Partager vos expériences et conseils</li>
-              <li>Échanger avec d'autres clientes</li>
-              <li>Participer à des événements exclusifs</li>
-              <li>Accéder à des contenus bien-être réservés aux membres</li>
-            </ul>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <tr><td style="padding:6px 0;font-size:14px;color:${COLORS.dark};">💬 Partager vos expériences et conseils</td></tr>
+              <tr><td style="padding:6px 0;font-size:14px;color:${COLORS.dark};">🤝 Échanger avec d'autres clientes</td></tr>
+              <tr><td style="padding:6px 0;font-size:14px;color:${COLORS.dark};">🎉 Participer à des événements exclusifs</td></tr>
+              <tr><td style="padding:6px 0;font-size:14px;color:${COLORS.dark};">📚 Accéder à des contenus réservés aux membres</td></tr>
+            </table>
           </div>
-
-          <div style="background:#FFFEF7;padding:20px;border-left:4px solid #B8972A;margin:24px 0;">
-            <p style="font-size:14px;color:#374151;margin:0;">
-              <strong style="color:#B8972A;">Programme de fidélité :</strong><br/>
+          
+          <div style="background:${COLORS.goldPale};padding:20px;border-left:4px solid ${COLORS.gold};border-radius:0 12px 12px 0;margin:24px 0;">
+            <p style="font-size:14px;color:${COLORS.dark};margin:0;">
+              <strong style="color:${COLORS.gold};">🏆 Programme de fidélité :</strong><br/>
               Gagnez des points à chaque réservation, achat ou avis déposé. 
               Échangez-les contre des réductions ou des soins gratuits !
             </p>
           </div>
-
-          <div style="text-align:center;margin-top:32px;">
-            <a href="${baseUrl}/communaute" style="background:#2D7A1F;color:#fff;padding:14px 32px;border-radius:0;text-decoration:none;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;display:inline-block;">
-              Rejoindre la communauté
-            </a>
-          </div>
-
-          <p style="font-size:13px;color:#9CA3AF;text-align:center;margin-top:32px;">
-            Merci de faire partie de l'aventure Le Surnaturel de Dieu. 💚<br/>
+          
+          ${emailButton('Rejoindre la communauté', `${baseUrl}/communaute`)}
+          
+          <p style="font-size:14px;color:${COLORS.grayLight};text-align:center;margin-top:32px;">
+            Merci de faire partie de l'aventure. 💚<br/>
             À très bientôt !
           </p>
-        </div>
-      </div>
-    `,
+        </td>
+      </tr>
+    `, { preheader: 'Rejoignez notre communauté de femmes inspirantes' }),
   },
 ]
 
@@ -985,59 +1068,50 @@ export async function envoyerEmailRenouvellementAbonnement(params: {
   montant: number
   prochainPaiement: string
 }) {
-  const appUrl = SITE_URL
   const montantFormate = new Intl.NumberFormat("fr-CI", {
     style: "currency",
     currency: "XOF",
     minimumFractionDigits: 0,
   }).format(params.montant)
 
+  const html = emailWrapper(`
+    ${emailHeader('Abonnement renouvelé', '🔄')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${params.prenom}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Votre abonnement a été renouvelé avec succès.<br/>
+          Vos soins mensuels ont été réinitialisés.
+        </p>
+        
+        ${emailTable([
+          { label: '📦 Formule', value: params.formule },
+          { label: '💰 Montant', value: montantFormate, highlight: true },
+          { label: '📅 Prochain paiement', value: params.prochainPaiement },
+        ])}
+        
+        ${emailCard(`
+          <p style="margin:0;font-size:14px;color:${COLORS.primaryLight};">
+            ✅ Vos soins mensuels sont maintenant disponibles. Réservez dès maintenant !
+          </p>
+        `, 'success')}
+        
+        ${emailButton('Voir mon abonnement', `${SITE_URL}/abonnements`)}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Pour modifier ou annuler votre abonnement, rendez-vous dans votre espace personnel.
+        </p>
+      </td>
+    </tr>
+  `, { preheader: `Abonnement ${params.formule} renouvelé - ${montantFormate}` })
+
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Renouvellement de votre abonnement — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Abonnement renouvelé
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
-          <p>Votre abonnement <strong>${params.formule}</strong> a été renouvelé avec succès.
-             Vos soins mensuels ont été réinitialisés.</p>
-
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Formule</td>
-              <td style="padding:10px;">${params.formule}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px;font-weight:600;">Montant</td>
-              <td style="padding:10px;font-weight:700;color:#2D7A1F;">${montantFormate}</td>
-            </tr>
-            <tr style="background:#E8F5E3;">
-              <td style="padding:10px;font-weight:600;">Prochain paiement</td>
-              <td style="padding:10px;">${params.prochainPaiement}</td>
-            </tr>
-          </table>
-
-          <a href="${appUrl}/abonnements"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Voir mon abonnement
-          </a>
-
-          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
-            Si vous souhaitez modifier ou annuler votre abonnement, rendez-vous
-            dans votre espace personnel.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "🔄 Renouvellement de votre abonnement — Le Surnaturel de Dieu",
+    html,
   })
 }
 
@@ -1047,53 +1121,56 @@ export async function envoyerEmailReactivation(params: {
   derniersSoins: string[]
   pointsFidelite: number
 }) {
-  const appUrl = SITE_URL
-
   const soinsHtml = params.derniersSoins.length > 0
-    ? `<p>Vos derniers soins consultés :</p>
-       <ul style="padding-left:20px;">${params.derniersSoins.map((s) => `<li style="margin:4px 0;">${s}</li>`).join("")}</ul>`
-    : ""
+    ? `
+      <div style="margin:20px 0;">
+        <p style="margin:0 0 12px;font-size:14px;color:${COLORS.dark};font-weight:600;">Vos derniers soins consultés :</p>
+        ${params.derniersSoins.map(soin => `
+          <div style="background:${COLORS.background};padding:12px 16px;border-radius:8px;margin-bottom:8px;font-size:14px;color:${COLORS.gray};">
+            ✨ ${soin}
+          </div>
+        `).join('')}
+      </div>
+    ` : ""
 
   const pointsHtml = params.pointsFidelite > 0
-    ? `<div style="background:#F5EDD6;padding:16px;border-radius:8px;margin:16px 0;text-align:center;">
-         <p style="margin:0;font-size:14px;color:#1F2937;">Vous avez <strong style="color:#9A7B22;font-size:20px;">${params.pointsFidelite} points fidélité</strong> en attente !</p>
-       </div>`
-    : ""
+    ? `
+      <div style="background:linear-gradient(135deg, ${COLORS.gold} 0%, ${COLORS.goldLight} 100%);padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
+        <p style="margin:0 0 8px;font-size:13px;color:${COLORS.white};opacity:0.9;">Vous avez</p>
+        <p style="margin:0;font-size:32px;font-weight:bold;color:${COLORS.white};">${params.pointsFidelite} points</p>
+        <p style="margin:8px 0 0;font-size:13px;color:${COLORS.white};opacity:0.9;">de fidélité en attente !</p>
+      </div>
+    ` : ""
+
+  const html = emailWrapper(`
+    ${emailHeader('Vous nous manquez !', '💚')}
+    <tr>
+      <td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:16px;color:${COLORS.dark};line-height:1.6;">
+          Bonjour <strong>${params.prenom}</strong>,
+        </p>
+        <p style="margin:0 0 24px;font-size:15px;color:${COLORS.gray};line-height:1.6;">
+          Cela fait un moment que nous ne vous avons pas vue à l'institut.<br/>
+          Votre bien-être nous tient à cœur et nous serions ravies de vous retrouver.
+        </p>
+        
+        ${soinsHtml}
+        ${pointsHtml}
+        
+        ${emailButton('Réserver un soin', `${SITE_URL}/prise-rdv`)}
+        
+        <p style="margin:24px 0 0;font-size:13px;color:${COLORS.grayLight};text-align:center;">
+          Si vous ne souhaitez plus recevoir ces emails, vous pouvez
+          <a href="${SITE_URL}/profil?tab=notifications" style="color:${COLORS.primaryLight};">désactiver les notifications</a>.
+        </p>
+      </td>
+    </tr>
+  `, { preheader: `${params.prenom}, nous pensons à vous ! ${params.pointsFidelite > 0 ? `${params.pointsFidelite} points vous attendent` : ''}` })
 
   return sendEmail({
     from: await getFrom(),
     to: params.destinataire,
-    subject: "Vous nous manquez ! — Le Surnaturel de Dieu",
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto;color:#1F2937;">
-        <div style="background:#2D7A1F;padding:24px;border-radius:8px 8px 0 0;">
-          <h1 style="color:#fff;margin:0;font-size:20px;">
-            Nous pensons à vous ✨
-          </h1>
-        </div>
-        <div style="background:#fff;border:1px solid #E5E7EB;
-          border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-          <p>Bonjour <strong>${params.prenom}</strong>,</p>
-          <p>Cela fait un moment que nous ne vous avons pas vue à l'institut.
-             Votre bien-être nous tient à cœur et nous serions ravies de vous retrouver.</p>
-
-          ${soinsHtml}
-          ${pointsHtml}
-
-          <a href="${appUrl}/prise-rdv"
-             style="display:inline-block;background:#2D7A1F;color:#fff;
-             padding:12px 24px;border-radius:8px;text-decoration:none;
-             margin-top:16px;">
-            Réserver un soin
-          </a>
-
-          <p style="color:#6B7280;font-size:12px;margin-top:24px;">
-            Si vous ne souhaitez plus recevoir ces emails, vous pouvez
-            désactiver les notifications dans votre
-            <a href="${appUrl}/profil" style="color:#2D7A1F;">espace personnel</a>.
-          </p>
-        </div>
-      </div>
-    `,
+    subject: "💚 Vous nous manquez ! — Le Surnaturel de Dieu",
+    html,
   })
 }
