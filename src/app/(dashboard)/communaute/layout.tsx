@@ -41,7 +41,7 @@ export default function CommunauteLayout({
   return (
     <div className="space-y-5">
       {/* Sub-navigation communauté */}
-      <nav className="sticky top-0 z-10 -mx-5 lg:-mx-8 px-5 lg:px-8 border-b border-border-brand bg-white/95 backdrop-blur-sm overflow-x-auto scrollbar-none">
+      <nav className="sticky top-[76px] z-10 -mx-5 lg:-mx-8 px-5 lg:px-8 border-b border-border-brand bg-white/95 backdrop-blur-sm overflow-x-auto scrollbar-none">
         <div className="flex items-center gap-0.5 py-2 min-w-max">
           {TABS.map((tab) => {
             const Icon = tab.icon
