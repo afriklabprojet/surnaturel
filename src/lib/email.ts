@@ -3,7 +3,7 @@ import nodemailer from "nodemailer"
 import { getConfig } from "@/lib/config"
 import { SITE_URL } from "@/lib/site"
 
-// ── Resend (fallback) ────────────────────────────────────────────────────────
+// ── Resend (primary) ─────────────────────────────────────────────────────────
 let _resend: Resend | null = null
 function getResend(): Resend | null {
   if (!_resend && process.env.RESEND_API_KEY) {
@@ -12,7 +12,7 @@ function getResend(): Resend | null {
   return _resend
 }
 
-// ── Nodemailer (Gmail SMTP - primary) ────────────────────────────────────────
+// ── Nodemailer (Gmail SMTP - fallback) ───────────────────────────────────────
 let _transporter: nodemailer.Transporter | null = null
 function getNodemailerTransporter(): nodemailer.Transporter | null {
   if (_transporter) return _transporter
@@ -47,15 +47,15 @@ function e(s: string): string {
 }
 
 async function getFrom(): Promise<string> {
-  // Priorité 1: SMTP_FROM (pour Nodemailer)
-  if (process.env.SMTP_FROM) {
-    const raw = process.env.SMTP_FROM
+  // Priorité 1: RESEND_FROM_EMAIL (pour Resend)
+  if (process.env.RESEND_FROM_EMAIL) {
+    const raw = process.env.RESEND_FROM_EMAIL
     if (!raw.includes("<")) return `Le Surnaturel de Dieu <${raw}>`
     return raw
   }
-  // Priorité 2: RESEND_FROM_EMAIL (pour Resend fallback)
-  if (process.env.RESEND_FROM_EMAIL) {
-    const raw = process.env.RESEND_FROM_EMAIL
+  // Priorité 2: SMTP_FROM (pour Nodemailer fallback)
+  if (process.env.SMTP_FROM) {
+    const raw = process.env.SMTP_FROM
     if (!raw.includes("<")) return `Le Surnaturel de Dieu <${raw}>`
     return raw
   }
@@ -66,48 +66,45 @@ async function getFrom(): Promise<string> {
 
 /**
  * Envoi d'email avec double provider :
- * 1. Tente Nodemailer (Gmail SMTP) en premier
- * 2. Si échec, bascule automatiquement sur Resend
+ * 1. Tente Resend en premier
+ * 2. Si échec, bascule automatiquement sur Nodemailer (Gmail SMTP)
  */
 export async function sendEmail(
   opts: Parameters<Resend["emails"]["send"]>[0]
 ) {
-  const transporter = getNodemailerTransporter()
-  
-  // ── Essai 1 : Nodemailer (Gmail SMTP) ─────────────────────────────────────
-  if (transporter) {
+  // ── Essai 1 : Resend (primary) ────────────────────────────────────────────
+  const resend = getResend()
+  if (resend) {
     try {
-      const result = await transporter.sendMail({
-        from: opts.from as string,
-        to: Array.isArray(opts.to) ? opts.to.join(", ") : opts.to,
-        subject: opts.subject,
-        html: opts.html as string,
-        text: opts.text as string | undefined,
-      })
-      console.log("[EMAIL] ✅ Envoyé via Nodemailer:", result.messageId)
-      return { id: result.messageId }
-    } catch (nodemailerError) {
-      console.error("[EMAIL] ❌ Nodemailer échec, bascule sur Resend:", nodemailerError)
-      // Continue vers le fallback Resend
+      const { data, error } = await resend.emails.send(opts)
+      if (error) {
+        console.error("[EMAIL] ❌ Resend API error, bascule sur Nodemailer:", JSON.stringify(error))
+        // Continue vers le fallback Nodemailer
+      } else {
+        console.log("[EMAIL] ✅ Envoyé via Resend:", data?.id)
+        return data
+      }
+    } catch (resendError) {
+      console.error("[EMAIL] ❌ Resend exception, bascule sur Nodemailer:", resendError)
+      // Continue vers le fallback Nodemailer
     }
   }
   
-  // ── Essai 2 : Resend (fallback) ───────────────────────────────────────────
-  const resend = getResend()
-  if (!resend) {
-    throw new Error("Aucun provider email configuré. Configurez SMTP_USER/SMTP_PASS ou RESEND_API_KEY")
+  // ── Essai 2 : Nodemailer (fallback) ───────────────────────────────────────
+  const transporter = getNodemailerTransporter()
+  if (!transporter) {
+    throw new Error("Aucun provider email configuré. Configurez RESEND_API_KEY ou SMTP_USER/SMTP_PASS")
   }
   
-  const { data, error } = await resend.emails.send(opts)
-  if (error) {
-    console.error("[EMAIL] ❌ Resend API error:", JSON.stringify(error))
-    const err = new Error(error.message) as Error & { statusCode?: number }
-    err.name = error.name
-    throw err
-  }
-  
-  console.log("[EMAIL] ✅ Envoyé via Resend (fallback):", data?.id)
-  return data
+  const result = await transporter.sendMail({
+    from: opts.from as string,
+    to: Array.isArray(opts.to) ? opts.to.join(", ") : opts.to,
+    subject: opts.subject,
+    html: opts.html as string,
+    text: opts.text as string | undefined,
+  })
+  console.log("[EMAIL] ✅ Envoyé via Nodemailer (fallback):", result.messageId)
+  return { id: result.messageId }
 }
 
 export async function envoyerEmailConfirmationRDV(params: {
