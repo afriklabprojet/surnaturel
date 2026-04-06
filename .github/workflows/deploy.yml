@@ -174,12 +174,25 @@ jobs:
           echo "▶ 3/4 public/…"
           rsync -az --delete -e "$SSH" public/                 "$DEST":~/surnaturel/.next/standalone/public/
 
-          echo "▶ 4/4 ecosystem.config.js…"
+          echo "▶ 4/7 ecosystem.config.js…"
           rsync -az -e "$SSH" ecosystem.config.js              "$DEST":~/surnaturel/ecosystem.config.js
 
-          echo "▶ 5/4 start.sh…"
+          echo "▶ 5/7 start.sh + start-crons.sh + start-worker.sh…"
           rsync -az -e "$SSH" scripts/start.sh                 "$DEST":~/surnaturel/start.sh
-          $SSH "$DEST" "chmod +x ~/surnaturel/start.sh"
+          rsync -az -e "$SSH" start-crons.sh                   "$DEST":~/surnaturel/start-crons.sh
+          rsync -az -e "$SSH" start-worker.sh                  "$DEST":~/surnaturel/start-worker.sh
+          $SSH "$DEST" "chmod +x ~/surnaturel/start.sh ~/surnaturel/start-crons.sh ~/surnaturel/start-worker.sh"
+
+          echo "▶ 6/7 src/ (cron.ts + worker.ts + lib/)…"
+          rsync -az --delete -e "$SSH" src/                    "$DEST":~/surnaturel/src/
+
+          echo "▶ 7/7 node_modules nécessaires (tsx, bullmq, ioredis, node-cron)…"
+          rsync -az -e "$SSH" node_modules/.bin/tsx            "$DEST":~/surnaturel/node_modules/.bin/tsx
+          for pkg in tsx bullmq ioredis node-cron esbuild; do
+            if [ -d "node_modules/$pkg" ]; then
+              rsync -az -e "$SSH" "node_modules/$pkg/"         "$DEST":~/surnaturel/node_modules/$pkg/
+            fi
+          done
 
           echo "✓ Artefacts uploadés"
 
@@ -202,6 +215,15 @@ jobs:
             else
               echo "✓ RESEND_FROM_EMAIL déjà présent"
             fi
+            # Ajouter REDIS_URL si absent
+            if ! grep -q "REDIS_URL" .env.production 2>/dev/null; then
+              echo 'REDIS_URL="${{ secrets.REDIS_URL }}"' >> .env.production
+              echo "✓ REDIS_URL ajouté à .env.production"
+            else
+              echo "✓ REDIS_URL déjà présent"
+            fi
+            # Créer le dossier logs si absent
+            mkdir -p ~/surnaturel/logs
 
       # ──────────────────────────────────────────────────────────────────────
       # 4. Recharger PM2 via SSH (aucun build côté serveur)
@@ -222,10 +244,10 @@ jobs:
             echo "Commit déployé : $(git log -1 --pretty='%h %s' 2>/dev/null || echo 'N/A')"
             # Charger les secrets depuis .env.production dans le shell
             set -a; source .env.production; set +a
-            if pm2 list | grep -q "surnaturel"; then
-              pm2 delete surnaturel
-            fi
-            pm2 start ecosystem.config.js --only surnaturel --env production
+            # Arrêter tous les anciens processus
+            pm2 delete all 2>/dev/null || true
+            # Démarrer les 3 processus : app + crons + worker
+            pm2 start ecosystem.config.js --env production
             pm2 save
             pm2 list
 
