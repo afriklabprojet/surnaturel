@@ -25,7 +25,7 @@ import FaqAccordion from "./FaqAccordion"
 export const metadata: Metadata = {
   title: "Sage-Femme Ama Kouassi | Le Surnaturel de Dieu — Abidjan",
   description:
-    "Consultations avec Ama Kouassi, sage-femme diplômée d'État : suivi de grossesse, préparation à l'accouchement, rééducation post-natale et conseils personnalisés à Abidjan.",
+    "Consultations avec Ama Kouassi, sage-femme diplômée d'État : consultations prénatales et postnatales, suivi de grossesse, conseils en allaitement, planification familiale et éducation à la santé féminine à Abidjan.",
   alternates: { canonical: "/sage-femme" },
 }
 
@@ -125,8 +125,8 @@ export default async function PageSageFemme() {
               </h1>
 
               <p className="mx-auto mt-5 max-w-xl font-body text-[14px] font-light leading-[1.8] text-white/60 lg:mx-0">
-                Un accompagnement bienveillant et professionnel tout au long de votre
-                parcours maternel, de la grossesse au post-partum.
+                Un accompagnement complet pour les femmes à chaque étape de leur vie,
+                dans un cadre professionnel, humain et bienveillant.
               </p>
 
               {/* Praticienne */}
@@ -167,10 +167,10 @@ export default async function PageSageFemme() {
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Heart,       label: "Femmes",           sub: "Gynécologie, grossesse, post-partum, suivi féminin" },
-              { icon: Baby,        label: "Nourrissons",      sub: "0 – 12 mois : bilans, biométrie, conseils parents"  },
-              { icon: Stethoscope, label: "Enfants",          sub: "1 – 18 ans : suivi pédiatrique de proximité"        },
-              { icon: Shield,      label: "Hommes & familles",sub: "Consultations familiales, éducation à la santé"      },
+              { icon: Baby,        label: "Grossesse",            sub: "Consultations prénatales, suivi de grossesse et accompagnement avant l'accouchement" },
+              { icon: Heart,       label: "Post-partum",           sub: "Consultations postnatales pour la maman et le bébé"  },
+              { icon: Shield,      label: "Planification",         sub: "Conseils en contraception, allaitement et bien-être reproductif"      },
+              { icon: Stethoscope, label: "Santé féminine",        sub: "Éducation, sensibilisation et consultations personnalisées"      },
             ].map(({ icon: Icon, label, sub }) => (
               <div key={label} className="flex items-start gap-3 border border-border-brand bg-white p-4">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-primary-light">
