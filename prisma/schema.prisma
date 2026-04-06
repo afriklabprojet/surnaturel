@@ -27,6 +27,7 @@ enum CategorieSoin {
   POST_ACCOUCHEMENT
   CONSEIL_ESTHETIQUE
   SAGE_FEMME
+  PATHOLOGIE
 }
 
 enum StatutRDV {
