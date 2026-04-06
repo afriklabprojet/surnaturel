@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
       where: { filleulId: user.id, statut: "EN_ATTENTE" },
       include: { parrain: { select: { id: true } }, filleul: { select: { prenom: true } } },
     })
-    if (parrainage) {
+    if (parrainage && parrainage.filleul) {
       await prisma.parrainage.update({
         where: { id: parrainage.id },
         data: { statut: "ACTIF", dateActivation: new Date() },

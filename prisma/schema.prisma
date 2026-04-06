@@ -748,15 +748,15 @@ model Favori {
 }
 
 model Parrainage {
-  id              String           @id @default(cuid())
-  parrainId       String
-  filleulId       String?
-  code            String           @unique
-  statut          StatutParrainage @default(EN_ATTENTE)
-  dateActivation  DateTime?
-  parrain         User             @relation("Parrain", fields: [parrainId], references: [id])
-  filleul         User?            @relation("Filleul", fields: [filleulId], references: [id])
-  createdAt       DateTime         @default(now())
+  id             String           @id @default(cuid())
+  parrainId      String
+  filleulId      String?
+  code           String           @unique
+  statut         StatutParrainage @default(EN_ATTENTE)
+  dateActivation DateTime?
+  parrain        User             @relation("Parrain", fields: [parrainId], references: [id])
+  filleul        User?            @relation("Filleul", fields: [filleulId], references: [id])
+  createdAt      DateTime         @default(now())
 }
 
 model Avis {
