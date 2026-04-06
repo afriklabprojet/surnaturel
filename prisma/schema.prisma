@@ -140,6 +140,8 @@ model User {
   mentionsConcernees      Mention[]                      @relation("MentionsConcernees")
   mentionsEmises          Mention[]                      @relation("MentionsEmises")
   stories                 Story[]
+  storyCommentaires       StoryComment[]
+  storyReactions          StoryReaction[]
   conversationsA          Conversation[]                 @relation("ConvA")
   conversationsB          Conversation[]                 @relation("ConvB")
   verificationStatus      VerificationStatus             @default(AUCUNE)
@@ -1274,20 +1276,45 @@ model ProfilDetail {
 }
 
 model Story {
-  id          String          @id @default(cuid())
-  auteurId    String
-  type        StoryType
-  contenu     String? // texte ou URL média
-  mediaUrl    String? // URL Cloudinary
-  couleurFond String? // hex pour stories textuelles
-  visibilite  StoryVisibilite @default(PUBLIC)
-  viewers     String[] // IDs des utilisateurs ayant visionné
-  auteur      User            @relation(fields: [auteurId], references: [id])
-  createdAt   DateTime        @default(now())
-  expiresAt   DateTime
+  id            String          @id @default(cuid())
+  auteurId      String
+  type          StoryType
+  contenu       String? // texte ou URL média
+  mediaUrl      String? // URL Cloudinary
+  couleurFond   String? // hex pour stories textuelles
+  visibilite    StoryVisibilite @default(PUBLIC)
+  viewers       String[] // IDs des utilisateurs ayant visionné
+  auteur        User            @relation(fields: [auteurId], references: [id])
+  commentaires  StoryComment[]
+  reactions     StoryReaction[]
+  createdAt     DateTime        @default(now())
+  expiresAt     DateTime
 
   @@index([auteurId])
   @@index([expiresAt])
+}
+
+model StoryComment {
+  id        String   @id @default(cuid())
+  storyId   String
+  auteurId  String
+  contenu   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  auteur    User     @relation(fields: [auteurId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([storyId, createdAt])
+}
+
+model StoryReaction {
+  id      String @id @default(cuid())
+  storyId String
+  userId  String
+  type    String @default("❤️") // emoji
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@unique([storyId, userId])
 }
 
 // ─── Règles du groupe ────────────────────────────────────────────

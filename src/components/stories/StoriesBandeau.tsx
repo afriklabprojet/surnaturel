@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Plus, X, Loader2, Eye, ChevronLeft, ChevronRight, Trash2, ImageIcon, Video, Type, Check } from "lucide-react"
+import { Plus, X, Loader2, Eye, ChevronLeft, ChevronRight, Trash2, ImageIcon, Video, Type, Check, MessageCircle, Heart, Send } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import Image from "next/image"
@@ -46,6 +46,15 @@ interface ViewerData {
   pseudo: string | null
   photoUrl: string | null
 }
+
+interface StoryCommentData {
+  id: string
+  contenu: string
+  createdAt: string
+  auteur: { id: string; nom: string; prenom: string; pseudo: string | null; photoUrl: string | null }
+}
+
+const REACTION_EMOJIS = ["❤️", "🔥", "😂", "😮", "😢", "👏"]
 
 /* ━━━━━━━━━━ Palette de couleurs pour stories textuelles ━━━━━━━━━━ */
 
@@ -343,6 +352,16 @@ function LecteurStory({
   const [showViewers, setShowViewers] = useState(false)
   const [viewers, setViewers] = useState<ViewerData[]>([])
   const [loadingViewers, setLoadingViewers] = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  const [comments, setComments] = useState<StoryCommentData[]>([])
+  const [loadingComments, setLoadingComments] = useState(false)
+  const [commentText, setCommentText] = useState("")
+  const [sendingComment, setSendingComment] = useState(false)
+  const [showReactions, setShowReactions] = useState(false)
+  const [myReaction, setMyReaction] = useState<string | null>(null)
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({})
+  const [reactionTotal, setReactionTotal] = useState(0)
+  const commentInputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const DURATION = 5000 // 5 secondes par story
 
@@ -352,7 +371,7 @@ function LecteurStory({
 
   // Progress bar + auto-avance
   useEffect(() => {
-    if (!story || showViewers) return
+    if (!story || showViewers || showComments || showReactions) return
     setProgress(0)
     const start = Date.now()
     timerRef.current = setInterval(() => {
@@ -363,7 +382,7 @@ function LecteurStory({
     }, 50)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupeIdx, storyIdx, showViewers])
+  }, [groupeIdx, storyIdx, showViewers, showComments, showReactions])
 
   // Marquer comme vue
   useEffect(() => {
@@ -372,6 +391,23 @@ function LecteurStory({
       onViewed(story.id)
       fetch(`/api/communaute/stories/${story.id}/vue`, { method: "POST" })
     }
+    // Reset panels on story change
+    setShowViewers(false)
+    setShowComments(false)
+    setShowReactions(false)
+    setComments([])
+    setCommentText("")
+    // Fetch reactions for this story
+    fetch(`/api/communaute/stories/${story.id}/reaction`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setReactionCounts(data.counts ?? {})
+          setReactionTotal(data.total ?? 0)
+          setMyReaction(data.myReaction ?? null)
+        }
+      })
+      .catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story?.id])
 
@@ -426,6 +462,66 @@ function LecteurStory({
     } else {
       setStoryIdx(Math.max(0, storyIdx - 1))
     }
+  }
+
+  async function handleShowComments() {
+    if (!story) return
+    setShowComments(true)
+    setLoadingComments(true)
+    try {
+      const res = await fetch(`/api/communaute/stories/${story.id}/commentaires`)
+      if (res.ok) {
+        const data = await res.json()
+        setComments(data.commentaires ?? [])
+      }
+    } finally {
+      setLoadingComments(false)
+      setTimeout(() => commentInputRef.current?.focus(), 100)
+    }
+  }
+
+  async function handleSendComment() {
+    if (!story || !commentText.trim() || sendingComment) return
+    setSendingComment(true)
+    try {
+      const res = await fetch(`/api/communaute/stories/${story.id}/commentaires`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contenu: commentText.trim() }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setComments(prev => [...prev, data.commentaire])
+        setCommentText("")
+      }
+    } finally {
+      setSendingComment(false)
+    }
+  }
+
+  async function handleReaction(emoji: string) {
+    if (!story) return
+    setShowReactions(false)
+    // Optimistic update
+    const wasActive = myReaction === emoji
+    if (wasActive) {
+      setMyReaction(null)
+      setReactionTotal(t => t - 1)
+      setReactionCounts(c => ({ ...c, [emoji]: Math.max(0, (c[emoji] ?? 1) - 1) }))
+    } else {
+      if (myReaction) {
+        setReactionCounts(c => ({ ...c, [myReaction!]: Math.max(0, (c[myReaction!] ?? 1) - 1) }))
+      } else {
+        setReactionTotal(t => t + 1)
+      }
+      setMyReaction(emoji)
+      setReactionCounts(c => ({ ...c, [emoji]: (c[emoji] ?? 0) + 1 }))
+    }
+    await fetch(`/api/communaute/stories/${story.id}/reaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: emoji }),
+    }).catch(() => {})
   }
 
   if (!story) return null
@@ -516,18 +612,54 @@ function LecteurStory({
           )}
         </div>
 
-        {/* Footer — compteur de vues (auteur uniquement) */}
-        {isOwnStory && (
-          <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center">
-            <button
-              onClick={handleShowViewers}
-              className="flex items-center gap-1.5 px-4 py-2 bg-black/40 text-white font-body text-xs hover:bg-black/60 transition-colors"
-            >
-              <Eye size={14} />
-              {story.viewers.length} vue{story.viewers.length !== 1 ? "s" : ""}
-            </button>
+        {/* Footer — réactions, commentaires, vues */}
+        <div className="absolute bottom-4 left-0 right-0 z-10 px-4 space-y-2">
+          {/* Réaction rapide + stats */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {/* Bouton réaction */}
+              <button
+                onClick={() => myReaction ? handleReaction(myReaction) : setShowReactions(s => !s)}
+                className={`flex items-center gap-1 px-3 py-1.5 bg-black/40 text-white font-body text-xs hover:bg-black/60 transition-colors ${myReaction ? "ring-1 ring-white/50" : ""}`}
+              >
+                {myReaction ? <span className="text-sm">{myReaction}</span> : <Heart size={14} />}
+                {reactionTotal > 0 && <span>{reactionTotal}</span>}
+              </button>
+              {/* Bouton commentaires */}
+              <button
+                onClick={handleShowComments}
+                className="flex items-center gap-1 px-3 py-1.5 bg-black/40 text-white font-body text-xs hover:bg-black/60 transition-colors"
+              >
+                <MessageCircle size={14} />
+              </button>
+            </div>
+            {/* Vues (auteur uniquement) */}
+            {isOwnStory && (
+              <button
+                onClick={handleShowViewers}
+                className="flex items-center gap-1 px-3 py-1.5 bg-black/40 text-white font-body text-xs hover:bg-black/60 transition-colors"
+              >
+                <Eye size={14} />
+                {story.viewers.length}
+              </button>
+            )}
           </div>
-        )}
+
+          {/* Sélecteur de réactions (popup) */}
+          {showReactions && (
+            <div className="flex items-center justify-center gap-1 bg-black/60 backdrop-blur-sm px-3 py-2 mx-auto w-fit">
+              {REACTION_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleReaction(emoji)}
+                  className={`text-xl px-1.5 py-0.5 hover:scale-125 transition-transform ${myReaction === emoji ? "scale-125 bg-white/20 rounded" : ""}`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Flèches navigation desktop */}
@@ -573,6 +705,66 @@ function LecteurStory({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Panel commentaires */}
+      {showComments && (
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-105 bg-white border-t border-border-brand max-h-[50vh] flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-brand">
+            <span className="font-display text-[14px] text-text-main">Commentaires</span>
+            <button onClick={() => setShowComments(false)} className="text-text-muted-brand hover:text-text-main">
+              <X size={16} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {loadingComments ? (
+              <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin text-gold" /></div>
+            ) : comments.length === 0 ? (
+              <p className="px-4 py-6 text-center font-body text-[12px] text-text-muted-brand">Aucun commentaire</p>
+            ) : (
+              <div className="divide-y divide-border-brand">
+                {comments.map((c) => (
+                  <div key={c.id} className="flex gap-2.5 px-4 py-2.5">
+                    {c.auteur.photoUrl ? (
+                      <Image src={c.auteur.photoUrl} alt={`Photo de ${c.auteur.prenom}`} width={28} height={28} className="rounded-full object-cover shrink-0" />
+                    ) : (
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-brand text-white font-body text-[10px]">
+                        {c.auteur.prenom[0]}{c.auteur.nom[0]}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-body text-[11px] text-text-muted-brand">
+                        <span className="font-medium text-text-main">{c.auteur.prenom}</span>{" · "}
+                        {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: fr })}
+                      </p>
+                      <p className="font-body text-[12px] text-text-main wrap-break-word">{c.contenu}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Input commentaire */}
+          <div className="flex items-center gap-2 px-4 py-2.5 border-t border-border-brand bg-white">
+            <input
+              ref={commentInputRef}
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSendComment() }}
+              placeholder="Écrire un commentaire…"
+              maxLength={500}
+              className="flex-1 bg-bg-page border border-border-brand px-3 py-2 font-body text-[12px] text-text-main placeholder:text-text-muted-brand focus:outline-none focus:ring-1 focus:ring-primary-brand"
+            />
+            <button
+              onClick={handleSendComment}
+              disabled={!commentText.trim() || sendingComment}
+              className="p-2 text-primary-brand hover:text-primary-brand/80 disabled:opacity-40 transition-colors"
+            >
+              {sendingComment ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            </button>
+          </div>
         </div>
       )}
     </div>
