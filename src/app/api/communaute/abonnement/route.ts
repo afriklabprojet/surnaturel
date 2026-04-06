@@ -6,7 +6,6 @@ import { creerPaiement, type JekoPaymentMethod } from "@/lib/jeko"
 import { typedLogger as logger } from "@/lib/logger"
 import { SITE_URL } from "@/lib/site"
 
-const MONTANT_ABONNEMENT_FCFA = 10_000
 const SLUG_FORMULE = "communaute"
 
 const abonnementSchema = z.object({
@@ -82,10 +81,12 @@ export async function POST(request: Request) {
       },
     })
 
+    const montant = formule.prixMensuel
+
     await prisma.paiementAbonnement.create({
       data: {
         abonnementId: abonnement.id,
-        montant: MONTANT_ABONNEMENT_FCFA,
+        montant,
         moisConcerne: new Date(),
         statut: "EN_ATTENTE",
       },
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
 
     const { redirectUrl, paiementId } = await creerPaiement({
       commandeId,
-      montantFCFA: MONTANT_ABONNEMENT_FCFA,
+      montantFCFA: montant,
       methodePaiement: methode as JekoPaymentMethod,
       storeId: process.env.JEKO_STORE_ID!,
       successUrl: `${baseUrl}/communaute?abonnement=ok`,

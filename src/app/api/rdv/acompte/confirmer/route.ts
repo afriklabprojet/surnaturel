@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { verifierStatutPaiement } from "@/lib/jeko"
 import { envoyerSmsAcomptePaye } from "@/lib/sms"
 import { formatPrix } from "@/lib/utils"
-import { SITE_URL } from "@/lib/site"
+import { SITE_URL, MONTANT_ACOMPTE_DEFAUT } from "@/lib/site"
 
 // GET /api/rdv/acompte/confirmer?reference=...&rdv=...
 // Appelé après retour de la page de paiement Jeko
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
           await envoyerSmsAcomptePaye({
             telephone: rdv.telephoneSms,
             prenom: rdv.user.prenom,
-            montant: formatPrix(rdv.montantAcompte ?? 2000),
+            montant: formatPrix(rdv.montantAcompte ?? MONTANT_ACOMPTE_DEFAUT),
             soin: rdv.soin.nom,
           })
         } catch {

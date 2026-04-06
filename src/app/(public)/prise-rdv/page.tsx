@@ -21,6 +21,7 @@ import { formatPrix, formatDate } from "@/lib/utils"
 import { getIcon } from "@/lib/icon-map"
 import CalendrierRDV from "@/components/rdv/CalendrierRDV"
 import SectionTag from "@/components/ui/SectionTag"
+import { MONTANT_ACOMPTE_DEFAUT } from "@/lib/site"
 
 interface SoinItem {
   id: string
@@ -61,7 +62,7 @@ function PriseRDVContent() {
   const [methodes, setMethodes] = useState<{ id: string; label: string; color: string }[]>([])
   const [loadingPaiement, setLoadingPaiement] = useState(false)
 
-  const [montantAcompte, setMontantAcompte] = useState(2000)
+  const [montantAcompte, setMontantAcompte] = useState(MONTANT_ACOMPTE_DEFAUT)
   const [creneauxMatin, setCreneauxMatin] = useState<number[] | undefined>(undefined)
   const [creneauxApresMidi, setCreneauxApresMidi] = useState<number[] | undefined>(undefined)
 

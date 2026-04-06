@@ -46,5 +46,9 @@ export const SOCIAL_INSTAGRAM = "https://www.instagram.com/surnatureldedieu"
 // ─── Domaine (pour identifiants ICS, liens internes) ─────────────────────────
 export const SITE_DOMAIN = "lesurnatureldedieu.com"
 
+// ─── Tarifs par défaut (fallbacks si BDD indisponible) ─────────────────────
+/** Montant d'acompte par défaut pour les RDV (FCFA) */
+export const MONTANT_ACOMPTE_DEFAUT = 2000
+
 // ─── Localisation ────────────────────────────────────────────────────────────
 export const TIMEZONE = "Africa/Abidjan"

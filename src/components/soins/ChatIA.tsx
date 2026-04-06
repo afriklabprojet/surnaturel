@@ -32,12 +32,10 @@ interface SoinChat {
 }
 
 const CATEGORIE_MAP: Record<string, string[]> = {
-  detente: ["HAMMAM"],
-  visage: ["GOMMAGE", "VISAGE"],
-  minceur: ["AMINCISSANT", "GOMMAGE"],
+  pathologie: ["PATHOLOGIE"],
   maman: ["POST_ACCOUCHEMENT", "SAGE_FEMME"],
-  medical: ["SAGE_FEMME"],
-  decouvrir: ["HAMMAM", "GOMMAGE", "CONSEIL_ESTHETIQUE"],
+  medical: ["SAGE_FEMME", "PATHOLOGIE"],
+  decouvrir: ["PATHOLOGIE", "SAGE_FEMME"],
 }
 
 function recommend(answers: Record<string, string>, soins: SoinChat[]) {
@@ -139,7 +137,7 @@ export default function ChatIA() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-24 right-4 z-50 flex h-[min(480px,70vh)] w-[min(340px,calc(100vw-2rem))] flex-col border border-border-brand bg-white shadow-2xl sm:right-6 sm:w-[380px]">
+        <div className="fixed bottom-24 right-4 z-50 flex h-[min(480px,70vh)] w-[min(340px,calc(100vw-2rem))] flex-col border border-border-brand bg-white shadow-2xl sm:right-6 sm:w-95">
           {/* Header */}
           <div className="flex items-center justify-between bg-primary-brand px-4 py-3">
             <div className="flex items-center gap-2">

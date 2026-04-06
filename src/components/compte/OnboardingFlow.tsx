@@ -214,7 +214,7 @@ export default function OnboardingFlow({ prenom, onDismiss }: OnboardingFlowProp
 
                 <p className="font-body text-[13px] text-text-mid text-center leading-relaxed">
                   Cliquez sur le bouton ci-dessous pour choisir votre date et heure.<br />
-                  Un acompte de <strong>2 000 F CFA</strong> confirme votre réservation.
+                  Un acompte confirme votre réservation.
                 </p>
 
                 <button
