@@ -87,6 +87,11 @@ cp -r .next/static .next/standalone/.next/static
 cp -r public .next/standalone/public
 echo "  ✓ .next/static et public/ copiés dans standalone"
 
+# ── 6b. Copier les scripts PM2 (crons, worker) ──────────────────────
+cp start.sh start-crons.sh start-worker.sh ecosystem.config.js .next/standalone/ 2>/dev/null || true
+cp -r src .next/standalone/src 2>/dev/null || true
+echo "  ✓ Scripts PM2 copiés dans standalone"
+
 # ── 7. Redémarrage PM2 ───────────────────────────────────────────────
 echo ""
 echo "▶ 7/8 Redémarrage PM2…"

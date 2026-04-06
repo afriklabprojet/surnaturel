@@ -71,25 +71,42 @@ module.exports = {
     },
 
     // ── Processus cron dédié ───────────────────────────────────────────
-    // DÉSACTIVÉ sur Hostinger (limite de threads trop basse).
-    // Les crons sont appelés via /api/cron/* par un service externe (ex: cron-job.org)
-    // ou depuis GitHub Actions avec curl.
-    // Pour réactiver : retirer le commentaire et redéployer.
-    // {
-    //   name: "crons",
-    //   script: "node_modules/.bin/tsx",
-    //   args: "src/cron.ts",
-    //   ...
-    // },
+    // 7 tâches planifiées (rappels RDV, SMS, WhatsApp, avis, onboarding,
+    // publications, nettoyage stories). Voir src/cron.ts pour le détail.
+    {
+      name: "crons",
+      script: "./start-crons.sh",
+      interpreter: "bash",
+      exec_mode: "fork",
+      instances: 1,
+      autorestart: true,
+      max_restarts: 3,
+      min_uptime: "10s",
+      max_memory_restart: "256M",
+      out_file: "./logs/crons-out.log",
+      error_file: "./logs/crons-error.log",
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+    },
 
-    // ── Worker BullMQ — notifications & push asynchrones ──────────────────
-    // DÉSACTIVÉ sur Hostinger (limite de threads trop basse + REDIS_URL non configuré).
-    // Pour réactiver : configurer REDIS_URL et retirer le commentaire.
-    // {
-    //   name: "worker",
-    //   script: "node_modules/.bin/tsx",
-    //   args: "src/worker.ts",
-    //   ...
-    // },
+    // ── Worker BullMQ — notifications & push asynchrones ──────────────
+    // Consomme la queue "notifications" (DB + Pusher + Web Push).
+    // Requiert REDIS_URL dans .env.production.
+    // Si Redis absent → l'app fonctionne en fallback synchrone.
+    {
+      name: "worker",
+      script: "./start-worker.sh",
+      interpreter: "bash",
+      exec_mode: "fork",
+      instances: 1,
+      autorestart: true,
+      max_restarts: 5,
+      min_uptime: "10s",
+      max_memory_restart: "256M",
+      out_file: "./logs/worker-out.log",
+      error_file: "./logs/worker-error.log",
+      log_date_format: "YYYY-MM-DD HH:mm:ss",
+      merge_logs: true,
+    },
   ],
 }

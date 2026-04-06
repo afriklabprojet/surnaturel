@@ -25,6 +25,7 @@ function getRedisConnection(): IORedis | null {
     return new IORedis(url, {
       maxRetriesPerRequest: null, // requis par BullMQ
       enableReadyCheck: false,
+      tls: url.startsWith("rediss://") ? {} : undefined, // Upstash TLS
     })
   } catch {
     return null
