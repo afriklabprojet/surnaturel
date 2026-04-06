@@ -5,12 +5,12 @@ import { SITE_URL } from "@/lib/site"
 import { capturePaymentError } from "@/lib/sentry"
 
 // Relance par SMS les commandes dont le paiement a échoué
-// Exécuté toutes les 30 minutes via Vercel CRON
+// Exécuté toutes les 30 minutes via node-cron (PM2)
 // Ne relance qu'une fois par commande (relanceSmsEnvoyee)
 // Ne relance que les commandes échouées depuis > 5 min et < 24h
 
 export async function GET(req: NextRequest) {
-  // Vérifier l'authentification CRON (Vercel ou clé secrète)
+  // Vérifier l'authentification CRON (node-cron ou clé secrète)
   const authHeader = req.headers.get("authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })

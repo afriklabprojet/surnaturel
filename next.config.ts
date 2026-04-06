@@ -9,7 +9,7 @@ const csp = [
 
   // Scripts : 'unsafe-inline' requis par Next.js (hydration + data scripts)
   // 'unsafe-eval' requis par React en dev (callstack reconstruction) — jamais utilisé en prod
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com https://cdn.vercel-insights.com`,
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
 
   // Styles : 'unsafe-inline' requis par Tailwind + styled-jsx
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -33,9 +33,6 @@ const csp = [
     "wss://*.pusherapp.com",
     "https://res.cloudinary.com",
     "https://api.cloudinary.com",
-    "https://va.vercel-scripts.com",
-    "https://cdn.vercel-insights.com",
-    "https://vitals.vercel-insights.com",
     "https://*.ingest.de.sentry.io",
   ].join(" "),
 
@@ -59,8 +56,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
   { key: "X-DNS-Prefetch-Control", value: "on" },
-  // HSTS géré automatiquement par Vercel (includeSubDomains, preload)
-  // On l'ajoute quand même pour les previews et le dev derrière un reverse proxy
+  // HSTS — activé en production derrière le reverse proxy Hostinger
   ...(process.env.NODE_ENV === "production" ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }] : []),
 ];
 
@@ -126,6 +122,31 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, private" },
           { key: "Pragma", value: "no-cache" },
+        ],
+      },
+      // Assets statiques — cache longue durée
+      {
+        source: "/images/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/logos/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/manifest.json",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400" },
+        ],
+      },
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
         ],
       },
     ];

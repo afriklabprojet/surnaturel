@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-// GET — appelé par le cron Vercel toutes les heures
+// GET — appelé par node-cron (PM2) toutes les heures
 // Supprime les stories expirées + leurs médias Cloudinary
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization")

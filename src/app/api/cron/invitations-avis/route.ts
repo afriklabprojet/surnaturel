@@ -7,7 +7,7 @@ import { envoyerEmailInvitationAvis } from "@/lib/email"
 // Envoie un email d'invitation à laisser un avis 24h après un RDV terminé.
 // Les RDV doivent avoir le statut TERMINE et ne pas avoir déjà reçu l'email.
 //
-// Doit être appelé quotidiennement (Vercel Cron ou cron externe).
+// Doit être appelé quotidiennement (node-cron PM2 ou cron externe).
 // Protégé par CRON_SECRET pour éviter les appels non autorisés.
 
 export async function GET(req: NextRequest) {

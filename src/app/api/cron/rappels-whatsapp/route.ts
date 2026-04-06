@@ -10,7 +10,7 @@ import {
  * Route CRON pour envoyer des rappels WhatsApp de RDV
  * À programmer pour s'exécuter quotidiennement (ex: 18h la veille)
  * 
- * Vercel Cron: Configurer dans vercel.json
+ * node-cron (PM2): Configuré dans ecosystem.config.js
  * {
  *   "crons": [{
  *     "path": "/api/cron/rappels-whatsapp",

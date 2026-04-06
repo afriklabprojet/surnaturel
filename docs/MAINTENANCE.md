@@ -28,7 +28,7 @@
 ```
 Votre site fonctionne comme un restaurant :
 
-🏪 Vercel        = Le bâtiment (héberge le site)
+🏪 Hostinger     = Le bâtiment (héberge le site via VPS)
 🗄️ Neon          = Le garde-manger (stocke les données)
 📧 Resend        = Le facteur (envoie les emails)
 💬 Pusher        = Le téléphone (messagerie en temps réel)
@@ -336,8 +336,8 @@ npx prisma migrate deploy
 
 ### Déploiement automatique (recommandé)
 
-Chaque fois que vous envoyez du code sur GitHub, Vercel redéploie
-automatiquement :
+Chaque fois que vous envoyez du code sur GitHub, le déploiement est
+déclenché via GitHub Actions (ou manuellement via `scripts/deploy.sh`) :
 
 ```bash
 # 1. Vérifiez que le code fonctionne en local
@@ -353,29 +353,27 @@ git commit -m "Description de la modification"
 git push
 ```
 
-Vercel détecte le changement et redéploie en 2-5 minutes.
+Le déploiement prend 2-5 minutes sur le VPS Hostinger.
 
 ### Vérifier que le déploiement a réussi
 
-1. Allez sur [vercel.com](https://vercel.com) > votre projet
-2. Onglet **"Deployments"**
-3. Le dernier déploiement doit être vert ✅
+1. Connectez-vous en SSH sur le VPS Hostinger
+2. Exécutez `pm2 status` pour vérifier que le processus tourne
+3. Vérifiez que le site répond sur votre domaine
 
 ### Si le déploiement échoue 🔴
 
-1. Cliquez sur le déploiement échoué
-2. Cliquez **"View Build Logs"**
-3. L'erreur est en rouge — lisez le message
-4. Corrigez localement, testez, puis re-poussez
+1. Vérifiez les logs : `pm2 logs surnaturel`
+2. Corrigez localement, testez, puis re-poussez
 
 ### Rollback (revenir en arrière)
 
 Si une mise à jour casse le site :
 
-1. Vercel Dashboard > **Deployments**
-2. Trouvez le dernier déploiement qui fonctionnait
-3. Cliquez les **"..."** > **"Promote to Production"**
-4. Le site revient instantanément à la version précédente
+1. Connectez-vous en SSH
+2. `cd /home/u507379921/surnaturel`
+3. `git log --oneline -5` pour trouver le commit précédent
+4. `git checkout <commit>` puis `pm2 restart surnaturel`
 
 ---
 
@@ -417,13 +415,13 @@ npx prisma migrate deploy
 | Code source     | GitHub     | À chaque `git push`   |
 | Base de données | Neon       | Automatique (7 jours) |
 | Images          | Cloudinary | Permanent             |
-| Déploiements    | Vercel     | Historique complet    |
+| Déploiements    | GitHub Actions + VPS | Historique via git    |
 
 ### Ce que VOUS devez sauvegarder
 
 - **Le fichier `.env.local`** : il contient tous vos secrets. Gardez-en une
   copie dans un endroit sûr (pas sur GitHub !)
-- **Les accès aux services** : gardez une liste de vos identifiants Vercel,
+- **Les accès aux services** : gardez une liste de vos identifiants Hostinger,
   Neon, Resend, Pusher, Jeko, Cloudinary
 
 ### Bonnes pratiques de sécurité
@@ -478,15 +476,14 @@ git add . && git commit -m "Mise à jour des dépendances" && git push
 
 ### Le site est lent
 
-1. Vérifiez [status.vercel.com](https://status.vercel.com) — est-ce un problème
-   Vercel ?
+1. Vérifiez les logs PM2 : `pm2 logs surnaturel` — le processus tourne-t-il ?
 2. Vérifiez [console.neon.tech](https://console.neon.tech) — la base de données
    est-elle surchargée ?
 3. Les images sont-elles optimisées sur Cloudinary ?
 
 ### Erreur 500 (Internal Server Error)
 
-1. Allez sur Vercel > votre projet > **Logs** (temps réel)
+1. Connectez-vous en SSH, exécutez `pm2 logs surnaturel`
 2. Reproduisez l'erreur
 3. Le log indique quel fichier et quelle ligne posent problème
 
@@ -517,28 +514,19 @@ La base de données n'est pas accessible :
 
 ### Les tâches planifiées (cron) ne s'exécutent pas
 
-Les crons sont configurés dans `vercel.json` :
+Les crons sont gérés par `node-cron` via PM2 (`src/cron.ts`) :
 
-- Rappels RDV : tous les jours à 8h (`0 8 * * *`)
-
-> **Note** : Le plan Hobby de Vercel ne supporte qu'1 cron job. Les deux autres
-> tâches planifiées (nettoyage stories et publications planifiées) sont définies
-> dans le code mais nécessitent le plan Pro de Vercel pour fonctionner
-> automatiquement. En plan Hobby, seul le rappel RDV quotidien fonctionne.
->
-> **Alternative gratuite** : Vous pouvez utiliser un service comme
-> [cron-job.org](https://cron-job.org) (gratuit) pour appeler manuellement les
-> URLs suivantes avec le header `Authorization: Bearer VOTRE_CRON_SECRET` :
->
-> - `https://votre-site.com/api/cron/nettoyage-stories` (toutes les heures)
-> - `https://votre-site.com/api/cron/publication-planifiee` (toutes les minutes)
+- Vérifiez que le processus crons est actif : `pm2 status`
+- Consultez les logs : `pm2 logs crons`
+- Les crons sont planifiés dans `src/cron.ts` et appellent les routes API
+  avec CRON_SECRET pour s'authentifier.
 
 ### Comment contacter le support technique
 
-| Service | Support                                                           |
-| ------- | ----------------------------------------------------------------- |
-| Vercel  | [vercel.com/help](https://vercel.com/help)                        |
-| Neon    | [neon.tech/docs](https://neon.tech/docs)                          |
+| Service   | Support                                                           |
+| --------- | ----------------------------------------------------------------- |
+| Hostinger | [hostinger.fr/cpanel-login](https://www.hostinger.fr)             |
+| Neon      | [neon.tech/docs](https://neon.tech/docs)                          |
 | Resend  | [resend.com/docs](https://resend.com/docs)                        |
 | Pusher  | [pusher.com/support](https://pusher.com/support)                  |
 | Jeko    | [cockpit.jeko.africa](https://cockpit.jeko.africa) — section Aide |
@@ -547,20 +535,19 @@ Les crons sont configurés dans `vercel.json` :
 
 ## 📋 Checklist de maintenance mensuelle
 
-- [ ] Vérifier le tableau de bord Vercel (erreurs récentes ?)
+- [ ] Vérifier le statut PM2 sur le VPS (`pm2 status`)
 - [ ] Vérifier les quotas Neon (stockage)
 - [ ] Vérifier les quotas Resend (emails envoyés)
-- [ ] Vérifier les logs d'erreur (Vercel > Logs)
+- [ ] Vérifier les logs PM2 (`pm2 logs surnaturel`)
 - [ ] Mettre à jour les dépendances si des alertes de sécurité existent
 - [ ] Tester une commande complète (panier → paiement → suivi)
 - [ ] Tester un RDV complet (réservation → confirmation → rappel)
-- [ ] Vérifier que les crons fonctionnent (rappels RDV, nettoyage stories)
+- [ ] Vérifier que les crons fonctionnent (`pm2 logs crons`)
 - [ ] Vérifier que `/api/health` répond `{"status":"ok"}` (santé du système)
 - [ ] Vérifier que le Chat IA s'affiche bien sur les pages publiques
 - [ ] Vérifier que le mode sombre fonctionne (cliquer 🌙)
 - [ ] Vérifier que la bascule FR/EN fonctionne
 - [ ] Lancer les tests : `npm run test` (22 tests doivent passer)
-- [ ] Consulter Vercel Analytics (onglet Analytics dans Vercel Dashboard)
 - [ ] Vérifier les profils professionnels (`/admin/professionnels`)
 - [ ] Vérifier les paramètres du centre (`/admin/parametres`)
 

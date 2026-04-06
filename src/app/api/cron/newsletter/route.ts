@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { envoyerEmailNewsletter } from "@/lib/email"
 
-// GET — appelé par le cron Vercel chaque dimanche à 10h
+// GET — appelé par node-cron (PM2) chaque dimanche à 10h
 export async function GET(request: Request) {
   // Protection par secret partagé
   const authHeader = request.headers.get("authorization")

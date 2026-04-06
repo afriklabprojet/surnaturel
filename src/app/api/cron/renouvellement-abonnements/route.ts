@@ -9,7 +9,7 @@ import { envoyerEmailRenouvellementAbonnement } from "@/lib/email"
  * - Crée les paiements à effectuer
  * 
  * À exécuter le 1er de chaque mois
- * Vercel Cron: "0 0 1 * *"
+ * node-cron (PM2): "0 0 1 * *"
  */
 export async function GET(request: Request) {
   try {

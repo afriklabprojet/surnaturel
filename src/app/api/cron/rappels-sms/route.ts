@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/utils"
 // Envoie un SMS de rappel aux clientes qui ont un RDV le lendemain
 // et qui ont renseigné leur numéro de téléphone.
 //
-// Doit être appelé quotidiennement (Vercel Cron ou cron externe).
+// Doit être appelé quotidiennement (node-cron PM2 ou cron externe).
 // Protégé par CRON_SECRET pour éviter les appels non autorisés.
 
 export async function GET(req: NextRequest) {

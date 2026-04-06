@@ -1,14 +1,12 @@
 /**
  * Processus PM2 dédié aux crons — Hostinger Node.js
  *
- * Remplace les crons Vercel (vercel.json) par des tâches node-cron
- * qui appellent les routes API existantes via HTTP interne.
+ * Tâches node-cron appelant les routes API existantes via HTTP interne.
  *
  * Démarrage : pm2 start ecosystem.config.js --only crons
  * Logs       : pm2 logs crons
  *
- * Chaque tâche utilise CRON_SECRET pour s'authentifier auprès
- * des routes (même protection que les crons Vercel).
+ * Chaque tâche utilise CRON_SECRET pour s'authentifier auprès des routes.
  */
 
 import cron from "node-cron"
@@ -43,7 +41,7 @@ async function callCron(path: string): Promise<void> {
   }
 }
 
-// ── Planification identique à vercel.json ────────────────────────
+// ── Planification des tâches cron ────────────────────────
 
 // Rappels RDV J-1 — chaque jour à 8h
 cron.schedule("0 8 * * *", () => callCron("/api/cron/rappel-rdv"), {

@@ -4,7 +4,7 @@ import { envoyerEmailRappelRDV } from "@/lib/email"
 import { envoyerPushAUtilisateur } from "@/lib/push-service"
 import { PUSH_TYPES } from "@/lib/web-push"
 
-// GET — appelé par le cron Vercel chaque jour à 8h
+// GET — appelé par node-cron (PM2) chaque jour à 8h
 export async function GET(request: Request) {
   // Protection par secret partagé
   const authHeader = request.headers.get("authorization")

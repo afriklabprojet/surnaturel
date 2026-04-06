@@ -166,7 +166,7 @@ export default async function PolitiqueConfidentialite() {
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li><strong>Jeko Africa</strong> : traitement des paiements Mobile Money</li>
             <li><strong>Resend</strong> : envoi des emails transactionnels</li>
-            <li><strong>Vercel</strong> : hébergement du site</li>
+            <li><strong>Hostinger</strong> : hébergement du site</li>
             <li><strong>Neon</strong> : hébergement de la base de données</li>
           </ul>
         </div>

@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/email"
 import { getConfig } from "@/lib/config"
 
 // Relance les utilisateurs avec un panier abandonné depuis > 2h et < 48h
-// Exécuté toutes les 2h via Vercel CRON
+// Exécuté toutes les 2h via node-cron (PM2)
 // Ne relance qu'une fois par cycle d'abandon (flag panier_notified_{userId})
 
 const DEUX_HEURES = 2 * 60 * 60 * 1000

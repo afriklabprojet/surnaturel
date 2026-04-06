@@ -3,10 +3,10 @@ import { prisma } from "@/lib/prisma"
 import { getPusherServeur, PUSHER_CHANNELS, PUSHER_EVENTS } from "@/lib/pusher"
 import { envoyerPushNotification, isPushConfigured, type PushPayload } from "@/lib/web-push"
 
-// GET /api/cron/messages-programmes — Déclenché toutes les minutes par Vercel Cron
+// GET /api/cron/messages-programmes — Déclenché toutes les minutes par node-cron (PM2)
 // Envoie les messages programmés dont la date est passée
 export async function GET(req: NextRequest) {
-  // Vérification de sécurité Vercel Cron
+  // Vérification de sécurité CRON_SECRET
   const authHeader = req.headers.get("authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })

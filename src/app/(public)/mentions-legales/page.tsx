@@ -103,9 +103,9 @@ export default async function MentionsLegales() {
             Hébergement
           </h2>
           <p>
-            Le site est hébergé par <strong>Vercel Inc.</strong><br />
-            440 N Baxter St, Coppell, TX 75019, États-Unis<br />
-            Site web : <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-primary-brand hover:underline">vercel.com</a>
+            Le site est hébergé par <strong>Hostinger International Ltd.</strong><br />
+            61 Lordou Vironos str., 6023 Larnaca, Chypre<br />
+            Site web : <a href="https://www.hostinger.fr" target="_blank" rel="noopener noreferrer" className="text-primary-brand hover:underline">hostinger.fr</a>
           </p>
         </div>
 
