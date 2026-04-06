@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Metadata } from "next"
 import { Clock } from "lucide-react"
 import { prisma } from "@/lib/prisma"
