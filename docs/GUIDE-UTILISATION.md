@@ -18,11 +18,10 @@
 8. [Espace médical (confidentiel)](#8--espace-médical-confidentiel)
 9. [Programme de fidélité et parrainage](#9--programme-de-fidélité-et-parrainage)
 10. [Communauté](#10--communauté)
-11. [Nouveautés — Assistant Bien-Être IA](#11--assistant-bien-être-ia)
-12. [Nouveautés — Application mobile (PWA)](#12--application-mobile-pwa)
+11. [Application mobile (PWA)](#12--application-mobile-pwa)
 13. [Nouveautés — Modération des signalements](#13--modération-des-signalements)
 14. [Rapports et statistiques avancés](#14--rapports-et-statistiques-avancés-nouveau--phase-c)
-15. [Résumé IA des clients](#15--résumé-ia-des-clients-nouveau--phase-c)
+15. [Synthèse client](#15--synthèse-client-nouveau--phase-c)
 16. [Export CSV des données](#16--export-csv-des-données-nouveau--phase-c)
 17. [Mode sombre](#17--mode-sombre-nouveau--phase-d)
 18. [Multi-langue FR/EN](#18--multi-langue-français--anglais-nouveau--phase-d)
@@ -338,35 +337,6 @@ Pour les RDV confirmés :
 
 ---
 
-## 11 — Assistant Bien-Être IA
-
-### C'est quoi ?
-
-Un petit bouton doré ✨ apparaît en bas à droite de toutes les pages publiques
-du site. C'est un **assistant intelligent** qui aide les visiteurs à trouver le
-soin idéal.
-
-### Comment ça marche ?
-
-1. Le visiteur clique sur le bouton ✨
-2. L'assistant pose **3 questions simples** :
-   - Quel est votre objectif ? (Détente, Beauté du visage, Minceur,
-     Post-accouchement…)
-   - Quel est votre budget ?
-   - Combien de temps avez-vous ?
-3. Il recommande automatiquement les **2-3 soins les plus adaptés**
-4. Le visiteur peut cliquer pour voir le détail du soin ou prendre RDV
-
-### Avantage
-
-Les visiteurs hésitants trouvent le bon soin sans avoir à parcourir tout le
-catalogue. Cela augmente les réservations.
-
-> **Vous n'avez rien à configurer.** L'assistant fonctionne automatiquement à
-> partir de votre catalogue de soins.
-
----
-
 ## 12 — Application mobile (PWA)
 
 ### C'est quoi ?
@@ -460,15 +430,15 @@ Menu admin > **"Rapports"**
 
 ---
 
-## 15 — Résumé IA des clients (NOUVEAU — Phase C)
+## 15 — Synthèse client (NOUVEAU — Phase C)
 
 ### Où ?
 
-Menu admin > **"Utilisateurs"** > cliquez sur un client > **"Résumé IA"**
+Menu admin > **“Utilisateurs”** > cliquez sur un client > **“Synthèse”**
 
 ### Ce que ça fait
 
-L'intelligence artificielle analyse automatiquement l'historique d'un client :
+Le système analyse automatiquement l'historique d'un client :
 
 - Nombre total de visites et montant total dépensé
 - Ses soins préférés (affichés en étiquettes colorées)
@@ -477,7 +447,7 @@ L'intelligence artificielle analyse automatiquement l'historique d'un client :
 
 ### Quand l'utiliser
 
-Avant un rendez-vous, consultez ce résumé pour personnaliser l'accueil.
+Avant un rendez-vous, consultez cette synthèse pour personnaliser l'accueil.
 
 ---
 
@@ -552,9 +522,8 @@ Le site mesure automatiquement :
 
 ### Où consulter les statistiques
 
-1. Connectez-vous sur [vercel.com](https://vercel.com) > votre projet
-2. Onglet **"Analytics"** (pour le trafic)
-3. Onglet **"Speed Insights"** (pour les performances)
+1. Connectez-vous sur le **panneau d'administration** > **Rapports**
+2. Vous y trouverez les graphiques de trafic, CA, RDV et produits populaires
 
 > Vous n'avez rien à configurer. Les données se collectent automatiquement.
 
@@ -564,13 +533,12 @@ Le site mesure automatiquement :
 
 | Problème                                  | Quoi faire                                                                        |
 | ----------------------------------------- | --------------------------------------------------------------------------------- |
-| Le site ne s'affiche pas                  | Vérifiez sur [status.vercel.com](https://status.vercel.com) si Vercel fonctionne  |
+| Le site ne s'affiche pas                  | Vérifiez les logs PM2 via SSH (`pm2 logs surnaturel`)                             |
 | Un client ne peut pas se connecter        | Vérifiez son compte dans l'admin > Utilisateurs                                   |
 | Les emails ne partent pas                 | Vérifiez sur [resend.com](https://resend.com) votre quota d'envoi                 |
 | Le paiement échoue                        | Vérifiez sur [cockpit.jeko.africa](https://cockpit.jeko.africa) le statut         |
 | Vous avez oublié votre mot de passe admin | Utilisez la page `/mot-de-passe-oublie`                                           |
 | Le site est-il en panne ?                 | Vérifiez `/api/health` — si vous voyez `{"status":"ok"}`, tout fonctionne         |
-| L'assistant IA ne s'affiche pas           | Le bouton ✨ n'apparaît que sur les pages publiques (pas l'admin ni le dashboard) |
 | Le mode sombre ne s'active pas            | Cliquez l'icône 🌙 dans la barre de navigation (en haut à droite)                 |
 | Le CSV ne se télécharge pas               | Essayez un autre navigateur ou désactivez les bloqueurs de popups                 |
 
@@ -919,7 +887,7 @@ Voici **toutes les pages** de votre panel admin avec ce qu'elles font :
 | **Commandes**       | `/admin/commandes`      | Traiter les commandes (statuts) + export CSV                |
 | **Soins**           | `/admin/soins`          | Ajouter, modifier, activer/désactiver les soins             |
 | **Blog**            | `/admin/blog`           | Publier, modifier, supprimer des articles                   |
-| **Clients**         | `/admin/clients`        | Voir les clients, changer les rôles, résumé IA + export CSV |
+| **Clients**         | `/admin/clients`        | Voir les clients, changer les rôles, synthèse + export CSV |
 | **Avis**            | `/admin/avis`           | Approuver, rejeter, répondre aux avis + export CSV          |
 | **Rapports**        | `/admin/rapports`       | Graphiques CA, RDV, soins populaires, conversion            |
 | **Fidélité**        | `/admin/fidelite`       | Voir/ajuster les points, consulter les historiques          |
@@ -966,7 +934,7 @@ Voici **toutes les pages** de votre panel admin avec ce qu'elles font :
 | **1x par semaine** | Publier un article de blog           | 30 min       |
 | **1x par semaine** | Consulter les rapports avancés       | 10 min       |
 | **1x par mois**    | Exporter les CSV pour bilan mensuel  | 10 min       |
-| **1x par mois**    | Consulter Vercel Analytics           | 10 min       |
+| **1x par mois**    | Consulter les rapports analytiques   | 10 min       |
 | **1x par mois**    | Vérifier les profils professionnels  | 5 min        |
 | **Si besoin**      | Vérifier des comptes utilisateurs    | 5 min        |
 | **Si besoin**      | Gérer les blocages signalés          | 5 min        |

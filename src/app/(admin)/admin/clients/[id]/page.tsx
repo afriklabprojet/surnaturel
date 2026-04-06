@@ -4,12 +4,12 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Calendar, ShoppingBag, TrendingUp, Star, MessageCircle, UserX, Brain, AlertTriangle, Clock } from "lucide-react"
+import { ArrowLeft, Calendar, ShoppingBag, TrendingUp, Star, MessageCircle, UserX, BarChart3, AlertTriangle, Clock } from "lucide-react"
 import { formatPrix } from "@/lib/utils"
 import { useConfirm } from "@/components/ui/confirm-dialog"
 import { toast } from "sonner"
 
-interface ResumeIA {
+interface ResumeClient {
   resume: string
   stats: {
     totalRDV: number; rdvTermines: number; rdvAnnules: number
@@ -73,7 +73,7 @@ export default function AdminClientDetailPage() {
   const router = useRouter()
   const confirm = useConfirm()
   const [client, setClient] = useState<ClientDetail | null>(null)
-  const [resume, setResume] = useState<ResumeIA | null>(null)
+  const [resume, setResume] = useState<ResumeClient | null>(null)
   const [loading, setLoading] = useState(true)
   const [resumeLoading, setResumeLoading] = useState(false)
 
@@ -207,12 +207,12 @@ export default function AdminClientDetailPage() {
         ))}
       </div>
 
-      {/* Résumé IA */}
+      {/* Synthèse client */}
       <div className="bg-white border border-border-brand p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Brain size={18} className="text-gold" />
-            <h3 className="font-display text-lg text-text-main">Résumé IA de la cliente</h3>
+            <BarChart3 size={18} className="text-gold" />
+            <h3 className="font-display text-lg text-text-main">Synthèse client</h3>
           </div>
           <button
             onClick={loadResume}
@@ -222,9 +222,9 @@ export default function AdminClientDetailPage() {
             {resumeLoading ? (
               <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Brain size={14} />
+              <BarChart3 size={14} />
             )}
-            {resume ? "Actualiser" : "Générer le résumé"}
+            {resume ? "Actualiser" : "Générer la synthèse"}
           </button>
         </div>
 

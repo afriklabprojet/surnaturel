@@ -57,7 +57,7 @@ surnaturel-de-dieu/
 │   │       ├── commandes/       ← Gestion des commandes
 │   │       ├── soins/           ← Catalogue des soins
 │   │       ├── blog/            ← Gestion du blog
-│   │       ├── clients/         ← Gestion des clients + Résumé IA
+│   │       ├── clients/         ← Gestion des clients + Synthèse
 │   │       ├── avis/            ← Modération des avis
 │   │       ├── rapports/        ← Graphiques et statistiques
 │   │       ├── fidelite/        ← Points de fidélité
@@ -76,8 +76,7 @@ surnaturel-de-dieu/
 │       └── health/       ← Vérification santé du site
 │
 ├── src/components/       ← Les morceaux réutilisables
-│   ├── medical/          ← Mesures santé (graphiques + alertes)
-│   └── soins/ChatIA.tsx   ← Assistant IA recommandations
+│   └── medical/          ← Mesures santé (graphiques + alertes)
 │
 ├── src/lib/              ← Les outils techniques
 │   ├── auth.ts           ← Système de connexion
@@ -209,21 +208,6 @@ Google) pour y mettre le bon numéro de téléphone et l'adresse exacte :
 
 Cherchez dans les fichiers du footer et de la page de prise de RDV les créneaux
 horaires.
-
-### Modifier les recommandations du Chat IA
-
-Fichier : `src/components/soins/ChatIA.tsx`
-
-Le chat IA utilise un système de questions/réponses pour recommander des soins.
-
-**Pour modifier les questions posées** : trouvez le tableau `QUESTIONS` dans le
-fichier.
-
-**Pour modifier les soins recommandés** : trouvez le tableau `SOINS_DB` et
-ajustez les catégories (`categories`) associées à chaque soin.
-
-**Pour modifier les seuils de budget** : trouvez la fonction `recommend` et
-ajustez les montants.
 
 ### Modifier les seuils d'alertes médicales
 
@@ -544,7 +528,6 @@ Les crons sont gérés par `node-cron` via PM2 (`src/cron.ts`) :
 - [ ] Tester un RDV complet (réservation → confirmation → rappel)
 - [ ] Vérifier que les crons fonctionnent (`pm2 logs crons`)
 - [ ] Vérifier que `/api/health` répond `{"status":"ok"}` (santé du système)
-- [ ] Vérifier que le Chat IA s'affiche bien sur les pages publiques
 - [ ] Vérifier que le mode sombre fonctionne (cliquer 🌙)
 - [ ] Vérifier que la bascule FR/EN fonctionne
 - [ ] Lancer les tests : `npm run test` (22 tests doivent passer)
@@ -557,7 +540,6 @@ Les crons sont gérés par `node-cron` via PM2 (`src/cron.ts`) :
 
 | Fichier                                             | Rôle                                           |
 | --------------------------------------------------- | ---------------------------------------------- |
-| `src/components/soins/ChatIA.tsx`                   | Assistant IA de recommandation soins           |
 | `src/app/(admin)/admin/signalements/page.tsx`       | Panel admin modération signalements            |
 | `src/app/(public)/decouvrir-communaute/page.tsx`    | Page publique communauté                       |
 | `src/app/(public)/soins/[slug]/opengraph-image.tsx` | Image OG dynamique par soin                    |
@@ -575,7 +557,7 @@ Les crons sont gérés par `node-cron` via PM2 (`src/cron.ts`) :
 | `src/app/(dashboard)/mes-rdv/[id]/qrcode/page.tsx` | Données réelles via API (plus de mock)      |
 | `src/app/layout.tsx`                               | + JSON-LD, + manifest PWA, + service worker |
 | `src/app/sitemap.ts`                               | + URLs avis et communauté                   |
-| `src/app/(public)/layout.tsx`                      | + Chat IA intégré                           |
+| `src/app/(public)/layout.tsx`                      | + ChatBubble WhatsApp intégré               |
 
 ---
 
@@ -583,10 +565,10 @@ Les crons sont gérés par `node-cron` via PM2 (`src/cron.ts`) :
 
 | Fichier                                          | Rôle                                                   |
 | ------------------------------------------------ | ------------------------------------------------------ |
-| `src/app/api/admin/clients/[id]/resume/route.ts` | API résumé IA d'un client (GET, rôle ADMIN/SAGE_FEMME) |
+| `src/app/api/admin/clients/[id]/resume/route.ts` | API synthèse client (GET, rôle ADMIN/SAGE_FEMME)       |
 | `src/app/api/admin/rapports/route.ts`            | API rapports avancés (revenus, RDV, soins populaires)  |
 | `src/app/api/admin/export/route.ts`              | API export CSV (clients, commandes, RDV, avis)         |
-| `src/app/api/soins/preferences/route.ts`         | API préférences client pour Chat IA personnalisé       |
+| `src/app/api/soins/preferences/route.ts`         | API préférences client                                 |
 | `src/app/api/avis/aggregate/route.ts`            | API données agrégées avis (pour Google My Business)    |
 | `src/lib/i18n/fr.json`                           | Traductions françaises                                 |
 | `src/lib/i18n/en.json`                           | Traductions anglaises                                  |
@@ -599,13 +581,13 @@ Les crons sont gérés par `node-cron` via PM2 (`src/cron.ts`) :
 
 | Fichier modifié (Phases C-D)                  | Ce qui a changé                                                |
 | --------------------------------------------- | -------------------------------------------------------------- |
-| `src/app/(admin)/admin/clients/[id]/page.tsx` | + Section résumé IA avec stats, soins préférés, alertes        |
+| `src/app/(admin)/admin/clients/[id]/page.tsx` | + Section synthèse client avec stats, soins préférés, alertes  |
 | `src/app/(admin)/admin/rapports/page.tsx`     | + Graphiques Recharts (CA, RDV, soins populaires, statuts)     |
 | `src/app/(admin)/admin/clients/page.tsx`      | + Bouton export CSV                                            |
 | `src/app/(admin)/admin/commandes/page.tsx`    | + Bouton export CSV                                            |
 | `src/app/(admin)/admin/rdv/page.tsx`          | + Bouton export CSV                                            |
 | `src/app/(admin)/admin/avis/page.tsx`         | + Bouton export CSV                                            |
-| `src/components/soins/ChatIA.tsx`             | + Préférences client, recommandations personnalisées           |
+
 | `src/components/layout/Navbar.tsx`            | + ThemeToggle + LangSwitch + traductions boutons               |
 | `src/components/layout/Footer.tsx`            | + Client component + traductions i18n                          |
 | `src/app/layout.tsx`                          | + @vercel/analytics + @vercel/speed-insights + i18n + JSON-LD+ |

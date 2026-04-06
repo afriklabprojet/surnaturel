@@ -36,18 +36,18 @@
 | SEO complet             | ✅ Complet | robots.txt, JSON-LD, OG dynamiques, Sitemap étendu                 |
 | Monitoring              | ✅ Complet | `/api/health` vérifie DB et statut                                 |
 | PWA                     | ✅ Complet | Manifest, service worker, cache hors-ligne                         |
-| Chat IA soins           | ✅ Complet | Assistant bien-être — recommandations personnalisées               |
+| Recommandations soins   | ✅ Complet | Assistant bien-être — recommandations personnalisées               |
 | QR code réel            | ✅ Complet | Connecté à l'API, données réelles                                  |
 | Timezone fix            | ✅ Complet | Heures RDV affichées en Africa/Abidjan                             |
-| Résumé IA consultations | ✅ Complet | Synthèse IA d'un client (stats, préférences, alertes)              |
+| Synthèse consultations | ✅ Complet | Synthèse d'un client (stats, préférences, alertes)              |
 | Rapports avancés        | ✅ Complet | Graphiques CA, RDV, soins populaires, taux de conversion           |
 | Export CSV admin        | ✅ Complet | Export clients, commandes, RDV, avis en fichier Excel              |
-| Chat IA personnalisé    | ✅ Complet | Recommandations basées sur l'historique du client connecté         |
+| Recommandations perso   | ✅ Complet | Recommandations basées sur l'historique du client connecté         |
 | Multi-langue FR/EN      | ✅ Complet | Bascule dans la navbar, traductions des éléments de navigation     |
 | Google My Business      | ✅ Complet | JSON-LD enrichi + API agrégation avis                              |
 | Mode sombre             | ✅ Complet | Toggle dans la navbar, mémorisé en localStorage                    |
 | Tests automatisés       | ✅ Complet | 22 tests Vitest (utilitaires + APIs)                               |
-| Vercel Analytics        | ✅ Complet | @vercel/analytics + @vercel/speed-insights                         |
+| PostHog Analytics      | ✅ Complet | Suivi du trafic et analytics                                       |
 
 > **Résultat** : 35+ fonctionnalités livrées. Le site est complet et
 > opérationnel pour accueillir des clientes dès maintenant.
@@ -101,10 +101,10 @@ meilleure fidélisation.
 
 | #  | Amélioration                              | Statut |
 | -- | ----------------------------------------- | ------ |
-| C1 | Résumé IA des consultations               | ✅     |
+| C1 | Synthèse des consultations              | ✅     |
 | C2 | Historique des visites client             | ✅     |
 | C3 | Tableau de bord rapports avancés          | ✅     |
-| C4 | Chat IA amélioré (avec historique client) | ✅     |
+| C4 | Recommandations améliorées (avec historique client) | ✅     |
 | C5 | Export CSV des données admin              | ✅     |
 
 ---

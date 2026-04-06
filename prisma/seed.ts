@@ -603,39 +603,6 @@ Avant de quitter la maison, choisissez un mot ou une phrase qui guidera votre jo
       { emoji: "✨", label: "Gommage" },
       { emoji: "💆", label: "Visage" },
     ]) },
-    { cle: "questions_chat_ia", valeur: JSON.stringify([
-      {
-        id: "objectif",
-        question: "Quel est votre objectif principal ?",
-        options: [
-          { label: "Détente & relaxation", value: "detente" },
-          { label: "Beauté du visage", value: "visage" },
-          { label: "Minceur & silhouette", value: "minceur" },
-          { label: "Soins post-accouchement", value: "maman" },
-          { label: "Consultation médicale", value: "medical" },
-          { label: "Découvrir l'institut", value: "decouvrir" },
-        ],
-      },
-      {
-        id: "budget",
-        question: "Quel est votre budget ?",
-        options: [
-          { label: "Moins de 10 000 F", value: "petit" },
-          { label: "10 000 – 20 000 F", value: "moyen" },
-          { label: "20 000 F et plus", value: "grand" },
-          { label: "Pas de limite", value: "illimite" },
-        ],
-      },
-      {
-        id: "temps",
-        question: "Combien de temps avez-vous ?",
-        options: [
-          { label: "30 min – 1h", value: "court" },
-          { label: "1h – 2h", value: "moyen" },
-          { label: "Demi-journée", value: "long" },
-        ],
-      },
-    ]) },
     { cle: "categories_faq", valeur: JSON.stringify([
       { label: "Soins", value: "soins" },
       { label: "Sage-femme", value: "sage-femme" },

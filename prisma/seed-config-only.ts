@@ -41,7 +41,6 @@ const configEntries = [
   { cle: "categories_faq", valeur: JSON.stringify(["Général", "Soins", "Réservation", "Paiement"]) },
   // ── Divers ───────────────────────────────────────────────────────────
   { cle: "google_place_id", valeur: JSON.stringify("") },
-  { cle: "questions_chat_ia", valeur: JSON.stringify([]) },
 ]
 
 async function main() {
