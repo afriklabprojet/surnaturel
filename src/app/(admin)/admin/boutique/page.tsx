@@ -258,7 +258,12 @@ export default function AdminBoutiquePage() {
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Catégorie</label>
-                <input required value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand" placeholder="Huiles, Crèmes, etc." />
+                <select required value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })} className="w-full border border-border-brand px-3 py-2 text-sm font-body focus:outline-none focus:border-primary-brand bg-white">
+                  <option value="">Sélectionner une catégorie</option>
+                  <option value="Phytothérapie">🌿 Phytothérapie</option>
+                  <option value="Soins & Beauté">💆‍♀️ Soins & Beauté</option>
+                  <option value="Bien-être">🌱 Bien-être</option>
+                </select>
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-500 font-body mb-1">Image</label>

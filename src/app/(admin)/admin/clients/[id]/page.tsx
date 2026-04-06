@@ -276,7 +276,7 @@ export default function AdminClientDetailPage() {
         <h3 className="font-display text-lg text-text-main mb-4">Rendez-vous ({client.rendezVous.length})</h3>
         {client.rendezVous.length > 0 ? (
           <div className="overflow-x-auto">
-          <table className="w-full text-sm font-body min-w-[400px]">
+          <table className="w-full text-sm font-body min-w-100">
             <thead>
               <tr className="border-b border-border-brand">
                 <th className="text-left py-2 text-xs uppercase tracking-widest text-gray-500 font-medium">Soin</th>

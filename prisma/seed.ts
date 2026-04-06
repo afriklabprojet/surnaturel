@@ -523,9 +523,9 @@ Avant de quitter la maison, choisissez un mot ou une phrase qui guidera votre jo
     ]) },
     { cle: "categories_produit", valeur: JSON.stringify([
       { value: "all", label: "Tous les produits" },
-      { value: "Corps", label: "Corps" },
-      { value: "Visage", label: "Visage" },
-      { value: "Bien-être & Santé", label: "Bien-être & Santé" },
+      { value: "Phytothérapie", label: "🌿 Phytothérapie" },
+      { value: "Soins & Beauté", label: "💆‍♀️ Soins & Beauté" },
+      { value: "Bien-être", label: "🌱 Bien-être" },
     ]) },
     { cle: "valeurs", valeur: JSON.stringify([
       { icon: "Heart", titre: "Bienveillance", description: "Chaque cliente est accueillie avec chaleur et respect. Nous croyons que le bien-être commence par une écoute attentive." },
