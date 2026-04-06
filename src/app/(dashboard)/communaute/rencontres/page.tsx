@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Settings, Users, Heart } from "lucide-react"
+import { Settings, Users, Heart, Camera } from "lucide-react"
 import Link from "next/link"
 import CarteProfil, { type ProfilSuggestion } from "@/components/rencontres/CarteProfil"
 import MatchModal from "@/components/rencontres/MatchModal"
@@ -18,23 +18,22 @@ interface MatchResult {
 export default function PageRencontres() {
   const { data: session } = useSession()
   const [profiles, setProfiles] = useState<ProfilSuggestion[]>([])
-  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [swiping, setSwiping] = useState(false)
   const [matchResult, setMatchResult] = useState<(MatchResult & { profil: ProfilSuggestion }) | null>(null)
   const [likesRestants, setLikesRestants] = useState<number | null>(null)
 
-  const fetchSuggestions = useCallback(async (cursor?: string) => {
+  const fetchSuggestions = useCallback(async (page = 0) => {
     setLoading(true)
     try {
-      const url = cursor
-        ? `/api/rencontres/suggestions?cursor=${cursor}`
-        : "/api/rencontres/suggestions"
-      const res = await fetch(url)
+      const res = await fetch(`/api/rencontres/suggestions?page=${page}`)
       if (!res.ok) throw new Error()
-      const data = (await res.json()) as { profiles: ProfilSuggestion[]; nextCursor: string | null }
-      setProfiles((prev) => (cursor ? [...prev, ...data.profiles] : data.profiles))
-      setNextCursor(data.nextCursor)
+      const data = (await res.json()) as { profiles: ProfilSuggestion[]; hasMore: boolean; page: number }
+      setProfiles((prev) => (page === 0 ? data.profiles : [...prev, ...data.profiles]))
+      setHasMore(data.hasMore)
+      setCurrentPage(data.page)
     } catch {
       toast.error("Impossible de charger les profils")
     } finally {
@@ -76,8 +75,8 @@ export default function PageRencontres() {
       setProfiles((prev) => {
         const remaining = prev.filter((p) => p.id !== profil.id)
         // Charger plus si moins de 3 profils restants
-        if (remaining.length <= 2 && nextCursor) {
-          void fetchSuggestions(nextCursor)
+        if (remaining.length <= 2 && hasMore) {
+          void fetchSuggestions(currentPage + 1)
         }
         return remaining
       })
@@ -94,6 +93,41 @@ export default function PageRencontres() {
 
   const currentProfil = profiles[0] ?? null
 
+  async function handleReport(userId: string) {
+    const raison = prompt("Raison du signalement :")
+    if (!raison || raison.trim().length < 5) {
+      if (raison !== null) toast.error("La raison doit contenir au moins 5 caractères")
+      return
+    }
+    try {
+      const res = await fetch("/api/communaute/signalements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "MEMBRE", signaleUserId: userId, raison: raison.trim() }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Signalement envoyé")
+    } catch {
+      toast.error("Erreur lors du signalement")
+    }
+  }
+
+  async function handleBlock(userId: string) {
+    if (!confirm("Bloquer cette personne ? Elle ne verra plus votre profil.")) return
+    try {
+      const res = await fetch("/api/communaute/blocages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bloqueId: userId }),
+      })
+      if (!res.ok) throw new Error()
+      setProfiles((prev) => prev.filter((p) => p.id !== userId))
+      toast.success("Utilisateur bloqué")
+    } catch {
+      toast.error("Erreur lors du blocage")
+    }
+  }
+
   return (
     <div className="max-w-lg lg:max-w-3xl mx-auto space-y-5">
       {/* Header */}
@@ -103,6 +137,13 @@ export default function PageRencontres() {
           <p className="text-sm text-text-muted-brand">Découvrez des profils qui vous correspondent</p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/communaute/rencontres/photos"
+            className="p-2 rounded-full text-text-muted-brand hover:bg-bg-page hover:text-pink-500 transition-colors"
+            aria-label="Mes photos"
+          >
+            <Camera size={20} />
+          </Link>
           <Link
             href="/communaute/rencontres/qui-ma-like"
             className="p-2 rounded-full text-text-muted-brand hover:bg-bg-page hover:text-pink-500 transition-colors"
@@ -149,6 +190,8 @@ export default function PageRencontres() {
           onLike={() => handleAction(currentProfil, "LIKE")}
           onSuperLike={() => handleAction(currentProfil, "SUPER_LIKE")}
           onPass={() => handleAction(currentProfil, "PASS")}
+          onReport={handleReport}
+          onBlock={handleBlock}
           isLoading={swiping}
         />
       ) : (

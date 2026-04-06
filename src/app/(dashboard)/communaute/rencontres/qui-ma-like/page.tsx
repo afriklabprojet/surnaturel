@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Heart, Lock, ArrowLeft } from "lucide-react"
+import { Heart, Lock, ArrowLeft, Flag, Ban } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
@@ -27,6 +27,42 @@ export default function PageQuiMALike() {
   const [likes, setLikes] = useState<LikeItem[]>([])
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(true)
+
+  async function handleReport(userId: string) {
+    const raison = prompt("Raison du signalement :")
+    if (!raison || raison.trim().length < 5) {
+      if (raison !== null) toast.error("La raison doit contenir au moins 5 caractères")
+      return
+    }
+    try {
+      const res = await fetch("/api/communaute/signalements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "MEMBRE", signaleUserId: userId, raison: raison.trim() }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Signalement envoyé")
+    } catch {
+      toast.error("Erreur lors du signalement")
+    }
+  }
+
+  async function handleBlock(userId: string) {
+    if (!confirm("Bloquer cette personne ? Elle ne pourra plus voir votre profil.")) return
+    try {
+      const res = await fetch("/api/communaute/blocages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bloqueId: userId }),
+      })
+      if (!res.ok) throw new Error()
+      setLikes((prev) => prev.filter((l) => l.id !== userId))
+      setCount((prev) => Math.max(0, prev - 1))
+      toast.success("Utilisateur bloqué")
+    } catch {
+      toast.error("Erreur lors du blocage")
+    }
+  }
 
   useEffect(() => {
     async function fetchLikes() {
@@ -147,15 +183,31 @@ export default function PageQuiMALike() {
                   </div>
                 </div>
 
-                {/* Bouton like en retour (visible seulement si non flou) */}
+                {/* Bouton like en retour + sécurité (visible seulement si non flou) */}
                 {!isBlurred && (
-                  <div className="p-2">
+                  <div className="p-2 space-y-1">
                     <Link
                       href="/communaute/rencontres"
                       className="block w-full text-center py-1.5 rounded-full bg-pink-50 text-pink-600 text-xs font-medium hover:bg-pink-100 transition-colors"
                     >
                       Voir dans les suggestions
                     </Link>
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => handleReport(like.id)}
+                        aria-label="Signaler"
+                        className="p-1.5 rounded-full text-text-muted-brand hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                      >
+                        <Flag size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleBlock(like.id)}
+                        aria-label="Bloquer"
+                        className="p-1.5 rounded-full text-text-muted-brand hover:text-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        <Ban size={13} />
+                      </button>
+                    </div>
                   </div>
                 )}
 

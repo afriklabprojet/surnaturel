@@ -11,8 +11,8 @@ import { decrypt } from "@/lib/crypto"
 export async function GET(request: Request) {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -53,8 +53,8 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     const { id, traite } = await request.json()

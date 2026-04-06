@@ -24,34 +24,35 @@ export async function GET(req: NextRequest) {
   if (signale === "true") where.signale = true
 
   const [avis, total] = await Promise.all([
-    prisma.avis.findMany({
+    prisma.avisProduit.findMany({
       where,
       include: {
         user: { select: { nom: true, prenom: true, email: true, photoUrl: true } },
-        soin: { select: { nom: true } },
-        rdv: { select: { dateHeure: true } },
+        produit: { select: { nom: true } },
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
     }),
-    prisma.avis.count({ where }),
+    prisma.avisProduit.count({ where }),
   ])
 
   return NextResponse.json({
-    avis: avis.map((a) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    avis: avis.map((a: any) => ({
       id: a.id,
       note: a.note,
+      titre: a.titre,
       commentaire: a.commentaire,
       publie: a.publie,
+      verifie: a.verifie,
       signale: a.signale,
       raisonRejet: a.raisonRejet,
       moderePar: a.moderePar,
       modereAt: a.modereAt?.toISOString() ?? null,
       createdAt: a.createdAt.toISOString(),
       user: { nom: a.user.nom, prenom: a.user.prenom, email: a.user.email, photoUrl: a.user.photoUrl },
-      soin: a.soin.nom,
-      dateRdv: a.rdv.dateHeure.toISOString(),
+      produit: a.produit.nom,
     })),
     total,
   })

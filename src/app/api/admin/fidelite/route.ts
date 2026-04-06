@@ -46,7 +46,7 @@ const ajusterSchema = z.object({
   userId: z.string(),
   points: z.number().int(),
   raison: z.string().min(1),
-  type: z.enum(["GAIN_RDV", "GAIN_COMMANDE", "GAIN_PARRAINAGE", "GAIN_AVIS", "DEPOT_RECOMPENSE"]),
+  type: z.enum(["GAIN_RDV", "GAIN_COMMANDE", "GAIN_PARRAINAGE", "GAIN_AVIS", "GAIN_INSCRIPTION", "DEPOT_RECOMPENSE"]),
 })
 
 export async function POST(req: NextRequest) {

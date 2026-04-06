@@ -11,6 +11,7 @@ const inscriptionSchema = z.object({
   email: z.string().email(),
   telephone: z.string().optional(),
   password: z.string().min(8),
+  codeParrainage: z.string().max(20).optional(),
 })
 
 export async function POST(request: Request) {
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: firstError }, { status: 400 })
   }
 
-  const { prenom, nom, email, telephone, password } = result.data
+  const { prenom, nom, email, telephone, password, codeParrainage } = result.data
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   const emailVerifToken = crypto.randomBytes(32).toString("hex")
   const emailVerifExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
 
-  await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
       prenom,
       nom,
@@ -76,6 +77,28 @@ export async function POST(request: Request) {
       emailVerifExpiry,
     },
   })
+
+  // Lier le parrainage si un code valide a été fourni
+  if (codeParrainage) {
+    try {
+      const parrain = await prisma.user.findUnique({
+        where: { codeParrainage },
+        select: { id: true },
+      })
+      if (parrain && parrain.id !== newUser.id) {
+        await prisma.parrainage.create({
+          data: {
+            parrainId: parrain.id,
+            filleulId: newUser.id,
+            code: codeParrainage,
+            statut: "EN_ATTENTE",
+          },
+        })
+      }
+    } catch {
+      // Ne pas bloquer l'inscription si le parrainage échoue
+    }
+  }
 
   // Email de vérification
   let emailEnvoye = true

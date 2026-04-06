@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod/v4"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Check } from "lucide-react"
+import { Check, Gift } from "lucide-react"
 import MotionDiv from "@/components/ui/MotionDiv"
 import { fadeInLeft, fadeInRight, buttonHover } from "@/lib/animations"
 
@@ -54,6 +54,8 @@ function getPasswordStrength(password: string): number {
 
 export default function InscriptionForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const codeParrain = searchParams.get("parrain") ?? ""
   const [erreurServeur, setErreurServeur] = useState("")
   const [success, setSuccess] = useState(false)
 
@@ -107,6 +109,7 @@ export default function InscriptionForm() {
           email: data.email,
           telephone: data.telephone,
           password: data.motDePasse,
+          ...(codeParrain ? { codeParrainage: codeParrain } : {}),
         }),
       })
 
@@ -212,6 +215,16 @@ export default function InscriptionForm() {
           <h1 className="mt-5 text-center font-display text-[30px] font-light text-text-main">
             Créer votre compte
           </h1>
+
+          {codeParrain && (
+            <div className="mt-4 flex items-center gap-3 border border-gold/30 bg-gold-light/50 px-4 py-3">
+              <Gift size={18} className="shrink-0 text-gold" />
+              <p className="font-body text-[12px] text-text-mid">
+                Vous avez été invité(e) ! Créez votre compte pour recevoir{" "}
+                <strong className="text-gold-dark">100 points de bienvenue</strong> + un bonus parrainage.
+              </p>
+            </div>
+          )}
 
           <p className="mt-2 text-center font-body text-[12px] text-text-muted-brand">
             Déjà membre ?{" "}

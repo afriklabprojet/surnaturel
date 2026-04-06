@@ -15,11 +15,11 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get("page") || 1))
   const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") || 20)))
   const search = searchParams.get("search")?.trim()
-  const roleFilter = searchParams.get("role") // SAGE_FEMME, ACCOMPAGNATEUR_MEDICAL, ADMIN, or null (all)
+  const roleFilter = searchParams.get("role") // SAGE_FEMME, ACCOMPAGNATEUR_MEDICAL, ADMIN, MODERATEUR, or null (all)
 
   const roles = roleFilter
     ? [roleFilter]
-    : ["SAGE_FEMME", "ADMIN", "ACCOMPAGNATEUR_MEDICAL"]
+    : ["SAGE_FEMME", "ADMIN", "ACCOMPAGNATEUR_MEDICAL", "MODERATEUR"]
 
   const where: Record<string, unknown> = {
     role: { in: roles },
@@ -102,7 +102,7 @@ export async function PUT(req: NextRequest) {
 const patchSchema = z.object({
   userId: z.string(),
   action: z.enum(["changeRole", "changeVerification"]),
-  role: z.enum(["ADMIN", "SAGE_FEMME", "ACCOMPAGNATEUR_MEDICAL", "CLIENT"]).optional(),
+  role: z.enum(["ADMIN", "SAGE_FEMME", "ACCOMPAGNATEUR_MEDICAL", "MODERATEUR", "CLIENT"]).optional(),
   verificationStatus: z.enum(["AUCUNE", "MEMBRE_VERIFIE", "PROFESSIONNEL_SANTE"]).optional(),
 })
 
@@ -128,7 +128,7 @@ export async function PATCH(req: NextRequest) {
   if (action === "changeRole" && role) {
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { role: role as "ADMIN" | "SAGE_FEMME" | "ACCOMPAGNATEUR_MEDICAL" | "CLIENT" },
+      data: { role: role as "ADMIN" | "SAGE_FEMME" | "ACCOMPAGNATEUR_MEDICAL" | "MODERATEUR" | "CLIENT" },
       select: { id: true, nom: true, prenom: true, role: true, verificationStatus: true },
     })
     return NextResponse.json(user)

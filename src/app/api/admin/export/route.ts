@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
 
   if (type === "professionnels") {
     const pros = await prisma.user.findMany({
-      where: { role: { in: ["SAGE_FEMME", "ADMIN", "ACCOMPAGNATEUR_MEDICAL"] } },
+      where: { role: { in: ["SAGE_FEMME", "ADMIN", "ACCOMPAGNATEUR_MEDICAL", "MODERATEUR"] } },
       include: {
         profilDetail: true,
         _count: { select: { rendezVous: true } },

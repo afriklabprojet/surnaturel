@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     // Patients avec RDV (pas tous les utilisateurs)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { SITE_URL } from "@/lib/site"
+import { crediterInscription, crediterParrainage } from "@/lib/fidelite"
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token")
@@ -42,6 +43,30 @@ export async function GET(req: NextRequest) {
       emailVerifExpiry: null,
     },
   })
+
+  // Bonus de bienvenue : +100 points fidélité
+  try {
+    await crediterInscription(user.id)
+  } catch {
+    // Ne pas bloquer la vérification si le crédit de points échoue
+  }
+
+  // Activer le parrainage et créditer le parrain
+  try {
+    const parrainage = await prisma.parrainage.findFirst({
+      where: { filleulId: user.id, statut: "EN_ATTENTE" },
+      include: { parrain: { select: { id: true } }, filleul: { select: { prenom: true } } },
+    })
+    if (parrainage) {
+      await prisma.parrainage.update({
+        where: { id: parrainage.id },
+        data: { statut: "ACTIF", dateActivation: new Date() },
+      })
+      await crediterParrainage(parrainage.parrain.id, parrainage.filleul.prenom)
+    }
+  } catch {
+    // Ne pas bloquer la vérification si l'activation du parrainage échoue
+  }
 
   return NextResponse.redirect(
     new URL("/connexion?verification=ok", SITE_URL)

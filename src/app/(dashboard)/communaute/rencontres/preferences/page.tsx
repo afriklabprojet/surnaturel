@@ -12,6 +12,9 @@ interface Preferences {
   ageMax: number
   distanceKm: number
   actif: boolean
+  filtreVerifie: boolean
+  filtreIntention: boolean
+  filtreInterets: boolean
 }
 
 export default function PagePreferences() {

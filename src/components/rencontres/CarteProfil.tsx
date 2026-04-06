@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 import Image from "next/image"
-import { MapPin, Heart, Star, X, BadgeCheck, Shield } from "lucide-react"
+import { MapPin, Heart, Star, X, BadgeCheck, Shield, MoreVertical, Flag, Ban } from "lucide-react"
 
 export interface ProfilSuggestion {
   id: string
@@ -18,6 +18,7 @@ export interface ProfilSuggestion {
   profilDetail: { languesParlees: string[]; specialite: string | null } | null
   compatibilityScore?: number
   derniereVueAt?: string | null
+  photosRencontre?: { url: string }[]
 }
 
 interface CarteProfilProps {
@@ -25,6 +26,8 @@ interface CarteProfilProps {
   onLike: () => void
   onSuperLike: () => void
   onPass: () => void
+  onReport?: (userId: string) => void
+  onBlock?: (userId: string) => void
   isLoading?: boolean
 }
 
@@ -50,6 +53,8 @@ export default function CarteProfil({
   onLike,
   onSuperLike,
   onPass,
+  onReport,
+  onBlock,
   isLoading = false,
 }: CarteProfilProps) {
   const age = calcAge(profil.dateNaissance)
@@ -58,6 +63,32 @@ export default function CarteProfil({
   const [dragX, setDragX] = useState(0)
   const [dragY, setDragY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [photoIndex, setPhotoIndex] = useState(0)
+
+  // Construire la liste des photos : galerie rencontres + photo de profil en fallback
+  const allPhotos: string[] = []
+  if (profil.photosRencontre && profil.photosRencontre.length > 0) {
+    profil.photosRencontre.forEach((p) => allPhotos.push(p.url))
+  } else if (profil.photoUrl) {
+    allPhotos.push(profil.photoUrl)
+  }
+
+  const handlePhotoTap = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (allPhotos.length <= 1) return
+      // Ne pas naviguer si on clique sur un bouton
+      if ((e.target as HTMLElement).closest("button")) return
+      const rect = e.currentTarget.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      if (x < rect.width / 2) {
+        setPhotoIndex((i) => Math.max(0, i - 1))
+      } else {
+        setPhotoIndex((i) => Math.min(allPhotos.length - 1, i + 1))
+      }
+    },
+    [allPhotos.length]
+  )
   const startX = useRef(0)
   const startY = useRef(0)
 
@@ -148,7 +179,7 @@ export default function CarteProfil({
               style={{ opacity: nopeOpacity }}
               aria-hidden="true"
             >
-              <span className="border-4 border-red-500 text-red-500 font-black text-3xl px-3 py-1 rounded-lg rotate-[20deg] tracking-widest">
+              <span className="border-4 border-red-500 text-red-500 font-black text-3xl px-3 py-1 rounded-lg rotate-20 tracking-widest">
                 NOPE
               </span>
             </div>
@@ -164,23 +195,72 @@ export default function CarteProfil({
               </span>
             </div>
 
-            {profil.photoUrl ? (
-              <Image
-                src={profil.photoUrl}
-                alt={`${profil.prenom} ${profil.nom}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 384px"
-                draggable={false}
-              />
+            {allPhotos.length > 0 ? (
+              <div className="relative w-full h-full" onClick={handlePhotoTap}>
+                {/* Indicateurs de photos (barres en haut) */}
+                {allPhotos.length > 1 && (
+                  <div className="absolute top-2 inset-x-2 z-30 flex gap-1">
+                    {allPhotos.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex-1 h-1 rounded-full transition-colors ${
+                          i === photoIndex ? "bg-white" : "bg-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+                <Image
+                  src={allPhotos[photoIndex]}
+                  alt={`${profil.prenom} ${profil.nom}`}
+                  fill
+                  className="object-cover transition-opacity duration-200"
+                  sizes="(max-width: 640px) 100vw, 384px"
+                  draggable={false}
+                />
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-6xl font-heading text-primary-brand/30">
                 {profil.prenom[0]}
               </div>
             )}
 
-            {/* Badges top-right */}
+            {/* Badges top-right + menu sécurité */}
             <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
+              {/* Menu signaler / bloquer */}
+              {(onReport || onBlock) && (
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
+                    aria-label="Options de sécurité"
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                  {menuOpen && (
+                    <div className="absolute right-0 top-10 w-44 bg-white rounded-xl shadow-lg border border-border-brand py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                      {onReport && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onReport(profil.id) }}
+                          className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-amber-600 hover:bg-amber-50 transition-colors"
+                        >
+                          <Flag size={14} />
+                          Signaler
+                        </button>
+                      )}
+                      {onBlock && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onBlock(profil.id) }}
+                          className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <Ban size={14} />
+                          Bloquer
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               {profil.verificationStatus !== "AUCUNE" && (
                 <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-white/90 text-primary-brand shadow">
                   {profil.verificationStatus === "PROFESSIONNEL_SANTE" ? (

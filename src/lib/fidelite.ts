@@ -12,6 +12,7 @@ export const PALIERS = [
 
 // Règles de points
 export const REGLES_POINTS = {
+  INSCRIPTION: 100,     // +100 pts de bienvenue à l'inscription
   RDV_TERMINE: 50,      // +50 pts par RDV terminé
   COMMANDE_PAR_100: 1,  // +1 pt par 100 FCFA de commande
   AVIS_LAISSE: 30,      // +30 pts par avis
@@ -153,5 +154,14 @@ export async function crediterParrainage(userId: string, filleulPrenom: string) 
     REGLES_POINTS.PARRAINAGE,
     `Parrainage activé : ${filleulPrenom}`,
     "GAIN_PARRAINAGE"
+  )
+}
+
+export async function crediterInscription(userId: string) {
+  return ajouterPoints(
+    userId,
+    REGLES_POINTS.INSCRIPTION,
+    "Bonus de bienvenue — merci de votre inscription !",
+    "GAIN_INSCRIPTION"
   )
 }

@@ -92,16 +92,18 @@ export async function GET(
     ? (notes.reduce((a, b) => a + b, 0) / notes.length).toFixed(1)
     : null
 
-  // Health summary (non-encrypted fields only)
-  const mesuresRecentes = client.dossierMedical?.mesures || []
+  // Health summary (non-encrypted fields only) — réservé aux sages-femmes
   const alertesSante: string[] = []
-  for (const m of mesuresRecentes) {
-    const val = parseFloat(m.valeur)
-    if (isNaN(val)) continue
-    if (m.type === "TENSION_ARTERIELLE" && val > 14) alertesSante.push(`Tension élevée: ${m.valeur} ${m.unite}`)
-    if (m.type === "TEMPERATURE" && (val > 38 || val < 35.5)) alertesSante.push(`Température anormale: ${m.valeur} ${m.unite}`)
-    if (m.type === "GLYCEMIE" && (val > 1.26 || val < 0.7)) alertesSante.push(`Glycémie hors norme: ${m.valeur} ${m.unite}`)
-    if (m.type === "FREQUENCE_CARDIAQUE" && (val > 100 || val < 50)) alertesSante.push(`Fréquence cardiaque: ${m.valeur} ${m.unite}`)
+  if (session.user.role === "SAGE_FEMME") {
+    const mesuresRecentes = client.dossierMedical?.mesures || []
+    for (const m of mesuresRecentes) {
+      const val = parseFloat(m.valeur)
+      if (isNaN(val)) continue
+      if (m.type === "TENSION_ARTERIELLE" && val > 14) alertesSante.push(`Tension élevée: ${m.valeur} ${m.unite}`)
+      if (m.type === "TEMPERATURE" && (val > 38 || val < 35.5)) alertesSante.push(`Température anormale: ${m.valeur} ${m.unite}`)
+      if (m.type === "GLYCEMIE" && (val > 1.26 || val < 0.7)) alertesSante.push(`Glycémie hors norme: ${m.valeur} ${m.unite}`)
+      if (m.type === "FREQUENCE_CARDIAQUE" && (val > 100 || val < 50)) alertesSante.push(`Fréquence cardiaque: ${m.valeur} ${m.unite}`)
+    }
   }
 
   // Generate text paragraphs

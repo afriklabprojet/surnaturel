@@ -9,6 +9,9 @@ const preferencesSchema = z.object({
   ageMax: z.number().int().min(18).max(99).optional(),
   distanceKm: z.number().int().min(1).max(500).optional(),
   actif: z.boolean().optional(),
+  filtreVerifie: z.boolean().optional(),
+  filtreIntention: z.boolean().optional(),
+  filtreInterets: z.boolean().optional(),
 })
 
 export async function GET() {

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { Save, Users, Heart, Church } from "lucide-react"
+import { Save, Users, Heart, Church, BadgeCheck, Sparkles, Filter } from "lucide-react"
 
 const INTENTIONS = [
   {
@@ -42,6 +42,9 @@ interface Preferences {
   ageMax: number
   distanceKm: number
   actif: boolean
+  filtreVerifie: boolean
+  filtreIntention: boolean
+  filtreInterets: boolean
 }
 
 interface FormulairePreferencesProps {
@@ -60,6 +63,9 @@ export default function FormulairePreferences({
   const [ageMax, setAgeMax] = useState(initial?.ageMax ?? 50)
   const [distanceKm, setDistanceKm] = useState(initial?.distanceKm ?? 50)
   const [actif, setActif] = useState(initial?.actif ?? true)
+  const [filtreVerifie, setFiltreVerifie] = useState(initial?.filtreVerifie ?? false)
+  const [filtreIntention, setFiltreIntention] = useState(initial?.filtreIntention ?? false)
+  const [filtreInterets, setFiltreInterets] = useState(initial?.filtreInterets ?? false)
   const [saving, setSaving] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,7 +81,7 @@ export default function FormulairePreferences({
       const res = await fetch("/api/rencontres/preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intention, ageMin, ageMax, distanceKm, actif }),
+        body: JSON.stringify({ intention, ageMin, ageMax, distanceKm, actif, filtreVerifie, filtreIntention, filtreInterets }),
       })
 
       if (!res.ok) {
@@ -84,7 +90,7 @@ export default function FormulairePreferences({
       }
 
       toast.success("Préférences enregistrées")
-      onSaved({ intention, ageMin, ageMax, distanceKm, actif })
+      onSaved({ intention, ageMin, ageMax, distanceKm, actif, filtreVerifie, filtreIntention, filtreInterets })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erreur inattendue")
     } finally {
@@ -191,6 +197,96 @@ export default function FormulairePreferences({
               className="flex-1 accent-pink-500 h-1.5"
             />
             <span className="text-xs text-text-muted-brand">500 km</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtres avancés */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Filter size={15} className="text-text-muted-brand" />
+          <label className="font-semibold text-text-main text-sm">Filtres avancés</label>
+        </div>
+        <div className="space-y-2">
+          {/* Filtre profils vérifiés */}
+          <div className="flex items-center justify-between p-3.5 rounded-xl border border-border-brand bg-white">
+            <div className="flex items-center gap-2.5">
+              <BadgeCheck size={16} className="text-primary-brand" />
+              <div>
+                <p className="text-sm font-medium text-text-main">Profils vérifiés uniquement</p>
+                <p className="text-xs text-text-muted-brand">Ne voir que les membres vérifiés</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={filtreVerifie}
+              onClick={() => setFiltreVerifie(!filtreVerifie)}
+              className={`relative rounded-full transition-all shrink-0 ${
+                filtreVerifie ? "bg-linear-to-r from-pink-500 to-fuchsia-600 shadow-md shadow-pink-200" : "bg-gray-200"
+              }`}
+              style={{ height: "26px", width: "48px" }}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  filtreVerifie ? "translate-x-5.5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Filtre même intention */}
+          <div className="flex items-center justify-between p-3.5 rounded-xl border border-border-brand bg-white">
+            <div className="flex items-center gap-2.5">
+              <Heart size={16} className="text-pink-500" />
+              <div>
+                <p className="text-sm font-medium text-text-main">Même intention</p>
+                <p className="text-xs text-text-muted-brand">Ne voir que ceux qui cherchent la même chose</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={filtreIntention}
+              onClick={() => setFiltreIntention(!filtreIntention)}
+              className={`relative rounded-full transition-all shrink-0 ${
+                filtreIntention ? "bg-linear-to-r from-pink-500 to-fuchsia-600 shadow-md shadow-pink-200" : "bg-gray-200"
+              }`}
+              style={{ height: "26px", width: "48px" }}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  filtreIntention ? "translate-x-5.5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Filtre intérêts communs */}
+          <div className="flex items-center justify-between p-3.5 rounded-xl border border-border-brand bg-white">
+            <div className="flex items-center gap-2.5">
+              <Sparkles size={16} className="text-amber-500" />
+              <div>
+                <p className="text-sm font-medium text-text-main">Intérêts en commun</p>
+                <p className="text-xs text-text-muted-brand">Au moins un centre d&apos;intérêt partagé</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={filtreInterets}
+              onClick={() => setFiltreInterets(!filtreInterets)}
+              className={`relative rounded-full transition-all shrink-0 ${
+                filtreInterets ? "bg-linear-to-r from-pink-500 to-fuchsia-600 shadow-md shadow-pink-200" : "bg-gray-200"
+              }`}
+              style={{ height: "26px", width: "48px" }}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  filtreInterets ? "translate-x-5.5" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
         </div>
       </div>

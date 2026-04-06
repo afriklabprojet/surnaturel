@@ -2,17 +2,26 @@
 
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
-import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight, Download, CheckSquare, Square, X } from "lucide-react"
+import { Star, Eye, EyeOff, Trash2, Loader2, ChevronLeft, ChevronRight, Download, CheckSquare, Square, X, AlertTriangle, ShoppingBag, Stethoscope, MessageSquare } from "lucide-react"
+
+type TabType = "soins" | "produits"
 
 interface AvisItem {
   id: string
   note: number
+  titre?: string | null
   commentaire: string | null
   publie: boolean
+  signale: boolean
+  raisonRejet: string | null
+  moderePar: string | null
+  modereAt: string | null
   createdAt: string
   user: { nom: string; prenom: string; email: string; photoUrl: string | null }
-  soin: string
-  dateRdv: string
+  soin?: string
+  produit?: string
+  dateRdv?: string
+  verifie?: boolean
 }
 
 function Avatar({ user, size = 32 }: { user: { prenom: string; nom: string; photoUrl?: string | null }; size?: number }) {
@@ -38,17 +47,23 @@ function Stars({ note }: { note: number }) {
 }
 
 export default function PageAdminAvis() {
+  const [tab, setTab] = useState<TabType>("soins")
   const [avis, setAvis] = useState<AvisItem[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [filtrePublie, setFiltrePublie] = useState<string>("all")
   const [filtreNote, setFiltreNote] = useState<string>("all")
+  const [filtreSignale, setFiltreSignale] = useState(false)
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({})
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [rejetModal, setRejetModal] = useState<{ id: string; type: TabType } | null>(null)
+  const [raisonRejet, setRaisonRejet] = useState("")
 
   const limit = 20
+
+  const apiBase = tab === "soins" ? "/api/admin/avis" : "/api/admin/avis-produits"
 
   const fetchAvis = useCallback(async () => {
     setLoading(true)
@@ -57,7 +72,8 @@ export default function PageAdminAvis() {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) })
       if (filtrePublie !== "all") params.set("publie", filtrePublie)
       if (filtreNote !== "all") params.set("note", filtreNote)
-      const res = await fetch(`/api/admin/avis?${params}`)
+      if (filtreSignale) params.set("signale", "true")
+      const res = await fetch(`${apiBase}?${params}`)
       if (res.ok) {
         const data = await res.json()
         setAvis(data.avis)
@@ -65,14 +81,24 @@ export default function PageAdminAvis() {
       }
     } catch { /* ignore */ }
     setLoading(false)
-  }, [page, filtrePublie, filtreNote])
+  }, [page, filtrePublie, filtreNote, filtreSignale, apiBase])
 
   useEffect(() => { fetchAvis() }, [fetchAvis])
+
+  // Reset filters on tab change
+  useEffect(() => {
+    setPage(1)
+    setFiltrePublie("all")
+    setFiltreNote("all")
+    setFiltreSignale(false)
+    setSelected(new Set())
+  }, [tab])
 
   async function togglePublie(id: string, publie: boolean) {
     setActionLoading((p) => ({ ...p, [id]: true }))
     try {
-      const res = await fetch(`/api/admin/avis/${id}`, {
+      const detailBase = tab === "soins" ? "/api/admin/avis" : "/api/admin/avis-produits"
+      const res = await fetch(`${detailBase}/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ publie: !publie }),
@@ -84,11 +110,31 @@ export default function PageAdminAvis() {
     setActionLoading((p) => ({ ...p, [id]: false }))
   }
 
+  async function rejeter(id: string) {
+    if (!raisonRejet.trim()) return
+    setActionLoading((p) => ({ ...p, [id]: true }))
+    try {
+      const detailBase = tab === "soins" ? "/api/admin/avis" : "/api/admin/avis-produits"
+      const res = await fetch(`${detailBase}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publie: false, raisonRejet: raisonRejet.trim() }),
+      })
+      if (res.ok) {
+        setAvis((prev) => prev.map((a) => a.id === id ? { ...a, publie: false, raisonRejet: raisonRejet.trim(), signale: false } : a))
+      }
+    } catch { /* ignore */ }
+    setActionLoading((p) => ({ ...p, [id]: false }))
+    setRejetModal(null)
+    setRaisonRejet("")
+  }
+
   async function supprimer(id: string) {
     if (!confirm("Supprimer cet avis ?")) return
     setActionLoading((p) => ({ ...p, [id]: true }))
     try {
-      const res = await fetch(`/api/admin/avis/${id}`, { method: "DELETE" })
+      const detailBase = tab === "soins" ? "/api/admin/avis" : "/api/admin/avis-produits"
+      const res = await fetch(`${detailBase}/${id}`, { method: "DELETE" })
       if (res.ok) {
         setAvis((prev) => prev.filter((a) => a.id !== id))
         setTotal((t) => t - 1)
@@ -118,9 +164,10 @@ export default function PageAdminAvis() {
     if (selected.size === 0) return
     setBulkLoading(true)
     try {
+      const detailBase = tab === "soins" ? "/api/admin/avis" : "/api/admin/avis-produits"
       await Promise.all(
         Array.from(selected).map((id) =>
-          fetch(`/api/admin/avis/${id}`, {
+          fetch(`${detailBase}/${id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ publie }),
@@ -137,9 +184,10 @@ export default function PageAdminAvis() {
     if (!confirm(`Supprimer ${selected.size} avis sélectionné(s) ?`)) return
     setBulkLoading(true)
     try {
+      const detailBase = tab === "soins" ? "/api/admin/avis" : "/api/admin/avis-produits"
       await Promise.all(
         Array.from(selected).map((id) =>
-          fetch(`/api/admin/avis/${id}`, { method: "DELETE" })
+          fetch(`${detailBase}/${id}`, { method: "DELETE" })
         )
       )
       await fetchAvis()
@@ -151,6 +199,26 @@ export default function PageAdminAvis() {
 
   return (
     <div className="space-y-6">
+      {/* Tabs Soins / Produits */}
+      <div className="flex items-center gap-1 border-b border-border-brand">
+        <button
+          onClick={() => setTab("soins")}
+          className={`flex items-center gap-2 px-4 py-2.5 font-body text-xs uppercase tracking-widest border-b-2 transition-colors ${
+            tab === "soins" ? "border-primary-brand text-primary-brand" : "border-transparent text-text-muted-brand hover:text-text-mid"
+          }`}
+        >
+          <Stethoscope size={14} /> Avis soins
+        </button>
+        <button
+          onClick={() => setTab("produits")}
+          className={`flex items-center gap-2 px-4 py-2.5 font-body text-xs uppercase tracking-widest border-b-2 transition-colors ${
+            tab === "produits" ? "border-primary-brand text-primary-brand" : "border-transparent text-text-muted-brand hover:text-text-mid"
+          }`}
+        >
+          <ShoppingBag size={14} /> Avis produits
+        </button>
+      </div>
+
       {/* Filtres */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
@@ -187,13 +255,24 @@ export default function PageAdminAvis() {
           ))}
         </div>
 
-        <span className="ml-auto font-body text-[12px] text-text-muted-brand">{total} avis</span>
         <button
-          onClick={() => window.open("/api/admin/export?type=avis", "_blank")}
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+          onClick={() => { setFiltreSignale(!filtreSignale); setPage(1) }}
+          className={`flex items-center gap-1.5 px-2.5 py-1 font-body text-xs uppercase tracking-widest border transition-colors ${
+            filtreSignale ? "border-red-400 bg-red-50 text-red-600" : "border-border-brand text-text-muted-brand hover:text-text-mid"
+          }`}
         >
-          <Download className="h-3.5 w-3.5" /> CSV
+          <AlertTriangle size={12} /> Signalés
         </button>
+
+        <span className="ml-auto font-body text-[12px] text-text-muted-brand">{total} avis</span>
+        {tab === "soins" && (
+          <button
+            onClick={() => window.open("/api/admin/export?type=avis", "_blank")}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-border-brand font-body text-xs uppercase tracking-widest text-text-mid hover:bg-bg-page transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </button>
+        )}
       </div>
 
       {/* Bulk action bar */}
@@ -263,6 +342,7 @@ export default function PageAdminAvis() {
             <div
               key={a.id}
               className={`border bg-white p-5 transition-colors ${
+                a.signale ? "border-red-300 bg-red-50/30" :
                 selected.has(a.id) ? "border-primary-brand/40 bg-primary-brand/2" : "border-border-brand"
               }`}
             >
@@ -281,7 +361,7 @@ export default function PageAdminAvis() {
 
                 <Avatar user={a.user} size={40} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
+                  <div className="flex items-center gap-3 mb-1 flex-wrap">
                     <span className="font-body text-[13px] font-medium text-text-main">
                       {a.user.prenom} {a.user.nom}
                     </span>
@@ -291,12 +371,31 @@ export default function PageAdminAvis() {
                     }`}>
                       {a.publie ? "Publié" : "En attente"}
                     </span>
+                    {a.signale && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 font-body text-xs uppercase tracking-widest">
+                        <AlertTriangle size={10} /> Signalé
+                      </span>
+                    )}
+                    {a.verifie && (
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 font-body text-xs uppercase tracking-widest">
+                        Achat vérifié
+                      </span>
+                    )}
                   </div>
                   <p className="font-body text-xs text-text-muted-brand mb-2">
-                    {a.soin} — {new Date(a.dateRdv).toLocaleDateString("fr", { day: "numeric", month: "long", year: "numeric" })}
+                    {a.soin ?? a.produit}
+                    {a.dateRdv && <> — {new Date(a.dateRdv).toLocaleDateString("fr", { day: "numeric", month: "long", year: "numeric" })}</>}
                   </p>
+                  {a.titre && (
+                    <p className="font-body text-[13px] font-medium text-text-main mb-1">{a.titre}</p>
+                  )}
                   {a.commentaire && (
                     <p className="font-body text-[13px] text-text-mid leading-relaxed">{a.commentaire}</p>
+                  )}
+                  {a.raisonRejet && (
+                    <p className="mt-2 font-body text-xs text-red-600 bg-red-50 px-3 py-1.5 border border-red-200">
+                      <strong>Motif de rejet :</strong> {a.raisonRejet}
+                    </p>
                   )}
                 </div>
 
@@ -308,6 +407,14 @@ export default function PageAdminAvis() {
                     title={a.publie ? "Masquer" : "Publier"}
                   >
                     {a.publie ? <EyeOff size={16} className="text-text-muted-brand" /> : <Eye size={16} className="text-primary-brand" />}
+                  </button>
+                  <button
+                    onClick={() => { setRejetModal({ id: a.id, type: tab }); setRaisonRejet("") }}
+                    disabled={actionLoading[a.id]}
+                    className="p-2 hover:bg-amber-50 transition-colors"
+                    title="Rejeter avec motif"
+                  >
+                    <MessageSquare size={16} className="text-amber-600" />
                   </button>
                   <button
                     onClick={() => supprimer(a.id)}
@@ -342,6 +449,38 @@ export default function PageAdminAvis() {
           >
             Suiv. <ChevronRight size={14} />
           </button>
+        </div>
+      )}
+
+      {/* Modal rejet */}
+      {rejetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-md bg-white border border-border-brand p-6 space-y-4">
+            <h3 className="font-heading text-lg text-text-main">Rejeter cet avis</h3>
+            <textarea
+              value={raisonRejet}
+              onChange={(e) => setRaisonRejet(e.target.value)}
+              placeholder="Motif du rejet (ex: contenu inapproprié, hors sujet...)"
+              className="w-full border border-border-brand p-3 font-body text-sm text-text-main resize-none focus:outline-none focus:border-primary-brand"
+              rows={3}
+              maxLength={500}
+            />
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                onClick={() => { setRejetModal(null); setRaisonRejet("") }}
+                className="px-4 py-2 font-body text-xs uppercase tracking-widest border border-border-brand text-text-mid hover:bg-bg-page transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => rejeter(rejetModal.id)}
+                disabled={!raisonRejet.trim() || actionLoading[rejetModal.id]}
+                className="px-4 py-2 font-body text-xs uppercase tracking-widest bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                Rejeter
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

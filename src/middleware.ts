@@ -55,10 +55,10 @@ const protectedRoutes = [
   "/api/messages",
 ]
 
-// SÉCURITÉ : /suivi-medical accessible à CLIENT, ACCOMPAGNATEUR_MEDICAL et ADMIN
+// SÉCURITÉ : /suivi-medical accessible à CLIENT et ACCOMPAGNATEUR_MEDICAL uniquement (pas ADMIN)
 const roleRestrictedRoutes: Record<string, string[]> = {
-  "/suivi-medical": ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"],
-  "/admin": ["ADMIN", "SAGE_FEMME"],
+  "/suivi-medical": ["CLIENT", "ACCOMPAGNATEUR_MEDICAL"],
+  "/admin": ["ADMIN", "SAGE_FEMME", "MODERATEUR"],
 }
 
 export async function middleware(req: NextRequest) {

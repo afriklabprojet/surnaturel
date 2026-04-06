@@ -53,6 +53,44 @@ export default function PageMatches() {
     }
   }
 
+  async function handleReport(userId: string) {
+    const raison = prompt("Raison du signalement :")
+    if (!raison || raison.trim().length < 5) {
+      if (raison !== null) toast.error("La raison doit contenir au moins 5 caractères")
+      return
+    }
+    try {
+      const res = await fetch("/api/communaute/signalements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "MEMBRE", signaleUserId: userId, raison: raison.trim() }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Signalement envoyé")
+    } catch {
+      toast.error("Erreur lors du signalement")
+    }
+  }
+
+  async function handleBlock(userId: string, matchId: string) {
+    if (!confirm("Bloquer cette personne ? Le match sera annulé automatiquement.")) return
+    try {
+      // Bloquer d'abord
+      const blockRes = await fetch("/api/communaute/blocages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bloqueId: userId }),
+      })
+      if (!blockRes.ok) throw new Error()
+      // Puis annuler le match
+      await fetch(`/api/rencontres/${matchId}`, { method: "DELETE" }).catch(() => {})
+      setMatches((prev) => prev.filter((m) => m.id !== matchId))
+      toast.success("Utilisateur bloqué et match annulé")
+    } catch {
+      toast.error("Erreur lors du blocage")
+    }
+  }
+
   return (
     <div className="max-w-lg lg:max-w-2xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
@@ -84,7 +122,7 @@ export default function PageMatches() {
           ))}
         </div>
       ) : (
-        <ListeMatches matches={matches} onUnmatch={handleUnmatch} />
+        <ListeMatches matches={matches} onUnmatch={handleUnmatch} onReport={handleReport} onBlock={handleBlock} />
       )}
     </div>
   )

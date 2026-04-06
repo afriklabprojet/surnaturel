@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     const notes = await prisma.notePro.findMany({
@@ -54,8 +54,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     const { clientId, contenu, type = "GENERALE" } = await request.json()
@@ -117,8 +117,8 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     const { id, partagePatient, type } = await request.json()
@@ -143,8 +143,8 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await auth()
-    if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "SAGE_FEMME")) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+    if (!session?.user || session.user.role !== "SAGE_FEMME") {
+      return NextResponse.json({ error: "Non autorisé – accès réservé aux sages-femmes" }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)

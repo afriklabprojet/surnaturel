@@ -16,6 +16,7 @@ enum Role {
   CLIENT
   SAGE_FEMME
   ACCOMPAGNATEUR_MEDICAL
+  MODERATEUR
 }
 
 enum CategorieSoin {
@@ -156,6 +157,7 @@ model User {
   dateNaissance           DateTime? // pour filtrage par âge (rencontres)
   // ─── Rencontres
   rencontrePreference     RencontrePreference?
+  photosRencontre         PhotoRencontre[]
   likesEnvoyes            RencontreLike[]                @relation("LikesEnvoyes")
   likesRecus              RencontreLike[]                @relation("LikesRecus")
   matchesA                RencontreMatch[]               @relation("MatchesA")
@@ -316,24 +318,29 @@ model Produit {
 // ─── Avis Produits ───────────────────────────────────────────────
 
 model AvisProduit {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   produitId   String
   commandeId  String? // Optionnel: lié à une commande pour vérification achat
   note        Int // 1-5 étoiles
   titre       String?
   commentaire String?
-  utile       Int      @default(0) // Votes "utile"
-  publie      Boolean  @default(true)
-  verifie     Boolean  @default(false) // Achat vérifié
-  user        User     @relation(fields: [userId], references: [id])
-  produit     Produit  @relation(fields: [produitId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  utile       Int       @default(0) // Votes "utile"
+  publie      Boolean   @default(true)
+  verifie     Boolean   @default(false) // Achat vérifié
+  signale     Boolean   @default(false)
+  raisonRejet String?
+  moderePar   String?
+  modereAt    DateTime?
+  user        User      @relation(fields: [userId], references: [id])
+  produit     Produit   @relation(fields: [produitId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([userId, produitId]) // Un seul avis par produit par utilisateur
   @@index([produitId, publie])
   @@index([produitId, createdAt])
+  @@index([signale])
 }
 
 model Commande {
@@ -587,6 +594,7 @@ enum TypeFidelite {
   GAIN_COMMANDE
   GAIN_PARRAINAGE
   GAIN_AVIS
+  GAIN_INSCRIPTION
   DEPOT_RECOMPENSE
 }
 
@@ -758,10 +766,17 @@ model Avis {
   note        Int
   commentaire String?
   publie      Boolean    @default(false)
+  signale     Boolean    @default(false)
+  raisonRejet String?
+  moderePar   String?
+  modereAt    DateTime?
   user        User       @relation(fields: [userId], references: [id])
   rdv         RendezVous @relation(fields: [rdvId], references: [id])
   soin        Soin       @relation(fields: [soinId], references: [id])
   createdAt   DateTime   @default(now())
+
+  @@index([publie])
+  @@index([signale])
 }
 
 // ─── Codes promo — Campagnes marketing AVANCÉ ────────────────────
@@ -1558,15 +1573,29 @@ model UtilisationAbonnement {
 // ─── Module Rencontres ───────────────────────────────────────────
 
 model RencontrePreference {
-  id         String             @id @default(cuid())
-  userId     String             @unique
-  intention  IntentionRencontre @default(RELATION_SERIEUSE)
-  ageMin     Int                @default(18)
-  ageMax     Int                @default(50)
-  distanceKm Int                @default(50)
-  actif      Boolean            @default(true)
-  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updatedAt  DateTime           @updatedAt
+  id              String             @id @default(cuid())
+  userId          String             @unique
+  intention       IntentionRencontre @default(RELATION_SERIEUSE)
+  ageMin          Int                @default(18)
+  ageMax          Int                @default(50)
+  distanceKm      Int                @default(50)
+  actif           Boolean            @default(true)
+  filtreVerifie   Boolean            @default(false)
+  filtreIntention Boolean            @default(false)
+  filtreInterets  Boolean            @default(false)
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime           @updatedAt
+}
+
+model PhotoRencontre {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  ordre     Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model RencontreLike {

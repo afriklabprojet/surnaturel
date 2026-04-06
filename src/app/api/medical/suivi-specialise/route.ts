@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { encrypt, decrypt } from "@/lib/crypto"
 
-const ALLOWED_ROLES = ["CLIENT", "ACCOMPAGNATEUR_MEDICAL", "ADMIN"]
+const ALLOWED_ROLES = ["CLIENT", "ACCOMPAGNATEUR_MEDICAL"]
 
 const SuiviSchema = z.object({
   type: z.enum(["GROSSESSE", "POST_PARTUM", "NOURRISSON", "PEDIATRIQUE", "GYNECOLOGIQUE", "GENERAL"]),

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { MessageCircle, HeartCrack } from "lucide-react"
+import { MessageCircle, HeartCrack, Flag, Ban } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 
@@ -29,6 +29,8 @@ interface MatchItem {
 interface ListeMatchesProps {
   matches: MatchItem[]
   onUnmatch: (matchId: string) => void
+  onReport?: (userId: string) => void
+  onBlock?: (userId: string, matchId: string) => void
 }
 
 function isOnline(derniereVueAt: string | null): boolean {
@@ -41,7 +43,7 @@ function isActiveToday(derniereVueAt: string | null): boolean {
   return Date.now() - new Date(derniereVueAt).getTime() < 24 * 60 * 60 * 1000
 }
 
-export default function ListeMatches({ matches, onUnmatch }: ListeMatchesProps) {
+export default function ListeMatches({ matches, onUnmatch, onReport, onBlock }: ListeMatchesProps) {
   // Capture timestamp once at mount to avoid impure Date.now() during render
   const [now] = useState(() => Date.now())
   
@@ -199,6 +201,24 @@ export default function ListeMatches({ matches, onUnmatch }: ListeMatchesProps) 
                     >
                       <MessageCircle size={16} />
                     </Link>
+                  )}
+                  {onReport && (
+                    <button
+                      onClick={() => onReport(i.id)}
+                      aria-label="Signaler"
+                      className="p-2 rounded-full text-text-muted-brand hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                    >
+                      <Flag size={16} />
+                    </button>
+                  )}
+                  {onBlock && (
+                    <button
+                      onClick={() => onBlock(i.id, match.id)}
+                      aria-label="Bloquer"
+                      className="p-2 rounded-full text-text-muted-brand hover:text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <Ban size={16} />
+                    </button>
                   )}
                   <button
                     onClick={() => onUnmatch(match.id)}

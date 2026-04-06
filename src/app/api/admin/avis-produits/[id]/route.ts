@@ -32,10 +32,9 @@ export async function PATCH(
   }
   if (result.data.publie !== undefined) data.publie = result.data.publie
   if (result.data.raisonRejet !== undefined) data.raisonRejet = result.data.raisonRejet
-  // Si on rejette (publie=false + raison), on retire le signalement
   if (result.data.publie === false) data.signale = false
 
-  const avis = await prisma.avis.update({
+  const avis = await prisma.avisProduit.update({
     where: { id },
     data: data as { publie?: boolean; raisonRejet?: string; moderePar: string; modereAt: Date; signale?: boolean },
   })
@@ -53,6 +52,6 @@ export async function DELETE(
   }
 
   const { id } = await params
-  await prisma.avis.delete({ where: { id } })
+  await prisma.avisProduit.delete({ where: { id } })
   return NextResponse.json({ ok: true })
 }
