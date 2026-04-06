@@ -5,6 +5,7 @@ import { Settings, Users, Heart, Camera } from "lucide-react"
 import Link from "next/link"
 import CarteProfil, { type ProfilSuggestion } from "@/components/rencontres/CarteProfil"
 import MatchModal from "@/components/rencontres/MatchModal"
+import StoriesBandeau from "@/components/stories/StoriesBandeau"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 
@@ -167,6 +168,9 @@ export default function PageRencontres() {
           </Link>
         </div>
       </div>
+
+      {/* Stories bandeau */}
+      {session?.user?.id && <StoriesBandeau currentUserId={session.user.id} />}
 
       {/* Compteur de likes restants */}
       {likesRestants !== null && (
