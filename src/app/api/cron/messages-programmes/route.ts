@@ -37,7 +37,21 @@ export async function GET(req: NextRequest) {
   }
 
   const pusher = getPusherServeur()
-  let sent = 0
+  const sentIds: string[] = []
+
+  // Pré-charger tous les destinataires en une seule requête (évite N+1)
+  const destIds = [...new Set(messagesDus.map(m => m.destinataireId))]
+  const destUsersMap = new Map<string, { notifMessages: boolean; pushSubscriptions: { endpoint: string; p256dh: string; auth: string }[] }>()
+
+  if (isPushConfigured() && destIds.length > 0) {
+    const destUsers = await prisma.user.findMany({
+      where: { id: { in: destIds } },
+      select: { id: true, notifMessages: true, pushSubscriptions: true },
+    })
+    for (const u of destUsers) {
+      destUsersMap.set(u.id, u)
+    }
+  }
 
   for (const message of messagesDus) {
     try {
@@ -48,41 +62,38 @@ export async function GET(req: NextRequest) {
       )
       await pusher.trigger(channelName, PUSHER_EVENTS.NOUVEAU_MESSAGE, message)
 
-      // Marquer comme envoyé
-      await prisma.message.update({
-        where: { id: message.id },
-        data: { programmeEnvoye: true },
-      })
+      sentIds.push(message.id)
 
       // Push notification pour le destinataire
-      if (isPushConfigured()) {
-        const destUser = await prisma.user.findUnique({
-          where: { id: message.destinataireId },
-          select: { pushSubscriptions: true, notifMessages: true },
-        })
-        if (destUser?.notifMessages && destUser.pushSubscriptions.length > 0) {
-          const payload: PushPayload = {
-            title: `${message.expediteur.prenom} ${message.expediteur.nom}`,
-            body: message.contenu.length > 80
-              ? message.contenu.slice(0, 80) + "…"
-              : message.contenu,
-            url: "/communaute/messages",
-            tag: `message-${message.expediteurId}`,
-          }
-          for (const sub of destUser.pushSubscriptions) {
-            await envoyerPushNotification(
-              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-              payload
-            ).catch(() => {})
-          }
+      const destUser = destUsersMap.get(message.destinataireId)
+      if (destUser?.notifMessages && destUser.pushSubscriptions.length > 0) {
+        const payload: PushPayload = {
+          title: `${message.expediteur.prenom} ${message.expediteur.nom}`,
+          body: message.contenu.length > 80
+            ? message.contenu.slice(0, 80) + "…"
+            : message.contenu,
+          url: "/communaute/messages",
+          tag: `message-${message.expediteurId}`,
+        }
+        for (const sub of destUser.pushSubscriptions) {
+          await envoyerPushNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload
+          ).catch(() => {})
         }
       }
-
-      sent++
     } catch {
       // Continuer sur les autres messages même en cas d'erreur
     }
   }
 
-  return NextResponse.json({ sent, total: messagesDus.length })
+  // Batch update: marquer tous les messages envoyés en une seule requête
+  if (sentIds.length > 0) {
+    await prisma.message.updateMany({
+      where: { id: { in: sentIds } },
+      data: { programmeEnvoye: true },
+    })
+  }
+
+  return NextResponse.json({ sent: sentIds.length, total: messagesDus.length })
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { usePathname } from "next/navigation"
@@ -9,7 +10,7 @@ import type { MessageData, Interlocuteur, Conversation } from "@/types/messages"
 function MiniAvatar({ user, size = 32 }: { user: { prenom: string; nom: string; photoUrl: string | null }; size?: number }) {
   const initials = `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
   if (user.photoUrl) {
-    return <img src={user.photoUrl} alt="" className="rounded-full object-cover shrink-0" style={{ width: size, height: size }} />
+    return <Image src={user.photoUrl} alt={`Photo de ${user.prenom}`} width={size} height={size} className="rounded-full object-cover shrink-0" />
   }
   return (
     <div className="flex items-center justify-center rounded-full bg-primary-brand text-white font-body font-medium shrink-0" style={{ width: size, height: size, fontSize: size * 0.36 }}>

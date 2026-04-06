@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import {
@@ -228,7 +229,7 @@ export default function PageProfil() {
           {/* Avatar */}
           <div className="relative mx-auto w-20 h-20 mb-4">
             {photoUrl ? (
-              <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+              <Image src={photoUrl} alt="Photo de profil" fill className="object-cover" />
             ) : (
               <div className="w-full h-full bg-primary-brand flex items-center justify-center text-white font-display text-[24px]">
                 {initiales}

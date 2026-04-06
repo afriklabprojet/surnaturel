@@ -30,7 +30,9 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ soins })
+    return NextResponse.json({ soins }, {
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+    })
   } catch (error) {
     logger.error("Erreur GET /api/soins:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })

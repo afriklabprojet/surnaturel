@@ -1276,19 +1276,19 @@ model ProfilDetail {
 }
 
 model Story {
-  id            String          @id @default(cuid())
-  auteurId      String
-  type          StoryType
-  contenu       String? // texte ou URL média
-  mediaUrl      String? // URL Cloudinary
-  couleurFond   String? // hex pour stories textuelles
-  visibilite    StoryVisibilite @default(PUBLIC)
-  viewers       String[] // IDs des utilisateurs ayant visionné
-  auteur        User            @relation(fields: [auteurId], references: [id])
-  commentaires  StoryComment[]
-  reactions     StoryReaction[]
-  createdAt     DateTime        @default(now())
-  expiresAt     DateTime
+  id           String          @id @default(cuid())
+  auteurId     String
+  type         StoryType
+  contenu      String? // texte ou URL média
+  mediaUrl     String? // URL Cloudinary
+  couleurFond  String? // hex pour stories textuelles
+  visibilite   StoryVisibilite @default(PUBLIC)
+  viewers      String[] // IDs des utilisateurs ayant visionné
+  auteur       User            @relation(fields: [auteurId], references: [id])
+  commentaires StoryComment[]
+  reactions    StoryReaction[]
+  createdAt    DateTime        @default(now())
+  expiresAt    DateTime
 
   @@index([auteurId])
   @@index([expiresAt])

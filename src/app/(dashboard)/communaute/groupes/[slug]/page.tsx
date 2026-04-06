@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, FormEvent, use, ChangeEvent } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
 import {
   Loader2, Users, FileText, Send, Settings, UserPlus, LogOut, Lock, Globe,
@@ -82,7 +83,7 @@ interface JournalEntry { id: string; action: string; details?: string | null; cr
 
 function Avatar({ user, size = 36 }: { user: { prenom: string; nom: string; photoUrl?: string | null }; size?: number }) {
   const initials = `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
-  if (user.photoUrl) return <img src={user.photoUrl} alt="" className="rounded-full object-cover" style={{ width: size, height: size }} />
+  if (user.photoUrl) return <Image src={user.photoUrl} alt={`Photo de ${user.prenom}`} width={size} height={size} className="rounded-full object-cover" />
   return (
     <div className="flex items-center justify-center rounded-full bg-primary-brand text-white font-body font-medium"
       style={{ width: size, height: size, fontSize: size * 0.32 }}>{initials}</div>
@@ -247,8 +248,8 @@ function GroupePostCard({ post, currentUserId, onUpdatePost }: {
       {post.images && post.images.length > 0 && (
         <div className={`grid gap-0.5 ${post.images.length === 1 ? "" : "grid-cols-2"}`}>
           {post.images.slice(0, 4).map((img, i) => (
-            <div key={i} className={`relative ${post.images!.length === 3 && i === 0 ? "col-span-2" : ""}`}>
-              <img src={img} alt="" className="w-full h-48 object-cover" />
+            <div key={i} className={`relative h-48 ${post.images!.length === 3 && i === 0 ? "col-span-2" : ""}`}>
+              <Image src={img} alt="Image du post" fill className="object-cover" />
             </div>
           ))}
         </div>
@@ -725,7 +726,9 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
       {/* Banniere */}
       <div className="bg-white border border-border-brand overflow-hidden">
         {groupe.imageUrl ? (
-          <img src={groupe.imageUrl} alt="" className="w-full h-40 object-cover" />
+          <div className="relative w-full h-40">
+            <Image src={groupe.imageUrl} alt={groupe.nom} fill className="object-cover" />
+          </div>
         ) : (
           <div className="w-full h-40 bg-primary-light flex items-center justify-center">
             <Users size={48} className="text-primary-brand/20" />
@@ -827,7 +830,7 @@ export default function PageGroupeDetail({ params }: { params: Promise<{ slug: s
                 <div className="mt-2 flex gap-2 flex-wrap">
                   {postImages.map((url, i) => (
                     <div key={i} className="relative group w-20 h-20">
-                      <img src={url} alt="" className="w-full h-full object-cover border border-border-brand" />
+                      <Image src={url} alt="Aperçu" fill className="object-cover border border-border-brand" />
                       <button type="button" onClick={() => removePostImage(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X size={10} /></button>
                     </div>
                   ))}

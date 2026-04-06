@@ -11,7 +11,9 @@ export async function GET() {
       orderBy: { ordre: "asc" },
     })
 
-    return NextResponse.json({ formules })
+    return NextResponse.json({ formules }, {
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
+    })
   } catch (error) {
     logger.error("Erreur formules abonnement:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })

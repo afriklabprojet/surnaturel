@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
 import {
   Loader2,
@@ -166,7 +167,9 @@ export default function PageGroupes() {
               className="rounded-2xl bg-white shadow-sm ring-1 ring-border-brand hover:ring-gold hover:shadow-md transition-all overflow-hidden group"
             >
               {g.imageUrl ? (
-                <img src={g.imageUrl} alt="" className="w-full h-28 object-cover" />
+                <div className="relative w-full h-28">
+                  <Image src={g.imageUrl} alt={g.nom} fill className="object-cover" />
+                </div>
               ) : (
                 <div className="w-full h-28 bg-primary-light flex items-center justify-center">
                   <Users size={32} className="text-primary-brand/30" />
@@ -301,8 +304,8 @@ function CreateGroupeModal({ onClose, onCreated }: { onClose: () => void; onCrea
               onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f) }}
             />
             {imagePreview ? (
-              <div className="relative">
-                <img src={imagePreview} alt="" className="w-full h-32 object-cover border border-border-brand" />
+              <div className="relative w-full h-32">
+                <Image src={imagePreview} alt="Aperçu" fill className="object-cover border border-border-brand" />
                 <button
                   type="button"
                   onClick={() => { setImageUrl(""); setImagePreview(""); if (fileRef.current) fileRef.current.value = "" }}

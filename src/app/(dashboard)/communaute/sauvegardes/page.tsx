@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
 import { Loader2, Bookmark, BookmarkX, ChevronDown, MessageCircle } from "lucide-react"
 
@@ -18,7 +19,7 @@ interface PostSauvegarde {
 
 function Avatar({ user, size = 32 }: { user: { prenom: string; nom: string; photoUrl?: string | null }; size?: number }) {
   const initials = `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
-  if (user.photoUrl) return <img src={user.photoUrl} alt="" className="rounded-full object-cover" style={{ width: size, height: size }} />
+  if (user.photoUrl) return <Image src={user.photoUrl} alt={`Photo de ${user.prenom}`} width={size} height={size} className="rounded-full object-cover" />
   return <div className="flex items-center justify-center rounded-full bg-primary-brand text-white font-body font-medium" style={{ width: size, height: size, fontSize: size * 0.32 }}>{initials}</div>
 }
 
@@ -106,7 +107,7 @@ export default function PageSauvegardes() {
                 </button>
               </div>
               <p className="font-body text-[13px] text-text-main leading-relaxed whitespace-pre-wrap line-clamp-4">{post.contenu}</p>
-              {post.imageUrl && <img src={post.imageUrl} alt="" className="w-full max-h-48 object-cover mt-2" />}
+              {post.imageUrl && <div className="relative w-full h-48 mt-2"><Image src={post.imageUrl} alt="Image du post" fill className="object-cover" /></div>}
               <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border-brand">
                 <span className="font-body text-xs text-text-muted-brand">{post.reactionsCount || 0} réactions</span>
                 <span className="font-body text-xs text-text-muted-brand flex items-center gap-0.5"><MessageCircle size={10} />{post.commentairesCount || 0}</span>

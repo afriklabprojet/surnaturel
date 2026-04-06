@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, FormEvent, Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -52,7 +53,7 @@ type SearchType = (typeof TYPES)[number]["key"]
 
 function Avatar({ user, size = 36 }: { user: { prenom: string; nom: string; photoUrl?: string | null }; size?: number }) {
   const initials = `${user.prenom?.[0] ?? ""}${user.nom?.[0] ?? ""}`.toUpperCase()
-  if (user.photoUrl) return <img src={user.photoUrl} alt="" className="rounded-full object-cover" style={{ width: size, height: size }} />
+  if (user.photoUrl) return <Image src={user.photoUrl} alt={`Photo de ${user.prenom}`} width={size} height={size} className="rounded-full object-cover" />
   return <div className="flex items-center justify-center rounded-full bg-primary-brand text-white font-body font-medium" style={{ width: size, height: size, fontSize: size * 0.32 }}>{initials}</div>
 }
 

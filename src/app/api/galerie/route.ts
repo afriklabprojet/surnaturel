@@ -34,6 +34,8 @@ export async function GET() {
     return NextResponse.json({
       photos,
       parSoin,
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
     })
   } catch (error) {
     logger.error("Erreur récupération galerie:", error)

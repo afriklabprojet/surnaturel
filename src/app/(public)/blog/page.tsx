@@ -112,7 +112,7 @@ export default async function PageBlog({
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden bg-linear-to-br from-primary-light via-bg-page to-gold-light">
                   {article.imageUrl ? (
-                    <img src={article.imageUrl} alt={article.titre} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={article.imageUrl} alt={article.titre} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
                     <div className="flex h-full flex-col items-center justify-center">
                       <div className="h-px w-10 bg-gold" />

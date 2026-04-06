@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
       select: { id: true, question: true, reponse: true, categorie: true },
     })
 
-    return NextResponse.json({ faqs })
+    return NextResponse.json({ faqs }, {
+      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600" },
+    })
   } catch (error) {
     logger.error("Erreur GET /api/faq:", error)
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })

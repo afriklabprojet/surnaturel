@@ -29,6 +29,8 @@ export async function GET() {
         badge: f.badge,
         soins: f.soins.map((fs) => fs.soin),
       })),
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600" },
     })
   } catch (error) {
     logger.error("Erreur GET /api/forfaits:", error)

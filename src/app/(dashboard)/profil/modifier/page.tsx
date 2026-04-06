@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { toast } from "sonner"
 import {
   Camera,
@@ -520,7 +521,7 @@ export default function PageModifierProfil() {
               </label>
               <div className="relative h-32 bg-bg-page border border-border-brand overflow-hidden">
                 {couvertureUrl ? (
-                  <img src={couvertureUrl} alt="" className="w-full h-full object-cover" />
+                  <Image src={couvertureUrl} alt="Couverture" fill className="object-cover" />
                 ) : (
                   <div className="flex items-center justify-center h-full text-text-muted-brand">
                     <ImagePlus size={24} />

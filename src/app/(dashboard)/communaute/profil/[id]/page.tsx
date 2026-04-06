@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import Link from "next/link"
 import {
   Loader2,
@@ -200,7 +201,9 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
       <div className="bg-white border border-border-brand overflow-hidden">
         {/* Couverture */}
         {profil.couvertureUrl ? (
-          <img src={profil.couvertureUrl} alt="" className="w-full h-36 object-cover" />
+          <div className="relative w-full h-36">
+            <Image src={profil.couvertureUrl} alt="Couverture" fill className="object-cover" />
+          </div>
         ) : (
           <div className="w-full h-36 bg-linear-to-r from-primary-light to-gold-light" />
         )}
@@ -209,7 +212,7 @@ export default function PageProfil({ params }: { params: Promise<{ id: string }>
           {/* Avatar + infos */}
           <div className="flex items-end gap-4 -mt-10">
             {profil.photoUrl ? (
-              <img src={profil.photoUrl} alt="" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow" />
+              <Image src={profil.photoUrl} alt={`Photo de ${profil.prenom}`} width={80} height={80} className="rounded-full object-cover border-4 border-white shadow" />
             ) : (
               <div className="flex w-20 h-20 items-center justify-center rounded-full bg-primary-brand text-white border-4 border-white shadow font-display text-[24px] font-light">
                 {initials}
