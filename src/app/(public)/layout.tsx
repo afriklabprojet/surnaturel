@@ -3,7 +3,6 @@ import { Suspense } from "react"
 import Navbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
 import ChatBubble from "@/components/layout/ChatBubbleLazy"
-import ChatIA from "@/components/soins/ChatIALazy"
 import MobileBottomNav from "@/components/layout/MobileBottomNav"
 
 export const metadata: Metadata = {
@@ -34,7 +33,6 @@ export default function PublicLayout({
       <Footer />
       <MobileBottomNav />
       <ChatBubble />
-      <ChatIA />
     </>
   )
 }
