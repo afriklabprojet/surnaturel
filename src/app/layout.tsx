@@ -137,12 +137,13 @@ export default async function RootLayout({
               },
               hasOfferCatalog: {
                 "@type": "OfferCatalog",
-                name: "Soins & Services",
+                name: "Pathologies & Services médicaux",
                 itemListElement: [
-                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Hammam Royal", description: "Bain de vapeur purifiant inspiré des traditions orientales" } },
-                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Gommage Corps Luxe", description: "Exfoliation douce aux huiles précieuses" } },
-                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Soin du Visage Éclat", description: "Soin complet pour un teint lumineux" } },
-                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Programme Post-accouchement", description: "Soins de récupération post-partum" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Prise en charge du Diabète", description: "Suivi et accompagnement personnalisé pour le diabète" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Prise en charge du Cholestérol", description: "Dépistage et suivi du cholestérol et des dyslipidémies" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Prise en charge de la Drépanocytose", description: "Accompagnement spécialisé pour la drépanocytose" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Prise en charge de l'Obésité", description: "Programme de suivi nutritionnel et perte de poids" } },
+                  { "@type": "Offer", itemOffered: { "@type": "Service", name: "Prise en charge de l'Insuffisance rénale", description: "Suivi néphrologique et accompagnement rénal" } },
                   { "@type": "Offer", itemOffered: { "@type": "Service", name: "Sage-femme", description: "Consultations sage-femme personnalisées" } },
                 ],
               },

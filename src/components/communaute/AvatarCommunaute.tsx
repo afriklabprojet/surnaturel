@@ -20,7 +20,7 @@ export function Avatar({ user, size = 40 }: { user: Auteur; size?: number }) {
     return (
       <img
         src={user.photoUrl}
-        alt=""
+        alt={`Photo de ${user.prenom} ${user.nom}`}
         className="rounded-full object-cover"
         style={{ width: size, height: size }}
       />

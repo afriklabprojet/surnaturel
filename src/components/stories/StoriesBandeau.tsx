@@ -67,7 +67,7 @@ function StoryAvatar({ user, size = 56 }: { user: StoryAuteur; size?: number }) 
   return user.photoUrl ? (
     <Image
       src={user.photoUrl}
-      alt=""
+      alt={`Photo de ${user.prenom} ${user.nom}`}
       width={size}
       height={size}
       className="rounded-full object-cover"
@@ -216,7 +216,7 @@ function ModalCreation({ onClose, onCreated }: { onClose: () => void; onCreated:
               </div>
             )}
             {mode === "IMAGE" && mediaUrl ? (
-              <Image src={mediaUrl} alt="" fill className="object-cover" />
+              <Image src={mediaUrl} alt="Aperçu de la story" fill className="object-cover" />
             ) : mode === "IMAGE" && (
               <div className="absolute inset-0 flex items-center justify-center bg-bg-page">
                 <ImageIcon size={32} className="text-border-brand" />
@@ -495,7 +495,7 @@ function LecteurStory({
             </div>
           )}
           {story.type === "IMAGE" && story.mediaUrl && (
-            <Image src={story.mediaUrl} alt="" fill className="object-contain" />
+            <Image src={story.mediaUrl} alt={story.contenu || "Story image"} fill className="object-contain" />
           )}
           {story.type === "VIDEO" && story.mediaUrl && (
             <video
@@ -562,7 +562,7 @@ function LecteurStory({
               {viewers.map((v) => (
                 <div key={v.id} className="flex items-center gap-3 px-4 py-2.5">
                   {v.photoUrl ? (
-                    <Image src={v.photoUrl} alt="" width={32} height={32} className="rounded-full object-cover" />
+                    <Image src={v.photoUrl} alt={`Photo de ${v.prenom} ${v.nom}`} width={32} height={32} className="rounded-full object-cover" />
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-brand text-white font-body text-xs">
                       {v.prenom[0]}{v.nom[0]}

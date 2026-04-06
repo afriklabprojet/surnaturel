@@ -243,7 +243,7 @@ export default function Navbar() {
               className="inline-flex items-center gap-1.5 border border-primary-brand bg-transparent px-3 py-2 font-body text-xs font-medium uppercase tracking-widest text-primary-brand transition-colors duration-300 hover:bg-primary-light whitespace-nowrap"
             >
               {user.photoUrl ? (
-                <img src={user.photoUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+                <img src={user.photoUrl} alt="Photo de profil" className="h-5 w-5 rounded-full object-cover" />
               ) : (
                 <User size={14} />
               )}
@@ -391,7 +391,7 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {user.photoUrl ? (
-                  <img src={user.photoUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+                  <img src={user.photoUrl} alt="Photo de profil" className="h-5 w-5 rounded-full object-cover" />
                 ) : (
                   <User size={14} />
                 )}
